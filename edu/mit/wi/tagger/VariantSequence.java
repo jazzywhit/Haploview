@@ -1,9 +1,6 @@
 package edu.mit.wi.tagger;
 
-import java.util.Vector;
-import java.util.List;
-import java.util.Comparator;
-import java.util.Collections;
+import java.util.*;
 
 public abstract class VariantSequence implements Taggable{
     private Vector variants;
@@ -18,6 +15,12 @@ public abstract class VariantSequence implements Taggable{
     public void addTag(Tag t) {
         tags.add(t);
     }
+
+    public void removeTag(Tag t){
+        tags.remove(t);
+    }
+
+    public abstract boolean equals(Object o);
 
     public Vector getVariants() {
         return variants;
@@ -56,5 +59,4 @@ public abstract class VariantSequence implements Taggable{
         }
         return null;
     }
-
 }

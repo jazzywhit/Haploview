@@ -12,6 +12,6 @@ interface Tag {
      */
     public void addTagged(Taggable t);
 
-
+    public String getName();
 
 }

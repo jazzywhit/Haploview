@@ -1,7 +1,8 @@
 package edu.mit.wi.haploview.tagger;
 
-import edu.mit.wi.tagger.Tagger;
+import edu.mit.wi.tagger.*;
 import edu.mit.wi.haploview.*;
+import edu.mit.wi.haploview.SNP;
 
 import java.util.Vector;
 import java.util.Hashtable;
@@ -46,7 +47,31 @@ public class TaggerController {
                 indicesByVarSeq.put(snpHash.get(Chromosome.getMarker(i).getName()),new Integer(i));
             }
         }
-        HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq,theData.dpTable);
+
+        for (int i = 0; i < sitesToCapture.size(); i++){
+            SNP tempSNP = (SNP) sitesToCapture.get(i);
+            edu.mit.wi.tagger.SNP taggerSNP = (edu.mit.wi.tagger.SNP) snpHash.get(tempSNP.getName());
+            int p = ((Integer)indicesByVarSeq.get(taggerSNP)).intValue();
+            for (int j = 1; j < theData.dpTable.getLength(p); j++){
+                if (theData.dpTable.getLDStats(p,j+p).getLOD() >= Options.getTaggerLODCutoff()){
+                    if (indicesByVarSeq.containsValue(new Integer(j+p))){
+                        edu.mit.wi.tagger.SNP ldsnp =
+                                (edu.mit.wi.tagger.SNP) snpHash.get(Chromosome.getMarker(j+p).getName());
+                        taggerSNP.addToLDList(ldsnp);
+                        ldsnp.addToLDList(taggerSNP);
+                    }
+                }
+            }
+        }
+
+        HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq,theData);
+/*        edu.mit.wi.tagger.SNP s1 = (edu.mit.wi.tagger.SNP) snpHash.get("Marker 2");
+        edu.mit.wi.tagger.SNP s2 = (edu.mit.wi.tagger.SNP) snpHash.get("Marker 3");
+        Vector v = new Vector();
+        v.add(s1);
+        v.add(s2);
+        Block b = new Block(v);
+        hac.getCorrelation(s1,b);*/
 
         tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff());
 
@@ -79,8 +104,8 @@ public class TaggerController {
         res.add(name);
         if (snpHash.containsKey(name)){
             edu.mit.wi.tagger.SNP ts = (edu.mit.wi.tagger.SNP)snpHash.get(name);
-            res.add(ts.getBestTag().getTagSequence().getName());
-            res.add(String.valueOf(tagger.getPairwiseComp(ts,ts.getBestTag().getTagSequence())));
+            res.add(ts.getBestTag().getName());
+            res.add(String.valueOf(tagger.getPairwiseCompRsq(ts,ts.getBestTag().getSequence())));
         }else{
             res.add(new String());
             res.add(new String());

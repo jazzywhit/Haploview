@@ -59,7 +59,7 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         DefaultListModel tagListModel = new DefaultListModel();
         for(int i=0;i<tags.size();i++){
             TagSequence ts = (TagSequence)tags.get(i);
-            tagListModel.addElement(((edu.mit.wi.tagger.SNP)ts.getTagSequence()).getName());
+            tagListModel.addElement(ts.getName());
         }
 
         tagList = new JList(tagListModel);

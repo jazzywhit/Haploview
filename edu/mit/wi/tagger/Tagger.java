@@ -5,6 +5,7 @@ import java.io.*;
 
 public class Tagger {
     public static final double DEFAULT_RSQ_CUTOFF = 0.8;
+    public static final double DEFAULT_LOD_CUTOFF = 3.0;
 
     //todo: SNPS?? should this be named (and store) variantseqs?
     //vector of SNP objects, which contains every SNP (tags and non-tags)
@@ -139,7 +140,11 @@ public class Tagger {
 
     }
 
-    public double getPairwiseComp(VariantSequence a, VariantSequence b) {
+    public double getPairwiseCompRsq(VariantSequence a, VariantSequence b){
+        return getPairwiseComp(a,b).getRsq();
+    }
+
+    public LocusCorrelation getPairwiseComp(VariantSequence a, VariantSequence b) {
         return alleleCorrelator.getCorrelation(a,b);
     }
 
@@ -164,7 +169,7 @@ public class Tagger {
             if(!(forceExclude.contains(currentVarSeq) ) ){//|| (currentVarSeq instanceof SNP && ((SNP)currentVarSeq).getMAF() < .05))) {
                 PotentialTag tempPT = new PotentialTag(currentVarSeq);
                 for(int j=0;j<snps.size();j++) {
-                    if( getPairwiseComp(currentVarSeq,(VariantSequence) snps.get(j)) >= minRSquared) {
+                    if( getPairwiseCompRsq(currentVarSeq,(VariantSequence) snps.get(j)) >= minRSquared) {
                         tempPT.addTagged((VariantSequence) snps.get(j));
                     }
                 }
@@ -233,30 +238,129 @@ public class Tagger {
 
         System.out.println("tagged " + countTagged + " SNPS using " + tags.size() +" tags" );
         System.out.println("# of SNPs that could not be tagged: " + untagged.size());
-        for (Iterator iterator = snps.iterator(); iterator.hasNext();) {
-            SNP snp = (SNP) iterator.next();
-            TagSequence bt = snp.getBestTag();
-            if(bt == null) {
-                //this snp is untagged
-            } else {
-                SNP bestTag = ((SNP)(bt).sequence);
-                //this pc object shouldn't be null unless snp is the same object as bestTag
-                //(the snp tags itself)
-                //PairwiseComparison pc = getPairwiseComp(bestTag,snp);
-                if(snp == bestTag) {
-                    //System.out.println("same tizag");
-                } else {
-                    //double bestRsq = pc.getRSquared();
-                    //System.out.println("SNP " + snp.getName() + " best tag: " + bestTag.getName() + "\trsq: " + bestRsq);
+
+        //peelback starting with the worst tag (i.e. the one that tags the fewest other snps.
+        Vector tags2BPeeled = (Vector)tags.clone();
+        Collections.reverse(tags2BPeeled);
+        peelBack(tags2BPeeled);
+
+        return new Vector(tags);
+    }
+
+    private void peelBack(Vector tagsToBePeeled){
+        Hashtable tagsBySeq = new Hashtable();
+        HashSet snpsInBlockTags = new HashSet();
+        for (int i = 0; i < tagsToBePeeled.size(); i++){
+            tagsBySeq.put(((TagSequence)tagsToBePeeled.get(i)).getSequence(), tagsToBePeeled.get(i));
+        }
+        for (int i = 0; i < tagsToBePeeled.size(); i++){
+            TagSequence curTag = (TagSequence) tagsToBePeeled.get(i);
+            if (forceInclude.contains(curTag.getSequence()) ||
+                    snpsInBlockTags.contains(curTag.getSequence())){
+                continue;
+            }
+            Vector taggedByCurTag = curTag.getTagged();
+
+            //a hashset that contains all snps tagged by curtag
+            //and all tag snps in LD with any of them
+            HashSet comprehensiveBlock = new HashSet();
+            Vector availTagSNPs = new Vector();
+            for (int j = 0; j < tags.size(); j++){
+                availTagSNPs.add(((TagSequence)tags.get(j)).getSequence());
+            }
+            availTagSNPs.remove(curTag.getSequence());
+            for (int j = 0; j < taggedByCurTag.size(); j++) {
+                SNP snp = (SNP) taggedByCurTag.elementAt(j);
+                comprehensiveBlock.add(snp);
+                HashSet victor = snp.getLDList();
+                victor.retainAll(availTagSNPs);
+                comprehensiveBlock.addAll(victor);
+            }
+            alleleCorrelator.phaseAndCache(comprehensiveBlock);
+
+            Hashtable bestPredictor = new Hashtable();
+            boolean peelSuccessful = true;
+            for (int k = 0; k < taggedByCurTag.size(); k++){
+                //look to see if we can find a predictor for each thing curTag tags
+                SNP thisTaggable = (SNP) taggedByCurTag.get(k);
+                Vector victor = (Vector) tags.clone();
+                victor.remove(curTag);
+                Vector potentialTests = generateTests(thisTaggable, victor);
+                for (int j = 0; j < potentialTests.size(); j++){
+                    LocusCorrelation lc = getPairwiseComp((VariantSequence)potentialTests.get(j),
+                            thisTaggable);
+                    if (lc.getRsq() >= minRSquared){
+                        if (bestPredictor.containsKey(thisTaggable)){
+                            if (lc.getRsq() >
+                                    ((LocusCorrelation)bestPredictor.get(thisTaggable)).getRsq()){
+                                bestPredictor.put(thisTaggable,lc);
+                            }
+                        }else{
+                            bestPredictor.put(thisTaggable,lc);
+                        }
+                    }
+                }
+                if (thisTaggable.getTags().size() == 1 && !bestPredictor.containsKey(thisTaggable)){
+                    peelSuccessful = false;
+                    break;
+                }
+            }
+            if (peelSuccessful){
+                for (int k = 0; k < taggedByCurTag.size(); k++){
+                    SNP thisTaggable = (SNP) taggedByCurTag.get(k);
+                    if (bestPredictor.containsKey(thisTaggable)){
+                        Allele bpAllele = ((LocusCorrelation)bestPredictor.get(thisTaggable)).getAllele();
+                        snpsInBlockTags.addAll(((Block)bpAllele.getLocus()).getSnps());
+                        if (tagsBySeq.containsKey(bpAllele)){
+                            thisTaggable.addTag((TagSequence)tagsBySeq.get(bpAllele));
+                        }else{
+                            TagSequence ts = new TagSequence(bpAllele);
+                            ts.addTagged(thisTaggable);
+                            tags.add(ts);
+                            tagsBySeq.put(bpAllele,ts);
+                        }
+                    }
+                    thisTaggable.removeTag(curTag);
+                }
+                tags.remove(curTag);
+            }
+        }
+    }
+
+    private Vector generateTests(SNP s, Vector availTags){
+        //returns all duples and triples from availTags which are in LD
+        //with SNP s, and with each other
+        HashSet tagsInLD = new HashSet(s.getLDList());
+        Vector availTagSNPs = new Vector();
+        for (int i = 0; i < availTags.size(); i++){
+            availTagSNPs.add(((TagSequence)availTags.get(i)).getSequence());
+        }
+        tagsInLD.retainAll(availTagSNPs);
+        HashSet tests = new HashSet();
+        Iterator lditr = tagsInLD.iterator();
+        while (lditr.hasNext()){
+            SNP curTag = (SNP) lditr.next();
+            HashSet hs = new HashSet(curTag.getLDList());
+            hs.retainAll(tagsInLD);
+            Vector victor = new Vector(hs);
+            for (int i = 0; i < victor.size(); i++) {
+                Vector block = new Vector();
+                block.add(curTag);
+                block.add(victor.get(i));
+                tests.add(new Block(block));
+                for(int j=i+1;j<victor.size();j++) {
+                    //make sure these two snps are in LD with each other
+                    if (((SNP)victor.get(i)).getLDList().contains(victor.get(j))){
+                        Vector block2 = (Vector) block.clone();
+                        block2.add(victor.get(j));
+                        tests.add(new Block(block2));
+                    }
                 }
             }
 
-            /*if(snp.tags.size() > 1) {
-                System.out.println("snp " + snp.getName() + " is tagged by " + snp.tags.size() + " tags");
-            } */
         }
 
-        return new Vector(tags);
+        return new Vector(tests);
     }
 
     private Vector addTag(PotentialTag theTag,Hashtable potentialTagHash, Vector sitesToCapture) {
@@ -336,7 +440,6 @@ public class Tagger {
 
     }
 
-
     public void setExclude(Vector e) {
         if(e != null) {
             forceExclude = (Vector) e.clone();
@@ -361,11 +464,9 @@ public class Tagger {
         return tags;
     }
 
-
     public Vector getForceInclude() {
         return forceInclude;
     }
-
 
     public void saveResultToFile(File outFile) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
@@ -380,8 +481,8 @@ public class Tagger {
             SNP snp = (SNP) snps.elementAt(i);
             line.append(snp.getName()).append("\t");
             TagSequence theTag = snp.getBestTag();
-            line.append(theTag.getTagSequence().getName()).append("\t");
-            line.append(getPairwiseComp(snp,theTag.sequence)).append("\t");
+            line.append(theTag.getName()).append("\t");
+            line.append(getPairwiseCompRsq(snp,theTag.getSequence())).append("\t");
             bw.write(line.toString());
             bw.newLine();
         }
@@ -393,7 +494,7 @@ public class Tagger {
         for(int i=0;i<tags.size();i++) {
             StringBuffer line = new StringBuffer();
             TagSequence theTag = (TagSequence) tags.get(i);
-            line.append(theTag.getTagSequence().getName()).append("\t");
+            line.append(theTag.getName()).append("\t");
             Vector tagged = theTag.getBestTagged();
             for (int j = 0; j < tagged.size(); j++) {
                 VariantSequence varSeq = (VariantSequence) tagged.elementAt(j);
@@ -409,9 +510,6 @@ public class Tagger {
         bw.close();
     }
 
-
-
-
     public static void main(String[] args) {
 
         if(args.length == 2) {
@@ -423,7 +521,6 @@ public class Tagger {
             System.err.println("Yarr, I needs me two parameters!");
         }
     }
-
 
     class PotentialTagComparator implements Comparator {
         public int compare(Object o1, Object o2) {
@@ -439,18 +536,17 @@ public class Tagger {
         }
 
         public int compare(Object o1, Object o2) {
-            if(getPairwiseComp(((TagSequence)o1).sequence,seq) == getPairwiseComp(((TagSequence)o2).sequence,seq)) {
+            if(getPairwiseCompRsq(seq,((TagSequence)o1).getSequence()) ==
+                    getPairwiseCompRsq(seq,((TagSequence)o2).getSequence())) {
                 return 0;
-            } else if (getPairwiseComp(((TagSequence)o1).sequence,seq) > getPairwiseComp(((TagSequence)o2).sequence,seq)) {
+            } else if (getPairwiseCompRsq(seq,((TagSequence)o1).getSequence()) >
+                    getPairwiseCompRsq(seq,((TagSequence)o2).getSequence())) {
                 return 1;
             } else {
                 return -1;
             }
         }
     }
-
-
-
 
     boolean debug = true;
 

@@ -4,12 +4,20 @@ import java.util.Vector;
 
 
 public class TagSequence implements Tag {
-    VariantSequence sequence;
-    Vector tagged;
+    private Allele allele;
+    private Vector tagged;
+    private VariantSequence sequence;
 
-    public TagSequence(VariantSequence s) {
-        sequence = s;
+    public TagSequence(Allele a) {
+        allele = a;
+        sequence = a.getLocus();
         tagged = new Vector();
+    }
+
+    public TagSequence(VariantSequence snp){
+        tagged = new Vector();
+        sequence = snp;
+        allele = null;
     }
 
     public void addTagged(Taggable t) {
@@ -21,8 +29,20 @@ public class TagSequence implements Tag {
         return tagged;
     }
 
-    public VariantSequence getTagSequence() {
+    public Allele getAllele() {
+        return allele;
+    }
+
+    public VariantSequence getSequence(){
         return sequence;
+    }
+
+    public String getName(){
+        if (allele == null){
+            return sequence.getName();
+        }else{
+            return sequence.getName() + " : " + allele.getGenotypeString();
+        }
     }
 
     public Vector getBestTagged() {
@@ -36,7 +56,6 @@ public class TagSequence implements Tag {
         }
         return result;
     }
-
 
     //TODO: should isTagged check if Taggable t is a subsequence of something that is tagged?
     public boolean isTagged(Taggable t) {

@@ -938,9 +938,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 tdtPanel.refreshNames();
             }
 
-            if (taggerConfigPanel != null){
-                taggerConfigPanel.refreshTable();
-            }
             if (dPrimeDisplay != null){
                 dPrimeDisplay.computePreferredSize();
             }
@@ -1221,6 +1218,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     public static void main(String[] args) {
         //set defaults
         Options.setTaggerRsqCutoff(Tagger.DEFAULT_RSQ_CUTOFF);
+        Options.setTaggerLODCutoff(Tagger.DEFAULT_LOD_CUTOFF);
         Options.setMissingThreshold(0.5);
         Options.setSpacingThreshold(0.0);
         Options.setAssocTest(ASSOC_NONE);
