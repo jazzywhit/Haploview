@@ -114,7 +114,7 @@ public class HaploText implements Constants{
                         "-d                            outputs dprime to <inputfile>.DPRIME\n" +
                         "-c                            outputs marker checks to <inputfile>.CHECK\n" +
                         "                              note: -d  and -c default to no blocks output. use -o to also output blocks\n" +
-                        "-o <GAB,GAM,SPI,ALL>          output type. Gabriel, 4 gamete, spine output or all 3. default is SFS.\n" +
+                        "-o <GAB,GAM,SPI,ALL>          output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
                         "-m <distance>                 maximum comparison distance in kilobases (integer). default is 500");
 
                 System.exit(0);
@@ -268,7 +268,9 @@ public class HaploText implements Constants{
 
         //mess with vars, set defaults, etc
 
-        if( outputType == -1 && ( !pedFileName.equals("") || !hapsFileName.equals("") || !batchMode.equals("")) && !outputDprime && !outputCheck) {
+        if( outputType == -1 && ( !pedFileName.equals("") ||
+                !hapsFileName.equals("") || !batchMode.equals("") || !hapmapFileName.equals(""))
+                && !outputDprime && !outputCheck) {
             outputType = BLOX_GABRIEL;
             if(nogui && !quietMode) {
                 System.out.println("No output type specified. Default of SFS will be used");
