@@ -119,10 +119,10 @@ public class HaploText implements Constants{
                 System.out.println(HELP_OUTPUT);
                 System.exit(0);
             }
-            else if(args[i].equals("-n") || args[i].equals("-nogui")) {
+            else if(args[i].equalsIgnoreCase("-n") || args[i].equalsIgnoreCase("-nogui")) {
                 nogui = true;
             }
-            else if(args[i].equals("-p") || args[i].equals("-pedfile")) {
+            else if(args[i].equalsIgnoreCase("-p") || args[i].equalsIgnoreCase("-pedfile")) {
                 i++;
                 if( i>=args.length || (args[i].charAt(0) == '-')){
                     System.out.println(args[i-1] + " requires a filename");
@@ -135,7 +135,7 @@ public class HaploText implements Constants{
                     pedFileName = args[i];
                 }
             }
-            else if (args[i].equals("-skipcheck") || args[i].equals("--skipcheck")){
+            else if (args[i].equalsIgnoreCase("-skipcheck") || args[i].equalsIgnoreCase("--skipcheck")){
                 skipCheck = true;
             }
             else if (args[i].equalsIgnoreCase("-excludeMarkers")){
@@ -170,7 +170,7 @@ public class HaploText implements Constants{
                     }
                 }
             }
-            else if(args[i].equals("-ha") || args[i].equals("-l") || args[i].equals("-haps")) {
+            else if(args[i].equalsIgnoreCase("-ha") || args[i].equalsIgnoreCase("-l") || args[i].equalsIgnoreCase("-haps")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
                     System.out.println(args[i-1] + " requires a filename");
@@ -183,7 +183,7 @@ public class HaploText implements Constants{
                     hapsFileName = args[i];
                 }
             }
-            else if(args[i].equals("-i") || args[i].equals("-info")) {
+            else if(args[i].equalsIgnoreCase("-i") || args[i].equalsIgnoreCase("-info")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
                     System.out.println(args[i-1] + " requires a filename");
@@ -195,7 +195,7 @@ public class HaploText implements Constants{
                     }
                     infoFileName = args[i];
                 }
-            } else if (args[i].equals("-a") || args[i].equals("-hapmap")){
+            } else if (args[i].equalsIgnoreCase("-a") || args[i].equalsIgnoreCase("-hapmap")){
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
                     System.out.println(args[i-1] + " requires a filename");
@@ -208,7 +208,7 @@ public class HaploText implements Constants{
                     hapmapFileName = args[i];
                 }
             }
-            else if(args[i].equals("-k") || args[i].equals("-blocks")) {
+            else if(args[i].equalsIgnoreCase("-k") || args[i].equalsIgnoreCase("-blocks")) {
                 i++;
                 if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
                     blockFileName = args[i];
@@ -224,7 +224,7 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-smallpng") || args[i].equalsIgnoreCase("-compressedPNG")){
                 outputCompressedPNG = true;
             }
-            else if (args[i].equals("-track")){
+            else if (args[i].equalsIgnoreCase("-track")){
                 i++;
                 if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
                    trackFileName = args[i];
@@ -233,7 +233,7 @@ public class HaploText implements Constants{
                     System.exit(1);
                 }
             }
-            else if(args[i].equals("-o") || args[i].equals("-output") || args[i].equalsIgnoreCase("-blockoutput")) {
+            else if(args[i].equalsIgnoreCase("-o") || args[i].equalsIgnoreCase("-output") || args[i].equalsIgnoreCase("-blockoutput")) {
                 i++;
                 if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
                     if(blockOutputType != -1){
@@ -259,13 +259,13 @@ public class HaploText implements Constants{
                     i--;
                 }
             }
-            else if(args[i].equals("-d") || args[i].equals("--dprime") || args[i].equals("-dprime")) {
+            else if(args[i].equalsIgnoreCase("-d") || args[i].equalsIgnoreCase("--dprime") || args[i].equalsIgnoreCase("-dprime")) {
                 outputDprime = true;
             }
-            else if (args[i].equals("-c") || args[i].equals("-check")){
+            else if (args[i].equalsIgnoreCase("-c") || args[i].equalsIgnoreCase("-check")){
                 outputCheck = true;
             }
-            else if(args[i].equals("-m") || args[i].equals("-maxdistance")) {
+            else if(args[i].equalsIgnoreCase("-m") || args[i].equalsIgnoreCase("-maxdistance")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
                     System.out.println(args[i-1] + " requires an integer argument");
@@ -288,7 +288,7 @@ public class HaploText implements Constants{
                     }
                 }
             }
-            else if(args[i].equals("-b") || args[i].equals("-batch")) {
+            else if(args[i].equalsIgnoreCase("-b") || args[i].equalsIgnoreCase("-batch")) {
                 //batch mode
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
@@ -302,11 +302,11 @@ public class HaploText implements Constants{
                     batchFileName = args[i];
                 }
             }
-            else if(args[i].equals("-hapthresh")) {
+            else if(args[i].equalsIgnoreCase("-hapthresh")) {
                 i++;
                 hapThresh = getDoubleArg(args,i,"-hapthresh",0,1);
             }
-            else if(args[i].equals("-spacing")) {
+            else if(args[i].equalsIgnoreCase("-spacing")) {
                 i++;
                 spacingThresh = getDoubleArg(args,i,"-spacing",0,1);
             }
@@ -322,7 +322,7 @@ public class HaploText implements Constants{
                i++;
                 hwCutoff = getDoubleArg(args,i,"-hwcutoff",0,1);
             }
-            else if(args[i].equals("-maxMendel") ) {
+            else if(args[i].equalsIgnoreCase("-maxMendel") ) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
                     System.out.println("-maxMendel requires an integer argument");
@@ -379,7 +379,7 @@ public class HaploText implements Constants{
             }
 
 
-            else if(args[i].equals("-q") || args[i].equals("-quiet")) {
+            else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
             }
             else {
@@ -517,13 +517,13 @@ public class HaploText implements Constants{
 
                     if(dataFile.exists()) {
                         String name = dataFile.getName();
-                        if( name.substring(name.length()-4,name.length()).equals(".ped") ) {
+                        if( name.substring(name.length()-4,name.length()).equalsIgnoreCase(".ped") ) {
                             processFile(name,PED,infoMaybe);
                         }
-                        else if(name.substring(name.length()-5,name.length()).equals(".haps")) {
+                        else if(name.substring(name.length()-5,name.length()).equalsIgnoreCase(".haps")) {
                             processFile(name,HAPS,infoMaybe);
                         }
-                        else if(name.substring(name.length()-4,name.length()).equals(".hmp")){
+                        else if(name.substring(name.length()-4,name.length()).equalsIgnoreCase(".hmp")){
                             processFile(name,HMP,"");
                         }
                         else{
