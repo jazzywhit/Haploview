@@ -977,7 +977,7 @@ public class HaploData implements Constants{
                     }
                 }
             }
-            if (noDivByZero){
+            if (noDivByZero && multidprime <= 1.00){
                 multidprimeArray[gap] = multidprime;
             }else{
                 multidprimeArray[gap] = 1.00;
@@ -991,6 +991,7 @@ public class HaploData implements Constants{
             //first clear the tags for this block
             haplos[i][0].clearTags();
 
+
             //next pick the tagSNPs
             Vector theBestSubset = getBestSubset(haplos[i]);
             for (int j = 0; j < theBestSubset.size(); j++){
@@ -1000,7 +1001,6 @@ public class HaploData implements Constants{
             for (int k = 1; k < haplos[i].length; k++){
                 //so the tags should be a property of the block, but there's no object to represent it right now
                 //so we just make sure we copy the tags into all the haps in this block...sorry, I suck.
-                haplos[i][k].clearTags();
                 haplos[i][k].setTags(haplos[i][0].getTags());
             }
         }

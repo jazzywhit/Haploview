@@ -623,6 +623,7 @@ public class HaploText implements Constants{
             if(outputType != -1){
                 textData.generateDPrimeTable();
                 Haplotype[][] haplos;
+                Haplotype[][] filtHaplos;
                 switch(outputType){
                     case BLOX_GABRIEL:
                         OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
@@ -650,23 +651,27 @@ public class HaploText implements Constants{
                     OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    textData.pickTags(haplos);
-                    textData.saveHapsToText(haplos, textData.computeMultiDprime(haplos), OutputFile);
+                    filtHaplos = filterHaplos(haplos);
+                    textData.pickTags(filtHaplos);
+                    textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
                     OutputFile = validateOutputFile(fileName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    textData.pickTags(haplos);
-                    textData.saveHapsToText(haplos, textData.computeMultiDprime(haplos), OutputFile);
+                    filtHaplos = filterHaplos(haplos);
+                    textData.pickTags(filtHaplos);
+                    textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);;
                     OutputFile = validateOutputFile(fileName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    textData.pickTags(haplos);
-                    textData.saveHapsToText(haplos, textData.computeMultiDprime(haplos), OutputFile);
+                    filtHaplos = filterHaplos(haplos);
+                    textData.pickTags(filtHaplos);
+                    textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
                 }else{
                     textData.guessBlocks(outputType, cust);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    textData.pickTags(haplos);
-                    textData.saveHapsToText(haplos, textData.computeMultiDprime(haplos), OutputFile);
+                    filtHaplos = filterHaplos(haplos);
+                    textData.pickTags(filtHaplos);
+                    textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
                 }
 
                 //todo: should this output hap assoc for each block type if they do more than one?
@@ -723,4 +728,23 @@ public class HaploText implements Constants{
             System.err.println(pfe.getMessage());
         }
     }
+
+    public Haplotype[][] filterHaplos(Haplotype[][] haplos) {
+        Haplotype[][] filteredHaplos = new Haplotype[haplos.length][];
+        for (int i = 0; i < haplos.length; i++){
+            Vector tempVector = new Vector();
+            for (int j = 0; j < haplos[i].length; j++){
+                if (haplos[i][j].getPercentage()*100 > Options.getHaplotypeDisplayThreshold()){
+                    tempVector.add(haplos[i][j]);
+                }
+            }
+            filteredHaplos[i] = new Haplotype[tempVector.size()];
+            tempVector.copyInto(filteredHaplos[i]);
+        }
+
+        return filteredHaplos;
+
+    }
+
+
 }
