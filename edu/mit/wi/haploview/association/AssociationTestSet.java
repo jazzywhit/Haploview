@@ -531,6 +531,60 @@ public class AssociationTestSet implements Constants{
         }
     }
 
+    public void saveResultsToText(File outputFile){
+        if(results == null) {
+            return;
+        }
+
+        if(Options.getAssocTest() != ASSOC_TRIO && Options.getAssocTest() != ASSOC_CC) {
+            return;
+        }
+
+        FileWriter fw;
+        try {
+            fw = new FileWriter(outputFile);
+        } catch(IOException ioe) {
+            System.err.println("An error occured while accessing the association output file");
+            return;
+        }
+
+        StringBuffer result = new StringBuffer();
+        if(Options.getAssocTest() == ASSOC_TRIO) {
+            result.append("Test\tAllele\tFreq.\tT:U\tChi Square\tP Value\n");
+        } else if(Options.getAssocTest() == ASSOC_CC) {
+            result.append("Test\tAllele\tFreq.\tCase, Control Ratios\tChi Square\tP Value\n");
+        }
+
+        for (int i = 0; i < results.size(); i++){
+            AssociationResult ar = (AssociationResult) results.elementAt(i);
+            for (int j = 0; j < ar.getAlleleCount(); j++){
+                result.append(ar.getName()).append("\t");
+                if (ar instanceof MarkerAssociationResult){
+                    result.append(((MarkerAssociationResult)ar).getOverTransmittedAllele()).append("\t");
+                    result.append("\t");
+                }else{
+                    result.append(ar.getAlleleName(j)).append("\t");
+                    result.append(ar.getFreq(j)).append("\t");
+                }
+                result.append(ar.getCountString(j)).append("\t");
+                result.append(ar.getChiSquare(j)).append("\t");
+                result.append(ar.getPValue(j)).append("\n");
+
+                if (ar instanceof MarkerAssociationResult){
+                    //only show one line for SNPs instead of one line per allele
+                    break;
+                }
+            }
+        }
+
+        try {
+            fw.write(result.toString().toCharArray());
+            fw.close();
+        } catch(IOException ioe) {
+            System.err.println("An error occured while writing to the association output file.");
+        }
+    }
+
     public void saveHapsToText(File outputFile){
         if(results == null) {
             return;
@@ -573,7 +627,7 @@ public class AssociationTestSet implements Constants{
             fw.write(result.toString().toCharArray());
             fw.close();
         } catch(IOException ioe) {
-            System.err.println("An error occured while writing to the marker association output file.");
+            System.err.println("An error occured while writing to the haplotype association output file.");
         }
     }
 

@@ -1161,7 +1161,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }else if (selectedTab == permutationPanel){
                             permutationPanel.export(outfile);
                         }else if (selectedTab == custAssocPanel){
-                            //todo: implement me!
+                            custAssocPanel.getTestSet().saveResultsToText(outfile);
                         }
                     }
                 }catch(IOException ioe){
