@@ -273,7 +273,7 @@ public class HaploText implements Constants{
                 && !outputDprime && !outputCheck) {
             outputType = BLOX_GABRIEL;
             if(nogui && !quietMode) {
-                System.out.println("No output type specified. Default of SFS will be used");
+                System.out.println("No output type specified. Default of Gabriel will be used");
             }
         }
         if(showCheck && !nogui && !quietMode) {
