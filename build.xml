@@ -67,8 +67,17 @@
   <delete dir="${haploview.build}"/>
 </target>
 
-<target name="main" depends="haploview"/>
-
+<target name="main" depends="init">
+  <echo message="------------------------------------------------------------"/>
+  <echo message="welcome to haploview build file"/>
+  <echo message="Usage: ant [target-name]"/>
+  <echo message="where [target-name] is one of the following targets:"/>
+  <echo message="compile-haploview --> compiles the haploview classes
+  only"/>
+  <echo message="haploview --> makes the executable jar file"/>
+  <echo message="clean --> cleans up after itself removing the build directory"/>
+  <echo message="------------------------------------------------------------"/>
+</target>
 
 
 </project>
