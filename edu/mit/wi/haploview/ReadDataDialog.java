@@ -114,9 +114,11 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 //baseName should be everything but the final ".XXX" extension
                 StringTokenizer st = new StringTokenizer(name,".");
                 String baseName = st.nextToken();
-                for (int i = 0; i < st.countTokens()-1; i++){
+                int numPieces = st.countTokens()-1;
+                for (int i = 0; i < numPieces; i++){
                     baseName = baseName.concat(".").concat(st.nextToken());
                 }
+                System.out.println(baseName);
 
                 //check for info file for original file sample.haps
                 //either sample.haps.info or sample.info
