@@ -38,8 +38,12 @@ public class HaplotypeDisplay extends JComponent {
         // }
     }
 
-    public Image export(Image i){
+    public BufferedImage export(){
         forExport = true;
+
+        Dimension size = getPreferredSize();
+        BufferedImage i = new BufferedImage(size.width, size.height,
+                            BufferedImage.TYPE_3BYTE_BGR);
         paintComponent(i.getGraphics());
         forExport = false;
         return i;
