@@ -6,6 +6,8 @@ import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.util.Vector;
+import java.util.Hashtable;
+import java.util.Enumeration;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
@@ -37,6 +39,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     private final Color BG_GREY = new Color(212,208,200);
 
+    private int currentScheme;
 
     BasicStroke thickerStroke = new BasicStroke(1);
     BasicStroke thinnerStroke = new BasicStroke(0.35f);
@@ -55,7 +58,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private Font markerNameFont = new Font("Default", Font.PLAIN, 12);
     private Font boldMarkerNameFont = new Font("Default", Font.BOLD, 12);
 
-    private boolean printDetails = true;
+    private boolean printDPrimeValues = true;
+    private boolean printMarkerNames = true;
     private boolean forExport = false;
     private int exportStart, exportStop;
     private boolean showWM = false;
@@ -97,8 +101,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     }
 
     public void colorDPrime(int scheme){
-
+        currentScheme = scheme;
         PairwiseLinkage dPrime[][] = theData.filteredDPrimeTable;
+
         if (scheme == STD_SCHEME){
             // set coloring based on LOD and D'
             for (int i = 0; i < dPrime.length; i++){
@@ -175,6 +180,104 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     }
                 }
             }
+        }else if (scheme == WMF_SCHEME){
+            // set coloring based on LOD and D', but without (arbitrary) cutoffs to introduce
+            // "color damage" (Tufte)
+
+            // first get the maximum LOD score so we can scale relative to that.
+
+            double max_l = 0.0;
+
+            for (int i = 0; i < dPrime.length; i++){
+                for (int j = i+1; j < dPrime[i].length; j++){
+                    PairwiseLinkage thisPair = dPrime[i][j];
+                    if (thisPair == null){
+                        continue;
+                    }
+
+                    if (thisPair.getLOD() > max_l) max_l = thisPair.getLOD();
+                }
+            }
+
+            // cap the max LOD score
+            if (max_l > 5.0) max_l = 5.0;
+
+            for (int i = 0; i < dPrime.length; i++){
+                for (int j = i+1; j < dPrime[i].length; j++){
+                    PairwiseLinkage thisPair = dPrime[i][j];
+                    if (thisPair == null){
+                        continue;
+                    }
+
+                    double d = thisPair.getDPrime();
+                    double l = thisPair.getLOD();
+                    Color boxColor = null;
+
+                    double lod_scale = l / max_l;
+
+                    // if greater than the cap, call it the cap
+                    if (lod_scale > 1.0) lod_scale = 1.0;
+
+                    // there can be negative LOD scores, apparently
+                    if (lod_scale < 0.0) lod_scale = 0.0;
+
+                    // also, scale the D' so anything under .2 is white.
+                    d = (1.0 / 0.8) * (d - 0.2);
+                    if (d < 0.0) d = 0.0;
+
+                    // if there is low(er) D' but big LOD score, this should be in a gray scale
+                    // scaled to the D' value
+                    if (lod_scale > d) { lod_scale = d; }
+
+                    int r, g, b;
+
+                    // r = (int)(200.0 * d + 55.0 * lod_scale);
+                    // g = (int)(255.0 * d - 255.0 * lod_scale);
+                    // b = (int)(255.0 * d - 255.0 * lod_scale);
+
+                    double ap, cp, dp, ep, jp, kp;
+
+                    ap = 0.0;
+                    cp = -255.0;
+                    dp = -55.0;
+                    ep = -200.0;
+                    jp = 255.0;
+                    kp = 255.0;
+
+                    r =     (int)(ap * d + cp * lod_scale + jp);
+                    g = b = (int)(dp * d + ep * lod_scale + kp);
+
+                    if (r < 0) r = 0;
+                    if (g < 0) g = 0;
+                    if (b < 0) b = 0;
+
+                    boxColor = new Color(r, g, b);
+
+                    thisPair.setColor(boxColor);
+                }
+            }
+        }else if (scheme == RSQ_SCHEME){
+            // set coloring based on R-squared values
+
+            for (int i = 0; i < dPrime.length; i++){
+                for (int j = i+1; j < dPrime[i].length; j++){
+                    PairwiseLinkage thisPair = dPrime[i][j];
+                    if (thisPair == null){
+                        continue;
+                    }
+
+                    double rsq = thisPair.getRSquared();
+                    Color boxColor = null;
+
+                    int r, g, b;
+
+                    r = g = b = (int)(255.0 * (1.0 - rsq));
+
+                    boxColor = new Color(r, g, b);
+
+                    thisPair.setColor(boxColor);
+                }
+            }
         }
     }
 
@@ -191,9 +294,13 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         int startBS = boxSize;
         int startBR = boxRadius;
-        boolean startPD = printDetails;
+        boolean startPDP = printDPrimeValues;
+        boolean startPMN = printMarkerNames;
+
         if (compress){
-            printDetails = false;
+            printDPrimeValues = false;
+            printMarkerNames = false;
+
             if (boxSize > (1200/(stop - start))){
                 boxSize = 1200/(stop - start);
 
@@ -217,7 +324,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         boxSize = startBS;
         boxRadius = startBR;
-        printDetails = startPD;
+        printDPrimeValues = startPDP;
+        printMarkerNames = startPMN;
         forExport = false;
         return i;
     }
@@ -226,11 +334,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         int diff = type - zoomLevel;
 
         zoomLevel = type;
-        if (zoomLevel == 0){
-            printDetails = true;
-        } else{
-            printDetails = false;
-        }
+
         int x=0, y=0;
         int oldX = getVisibleRect().x;
         int oldY = getVisibleRect().y;
@@ -268,7 +372,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         if (dPrimeTable.length == 0){
             //if there are no valid markers, but info is known we don't want
             //to paint any of that stuff.
-            printDetails = false;
+            printDPrimeValues = false;
+            printMarkerNames = false;
         }
         Vector blocks = theData.blocks;
         Rectangle visRect = getVisibleRect();
@@ -280,6 +385,17 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             showWM = false;
         }
 
+        if (zoomLevel != 0 || currentScheme == WMF_SCHEME || currentScheme == RSQ_SCHEME){
+            printDPrimeValues = false;
+        } else{
+            printDPrimeValues = true;
+        }
+
+        if (zoomLevel == 0){
+            printMarkerNames = true;
+        } else{
+            printMarkerNames = false;
+        }
 
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
@@ -322,6 +438,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         FontMetrics metrics;
         int ascent;
+
         g2.setFont(boldMarkerNameFont);
         metrics = g2.getFontMetrics();
         ascent = metrics.getAscent();
@@ -417,6 +534,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         if (theData.infoKnown) {
+	    Color green = new Color(0, 127, 0);
+
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -430,17 +549,29 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
             for (int i = 0; i < Chromosome.getFilteredSize(); i++){
                 double pos = (Chromosome.getFilteredMarker(i).getPosition() - minpos) / spanpos;
+
                 int xx = (int) (left + lineSpan*pos);
+
+                // if we're zoomed, use the line color to indicate whether there is extra data available
+                // (since the marker names are not displayed when zoomed)
+
+                if (Chromosome.getFilteredMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(green);
+
                 g2.setStroke(thickerStroke);
                 g2.drawLine(xx, top, xx, top + TICK_HEIGHT);
-                g2.setStroke(thinnerStroke);
+
+                if (Chromosome.getFilteredMarker(i).getExtra() != null && zoomLevel != 0) g2.setStroke(thickerStroke);
+                else g2.setStroke(thinnerStroke);
                 g2.drawLine(xx, top + TICK_HEIGHT,
                         left + i*boxSize, top+TICK_BOTTOM);
+
+                if (Chromosome.getFilteredMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(Color.black);
             }
+
             top += TICK_BOTTOM + TICK_HEIGHT;
 
             //// draw the marker names
-            if (printDetails){
+            if (printMarkerNames){
                 widestMarkerName = metrics.stringWidth(Chromosome.getFilteredMarker(0).getName());
                 for (int x = 1; x < dPrimeTable.length; x++) {
                     int thiswide = metrics.stringWidth(Chromosome.getFilteredMarker(x).getName());
@@ -455,7 +586,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     }else{
                         g2.setFont(markerNameFont);
                     }
+                    if (Chromosome.getFilteredMarker(x).getExtra() != null) g2.setColor(green);
                     g2.drawString(Chromosome.getFilteredMarker(x).getName(),TEXT_GAP, x*boxSize + ascent/3);
+                    if (Chromosome.getFilteredMarker(x).getExtra() != null) g2.setColor(Color.black);
                 }
 
                 g2.rotate(Math.PI / 2.0);
@@ -464,13 +597,15 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 // move everybody down
                 top += widestMarkerName + TEXT_GAP;
             }
+
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_OFF);
         }
-        top  += blockDispHeight;
+
+        top += blockDispHeight;
 
         //// draw the marker numbers
-        if (printDetails){
+        if (printMarkerNames){
             g2.setFont(markerNumFont);
             metrics = g2.getFontMetrics();
             ascent = metrics.getAscent();
@@ -481,6 +616,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         left + x*boxSize - metrics.stringWidth(mark)/2,
                         top + ascent);
             }
+
             top += boxRadius/2; // give a little space between numbers and boxes
         }
 
@@ -524,7 +660,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 g2.setColor(boxColor);
                 g2.fillPolygon(diamond);
 
-                if(printDetails){
+                if(printDPrimeValues){
                     g2.setFont(boxFont);
                     ascent = boxFontMetrics.getAscent();
                     int val = (int) (d * 100);
@@ -585,7 +721,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     top-1,
                     left+last*boxSize+boxSize/2,
                     top-blockDispHeight);
-            if (printDetails){
+            if (printMarkerNames){
                 String labelString = new String ("Block " + (i+1));
                 if (theData.infoKnown){
                     long blockSize = Chromosome.getFilteredMarker(last).getPosition() -
@@ -782,10 +918,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         count ++;
 
         Graphics g = this.getGraphics();
+
         if (g != null){
             g.setFont(markerNameFont);
             FontMetrics fm = g.getFontMetrics();
-            if (printDetails){
+            if (printMarkerNames){
                 blockDispHeight = boxSize/3 + fm.getAscent();
             }else{
                 blockDispHeight = boxSize/3;
@@ -898,35 +1035,79 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     (boxY > boxX && boxY < highY) &&
                     !(wmInteriorRect.contains(clickX,clickY))){
                 if (dPrimeTable[boxX][boxY] != null){
+                    double[] freqs = dPrimeTable[boxX][boxY].getFreqs();
+
+                    displayStrings = new String[10];
+
                     if (theData.infoKnown){
-                        displayStrings = new String[6];
                         displayStrings[0] = new String ("(" +Chromosome.getFilteredMarker(boxX).getName() +
                                 ", " + Chromosome.getFilteredMarker(boxY).getName() + ")");
                         int sep = (int)((Chromosome.getFilteredMarker(boxY).getPosition() -
                                 Chromosome.getFilteredMarker(boxX).getPosition())/1000);
                         displayStrings[5] = new Long(sep).toString() + " kb";
                     }else{
-                        displayStrings = new String[5];
                         displayStrings[0] = new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
                                 (Chromosome.realIndex[boxY]+1) + ")");
                     }
                     displayStrings[1] = new String ("D': " + dPrimeTable[boxX][boxY].getDPrime());
                     displayStrings[2] = new String ("LOD: " + dPrimeTable[boxX][boxY].getLOD());
-                    displayStrings[3] = new String ("r^2: " + dPrimeTable[boxX][boxY].getRSquared());
+                    displayStrings[3] = new String ("r-squared: " + dPrimeTable[boxX][boxY].getRSquared());
                     displayStrings[4] = new String ("D' conf. bounds: " +
                             dPrimeTable[boxX][boxY].getConfidenceLow() + "-" +
                             dPrimeTable[boxX][boxY].getConfidenceHigh());
+
+                    //get the alleles for the 4 two-marker haplotypes
+                    String[] alleleStrings = new String[4];
+                    String[] alleleMap = {"", "A","C","G","T"};
+                    if (freqs[0] + freqs[1] > freqs[2] + freqs[3]){
+                        alleleStrings[0] = alleleMap[Chromosome.getFilteredMarker(boxX).getMajor()];
+                        alleleStrings[1] = alleleMap[Chromosome.getFilteredMarker(boxX).getMajor()];
+                        alleleStrings[2] = alleleMap[Chromosome.getFilteredMarker(boxX).getMinor()];
+                        alleleStrings[3] = alleleMap[Chromosome.getFilteredMarker(boxX).getMinor()];
+                    }else{
+                        alleleStrings[0] = alleleMap[Chromosome.getFilteredMarker(boxX).getMinor()];
+                        alleleStrings[1] = alleleMap[Chromosome.getFilteredMarker(boxX).getMinor()];
+                        alleleStrings[2] = alleleMap[Chromosome.getFilteredMarker(boxX).getMajor()];
+                        alleleStrings[3] = alleleMap[Chromosome.getFilteredMarker(boxX).getMajor()];
+                    }
+                    if (freqs[0] + freqs[3] > freqs[1] + freqs[2]){
+                        alleleStrings[0] += alleleMap[Chromosome.getFilteredMarker(boxY).getMajor()];
+                        alleleStrings[1] += alleleMap[Chromosome.getFilteredMarker(boxY).getMinor()];
+                        alleleStrings[2] += alleleMap[Chromosome.getFilteredMarker(boxY).getMinor()];
+                        alleleStrings[3] += alleleMap[Chromosome.getFilteredMarker(boxY).getMajor()];
+                    }else{
+                        alleleStrings[0] += alleleMap[Chromosome.getFilteredMarker(boxY).getMinor()];
+                        alleleStrings[1] += alleleMap[Chromosome.getFilteredMarker(boxY).getMajor()];
+                        alleleStrings[2] += alleleMap[Chromosome.getFilteredMarker(boxY).getMajor()];
+                        alleleStrings[3] += alleleMap[Chromosome.getFilteredMarker(boxY).getMinor()];
+                    }
+
+                    displayStrings[5] = new String("Frequencies:");
+                    displayStrings[6] = new String(alleleStrings[0] + " = " + Math.rint(1000 * freqs[0])/10 + "%");
+                    displayStrings[7] = new String(alleleStrings[1] + " = " + Math.rint(1000 * freqs[1])/10 + "%");
+                    displayStrings[8] = new String(alleleStrings[2] + " = " + Math.rint(1000 * freqs[2])/10 + "%");
+                    displayStrings[9] = new String(alleleStrings[3] + " = " + Math.rint(1000 * freqs[3])/10 + "%");
+
                     popupExists = true;
                 }
             } else if (blockselector.contains(clickX, clickY)){
                 int marker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
-                displayStrings = new String[2];
+                int size = 2;
+
+                if (Chromosome.getFilteredMarker(marker).getExtra() != null) size++;
+
+                displayStrings = new String[size];
+
+                int count = 0;
+
                 if (theData.infoKnown){
-                    displayStrings[0] = new String (Chromosome.getFilteredMarker(marker).getName());
+                    displayStrings[count++] = new String (Chromosome.getFilteredMarker(marker).getName());
                 }else{
-                    displayStrings[0] = new String("Marker " + (Chromosome.realIndex[marker]+1));
+                    displayStrings[count++] = new String("Marker " + (Chromosome.realIndex[marker]+1));
                 }
-                displayStrings[1] = new String ("MAF: " + Chromosome.getFilteredMarker(marker).getMAF());
+                displayStrings[count++] = new String ("MAF: " + Chromosome.getFilteredMarker(marker).getMAF());
+                if (Chromosome.getFilteredMarker(marker).getExtra() != null)
+                    displayStrings[count++] = new String (Chromosome.getFilteredMarker(marker).getExtra());
                 popupExists = true;
             }
             if (popupExists){
@@ -944,8 +1125,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     rightEdgeShift = clickX + strlen + popupLeftMargin + 10 - visRightBound;
                 }
                 int botEdgeShift = 0;
-                if (clickY + 5*metrics.getHeight()+10 > visBotBound){
-                    botEdgeShift = clickY + 5*metrics.getHeight()+15 - visBotBound;
+                if (clickY + displayStrings.length*metrics.getHeight()+10 > visBotBound){
+                    botEdgeShift = clickY + displayStrings.length*metrics.getHeight()+15 - visBotBound;
                 }
                 int smallDataVertSlop = 0;
                 if (getPreferredSize().getWidth() < getVisibleRect().width && theData.infoKnown){
