@@ -20,7 +20,7 @@ public class FindBlocks {
         //first make a list of marker pairs with < 4 gametes, sorted by distance apart
         for (int x = 0; x < Chromosome.getSize()-1; x++){
             for (int y = x+1; y < Chromosome.getSize(); y++){
-                PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
+                PairwiseLinkage thisPair = dPrime.getLDStats(x,y);
                 if (thisPair == null) {
                     continue;
                 }
@@ -66,7 +66,7 @@ public class FindBlocks {
                 //loop over columns in row y
                 for (int x = first; x < y; x++){
 
-                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
+                    PairwiseLinkage thisPair = dPrime.getLDStats(x,y);
                     if(thisPair == null){
                         continue;
                     }
@@ -123,7 +123,7 @@ public class FindBlocks {
         //next make a list of marker pairs in "strong LD", sorted by distance apart
         for (int x = 0; x < Chromosome.getSize()-1; x++){
             for (int y = x+1; y < Chromosome.getSize(); y++){
-                PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
+                PairwiseLinkage thisPair = dPrime.getLDStats(x,y);
                 if (thisPair == null){
                         continue;
                 }
@@ -191,7 +191,7 @@ public class FindBlocks {
                 for (int x = first; x < y; x++){
                     if (skipMarker[x]) continue;
 
-                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
+                    PairwiseLinkage thisPair = dPrime.getLDStats(x,y);
                     if (thisPair == null){
                         continue;
                     }
@@ -263,7 +263,7 @@ public class FindBlocks {
             baddies=0;
             //find how far LD from marker i extends
             for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
-                PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
+                PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                 if (thisPair == null){
                     continue;
                 }
@@ -286,7 +286,7 @@ public class FindBlocks {
             for (int m = verticalExtent; m > i; m--){
                 for (int k = i; k < m; k++){
 
-                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(k,m);
+                    PairwiseLinkage thisPair = dPrime.getLDStats(k,m);
                     if (thisPair == null){
                         continue;
                     }

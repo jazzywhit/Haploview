@@ -724,7 +724,7 @@ public class HaploData implements Constants{
                         if (marker1 > marker2){
                             int tmp = marker1; marker1 = marker2; marker2 = tmp;
                         }
-                        if ( dpTable.getFilteredDPrime(marker1,marker2).getRSquared() == 1.0){
+                        if ( dpTable.getLDStats(marker1,marker2).getRSquared() == 1.0){
                             //these two SNPs are redundant
                             equivClass[y] = classCounter;
                         }
@@ -1659,7 +1659,7 @@ public class HaploData implements Constants{
                     }
                 }
                 if (source == TABLE_TYPE){
-                    currComp = dpTable.getFilteredDPrime(i,j);
+                    currComp = dpTable.getLDStats(i,j);
                 }else{
                     currComp = this.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
                 }
@@ -1675,7 +1675,7 @@ public class HaploData implements Constants{
                                 }
                                 PairwiseLinkage tintPair = null;
                                 if (source == TABLE_TYPE){
-                                    tintPair = dpTable.getFilteredDPrime(i-x,i+y);
+                                    tintPair = dpTable.getLDStats(i-x,i+y);
                                 }else{
                                     tintPair = this.computeDPrime(Chromosome.realIndex[i-x],
                                             Chromosome.realIndex[i+y]);

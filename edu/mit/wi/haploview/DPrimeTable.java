@@ -24,13 +24,7 @@ public class DPrimeTable {
     }
 
 
-    public PairwiseLinkage getDPrime(int pos1, int pos2){
-        //theTable[pos1] is an array of only the n markers which actually get compared to marker pos1,
-        //labelled 0 to n,
-        //while the parameter pos2 is an absolute marker number, so we shift to account for that
-        return theTable[pos1][pos2-pos1-1];
-    }
-    public PairwiseLinkage getFilteredDPrime(int pos1, int pos2){
+    public PairwiseLinkage getLDStats(int pos1, int pos2){
         //as above we need to convert the input of an absolute position into the relative position
         //to index into the DP array. here we jump through the additional hoop of un-filtering the input
         //numbers
