@@ -399,8 +399,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     public void paintComponent(Graphics g){
         DPrimeTable dPrimeTable = theData.dpTable;
-        if (Chromosome.getSize() == 0){
-            //if there are no valid markers
+        if (Chromosome.getSize() < 2){
+            //if there zero or only one valid marker
             return;
         }
         Vector blocks = theData.blocks;

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.35 2004/10/15 17:34:49 jcbarret Exp $
+* $Id: PedFile.java,v 1.36 2004/12/29 16:12:34 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -415,6 +415,9 @@ public class PedFile {
         int colNum = -1;
         boolean withOptionalColumn = false;
         int numLines = pedigrees.size();
+        if (numLines == 0){
+            throw new PedFileException("Data format error: empty file");
+        }
         Individual ind;
 
         this.order = new Vector();
@@ -513,6 +516,9 @@ public class PedFile {
     public void parseHapMap(Vector rawLines) throws PedFileException {
         int colNum = -1;
         int numLines = rawLines.size();
+        if (numLines < 2){
+             throw new PedFileException("Hapmap data format error: empty file");
+        }
         Individual ind;
 
         this.order = new Vector();
