@@ -8,6 +8,7 @@ import edu.mit.wi.haploview.TreeTable.HaplotypeAssociationNode;
 import java.io.*;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import java.util.Arrays;
 import java.awt.image.BufferedImage;
 
 import com.sun.jimi.core.Jimi;
@@ -632,16 +633,22 @@ public class HaploText implements Constants{
                 textData.prepareMarkerInput(infoFile,null);
             }
 
-            //once check has been run we can filter the markers
-            boolean[] markerResults = new boolean[result.size()];
-            for (int i = 0; i < result.size(); i++){
-                if ((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&
-                        Chromosome.getUnfilteredMarker(i).getDupStatus() != 2){
-                    markerResults[i] = true;
-                }else{
-                    markerResults[i] = false;
+            boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
+            if (result != null){
+                //once check has been run we can filter the markers
+                for (int i = 0; i < result.size(); i++){
+                    if ((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&
+                            Chromosome.getUnfilteredMarker(i).getDupStatus() != 2){
+                        markerResults[i] = true;
+                    }else{
+                        markerResults[i] = false;
+                    }
                 }
+            }else{
+                //we haven't done the check (HAPS files)
+                Arrays.fill(markerResults, true);
             }
+
             for (int i = 0; i < excludedMarkers.size(); i++){
                 int cur = ((Integer)excludedMarkers.elementAt(i)).intValue();
                 if (cur < 1 || cur > markerResults.length){
