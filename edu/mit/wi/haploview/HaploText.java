@@ -640,7 +640,8 @@ public class HaploText implements Constants{
                     String s = (String) tempInclude.elementAt(i);
                     sb.append(s).append(",");
                 }
-                System.out.println("The following markers appear in both the include and exclude lists: " + sb.toString());
+                System.out.println("Fatal error: The following markers appear in both the include and exclude lists: " + sb.toString());
+                System.exit(1);
             }
 
             if(tagRSquaredCutOff != -1) {
@@ -832,8 +833,6 @@ public class HaploText implements Constants{
                 }
             }
 
-
-
             textData.setWhiteList(whiteListedCustomMarkers);
 
             boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
@@ -864,6 +863,7 @@ public class HaploText implements Constants{
                     markerResults[cur-1] = false;
                 }
             }
+
 
             for(int i=0;i<Chromosome.getUnfilteredSize();i++) {
                 if(textData.isWhiteListed(Chromosome.getUnfilteredMarker(i))) {
@@ -1084,11 +1084,14 @@ public class HaploText implements Constants{
 
                 Vector snps = Chromosome.getAllMarkers();
                 HashSet names = new HashSet();
-                Hashtable idsByName = new Hashtable();
                 for (int i = 0; i < snps.size(); i++) {
                     SNP snp = (SNP) snps.elementAt(i);
                     names.add(snp.getName());
-                    idsByName.put(snp.getName(),new Integer(i));
+                }
+
+                HashSet filteredNames = new HashSet();
+                for(int i=0;i<Chromosome.getSize();i++) {
+                    filteredNames.add(Chromosome.getMarker(i).getName());
                 }
 
                 Vector sitesToCapture = new Vector();
@@ -1111,6 +1114,8 @@ public class HaploText implements Constants{
                         System.exit(1);
                     }
                 }
+
+                forceExcludeTags.retainAll(filteredNames);
 
                 if(!quietMode) {
                     System.out.println("Starting tagging.");
