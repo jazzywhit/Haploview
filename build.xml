@@ -99,20 +99,6 @@
    </jar>
 </target>
 
-<target name="haploview-release-debug" depends="compile-debug-haploview">
-   <jar jarfile="Haploview.jar">
-     <fileset dir="${haploview.classes}">
-       <include name="edu/mit/wi/**/**"/>
-     </fileset>
-     <manifest>
-       <attribute name="Built-By" value="${user.name}"/>
-       <attribute name="Main-Class" value="edu.mit.wi.haploview.HVWrap"/>
-       <attribute name="Class-Path" value="resources/JimiProClasses.zip"/>
-     </manifest>
-     <zipfileset src="resources/JimiProClasses.zip"/>
-   </jar>
-</target>
-
 <target name="haploview-debug" depends="compile-debug-haploview">
    <jar jarfile="Haploview.jar">
      <fileset dir="${haploview.classes}">
@@ -141,7 +127,6 @@
   <echo message="compile-haploview --> compiles the haploview classes
   only"/>
   <echo message="haploview-release --> makes 'wrapped' jar with auto Xmx and error suppression"/>
-  <echo message="haploview-release-debug --> makes release jar with debug info"/>
   <echo message="haploview --> makes the executable jar file"/>
   <echo message="haploview-debug --> makes jar with debug info" />
   <echo message="clean --> cleans up after itself removing the build directory"/>
