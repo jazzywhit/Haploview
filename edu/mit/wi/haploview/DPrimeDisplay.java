@@ -169,7 +169,6 @@ class DPrimeDisplay extends JComponent{
             g.setFont(markerNumFont);
             metrics = g.getFontMetrics();
             ascent = metrics.getAscent();
-            System.out.println(dPrimeTable.length);
             for (int x = 0; x < dPrimeTable.length; x++) {
                 String mark = String.valueOf(Chromosome.realIndex[x] + 1);
                 g.drawString(mark,

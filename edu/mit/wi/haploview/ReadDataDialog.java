@@ -81,6 +81,9 @@ public class ReadDataDialog extends JDialog implements ActionListener {
             }else if (fileType == PED){
                 caller.readPedGenotypes(returnStrings);
             }
+            if (caller.dPrimeDisplay != null){
+                caller.dPrimeDisplay.setVisible(false);
+            }
             this.dispose();
         }else if (command == "Cancel"){
             this.dispose();
