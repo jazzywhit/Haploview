@@ -4,20 +4,8 @@ import java.util.*;
 import java.awt.Color;
 
 class FindBlocks {
-    PairwiseLinkage[][] dPrime;
-    //Vector markerInfo;
-    double fourGameteCutoff = 0.01;
 
-    FindBlocks(PairwiseLinkage[][] data){
-        dPrime = data;
-    }
-
- /*   FindBlocks(PairwiseLinkage[][] data, Vector info){
-        dPrime=data;
-        markerInfo = info;
-    }*/
-
-    Vector do4Gamete(){
+    static Vector do4Gamete(PairwiseLinkage[][] dPrime, double fourGameteCutoff){
         Vector blocks = new Vector();
         Vector strongPairs = new Vector();
 
@@ -116,7 +104,7 @@ class FindBlocks {
         return stringVec2intVec(blocks);
     }
 
-    Vector doSFS(){
+    static Vector doSFS(PairwiseLinkage[][] dPrime){
         double cutHighCI = 0.98;
         double cutLowCI = 0.70;
         double mafThresh = 0.10;
@@ -278,7 +266,7 @@ class FindBlocks {
         return blocks;
     }
 
-    Vector doMJD(){
+    static Vector  doMJD(PairwiseLinkage[][] dPrime){
         // find blocks by searching for stretches between two markers A,B where
         // D prime is > 0.8 for all informative combinations of A, (A+1...B)
 
@@ -374,11 +362,7 @@ class FindBlocks {
         return stringVec2intVec(blocks);
     }
 
-    //Vector do4Gamete(){
-
-    //}
-
-    Vector stringVec2intVec(Vector inVec){
+    static Vector stringVec2intVec(Vector inVec){
         //instead of strings with starting and ending positions convert blocks
         //to int arrays
 

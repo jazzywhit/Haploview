@@ -824,9 +824,9 @@ public class HaploData{
     void guessBlocks(int method){
         Vector returnVec = new Vector();
         switch(method){
-            case 0: returnVec = new FindBlocks(dPrimeTable).doSFS(); break;
-            case 1: returnVec = new FindBlocks(dPrimeTable).do4Gamete(); break;
-            case 2: returnVec = new FindBlocks(dPrimeTable).doMJD(); break;
+            case 0: returnVec = FindBlocks.doSFS(dPrimeTable); break;
+            case 1: returnVec = FindBlocks.do4Gamete(dPrimeTable,0.01); break;
+            case 2: returnVec = FindBlocks.doMJD(dPrimeTable); break;
         }
         blocks = returnVec;
     }
