@@ -269,6 +269,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     public void paintComponent(Graphics g){
         PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
+        if (dPrimeTable.length == 0){
+            //if there are no valid markers, but info is known we don't want
+            //to paint any of that stuff.
+            printDetails = false;
+        }
         Vector blocks = theData.blocks;
         Rectangle visRect = getVisibleRect();
 
