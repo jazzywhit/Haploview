@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.32 2004/09/30 21:37:17 jmaller Exp $
+* $Id: PedFile.java,v 1.33 2004/10/05 14:54:44 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -481,6 +481,9 @@ public class PedFile {
                     //it doesnt exist, so create a new Family object
                     fam = new Family(ind.getFamilyID());
                 }
+                if (fam.getMember(ind.getIndividualID()) != null){
+                    throw new PedFileException("Individual "+ind.getIndividualID()+" in family "+ ind.getFamilyID()+" appears more than once.");
+                }
                 fam.addMember(ind);
                 this.families.put(ind.getFamilyID(),fam);
 
@@ -710,17 +713,7 @@ public class PedFile {
                     //there are more people in this family so deal with relatives appropriately
                     if (currentInd.hasEitherParent()){
                         //I have parents, so kick out any of my kids.
-                        Enumeration peopleinFam = currentFamily.getMemberList();
-                        while (peopleinFam.hasMoreElements()){
-                            Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
-                            if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
-                                    nextMember.getMomID().equals(currentInd.getIndividualID())){
-                                order.removeElement(nextMember);
-                                nextMember.setReasonImAxed("Parent " + currentInd.getIndividualID() + " missing data.");
-                                axedPeople.add(nextMember);
-                                currentFamily.removeMember(nextMember.getIndividualID());
-                            }
-                        }
+                        removeDescendants(currentFamily,currentInd.getIndividualID());
                     }else{
                         //I have no parents but need to check if my spouse does
                         String spouseID = "";
@@ -735,17 +728,7 @@ public class PedFile {
                         if (!spouseID.equals("")){
                             if (currentFamily.getMember(spouseID).hasEitherParent()){
                                 //remove my kids and leave my spouse alone
-                               peopleinFam = currentFamily.getMemberList();
-                                while (peopleinFam.hasMoreElements()){
-                                    Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
-                                    if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
-                                            nextMember.getMomID().equals(currentInd.getIndividualID())){
-                                        order.removeElement(nextMember);
-                                        nextMember.setReasonImAxed("Parent " + currentInd.getIndividualID() + " missing data.");
-                                        axedPeople.add(nextMember);
-                                        currentFamily.removeMember(nextMember.getIndividualID());
-                                    }
-                                }
+                                removeDescendants(currentFamily,currentInd.getIndividualID());
                             }else{
                                 //knock off my spouse and make my first kid a founder (i.e. "0" for parents)
                                 //and remove any other kids
@@ -756,26 +739,21 @@ public class PedFile {
                                 currentFamily.removeMember(spouseID);
                                 peopleinFam = currentFamily.getMemberList();
                                 boolean oneFound = false;
-                                while (peopleinFam.hasMoreElements()){
+                                while (peopleinFam.hasMoreElements() && !oneFound){
                                     Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
                                     if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
                                             nextMember.getMomID().equals(currentInd.getIndividualID())){
-                                        if (oneFound){
-                                            order.removeElement(nextMember);
-                                            nextMember.setReasonImAxed("Parent " + currentInd.getIndividualID() + " missing data.");                                                                                    
-                                            axedPeople.add(nextMember);
-                                            currentFamily.removeMember(nextMember.getIndividualID());
-                                        }else{
                                             nextMember.setDadID("0");
                                             nextMember.setMomID("0");
                                             oneFound = true;
-                                        }
                                     }
                                 }
+                                removeDescendants(currentFamily,currentInd.getIndividualID());
                             }
                         }
                     }
                 }
+
                 currentFamily.removeMember(currentInd.getIndividualID());
                 if (currentFamily.getNumMembers() == 0){
                     //if everyone in a family is gone, we remove it from the list
@@ -802,11 +780,6 @@ public class PedFile {
 
         CheckData cd = new CheckData(this);
         Vector results = cd.check();
-        /*int size = results.size();
-        for (int i = 0; i < size; i++) {
-        MarkerResult markerResult = (MarkerResult) results.elementAt(i);
-        System.out.println(markerResult.toString());
-        }*/
         this.results = results;
         return results;
     }
@@ -819,6 +792,24 @@ public class PedFile {
         return results;
     }
 
+    private void removeDescendants(Family f, String indID)throws PedFileException{
+        Vector peopleRemovedThisLoop = new Vector();
+        Enumeration peopleinFam = f.getMemberList();
+        while (peopleinFam.hasMoreElements()){
+            Individual nextMember = f.getMember((String)peopleinFam.nextElement());
+            if (nextMember.getDadID().equals(indID) ||
+                    nextMember.getMomID().equals(indID)){
+                order.removeElement(nextMember);
+                nextMember.setReasonImAxed("Ancestor " +indID + " missing data.");
+                axedPeople.add(nextMember);
+                f.removeMember(nextMember.getIndividualID());
+                peopleRemovedThisLoop.add(nextMember.getIndividualID());
+            }
+        }
+        for (int i = 0; i < peopleRemovedThisLoop.size(); i++){
+            removeDescendants(f, (String)peopleRemovedThisLoop.elementAt(i));
+        }
+    }
 
     public Vector getAxedPeople() {
         return axedPeople;
