@@ -398,6 +398,7 @@ public class EM {
                         } else {
                             //printf("error - attempting to flip missing !=0\n");
                         }
+//TODO: deal with problem here when certain indivs have boatloads of missing data
                         data[num_indivs].poss[num_poss+j].h1=h1;
                         data[num_indivs].poss[num_poss+j].h2=h2;
                         data[num_indivs].poss[num_poss+j].p=0.0f;

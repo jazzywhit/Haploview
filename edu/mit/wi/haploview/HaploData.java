@@ -33,6 +33,7 @@ public class HaploData implements Constants{
     public boolean finished = false;
     private double[] percentBadGenotypes;
     private double[] multidprimeArray;
+    private long maxdist, negMaxdist;
 
     //stuff for computing d prime
     private int AA = 0;
@@ -90,7 +91,7 @@ public class HaploData implements Constants{
         return this.pedFile;
     }
 
-    void prepareMarkerInput(File infile, long maxdist, String[][] hapmapGoodies) throws IOException, HaploViewException{
+    void prepareMarkerInput(File infile, long md, String[][] hapmapGoodies) throws IOException, HaploViewException{
         //this method is called to gather data about the markers used.
         //It is assumed that the input file is two columns, the first being
         //the name and the second the absolute position. the maxdist is
@@ -100,6 +101,8 @@ public class HaploData implements Constants{
 
         Vector names = new Vector();
         Vector positions = new Vector();
+        maxdist = md;
+        negMaxdist = -1 * maxdist;
         try{
             if (infile != null){
                 if (infile.length() < 1){
@@ -107,7 +110,6 @@ public class HaploData implements Constants{
                 }
 
                 String currentLine;
-                long negMaxdist = -1 * maxdist;
                 long prevloc = -1000000000;
 
                 //read the input file:
@@ -567,11 +569,10 @@ public class HaploData implements Constants{
         return result;
     }
 
-    void generateDPrimeTable(long maxdist){
+    void generateDPrimeTable(){
         //calculating D prime requires the number of each possible 2 marker
         //haplotype in the dataset
         dPrimeTable = new PairwiseLinkage[Chromosome.getSize()][Chromosome.getSize()];
-        long negMaxdist = -1*maxdist;
 
         totalComps = (Chromosome.getSize()*(Chromosome.getSize()-1))/2;
         compsDone =0;
@@ -579,16 +580,6 @@ public class HaploData implements Constants{
         //loop through all marker pairs
         for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
             for (int pos1 = 0; pos1 < pos2; pos1++){
-
-                //clear the array
-                long sep = Chromosome.getMarker(pos2).getPosition() - Chromosome.getMarker(pos1).getPosition();
-                if (maxdist > 0){
-                    if ((sep > maxdist || sep < negMaxdist)){
-                        dPrimeTable[pos1][pos2] = null;
-                        continue;
-                    }
-                }
-
                 dPrimeTable[pos1][pos2] = computeDPrime(pos1, pos2);
             }
         }
@@ -1125,6 +1116,13 @@ public class HaploData implements Constants{
     }
 
     public PairwiseLinkage computeDPrime(int pos1, int pos2){
+        long sep = Chromosome.getMarker(pos2).getPosition() - Chromosome.getMarker(pos1).getPosition();
+        if (maxdist > 0){
+            if ((sep > maxdist || sep < negMaxdist)){
+                return null;
+            }
+        }
+
         compsDone++;
         int doublehet = 0;
         int[][] twoMarkerHaplos = new int[3][3];
@@ -1156,7 +1154,7 @@ public class HaploData implements Constants{
         //check for non-polymorphic markers
         if (m1a2==0){
             if (m1H==0){
-               System.out.println("Marker " + (pos1+1) + " is monomorphic.");//TODO Make this happier
+               //System.out.println("Marker " + (pos1+1) + " is monomorphic.");//TODO Make this happier
                return null;
             } else {
                 if (m1a1 == 1){ m1a2=2; }

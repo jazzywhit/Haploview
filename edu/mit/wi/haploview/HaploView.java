@@ -467,9 +467,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }
                 readMarkers(markerFile, hminfo);
 
-                theData.generateDPrimeTable(maxCompDist);
-                theData.guessBlocks(BLOX_GABRIEL);
-                //theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
+                theData.generateDPrimeTable();
+                //theData.guessBlocks(BLOX_GABRIEL);
+                theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
                 colorMenuItems[0].setSelected(true);
                 blockMenuItems[0].setSelected(true);
                 zoomMenuItems[0].setSelected(true);

@@ -384,7 +384,6 @@ public class HaploText implements Constants{
         }
 
         processFile(fileName,fileType,this.arg_infoFileName);
-
     }
     /**
      * this
@@ -416,6 +415,7 @@ public class HaploText implements Constants{
             textData = new HaploData();
             Vector result = null;
 
+
             if(fileType == 0){
                 //read in haps file
                 textData.prepareHapsInput(inputFile);
@@ -441,20 +441,17 @@ public class HaploText implements Constants{
                 result = textData.linkageToChrom(inputFile,4,arg_skipCheck);
             }
 
-
-            if(!infoFileName.equals("")) {
-                File infoFile = new File(infoFileName);
-                if(infoFile.exists()) {
-                    textData.prepareMarkerInput(infoFile,maxDistance,null);
-                    if(!arg_quiet){
-                        System.out.println("Using marker file " + infoFile.getName());
-                    }
-                    textData.infoKnown = true;
-                }
-                else if(!this.arg_quiet) {
-                    System.out.println("info file " + infoFileName + " does not exist");
-                }
+            File infoFile;
+            if(infoFileName.equals("")) {
+                infoFile = null;
+            }else{
+                infoFile = new File(infoFileName);
             }
+            textData.prepareMarkerInput(infoFile,maxDistance,textData.getPedFile().getHMInfo());
+            if(!arg_quiet && infoFile != null){
+                System.out.println("Using marker file " + infoFile.getName());
+            }
+            textData.infoKnown = true;
 
 
             if(this.arg_showCheck && result != null) {
@@ -493,7 +490,7 @@ public class HaploText implements Constants{
             }
 
             if(outputType != -1){
-                textData.generateDPrimeTable(maxDistance);
+                textData.generateDPrimeTable();
                 Haplotype[][] haplos;
                 switch(outputType){
                     case BLOX_GABRIEL:

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.10 2004/01/28 21:35:21 jcbarret Exp $
+* $Id: PedFile.java,v 1.11 2004/03/25 17:54:08 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -59,6 +59,7 @@ public class PedFile {
         hapMapTranslate.put("NA07055", "1341 NA07055 0 0 2 1");
         hapMapTranslate.put("NA06991", "1341 NA06991 NA06993 NA06985 2 1" );
         hapMapTranslate.put("NA06993", "1341 NA06993 0 0 1 1");
+        hapMapTranslate.put("NA06993.dup", "dup NA06993.dup 0 0 1 1");
         hapMapTranslate.put("NA06985", "1341 NA06985 0 0 2 1");
         hapMapTranslate.put("NA10851", "1344 NA10851 NA12056 NA12057 1 1" );
         hapMapTranslate.put("NA12056", "1344 NA12056 0 0 1 1");
@@ -87,6 +88,7 @@ public class PedFile {
         hapMapTranslate.put("NA10860", "1362 NA10860 NA11992 NA11993 1 1" );
         hapMapTranslate.put("NA11992", "1362 NA11992 0 0 1 1");
         hapMapTranslate.put("NA11993", "1362 NA11993 0 0 2 1");
+        hapMapTranslate.put("NA11993.dup", "dup NA11993.dup 0 0 2 1");
         hapMapTranslate.put("NA10861", "1362 NA10861 NA11994 NA11995 2 1" );
         hapMapTranslate.put("NA11994", "1362 NA11994 0 0 1 1");
         hapMapTranslate.put("NA11995", "1362 NA11995 0 0 2 1");
@@ -99,11 +101,14 @@ public class PedFile {
         hapMapTranslate.put("NA10831", "1408 NA10831 NA12155 NA12156 2 1" );
         hapMapTranslate.put("NA12155", "1408 NA12155 0 0 1 1");
         hapMapTranslate.put("NA12156", "1408 NA12156 0 0 2 1");
+        hapMapTranslate.put("NA12156.dup", "dup NA12156.dup 0 0 2 1");
         hapMapTranslate.put("NA10835", "1416 NA10835 NA12248 NA12249 1 1" );
         hapMapTranslate.put("NA12248", "1416 NA12248 0 0 1 1");
+        hapMapTranslate.put("NA12248.dup", "dup NA1248.dup 0 0 1 1");
         hapMapTranslate.put("NA12249", "1416 NA12249 0 0 2 1");
         hapMapTranslate.put("NA10838", "1420 NA10838 NA12003 NA12004 1 1" );
         hapMapTranslate.put("NA12003", "1420 NA12003 0 0 1 1");
+        hapMapTranslate.put("NA12003.dup", "dup NA12003.dup 0 0 1 1");
         hapMapTranslate.put("NA12004", "1420 NA12004 0 0 2 1");
         hapMapTranslate.put("NA10839", "1420 NA10839 NA12005 NA12006 2 1" );
         hapMapTranslate.put("NA12005", "1420 NA12005 0 0 1 1");
