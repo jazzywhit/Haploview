@@ -1,0 +1,27 @@
+The three files in this directory represent the most commonly used
+file formats. They can be used to test that the program is running
+correctly once it is built. They are:
+
+----------
+
+sample.ped -- a linkage style pedigree file which contains one
+individual per line with family info plus genotypes.
+
+sample.info -- goes with the above and provides marker name and position
+
+These two are used together by selecting "Load genotypes (linkage
+format)" from the load dialog.
+
+----------
+
+sample.hmp -- a hapmap style file with all indiv and marker
+information. 
+
+This one is loaded all by itself by selecting "Browse HapMap Data from
+the DCC" from the load dialog.
+
+----------
+
+More information on file formats can be found at:
+
+http://www.broad.mit.edu/mpg/haploview/
