@@ -2,6 +2,7 @@ package edu.mit.wi.haploview;
 
 import java.io.*;
 import java.text.*;
+import java.util.*;
 
 class TextMethods {
 
@@ -56,16 +57,33 @@ class TextMethods {
 	saveHapsWriter.close();
     }
 
-    public void saveDprimeToText(String[][] dPrimeTable, File dumpDprimeFile) throws IOException{
+    public void saveDprimeToText(String[][] dPrimeTable, File dumpDprimeFile, boolean info, Vector markerinfo) throws IOException{
 	FileWriter saveDprimeWriter = new FileWriter(dumpDprimeFile);
+	
 
-	saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\n");
+	if (info){
+	    saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tDist\n");
+	    long dist;
+	    
+	    for (int i = 0; i < dPrimeTable.length; i++){
+		for (int j = 0; j < dPrimeTable[i].length; j++){
+		    //many "slots" in table aren't filled in because it is a 1/2 matrix
+		    if (i < j){
+			dist = ((SNP)markerinfo.elementAt(j)).getPosition() - ((SNP)markerinfo.elementAt(i)).getPosition();
+			saveDprimeWriter.write(i + "\t" + j + "\t" + dPrimeTable[i][j] + "\t" + dist + "\n");
+		    }
+		}
+	    }
 
-	for (int i = 0; i < dPrimeTable.length; i++){
-	    for (int j = 0; j < dPrimeTable[i].length; j++){
-		//many "slots" in table aren't filled in because it is a 1/2 matrix
-		if (i < j){
-		    saveDprimeWriter.write(i + "\t" + j + "\t" + dPrimeTable[i][j] + "\n");
+	}else{
+	    saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\n");
+
+	    for (int i = 0; i < dPrimeTable.length; i++){
+		for (int j = 0; j < dPrimeTable[i].length; j++){
+		    //many "slots" in table aren't filled in because it is a 1/2 matrix
+		    if (i < j){
+			saveDprimeWriter.write(i + "\t" + j + "\t" + dPrimeTable[i][j] + "\n");
+		    }
 		}
 	    }
 	}

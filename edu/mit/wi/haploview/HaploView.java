@@ -392,7 +392,7 @@ public class HaploView extends JFrame implements ActionListener{
 	    fc.setSelectedFile(null);
 	    int returnVal = fc.showSaveDialog(this);
 	    if (returnVal == JFileChooser.APPROVE_OPTION) {
-		new TextMethods().saveDprimeToText(theData.dPrimeTable, fc.getSelectedFile());
+		new TextMethods().saveDprimeToText(theData.dPrimeTable, fc.getSelectedFile(), infoKnown, theData.markerInfo);
 	    }
 	}catch (IOException ioexec){
 	    JOptionPane.showMessageDialog(this, 
