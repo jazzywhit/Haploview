@@ -1,28 +1,29 @@
 package edu.mit.wi.haploview;
 
 import java.awt.*;
-import java.awt.image.*;
-import java.awt.font.*;
+//import java.awt.font.*;
 //import java.io.*;
 //import java.text.*;
 import javax.swing.*;
 import java.util.*;
 
 class DPrimeDisplay extends JComponent {
-    BufferedImage  buffIm;
-    boolean alreadyPainted = false;
-
     static final int H_BORDER = 15;
     static final int V_BORDER = 15;
 
-    int BOX_SIZE = 50;
-    int BOX_RADIUS = 24;
-    int TICK_HEIGHT = 8;
-    int TICK_BOTTOM = 50;
+    static final int DEFAULT_BOX_SIZE = 50;
+    static final int DEFAULT_BOX_RADIUS = 24;
+    static final int TICK_HEIGHT = 8;
+    static final int TICK_BOTTOM = 50;
 
     static final int TEXT_NUMBER_GAP = 3;
 
     int widestMarkerName = 80; //default size
+    int boxSize = DEFAULT_BOX_SIZE;
+    int boxRadius = DEFAULT_BOX_RADIUS;
+    boolean printDetails = true;
+    int lowX, highX, lowY, highY;
+    Rectangle viewRect = new Rectangle();
 
     Font boxFont = new Font("SansSerif", Font.PLAIN, 12);
     Font markerNumFont = new Font("SansSerif", Font.BOLD, 12);
@@ -36,77 +37,86 @@ class DPrimeDisplay extends JComponent {
         markersLoaded = b;
         dPrimeTable = t;
         markers = v;
+        this.setDoubleBuffered(true);
     }
 
     public void loadMarkers(Vector v){
         markersLoaded = true;
-        alreadyPainted = false;
         markers = v;
         repaint();
-
     }
 
-    public void paintComponent(Graphics gComponent){
+    public void paintComponent(Graphics g){
+        Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
+        Rectangle clipRect = (Rectangle)g.getClip();
+        //first paint grab the cliprect for the whole viewport
+        if (viewRect.width == 0){viewRect=clipRect;}
 
-        if (!(alreadyPainted)){
-            buffIm = new BufferedImage(pref.width, pref.height, BufferedImage.TYPE_3BYTE_BGR);
-            Graphics g = buffIm.getGraphics();
+        //okay so this dumb if block is to prevent the ugly
+        //repainting bug when loading markers after the data are already
+        //being displayed, results in a little off-centering for small
+        //datasets, but not too bad.
+        if (!(markersLoaded)){
+            g2.translate((size.width - pref.width) / 2,
+                    (size.height - pref.height) / 2);
+        } else {
+            g2.translate((size.width - pref.width) / 2,
+                    0);
+        }
 
-            FontMetrics boxFontMetrics = g.getFontMetrics(boxFont);
+        FontMetrics boxFontMetrics = g.getFontMetrics(boxFont);
 
-            int diamondX[] = new int[4];
-            int diamondY[] = new int[4];
-            Polygon diamond;
+        int diamondX[] = new int[4];
+        int diamondY[] = new int[4];
+        Polygon diamond;
 
-            int left = H_BORDER;
-            int top = V_BORDER;
+        int left = H_BORDER;
+        int top = V_BORDER;
 
-            FontMetrics metrics;
-            int ascent;
+        FontMetrics metrics;
+        int ascent;
 
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setColor(this.getBackground());
-            g2.fillRect(0,0,pref.width,pref.height);
-            g2.setColor(Color.BLACK);
+        g2.setColor(this.getBackground());
+        g2.fillRect(0,0,pref.width,pref.height);
+        g2.setColor(Color.BLACK);
 
 
-            if (markersLoaded) {
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
+        if (markersLoaded) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
 
-                //// draw the marker locations
+            //// draw the marker locations
 
-                BasicStroke thickerStroke = new BasicStroke(1);
-                BasicStroke thinnerStroke = new BasicStroke(0.25f);
+            BasicStroke thickerStroke = new BasicStroke(1);
+            BasicStroke thinnerStroke = new BasicStroke(0.25f);
 
-                int wide = dPrimeTable.length * BOX_SIZE;
-                int lineLeft = wide / 4;
-                int lineSpan = wide / 2;
-                long minpos = ((SNP)markers.elementAt(0)).getPosition();
-                long maxpos = ((SNP)markers.elementAt(markers.size()-1)).getPosition();
-                double spanpos = maxpos - minpos;
+            int wide = (dPrimeTable.length-1) * boxSize;
+            //TODO: talk to kirby about locusview scaling gizmo
+            int lineLeft = wide/20;
+            int lineSpan = (wide/10)*9;
+            long minpos = ((SNP)markers.elementAt(0)).getPosition();
+            long maxpos = ((SNP)markers.elementAt(markers.size()-1)).getPosition();
+            double spanpos = maxpos - minpos;
+            g2.setStroke(thinnerStroke);
+            g2.setColor(Color.white);
+            g2.fillRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
+            g2.setColor(Color.black);
+            g2.drawRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
 
+            for (int i = 0; i < markers.size(); i++) {
+                double pos = (((SNP)markers.elementAt(i)).getPosition() - minpos) / spanpos;
+                int xx = (int) (left + lineLeft + lineSpan*pos);
+                g2.setStroke(thickerStroke);
+                g.drawLine(xx, 5, xx, 5 + TICK_HEIGHT);
                 g2.setStroke(thinnerStroke);
-                g2.setColor(Color.white);
-                g2.fillRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
-                g2.setColor(Color.black);
-                g2.drawRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
-
-                for (int i = 0; i < markers.size(); i++) {
-                    double pos = (((SNP)markers.elementAt(i)).getPosition() - minpos) / spanpos;
-                    int xx = (int) (left + lineLeft + lineSpan*pos);
-                    g2.setStroke(thickerStroke);
-                    g.drawLine(xx, 5, xx, 5 + TICK_HEIGHT);
-                    g2.setStroke(thinnerStroke);
-                    g.drawLine(xx, 5 + TICK_HEIGHT,
-                            left + i*BOX_SIZE, TICK_BOTTOM);
-                }
-                top += TICK_BOTTOM;
-
-                //// draw the marker names
-
+                g.drawLine(xx, 5 + TICK_HEIGHT,
+                        left + i*boxSize, TICK_BOTTOM);
+            }
+            top += TICK_BOTTOM;
+            //// draw the marker names
+            if (printDetails){
                 g.setFont(markerNameFont);
                 metrics = g.getFontMetrics();
                 ascent = metrics.getAscent();
@@ -120,9 +130,8 @@ class DPrimeDisplay extends JComponent {
 
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
-                TextLayout markerNameTL;
                 for (int x = 0; x < dPrimeTable.length; x++) {
-                    g2.drawString(((SNP)markers.elementAt(x)).getName(),TEXT_NUMBER_GAP, x*BOX_SIZE + ascent/3);
+                    g2.drawString(((SNP)markers.elementAt(x)).getName(),TEXT_NUMBER_GAP, x*boxSize + ascent/3);
                 }
 
                 g2.rotate(Math.PI / 2.0);
@@ -130,62 +139,97 @@ class DPrimeDisplay extends JComponent {
 
                 // move everybody down
                 top += widestMarkerName + TEXT_NUMBER_GAP;
-
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_OFF);
             }
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_OFF);
+        }
 
-            //// draw the marker numbers
-
+        //// draw the marker numbers
+        if (printDetails){
             g.setFont(markerNumFont);
             metrics = g.getFontMetrics();
             ascent = metrics.getAscent();
             for (int x = 0; x < dPrimeTable.length; x++) {
                 String mark = String.valueOf(x + 1);
                 g.drawString(mark,
-                        left + x*BOX_SIZE - metrics.stringWidth(mark)/2,
+                        left + x*boxSize - metrics.stringWidth(mark)/2,
                         top + ascent);
             }
-            top += BOX_RADIUS/2; // give a little space between numbers and boxes
+            top += boxRadius/2; // give a little space between numbers and boxes
+        }
 
-            // draw table column by column
-            for (int x = 0; x < dPrimeTable.length-1; x++) {
-                for (int y = x + 1; y < dPrimeTable.length; y++) {
-                    double d = dPrimeTable[x][y].getDPrime();
-                    double l = dPrimeTable[x][y].getLOD();
-                    Color boxColor = dPrimeTable[x][y].getColor();
+        if (pref.getWidth() > viewRect.width){
+            //this means that the table is bigger than the display.
+            //the following values are the bounds on the boxes we want to
+            //display given that the current window is 'clipRect'
 
-                    // draw markers above
+            lowX = (clipRect.x-left-(clipRect.y+clipRect.height-top))/boxSize;
+            if (lowX < 0) {
+                lowX = 0;
+            }
+            highX = ((clipRect.x + clipRect.width)/boxSize)+1;
+            if (highX > dPrimeTable.length-1){
+                highX = dPrimeTable.length-1;
+            }
+            lowY = ((clipRect.x-left)+(clipRect.y-top))/boxSize;
+            if (lowY < lowX+1){
+                lowY = lowX+1;
+            }
+            highY = (((clipRect.x-left+clipRect.width) + (clipRect.y-top+clipRect.height))/boxSize)+1;
+            if (highY > dPrimeTable.length){
+                highY = dPrimeTable.length;
+            }
+            /*
+            boxSize = (int)((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
+            if (boxSize < 12){boxSize=12;}
+            if (boxSize < 25){
+            printDetails = false;
+            boxRadius = boxSize/2;
+            }else{
+            boxRadius = boxSize/2 - 1;
+            }
+            */
+        } else{
+            lowX = 0;
+            highX = dPrimeTable.length-1;
+            lowY = 0;
+            highY = dPrimeTable.length;
+        }
 
-                    int rt2 = (int) (Math.sqrt(2) * (double)BOX_SIZE);
-                    //int rt2half = (int) (0.5 * Math.sqrt(2) * (double)BOX_SIZE);
-                    int rt2half = rt2 / 2;
-                    //System.out.println(rt2 + " " + rt2half);
+        // draw table column by column
+        for (int x = lowX; x < highX; x++) {
 
-                    //int xx = left + x*BOX_SIZE + (int) (y*Math.sqrt(4)*BOX_SIZE*0.5);
-                    int xx = left + (x + y) * BOX_SIZE / 2;
-                    //int yy = top + (x - y) * BOX_SIZE;
-                    //int xx = left + x*BOX_SIZE;
-                    //int yy = top + y*BOX_SIZE - (int) (x*Math.sqrt(4)*BOX_SIZE*0.5);
-                    int yy = top + (y - x) * BOX_SIZE / 2;
+            //always draw the fewest possible boxes
+            if (lowY < x+1){
+                lowY = x+1;
+            }
 
-                    diamondX[0] = xx; diamondY[0] = yy - BOX_RADIUS;
-                    diamondX[1] = xx + BOX_RADIUS; diamondY[1] = yy;
-                    diamondX[2] = xx; diamondY[2] = yy + BOX_RADIUS;
-                    diamondX[3] = xx - BOX_RADIUS; diamondY[3] = yy;
+            for (int y = lowY; y < highY; y++) {
+                double d = dPrimeTable[x][y].getDPrime();
+                //double l = dPrimeTable[x][y].getLOD();
+                Color boxColor = dPrimeTable[x][y].getColor();
 
-                    diamond = new Polygon(diamondX, diamondY, 4);
-                    g.setColor(boxColor);
-                    g.fillPolygon(diamond);
-                    if (boxColor == Color.white) {
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                RenderingHints.VALUE_ANTIALIAS_ON);
-                        g.setColor(Color.lightGray);
-                        g.drawPolygon(diamond);
-                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                                RenderingHints.VALUE_ANTIALIAS_OFF);
-                    }
+                // draw markers above
+                int xx = left + (x + y) * boxSize / 2;
+                int yy = top + (y - x) * boxSize / 2;
 
+                diamondX[0] = xx; diamondY[0] = yy - boxRadius;
+                diamondX[1] = xx + boxRadius; diamondY[1] = yy;
+                diamondX[2] = xx; diamondY[2] = yy + boxRadius;
+                diamondX[3] = xx - boxRadius; diamondY[3] = yy;
+
+                diamond = new Polygon(diamondX, diamondY, 4);
+                g.setColor(boxColor);
+                g.fillPolygon(diamond);
+                if (boxColor == Color.white) {
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                            RenderingHints.VALUE_ANTIALIAS_ON);
+                    g.setColor(Color.lightGray);
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                            RenderingHints.VALUE_ANTIALIAS_OFF);
+                }
+
+                if(printDetails){
                     g.setFont(boxFont);
                     ascent = boxFontMetrics.getAscent();
                     int val = (int) (d * 100);
@@ -197,31 +241,17 @@ class DPrimeDisplay extends JComponent {
                     }
                 }
             }
-            alreadyPainted=true;
         }
-        Graphics2D gComponent2 = (Graphics2D)gComponent;
-        //okay so this dumb if block is to prevent the ugly
-        //repainting bug when loading markers after the data are already
-        //being displayed, results in a little off-centering for small
-        //datasets, but not too bad.
-        if (!(markersLoaded)){
-            gComponent2.translate((size.width - pref.width) / 2,
-                    (size.height - pref.height) / 2);
-        } else {
-            gComponent2.translate((size.width - pref.width) / 2,
-                    0);
-        }
-        gComponent2.drawImage(buffIm,0,0,this);
     }
 
 
     public Dimension getPreferredSize() {
         int count = dPrimeTable.length;
-        int high = 2*V_BORDER + count*BOX_SIZE/2;
+        int high = 2*V_BORDER + count*boxSize/2;
         if (markersLoaded){
             high += TICK_BOTTOM + widestMarkerName + TEXT_NUMBER_GAP;
         }
-        return new Dimension(2*H_BORDER + BOX_SIZE*(count-1), high);
+        return new Dimension(2*H_BORDER + boxSize*(count-1), high);
     }
 
     int[] centerString(String s, FontMetrics fm) {

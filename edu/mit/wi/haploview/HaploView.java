@@ -270,9 +270,13 @@ public class HaploView extends JFrame implements ActionListener{
 
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
+                    dPrimeDisplay=null;
                     theData.generateDPrimeTable();
-                    theData.guessBlocks(0);
                     infoKnown=false;
+                    if (!(filenames[1].equals(""))){
+                        readMarkers(new File(filenames[1]));
+                    }
+                    theData.guessBlocks(0);
                     drawPicture(theData);
                     theData.finished = true;
                     return "";
@@ -283,9 +287,6 @@ public class HaploView extends JFrame implements ActionListener{
                 public void actionPerformed(ActionEvent evt){
                     if (theData.finished){
                         timer.stop();
-                        if (!(filenames[1].equals(""))){
-                            readMarkers(new File(filenames[1]));
-                        }
                         defineBlocksItem.setEnabled(true);
                         readMarkerItem.setEnabled(true);
                         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -319,7 +320,9 @@ public class HaploView extends JFrame implements ActionListener{
                         JOptionPane.ERROR_MESSAGE);
             }else{
                 infoKnown=true;
-                dPrimeDisplay.loadMarkers(theData.markerInfo);
+                if (dPrimeDisplay != null){
+                    dPrimeDisplay.loadMarkers(theData.markerInfo);
+                }
             }
         }catch (IOException ioexec){
             JOptionPane.showMessageDialog(this,
@@ -352,6 +355,7 @@ public class HaploView extends JFrame implements ActionListener{
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         dPrimeDisplay = new DPrimeDisplay(theData.dPrimeTable, infoKnown, theData.markerInfo);
         JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
+        dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
         dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
         panel.add(dPrimeScroller);
@@ -465,7 +469,6 @@ public class HaploView extends JFrame implements ActionListener{
                 JOptionPane.QUESTION_MESSAGE);
         theData.guessBlocks(methodList.getSelectedIndex());
         hapDisplay.getHaps();
-        dPrimeDisplay.alreadyPainted = false;
         if (tabs.getSelectedIndex() == 0) dPrimeDisplay.repaint();
     }
 
