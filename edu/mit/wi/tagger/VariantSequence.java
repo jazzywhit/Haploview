@@ -6,9 +6,9 @@ import java.util.Comparator;
 import java.util.Collections;
 
 public abstract class VariantSequence implements Taggable{
-    Vector variants;
-    Vector tags;
-    Comparator tagComparator;
+    private Vector variants;
+    private Vector tags;
+    private Comparator tagComparator;
 
     public VariantSequence() {
         variants = new Vector();
@@ -27,13 +27,23 @@ public abstract class VariantSequence implements Taggable{
         return tags;
     }
 
+    public void setTagComparator(Comparator tagComparator) {
+        this.tagComparator = tagComparator;
+    }
+
+    public Comparator getTagComparator() {
+        return tagComparator;
+    }
+
+    public abstract String getName();
+
     /**
      * finds and then returns the "best" tag for this VariantSequence.
      * Uses the Comparator tagComparator to decide the "best" tag.
      * If no comparator has been set, then an arbitrary tag is returned from the Vector tags.
      * @return Tag. The best Tag for this sequence. 
      */
-    public Tag getBestTag() {
+    public TagSequence getBestTag() {
         if(tags!= null && tags.size()>0) {
             //if a comparator has been set, then use it to sort the tags. the "best" tag will be the
             //last one in the sorted vector.
@@ -42,7 +52,7 @@ public abstract class VariantSequence implements Taggable{
             if(tagComparator != null) {
                 Collections.sort(tags,tagComparator);
             }
-            return (Tag)tags.lastElement();
+            return (TagSequence) tags.lastElement();
         }
         return null;
     }

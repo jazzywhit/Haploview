@@ -25,6 +25,18 @@ public class TagSequence implements Tag {
         return sequence;
     }
 
+    public Vector getBestTagged() {
+        Vector result = new Vector();
+
+        for (int i = 0; i < tagged.size(); i++) {
+            Taggable taggable = (Taggable) tagged.elementAt(i);
+            if(taggable.getBestTag() == this) {
+                result.add(taggable);
+            }
+        }
+        return result;
+    }
+
 
     //TODO: should isTagged check if Taggable t is a subsequence of something that is tagged?
     public boolean isTagged(Taggable t) {

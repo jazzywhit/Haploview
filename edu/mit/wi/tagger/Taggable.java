@@ -21,5 +21,5 @@ interface Taggable {
      * defined by the particular implementation
      * @return Tag
      */
-    public Tag getBestTag();
+    public TagSequence getBestTag();
 }

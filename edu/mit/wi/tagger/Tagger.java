@@ -1,9 +1,7 @@
 package edu.mit.wi.tagger;
 
 import java.util.*;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 
 public class Tagger {
     //todo: SNPS?? should this be named (and store) variantseqs?
@@ -52,6 +50,15 @@ public class Tagger {
         }
 
         alleleCorrelator = ac;
+
+
+        for(int i=0;i<snps.size();i++) {
+            VariantSequence curVarSeq = (VariantSequence) snps.get(i);
+            if(curVarSeq.getTagComparator() == null) {
+                TagRSquaredComparator trsc = new TagRSquaredComparator(curVarSeq);
+                curVarSeq.setTagComparator(trsc);
+            }
+        }
         /*pairwiseCompsHash = new Hashtable(snps.size());
         for(int i=0;i<snps.size();i++) {
             Hashtable ht = new Hashtable();
@@ -123,24 +130,6 @@ public class Tagger {
         }
 
     }
-
-
-    /**
-     * adds a pairwise comparison to the set of comparisons.
-     * @param first Index in snps vector of first snp in comparison
-     * @param second Index in snps vector of first snp in comparison
-     * @param compVal value of the comparison
-     */
- /*   public void addPairwiseComp(int first,int second, double compVal) {
-        //check that indexes are reasonable
-        if(first <= snps.size()&& second <= snps.size()) {
-            PairwiseComparison pwc = new PairwiseComparison((VariantSequence)snps.get(first),(VariantSequence)snps.get(second),compVal);
-            Hashtable ht = (Hashtable)pairwiseCompsHash.get(snps.get(first));
-            ht.put(snps.get(second), pwc);
-            ht = (Hashtable)pairwiseCompsHash.get(snps.get(second));
-            ht.put(snps.get(first), pwc);
-        }
-    } */
 
     private double getPairwiseComp(VariantSequence a, VariantSequence b) {
         return alleleCorrelator.getCorrelation(a,b);
@@ -339,28 +328,6 @@ public class Tagger {
 
     }
 
-  /*  private void printStuff() {
-        TagSequence curTag;
-        SNP curTagged;
-        Vector tagged;
-        for(int i=0;i<tags.size();i++) {
-            curTag = (TagSequence) tags.get(i);
-            tagged = curTag.getTagged();
-            System.out.println(((SNP)curTag.sequence).name + " tags "+ tagged.size() +" : ");
-            for(int j=0;j<tagged.size();j++) {
-                curTagged = (SNP)tagged.get(j);
-                PairwiseComparison pwc = getPairwiseComp(curTag.sequence,curTagged);
-                if(pwc != null) {
-                    System.out.println("\t" + curTagged.name + "\t " + pwc.getRSquared() );
-                }else {
-                    System.out.println("PWC NOT FOUND FOR TAG " + ((SNP)curTag.sequence).name + " and VARSEQ " + curTagged.name );
-                }
-            }
-            System.out.println("-------------------------------");
-
-        }
-
-    }*/
 
     public void setExclude(Vector e) {
         if(e != null) {
@@ -385,6 +352,45 @@ public class Tagger {
     public Vector getTags() {
         return tags;
     }
+
+    public void saveResultToFile(File outFile) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
+
+        bw.write("Marker\tBest Tag\tr^2 w/tag");
+        bw.newLine();
+        for (int i = 0; i < snps.size(); i++) {
+            StringBuffer line = new StringBuffer();
+            SNP snp = (SNP) snps.elementAt(i);
+            line.append(snp.getName()).append("\t");
+            TagSequence theTag = snp.getBestTag();
+            line.append(theTag.getTagSequence().getName()).append("\t");
+            line.append(getPairwiseComp(snp,theTag.sequence)).append("\t");
+            bw.write(line.toString());
+            bw.newLine();
+        }
+
+        bw.newLine();
+
+        for(int i=0;i<tags.size();i++) {
+            StringBuffer line = new StringBuffer();
+            TagSequence theTag = (TagSequence) tags.get(i);
+            line.append(theTag.getTagSequence().getName()).append("\t");
+            Vector tagged = theTag.getBestTagged();
+            for (int j = 0; j < tagged.size(); j++) {
+                VariantSequence varSeq = (VariantSequence) tagged.elementAt(j);
+                if(j !=0){
+                    line.append(",");
+                }
+                line.append(varSeq.getName());
+            }
+            bw.write(line.toString());
+            bw.newLine();
+        }
+
+        bw.close();
+    }
+
+
 
     public static void main(String[] args) {
 
@@ -422,6 +428,8 @@ public class Tagger {
             }
         }
     }
+
+
 
 
     boolean debug = true;
