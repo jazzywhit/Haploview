@@ -78,6 +78,8 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
             if (doGB.isSelected()){
                 Options.setShowGBrowse(true);
+            }else{
+                Options.setShowGBrowse(false);
             }
 
             if (maxComparisonDistField.getText().equals("")){

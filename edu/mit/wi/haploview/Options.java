@@ -15,6 +15,7 @@ public class Options {
     private static int assocTest;
     private static int haplotypeDisplayThreshold;
     private static int LDColorScheme;
+    private static boolean showGBrowse;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -72,5 +73,13 @@ public class Options {
 
     public static void setHaplotypeDisplayThreshold(int haplotypeDisplayThreshold) {
         Options.haplotypeDisplayThreshold = haplotypeDisplayThreshold;
+    }
+
+    public static boolean isGBrowseShown() {
+        return showGBrowse;
+    }
+
+    public static void setShowGBrowse(boolean showGBrowse) {
+        Options.showGBrowse = showGBrowse;
     }
 }
