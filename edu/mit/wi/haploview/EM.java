@@ -421,6 +421,7 @@ public class EM implements Constants {
                 Long next = (Long) pitr.next();
 
                 hint[next.intValue()]=-1;
+                //todo: this hard coded threshold suxorz (probably elsewhere too)
                 if (probMap.get(next) > .001) {
                     // printf("haplo %s   p = %.4lf\n",haplo_str(j,block_size[block]),prob[j]);
                     hlist[block][m]=next.intValue();
@@ -440,7 +441,6 @@ public class EM implements Constants {
         for (block=0; block<num_blocks; block++) {
             poss_full *= num_hlist[block];
         }
-        //TODO:System.out.println(poss_full);
 
         /* LIGATE and finish this mess :) */
 
@@ -460,7 +460,6 @@ return(-5);
         /* start prob array with probabilities from full observations */
 
 
-        //todo: wtf is total storing? it gets incremented below for each observed
         total=(double)poss_full;
         total *= PSEUDOCOUNT;
 
@@ -765,13 +764,6 @@ return(-5);
                     else {
                         a2=0;
                         missing2[i]=1;
-                    }
-
-                    //TODO: look into whether this if block is broken
-                    //i.e. above statements look for 1 or 2 whereas below looks
-                    //for 1, 2, 3 or 4
-                    if (c1 < '0' || c1 > '4' || c2 < '0' || c2 > '4') {
-                        throw new HaploViewException("bad allele in data file: " + c1 + " " + c2);
                     }
                 }
 
