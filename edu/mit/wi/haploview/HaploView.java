@@ -388,6 +388,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void saveDprimeToText(){
+	fc.setSelectedFile(null);
 	try{
 	    fc.setSelectedFile(null);
 	    int returnVal = fc.showSaveDialog(this);
@@ -403,6 +404,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void saveHapsToText(){
+	fc.setSelctedFile(null);
 	try{
 	    fc.setSelectedFile(null);
 	    int returnVal = fc.showSaveDialog(this);
