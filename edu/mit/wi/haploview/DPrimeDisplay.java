@@ -800,17 +800,18 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         if (showWM && !forExport){
             //dataset is big enough to require worldmap
-            final int WM_BD_GAP = 4;
-            final int WM_BD_HEIGHT = 3;
-            CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
-                    BorderFactory.createLoweredBevelBorder());
-
             if (wmMaxWidth == 0){
                 wmMaxWidth = visRect.width/3;
             }
             double scalefactor;
             scalefactor = (double)(chartSize.width)/wmMaxWidth;
             double prefBoxSize = boxSize/(scalefactor*((double)wmMaxWidth/(double)(wmMaxWidth)));
+
+            //stick WM_BD in the middle of the blank space at the top of the worldmap
+            final int WM_BD_GAP = (int)(infoHeight/(scalefactor*2));
+            final int WM_BD_HEIGHT = 4;
+            CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
+                    BorderFactory.createLoweredBevelBorder());
 
             if (noImage){
                 //first time through draw a worldmap if dataset is big:
