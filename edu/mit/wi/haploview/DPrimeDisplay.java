@@ -1108,7 +1108,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             g.setFont(markerNameFont);
             FontMetrics fm = g.getFontMetrics();
             if (printMarkerNames){
-                blockDispHeight = boxSize/3 + fm.getAscent();
+                blockDispHeight = boxSize/3 + fm.getHeight();
             }else{
                 blockDispHeight = boxSize/3;
             }
