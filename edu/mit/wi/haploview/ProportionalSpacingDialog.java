@@ -6,6 +6,7 @@ import javax.swing.event.ChangeEvent;
 import java.util.Hashtable;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Cursor;
 
 public class ProportionalSpacingDialog extends JDialog implements ActionListener,
         ChangeListener, Constants{
@@ -52,10 +53,20 @@ public class ProportionalSpacingDialog extends JDialog implements ActionListener
         if (!source.getValueIsAdjusting()) {
             double thresh = ((double)source.getValue())/100;
             Options.setSpacingThreshold(thresh);
-            hv.dPrimeDisplay.computePreferredSize();
-            if (hv.dPrimeDisplay != null && hv.tabs.getSelectedIndex() == VIEW_D_NUM){
-                hv.dPrimeDisplay.repaint();
-            }
+
+            //note that this will only apply to the cursor in this dialog, but java seems touchy
+            //about setting a "global" cursor
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
+
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    hv.dPrimeDisplay.computePreferredSize();
+                    if (hv.dPrimeDisplay != null && hv.tabs.getSelectedIndex() == VIEW_D_NUM){
+                        hv.dPrimeDisplay.repaint();
+                    }
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            });
         }
     }
 }

@@ -24,7 +24,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     boolean DEBUG = false;
 
-    JMenuItem readMarkerItem, analysisItem, blocksItem, gbrowseItem;
+    private JMenuItem readMarkerItem, analysisItem, blocksItem, gbrowseItem, spacingItem;
     String exportItems[] = {
         EXPORT_TEXT, EXPORT_PNG, EXPORT_OPTIONS
     };
@@ -194,9 +194,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         colorMenuItems[Options.getLDColorScheme()].setSelected(true);
 
         displayMenu.add(colorMenu);
-        JMenuItem spacingItem = new JMenuItem("LD Display Spacing");
+        spacingItem = new JMenuItem("LD Display Spacing");
         spacingItem.setMnemonic(KeyEvent.VK_S);
         spacingItem.addActionListener(this);
+        spacingItem.setEnabled(false);
         displayMenu.add(spacingItem);
         displayMenu.setEnabled(false);
 
@@ -531,10 +532,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         //inputOptions[0] = ped file
         //inputOptions[1] = info file (null if none)
         //type is either 3 or 4 for ped and hapmap files respectively
-
         final File inFile = new File(inputOptions[0]);
 
         try {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (inFile.length() < 1){
                 throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
             }
@@ -573,7 +574,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
             //let's start the math
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
                     dPrimeDisplay=null;
@@ -728,16 +728,19 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     ioexec.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
-        } catch(PedFileException pfe){
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }catch(PedFileException pfe){
             JOptionPane.showMessageDialog(this,
                     pfe.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }catch (HaploViewException hve){
             JOptionPane.showMessageDialog(this,
                     hve.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
 
@@ -765,9 +768,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (theData.infoKnown){
                 analysisItem.setEnabled(true);
                 gbrowseItem.setEnabled(true);
+                spacingItem.setEnabled(true);
             }else{
                 analysisItem.setEnabled(false);
                 gbrowseItem.setEnabled(false);
+                spacingItem.setEnabled(false);
             }
             if (checkPanel != null){
                 //this is triggered when loading markers after already loading genotypes

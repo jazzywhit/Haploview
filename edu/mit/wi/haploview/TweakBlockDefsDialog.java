@@ -158,12 +158,19 @@ public class TweakBlockDefsDialog extends JDialog implements ActionListener {
             FindBlocks.spineDP = sdpV;
         }
 
-        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        hv.theData.guessBlocks(hv.getCurrentBlockDef());
-        hv.dPrimeDisplay.colorDPrime();
-        hv.changeBlocks(hv.getCurrentBlockDef());
-        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        
+        //note that this will only apply to the cursor in this dialog, but java seems touchy
+        //about setting a "global" cursor
+        setCursor(new Cursor(Cursor.WAIT_CURSOR));
 
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                hv.theData.guessBlocks(hv.getCurrentBlockDef());
+                hv.dPrimeDisplay.colorDPrime();
+                hv.changeBlocks(hv.getCurrentBlockDef());
+                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            }
+        });
     }
 
 }

@@ -96,10 +96,8 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
             //if a dataset was previously loaded during this session, discard the display panes for it.
             caller.clearDisplays();
-            
-            caller.readGenotypes(returnStrings, fileType);
-
             this.dispose();
+            caller.readGenotypes(returnStrings, fileType);
         }else if (command.equals("Cancel")){
             this.dispose();
         }else if (command.equals("tdt")){
