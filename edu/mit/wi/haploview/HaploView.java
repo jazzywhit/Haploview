@@ -259,30 +259,30 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }else if (command == CLEAR_BLOCKS){
             changeBlocks(BLOX_NONE);
 
-        //blockdef clauses
+            //blockdef clauses
         }else if (command.startsWith("block")){
             int method = Integer.valueOf(command.substring(5)).intValue();
             changeBlocks(method);
             /*for (int i = 1; i < colorMenuItems.length; i++){
-                if (method+1 == i){
-                    colorMenuItems[i].setEnabled(true);
-                }else{
-                    colorMenuItems[i].setEnabled(false);
-                }
+            if (method+1 == i){
+            colorMenuItems[i].setEnabled(true);
+            }else{
+            colorMenuItems[i].setEnabled(false);
+            }
             }
             colorMenuItems[0].setSelected(true);*/
 
-        //zooming clauses
+            //zooming clauses
         }else if (command.startsWith("zoom")){
             dPrimeDisplay.zoom(Integer.valueOf(command.substring(4)).intValue());
 
-        //coloring clauses
+            //coloring clauses
         }else if (command.startsWith("color")){
             currentScheme = Integer.valueOf(command.substring(5)).intValue()+1;
             dPrimeDisplay.colorDPrime(currentScheme);
             dPrimeDisplay.refresh();
             changeKey(currentScheme);
-        //exporting clauses
+            //exporting clauses
         }else if (command == EXPORT_PNG){
             export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getSize());
         }else if (command == EXPORT_TEXT){
@@ -422,6 +422,147 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
             }
 
+
+
+            //deal with max comparison distance
+            if (inputOptions[2].equals("")){
+                inputOptions[2] = "0";
+            }
+            maxCompDist = Long.parseLong(inputOptions[2])*1000;
+
+            //let's start the math
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            final SwingWorker worker = new SwingWorker(){
+                public Object construct(){
+                    dPrimeDisplay=null;
+
+                    changeKey(1);
+                    theData.generateDPrimeTable();
+                    //theData.guessBlocks(BLOX_GABRIEL);
+                    theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
+                    colorMenuItems[0].setSelected(true);
+                    blockMenuItems[0].setSelected(true);
+                    zoomMenuItems[0].setSelected(true);
+                    theData.blocksChanged = false;
+                    Container contents = getContentPane();
+                    contents.removeAll();
+
+                    int currentTab = VIEW_D_NUM;
+                    /*if (!(tabs == null)){
+                    currentTab = tabs.getSelectedIndex();
+                    } */
+
+                    tabs = new JTabbedPane();
+                    tabs.addChangeListener(new TabChangeListener());
+
+                    //first, draw the D' picture
+                    JPanel panel = new JPanel();
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+                    dPrimeDisplay = new DPrimeDisplay(window);
+                    JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
+                    dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
+                    dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
+                    dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
+                    panel.add(dPrimeScroller);
+                    tabs.addTab(viewItems[VIEW_D_NUM], panel);
+                    viewMenuItems[VIEW_D_NUM].setEnabled(true);
+
+                    //compute and show haps on next tab
+                    panel = new JPanel();
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+                    try {
+                        hapDisplay = new HaplotypeDisplay(theData);
+                    } catch(HaploViewException e) {
+                        JOptionPane.showMessageDialog(window,
+                                e.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                    HaplotypeDisplayController hdc =
+                            new HaplotypeDisplayController(hapDisplay);
+                    hapScroller = new JScrollPane(hapDisplay);
+                    hapScroller.getVerticalScrollBar().setUnitIncrement(60);
+                    hapScroller.getHorizontalScrollBar().setUnitIncrement(60);
+                    panel.add(hapScroller);
+                    panel.add(hdc);
+                    tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
+                    viewMenuItems[VIEW_HAP_NUM].setEnabled(true);
+
+                    //LOD panel
+                    /*panel = new JPanel();
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+                    LODDisplay ld = new LODDisplay(theData);
+                    JScrollPane lodScroller = new JScrollPane(ld);
+                    panel.add(lodScroller);
+                    tabs.addTab(viewItems[VIEW_LOD_NUM], panel);
+                    viewMenuItems[VIEW_LOD_NUM].setEnabled(true);*/
+
+                    //int optionalTabCount = 1;
+
+
+
+                    //check data panel
+                    if (checkPanel != null){
+                        //optionalTabCount++;
+                        //VIEW_CHECK_NUM = optionalTabCount;
+                        //viewItems[VIEW_CHECK_NUM] = VIEW_CHECK_PANEL;
+                        JPanel metaCheckPanel = new JPanel();
+                        metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
+                        JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
+                                + theData.numTrios + " trios from "
+                                + theData.numPeds + " families.");
+                        if (theData.numTrios + theData.numSingletons == 0){
+                            countsLabel.setForeground(Color.red);
+                        }
+                        countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                        metaCheckPanel.add(countsLabel);
+                        metaCheckPanel.add(checkPanel);
+                        cdc = new CheckDataController(window);
+                        metaCheckPanel.add(cdc);
+
+                        tabs.addTab(viewItems[VIEW_CHECK_NUM], metaCheckPanel);
+                        viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
+                        currentTab=VIEW_CHECK_NUM;
+                    }
+
+                    //TDT panel
+                    if(assocTest > 0) {
+                        //optionalTabCount++;
+                        //VIEW_TDT_NUM = optionalTabCount;
+                        //viewItems[VIEW_TDT_NUM] = VIEW_TDT;
+                        tdtPanel = new TDTPanel(theData.chromosomes, assocTest);
+                        tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
+                        viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
+                    }
+
+                    tabs.setSelectedIndex(currentTab);
+                    contents.add(tabs);
+
+                    repaint();
+                    setVisible(true);
+
+                    theData.finished = true;
+                    setTitle(TITLE_STRING + " -- " + inFile.getName());
+                    return null;
+                }
+            };
+
+            timer = new javax.swing.Timer(50, new ActionListener(){
+                public void actionPerformed(ActionEvent evt){
+                    if (theData.finished){
+                        timer.stop();
+                        for (int i = 0; i < blockMenuItems.length; i++){
+                            blockMenuItems[i].setEnabled(true);
+                        }
+                        clearBlocksItem.setEnabled(true);
+                        readMarkerItem.setEnabled(true);
+                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    }
+                }
+            });
+
+            worker.start();
+            timer.start();
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
@@ -438,146 +579,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-
-        //deal with max comparison distance
-        if (inputOptions[2].equals("")){
-            inputOptions[2] = "0";
-        }
-        maxCompDist = Long.parseLong(inputOptions[2])*1000;
-
-        //let's start the math
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        final SwingWorker worker = new SwingWorker(){
-            public Object construct(){
-                dPrimeDisplay=null;
-
-                changeKey(1);
-                theData.generateDPrimeTable();
-                //theData.guessBlocks(BLOX_GABRIEL);
-                theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
-                colorMenuItems[0].setSelected(true);
-                blockMenuItems[0].setSelected(true);
-                zoomMenuItems[0].setSelected(true);
-                theData.blocksChanged = false;
-                Container contents = getContentPane();
-                contents.removeAll();
-
-                int currentTab = VIEW_D_NUM;
-                /*if (!(tabs == null)){
-                currentTab = tabs.getSelectedIndex();
-                } */
-
-                tabs = new JTabbedPane();
-                tabs.addChangeListener(new TabChangeListener());
-
-                //first, draw the D' picture
-                JPanel panel = new JPanel();
-                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                dPrimeDisplay = new DPrimeDisplay(window);
-                JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
-                dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
-                dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
-                dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
-                panel.add(dPrimeScroller);
-                tabs.addTab(viewItems[VIEW_D_NUM], panel);
-                viewMenuItems[VIEW_D_NUM].setEnabled(true);
-
-                //compute and show haps on next tab
-                panel = new JPanel();
-                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                try {
-                    hapDisplay = new HaplotypeDisplay(theData);
-                } catch(HaploViewException e) {
-                    JOptionPane.showMessageDialog(window,
-                            e.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-                HaplotypeDisplayController hdc =
-                        new HaplotypeDisplayController(hapDisplay);
-                hapScroller = new JScrollPane(hapDisplay);
-                hapScroller.getVerticalScrollBar().setUnitIncrement(60);
-                hapScroller.getHorizontalScrollBar().setUnitIncrement(60);
-                panel.add(hapScroller);
-                panel.add(hdc);
-                tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
-                viewMenuItems[VIEW_HAP_NUM].setEnabled(true);
-
-                //LOD panel
-                /*panel = new JPanel();
-                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                LODDisplay ld = new LODDisplay(theData);
-                JScrollPane lodScroller = new JScrollPane(ld);
-                panel.add(lodScroller);
-                tabs.addTab(viewItems[VIEW_LOD_NUM], panel);
-                viewMenuItems[VIEW_LOD_NUM].setEnabled(true);*/
-
-                //int optionalTabCount = 1;
-
-
-
-                //check data panel
-                if (checkPanel != null){
-                    //optionalTabCount++;
-                    //VIEW_CHECK_NUM = optionalTabCount;
-                    //viewItems[VIEW_CHECK_NUM] = VIEW_CHECK_PANEL;
-                    JPanel metaCheckPanel = new JPanel();
-                    metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
-                    JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
-                            + theData.numTrios + " trios from "
-                            + theData.numPeds + " families.");
-                    if (theData.numTrios + theData.numSingletons == 0){
-                        countsLabel.setForeground(Color.red);
-                    }
-                    countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-                    metaCheckPanel.add(countsLabel);
-                    metaCheckPanel.add(checkPanel);
-                    cdc = new CheckDataController(window);
-                    metaCheckPanel.add(cdc);
-
-                    tabs.addTab(viewItems[VIEW_CHECK_NUM], metaCheckPanel);
-                    viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
-                    currentTab=VIEW_CHECK_NUM;
-                }
-
-                //TDT panel
-                if(assocTest > 0) {
-                    //optionalTabCount++;
-                    //VIEW_TDT_NUM = optionalTabCount;
-                    //viewItems[VIEW_TDT_NUM] = VIEW_TDT;
-                    tdtPanel = new TDTPanel(theData.chromosomes, assocTest);
-                    tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
-                    viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
-                }
-
-                tabs.setSelectedIndex(currentTab);
-                contents.add(tabs);
-
-                repaint();
-                setVisible(true);
-
-                theData.finished = true;
-                setTitle(TITLE_STRING + " -- " + inFile.getName());
-                return null;
-            }
-        };
-
-        timer = new javax.swing.Timer(50, new ActionListener(){
-            public void actionPerformed(ActionEvent evt){
-                if (theData.finished){
-                    timer.stop();
-                    for (int i = 0; i < blockMenuItems.length; i++){
-                        blockMenuItems[i].setEnabled(true);
-                    }
-                    clearBlocksItem.setEnabled(true);
-                    readMarkerItem.setEnabled(true);
-                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                }
-            }
-        });
-
-        worker.start();
-        timer.start();
     }
 
     void readMarkers(File inputFile, String[][] hminfo){
