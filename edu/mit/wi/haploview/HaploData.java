@@ -199,7 +199,7 @@ public class HaploData{
                 }
                 double maf = numa1/(numa2+numa1);
                 if (maf > 0.5) maf = 1.0-maf;
-                markerInfo.add(new SNP(String.valueOf(i+1), (i*3000), maf));
+                markerInfo.add(new SNP(String.valueOf(i+1), (i*4000), maf));
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
             Chromosome.markers = markerInfo.toArray();
@@ -222,10 +222,16 @@ public class HaploData{
 
         int lineCount = 0;
         int numTokens = 0;
+        boolean even = true;
         while ((currentLine = in.readLine()) != null){
             lineCount++;
             //each line is expected to be of the format:
             //ped   indiv   geno   geno   geno   geno...
+            if (currentLine.length() == 0){
+                //skip blank lines
+                continue;
+            }
+            even = !even;
             StringTokenizer st = new StringTokenizer(currentLine);
             //first two tokens are expected to be ped, indiv
             ped = st.nextToken();
@@ -264,6 +270,11 @@ public class HaploData{
             //this is what is evetually returned.
             chroms.add(new Chromosome(ped, indiv, genos, infile.getName()));
 
+        }
+        if (!even){
+            //we're missing a line here
+            throw new HaploViewException("Genotype file appears to have an odd number of lines.\n"+
+                    "Each individual is required to have two chromosomes");
         }
         chromosomes = chroms;
 
@@ -516,7 +527,7 @@ public class HaploData{
             //clear the array
             for (int pos1 = 0; pos1 < pos2; pos1++){
                  compsDone++;
-                long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
+                long sep = Chromosome.getMarker(pos2).getPosition() - Chromosome.getMarker(pos1).getPosition();
                 if (maxdist > 0){
                     if ((sep > maxdist || sep < negMaxdist)){
                         dPrimeTable[pos1][pos2] = null;
@@ -1037,7 +1048,7 @@ public class HaploData{
         for (int i = 0; i < blocks.size(); i++){
             int[] markers = (int[])blocks.elementAt(i);
             for (int j = 0; j < markers.length; j++){
-                isInBlock[markers[j]] = true;
+                isInBlock[Chromosome.realIndex[markers[j]]] = true;
             }
         }
     }
@@ -1291,7 +1302,9 @@ public class HaploData{
                     if (i < j){
                         if(dPrimeTable[i][j] != null) {
                             dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
-                            saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j].toString() + "\t" + dist + "\n");
+                            saveDprimeWriter.write(Chromosome.getFilteredMarker(i).getName() +
+                                    "\t" + Chromosome.getFilteredMarker(j).getName() +
+                                    "\t" + dPrimeTable[i][j].toString() + "\t" + dist + "\n");
                         }
                     }
                 }

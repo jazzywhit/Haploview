@@ -7,10 +7,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -201,6 +198,8 @@ public class HaploView extends JFrame implements ActionListener{
                 quit();
             }
         });
+
+        addComponentListener(new ResizeListener());
 
     }
 
@@ -535,8 +534,27 @@ public class HaploView extends JFrame implements ActionListener{
         }
     }
 
+
+    class ResizeListener implements ComponentListener{
+        public void componentResized(ComponentEvent e) {
+            if (dPrimeDisplay != null){
+                dPrimeDisplay.refresh();
+            }
+        }
+
+        public void componentMoved(ComponentEvent e) {
+        }
+
+        public void componentShown(ComponentEvent e) {
+        }
+
+        public void componentHidden(ComponentEvent e) {
+        }
+
+    }
+
     //TODO: investigate export options
-    /**void doExportDPrime(){
+    /*void doExportDPrime(){
      fc.setSelectedFile(null);
      int returnVal = fc.showSaveDialog(this);
      if (returnVal == JFileChooser.APPROVE_OPTION){
@@ -553,7 +571,7 @@ public class HaploView extends JFrame implements ActionListener{
      JOptionPane.ERROR_MESSAGE);
      }
      }
-     }**/
+     }*/
 
     void showHelp(){
 

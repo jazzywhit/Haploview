@@ -107,7 +107,7 @@ class FindBlocks {
     static Vector doSFS(PairwiseLinkage[][] dPrime){
         double cutHighCI = 0.98;
         double cutLowCI = 0.70;
-        double mafThresh = 0.10;
+        double mafThresh = 0.05;
         double[] cutLowCIVar = {0,0,0.80,0.50,0.50};
         double[] maxDist = {0,0,20000,30000,1000000};
         double recHighCI = 0.90;
