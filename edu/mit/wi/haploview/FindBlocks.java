@@ -106,8 +106,6 @@ public class FindBlocks {
     }
 
     static Vector doSFS(PairwiseLinkage[][] dPrime){
-
-
         int numStrong = 0; int numRec = 0; int numInGroup = 0;
         Vector blocks = new Vector();
         Vector strongPairs = new Vector();
@@ -142,7 +140,7 @@ public class FindBlocks {
 
                 long sep;
                 //compute actual separation
-                sep = Chromosome.getFilteredMarker(y).getPosition() - Chromosome.getFilteredMarker(x).getPosition();
+                sep = Math.abs(Chromosome.getFilteredMarker(y).getPosition() - Chromosome.getFilteredMarker(x).getPosition());
 
                 addMe.add(String.valueOf(x)); addMe.add(String.valueOf(y)); addMe.add(String.valueOf(sep));
                 if (strongPairs.size() == 0){ //put first pair first
@@ -171,7 +169,7 @@ public class FindBlocks {
             thisBlock = new Vector();
             int first = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(0));
             int last = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(1));
-            int sep = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(2));
+            int sep = Math.abs(Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(2)));
 
             //first see if this block overlaps with another:
             if (usedInBlock[first] || usedInBlock[last]) continue;
