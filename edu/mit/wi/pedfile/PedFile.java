@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.20 2004/08/26 21:02:49 jcbarret Exp $
+* $Id: PedFile.java,v 1.21 2004/08/27 15:27:04 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -429,8 +429,7 @@ public class PedFile {
                 }
                 int index = 0;
                 while(tokenizer.hasMoreTokens()){
-                    ind = ((Family)families.get(((String[])order.elementAt(index))[0])).getMember(
-                            ((String[])order.elementAt(index))[1]);
+                    ind = (Individual)order.elementAt(index);
                     String alleles = tokenizer.nextToken();
                     int allele1=0, allele2=0;
                     if (alleles.substring(0,1).equals("A")){
