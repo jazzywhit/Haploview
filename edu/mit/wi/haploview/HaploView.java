@@ -54,7 +54,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     int assocTest = 0;
     int currentScheme = STD_SCHEME;
     private javax.swing.Timer timer;
-    //long maxCompDist;
+    long maxCompDist;
 
     static HaploView window;
     JFileChooser fc;
@@ -247,7 +247,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command == READ_GENOTYPES){
-            openReadDataDialog("Open new data");
+            ReadDataDialog readDialog = new ReadDataDialog("Open new data", this);
+            readDialog.pack();
+            readDialog.setVisible(true);
         } else if (command == READ_MARKERS){
             //JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
             fc.setSelectedFile(new File(""));
@@ -446,13 +448,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         System.exit(0);
     }
 
-    void openReadDataDialog(String title){
-        ReadDataDialog readDialog = new ReadDataDialog(this, title);
-        readDialog.pack();
-        readDialog.setVisible(true);
-        readGenotypes();
-    }
-
     void readAnalysisFile(File inFile){
         try{
             theData.readAnalysisTrack(inFile);
@@ -472,20 +467,21 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
-    void readGenotypes(){
+    void readGenotypes(String[] inputOptions, int type){
+        //input is a 3 element array with
+        //inputOptions[0] = ped file
+        //inputOptions[1] = info file ("" if none)
+        //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
+        //type is either 3 or 4 for ped and hapmap files respectively
 
-        final File inFile;
-        int type = HaploviewOptions.getGenoFileType();
-        if (type == PED){
-            inFile = new File(HaploviewOptions.getPedFileName());
-        }else if (type == HAPS){
-            inFile = new File(HaploviewOptions.getHapsFileName());
-        }else{
-            //this is naughty programming. technically if type isn't any of these
-            //it should explode and complain. but it never should be unless somebody's
-            //doing something crrrrrrrrrrrazy
-            inFile = new File(HaploviewOptions.getHapmapFileName());
+        final File inFile = new File(inputOptions[0]);
+
+        //deal with max comparison distance
+        if (inputOptions[2].equals("")){
+            inputOptions[2] = "0";
         }
+        maxCompDist = Long.parseLong(inputOptions[2])*1000;
+
 
         try {
             if (inFile.length() < 1){
@@ -501,7 +497,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             theData = new HaploData(assocTest);
 
             if (type == HAPS){
-                theData.prepareHapsInput(inFile);
+                theData.prepareHapsInput(new File(inputOptions[0]));
             }else{
                 theData.linkageToChrom(inFile, type);
             }
@@ -509,10 +505,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             //deal with marker information
             theData.infoKnown = false;
             File markerFile;
-            if (HaploviewOptions.getInfoFileName() == null){
+            if (inputOptions[1].equals("")){
                 markerFile = null;
             }else{
-                markerFile = new File(HaploviewOptions.getInfoFileName());
+                markerFile = new File(inputOptions[1]);
             }
 
             checkPanel = null;
@@ -523,6 +519,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 checkPanel = new CheckDataPanel(theData, true);
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
             }
+
 
             //let's start the math
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -698,7 +695,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     void readMarkers(File inputFile, String[][] hminfo){
         try {
-            theData.prepareMarkerInput(inputFile, hminfo);
+            theData.prepareMarkerInput(inputFile, maxCompDist, hminfo);
             if (theData.infoKnown){
                 analysisItem.setEnabled(true);
             }else{
@@ -1013,9 +1010,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             //parse command line stuff for input files or prompt data dialog
             HaploText argParser = new HaploText(args);
             String[] inputArray = new String[3];
-            //todo: finish this jules says it will work. but I don't know what he's
-            //todo: talking about.
-            /*if (argParser.getHapsFileName() != ""){
+            if (argParser.getHapsFileName() != ""){
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
                 inputArray[2] = String.valueOf(argParser.getMaxDistance());
@@ -1030,9 +1025,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[1] = "";
                 inputArray[2] = String.valueOf(argParser.getMaxDistance());
                 window.readGenotypes(inputArray, HMP);
-            }else{*/
-                window.openReadDataDialog("Welcome to Haploview");
-            //}
+            }else{
+                ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
+                readDialog.pack();
+                readDialog.setVisible(true);
+            }
         }
     }
 
