@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.25 2004/09/21 19:26:58 jcbarret Exp $
+* $Id: PedFile.java,v 1.26 2004/09/22 15:15:34 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -599,7 +599,7 @@ public class PedFile {
                     if (skip == 2){
                         String dc = Chromosome.getDataChrom();
                         if (dc != null){
-                            if (dc.equalsIgnoreCase(s)){
+                            if (!dc.equalsIgnoreCase(s)){
                                 throw new PedFileException("Hapmap file format error on line " + (k+1) +
                                         ":\n The file appears to contain multiple chromosomes:" +
                                         "\n" + dc + ", " + s);
