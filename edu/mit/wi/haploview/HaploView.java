@@ -42,7 +42,7 @@ public class HaploView extends JFrame implements ActionListener{
     static final String VIEW_HAPLOTYPES = "Haplotypes";
     static final String VIEW_LOD = "Genotyping completeness";
     static final String VIEW_CHECK_PANEL = "Check Markers";
-    static final String VIEW_TDT = "TDT";
+    static final String VIEW_TDT = "Association";
 
     //these three are always 1st and 2nd in the tabs
     static final int VIEW_D_NUM = 0;
