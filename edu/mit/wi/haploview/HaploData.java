@@ -1362,12 +1362,13 @@ public class HaploData implements Constants{
 
             if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
                 //skip missing data
-            } else if ((a1 >= 5 && a2 >= 5) || (a1 >= 5 && !(a2 == b2)) || (a2 >= 5 && !(a1 == b1))) doublehet++;
-            //find doublehets and resolved haplotypes
-            else if (a1 >= 5){
+            } else if (((a1 >= 5 || b1 >= 5) && (a2 >= 5 || b2 >= 5)) || (a1 >= 5 && !(a2 == b2)) || (a2 >= 5 && !(a1 == b1))){
+                doublehet++;
+                //find doublehets and resolved haplotypes
+            } else if (a1 >= 5 || b1 >= 5){
                 twoMarkerHaplos[1][marker2num[a2]]++;
                 twoMarkerHaplos[2][marker2num[a2]]++;
-            } else if (a2 >= 5){
+            } else if (a2 >= 5 || b2 >= 5){
                 twoMarkerHaplos[marker1num[a1]][1]++;
                 twoMarkerHaplos[marker1num[a1]][2]++;
             } else {
