@@ -430,6 +430,7 @@ public class HaploData implements Constants{
         Family currentFamily;
         Vector usedParents = new Vector();
         Vector chrom = new Vector();
+        Vector chromTrios = new Vector();
 
         for(int x=0; x < indList.size(); x++){
 
@@ -621,6 +622,7 @@ public class HaploData implements Constants{
                                 momUb[i] = (byte)(4+mom2);
                             }
                         }
+
                     }
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb));
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb));
@@ -684,11 +686,14 @@ public class HaploData implements Constants{
         }
 
 
+
+
         //set up the indexing to take into account skipped markers. Need
         //to loop through twice because first time we just count number of
         //unskipped markers
         Chromosome.doFilter(markerResults);
-        chromosomes = chrom;
+        chromTrios.addAll(chrom);
+        chromosomes = chromTrios;
         //wipe clean any existing marker info so we know we're starting with a new file
         Chromosome.markers = null;
         return result;
@@ -829,8 +834,76 @@ public class HaploData implements Constants{
 
             byte[] thisHap;
             Vector inputHaploVector = new Vector();
-            for (int i = 0; i < chromosomes.size(); i++){
-                thisHap = new byte[theBlock.length];
+            Vector inputHaploTrios = new Vector();
+            //whichVector[i] stores a value which indicates which vector chromosome i's genotype should go in
+            //1 indicates inputHaploVector (singletons), 2 indicates inputHaploTrios,
+            //0 indicates none (too much missing data)
+            int[] whichVector = new int[chromosomes.size()];
+
+
+            for(int i=0;i<numTrios*4; i+=4) {
+                Chromosome parentAFirst = (Chromosome) chromosomes.elementAt(i);
+                Chromosome parentASecond = (Chromosome) chromosomes.elementAt(i+1);
+                Chromosome parentBFirst = (Chromosome) chromosomes.elementAt(i+2);
+                Chromosome parentBSecond = (Chromosome) chromosomes.elementAt(i+3);
+                boolean tooManyMissingInASegmentA = false;
+                boolean tooManyMissingInASegmentB = false;
+                int totalMissingA = 0;
+                int totalMissingB = 0;
+                int segmentShift = 0;
+                for (int n = 0; n < block_size.length; n++){
+                    int missingA = 0;
+                    int missingB = 0;
+                    for (int j = 0; j < block_size[n]; j++){
+                        byte AFirstGeno = parentAFirst.getGenotype(theBlock[segmentShift+j]);
+                        byte ASecondGeno = parentASecond.getGenotype(theBlock[segmentShift+j]);
+                        byte BFirstGeno = parentBFirst.getGenotype(theBlock[segmentShift+j]);
+                        byte BSecondGeno = parentBSecond.getGenotype(theBlock[segmentShift+j]);
+
+                        if(AFirstGeno == 0 || ASecondGeno == 0) missingA++;
+                        if(BFirstGeno == 0 || BSecondGeno == 0) missingB++;
+                    }
+                    segmentShift += block_size[n];
+                    if (missingA >= missingLimit){
+                        tooManyMissingInASegmentA = true;
+                    }
+                    if (missingB >= missingLimit){
+                        tooManyMissingInASegmentB = true;
+                    }
+                    totalMissingA += missingA;
+                    totalMissingB += missingB;
+                }
+
+                if(!tooManyMissingInASegmentA && totalMissingA <= 1+theBlock.length/3
+                        && !tooManyMissingInASegmentB && totalMissingB <= 1+theBlock.length/3) {
+                    whichVector[i] = 2;
+                    whichVector[i+1] = 2;
+                    whichVector[i+2] = 2;
+                    whichVector[i+3] = 2;
+                }
+                else if(!tooManyMissingInASegmentA && totalMissingA <= 1+theBlock.length/3) {
+                    whichVector[i] = 1;
+                    whichVector[i+1] =1;
+                    whichVector[i+2] =0;
+                    whichVector[i+3]=0;
+                }
+                else if(!tooManyMissingInASegmentB && totalMissingB <= 1+theBlock.length/3) {
+                    whichVector[i] = 0;
+                    whichVector[i+1] =0;
+                    whichVector[i+2] =1;
+                    whichVector[i+3]=1;
+                }
+                else {
+                    whichVector[i] = 0;
+                    whichVector[i+1] =0;
+                    whichVector[i+2] =0;
+                    whichVector[i+3]=0;
+                }
+
+            }
+
+
+            for (int i = numTrios*4; i < chromosomes.size(); i++){
                 Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
                 Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++i);
                 boolean tooManyMissingInASegment = false;
@@ -853,6 +926,16 @@ public class HaploData implements Constants{
                 //subsegment (first term) or without too many missing genotypes in the
                 //whole block (second term)
                 if (!tooManyMissingInASegment && totalMissing <= 1+theBlock.length/3){
+                    whichVector[i-1] = 1;
+                    whichVector[i] = 1;
+                }
+            }
+
+            for (int i = 0; i < chromosomes.size(); i++){
+                Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
+
+                if(whichVector[i] == 1 || whichVector[i] == 2) {
+                    thisHap = new byte[theBlock.length];
                     for (int j = 0; j < theBlock.length; j++){
                         byte a1 = Chromosome.getMarker(theBlock[j]).getMajor();
                         byte a2 = Chromosome.getMarker(theBlock[j]).getMinor();
@@ -869,52 +952,30 @@ public class HaploData implements Constants{
                             }
                         }
                     }
-                    inputHaploVector.add(thisHap);
-                    thisHap = new byte[theBlock.length];
-                    for (int j = 0; j < theBlock.length; j++){
-                        byte a1 = Chromosome.getMarker(theBlock[j]).getMajor();
-                        byte a2 = Chromosome.getMarker(theBlock[j]).getMinor();
-                        byte nextGeno = nextChrom.getGenotype(theBlock[j]);
-                        if (nextGeno >= 5){
-                            thisHap[j] = 'h';
-                        } else {
-                            if (nextGeno == a1){
-                                thisHap[j] = '1';
-                            }else if (nextGeno == a2){
-                                thisHap[j] = '2';
-                            }else{
-                                thisHap[j] = '0';
-                            }
-                        }
+                    if(whichVector[i] == 1) {
+                        inputHaploVector.add(thisHap);
                     }
-                    inputHaploVector.add(thisHap);
+                    else if(whichVector[i] ==2) {
+                        inputHaploTrios.add(thisHap);
+                    }
                 }
             }
-            byte[][] input_haplos = (byte[][])inputHaploVector.toArray(new byte[0][0]);
-
-
-
-            String EMreturn = new String("");
-            int[] num_haplos_present = new int[1];
-            Vector haplos_present = new Vector();
-            Vector haplo_freq = new Vector();
+            int trioCount  = inputHaploTrios.size() / 4;
+            inputHaploTrios.addAll(inputHaploVector);
+            byte[][] input_haplos = (byte[][])inputHaploTrios.toArray(new byte[0][0]);
 
             //kirby patch
             EM theEM = new EM();
-            theEM.full_em_breakup(input_haplos, 4, num_haplos_present, haplos_present, haplo_freq, block_size, 0);
-            for (int j = 0; j < haplos_present.size(); j++){
-                EMreturn += (String)haplos_present.elementAt(j)+"\t"+(String)haplo_freq.elementAt(j)+"\t";
-            }
+            EMReturn EMresults = theEM.full_em_breakup(input_haplos, 4, block_size, 0,trioCount);
 
-            StringTokenizer st = new StringTokenizer(EMreturn);
             int p = 0;
-            Haplotype[] tempArray = new Haplotype[st.countTokens()/2];
-            while(st.hasMoreTokens()){
-                String aString = st.nextToken();
-                int[] genos = new int[aString.length()];
-                for (int j = 0; j < aString.length(); j++){
-                    byte returnBit = Byte.parseByte(aString.substring(j,j+1));
-                    if (returnBit == 1){
+            Haplotype[] tempArray = new Haplotype[EMresults.numHaplos()];
+            int[][] returnedHaplos = EMresults.getHaplotypes();
+            double[] returnedFreqs = EMresults.getFrequencies();
+            for (int i = 0; i < EMresults.numHaplos(); i++){
+                int[] genos = new int[returnedHaplos[i].length];
+                for (int j = 0; j < genos.length; j++){
+                    if (returnedHaplos[i][j] == 1){
                         genos[j] = Chromosome.getMarker(theBlock[j]).getMajor();
                     }else{
                         if (Chromosome.getMarker(theBlock[j]).getMinor() == 0){
@@ -951,9 +1012,9 @@ public class HaploData implements Constants{
                         //for markers with MAF close to 0.50 we can't use major/minor alleles to match
                         //'em up 'cause these might change given missing data
                         if (Chromosome.getMarker(selectedMarkers[currentClass]).getMAF() > 0.4){
-                            for (int i = 0; i < chromosomes.size(); i++){
-                                Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
-                                Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++i);
+                            for (int z = 0; z < chromosomes.size(); z++){
+                                Chromosome thisChrom = (Chromosome)chromosomes.elementAt(z);
+                                Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++z);
                                 int theGeno = thisChrom.getGenotype(selectedMarkers[currentClass]);
                                 int nextGeno = nextChrom.getGenotype(selectedMarkers[currentClass]);
                                 if (theGeno == nextGeno && theGeno == genos[indexIntoBlock]
@@ -979,7 +1040,7 @@ public class HaploData implements Constants{
                     }
                 }
 
-                double tempPerc = Double.parseDouble(st.nextToken());
+                double tempPerc = returnedFreqs[i];
                 if (tempPerc*100 > hapthresh){
                     tempArray[p] = new Haplotype(genos, tempPerc, preFiltBlock);
                     p++;

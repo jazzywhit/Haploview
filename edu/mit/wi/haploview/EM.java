@@ -58,8 +58,8 @@ public class EM {
         }
     }
 
-    public void full_em_breakup( byte[][] input_haplos, int max_missing, int[] num_haplos_present, Vector haplos_present, Vector haplo_freq, int[] block_size, int dump_phased_haplos) throws HaploViewException{
-        int i, j, k, num_poss, iter;//, maxk, numk;
+    public EMReturn full_em_breakup( byte[][] input_haplos, int max_missing, int[] block_size, int dump_phased_haplos, int numTrios) throws HaploViewException{
+        int num_poss, iter;//, maxk, numk;
         double total;//, maxprob;
         int block, start_locus, end_locus, biggest_block_size;
         int poss_full;//, best, h1, h2;
@@ -79,18 +79,18 @@ public class EM {
 
         //figure out the size of the biggest block
         biggest_block_size=block_size[0];
-        for (i=1; i<num_blocks; i++) {
+        for (int i=1; i<num_blocks; i++) {
             if (block_size[i] > biggest_block_size)
                 biggest_block_size=block_size[i];
         }
 
         num_poss = two_n[biggest_block_size];
         data = new OBS[num_haplos/2];
-        for (i=0; i<num_haplos/2; i++)
+        for (int i=0; i<num_haplos/2; i++)
             data[i]= new OBS();
 
         superdata = new SUPER_OBS[num_haplos/2];
-        for (i=0; i<num_haplos/2; i++)
+        for (int i=0; i<num_haplos/2; i++)
             superdata[i]= new SUPER_OBS(num_blocks);
 
         double[][] hprob = new double[num_blocks][num_poss];
@@ -118,7 +118,7 @@ public class EM {
             num_indivs=read_observations(num_haplos,num_loci,input_haplos,start_locus,end_locus);
 
             // start prob array with probabilities from full observations
-            for (j=0; j<num_poss; j++)
+            for (int j=0; j<num_poss; j++)
             {
                 prob[j]=PSEUDOCOUNT;
             }
@@ -128,7 +128,7 @@ public class EM {
             /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
             i.e., flat when nothing is known, close to phase known if a great deal is known */
 
-            for (i=0; i<num_indivs; i++) {
+            for (int i=0; i<num_indivs; i++) {
                 if (data[i].nposs==1) {
                     tempRec = (Recovery)data[i].poss.elementAt(0);
                     prob[tempRec.h1]+=1.0;
@@ -138,7 +138,7 @@ public class EM {
             }
 
             // normalize
-            for (j=0; j<num_poss; j++) {
+            for (int j=0; j<num_poss; j++) {
                 prob[j] /= total;
             }
 
@@ -146,15 +146,15 @@ public class EM {
             iter=0;
             while (iter<20) {
                 // compute probabilities of each possible observation
-                for (i=0; i<num_indivs; i++) {
+                for (int i=0; i<num_indivs; i++) {
                     total=0.0;
-                    for (k=0; k<data[i].nposs; k++) {
+                    for (int k=0; k<data[i].nposs; k++) {
                         tempRec = (Recovery) data[i].poss.elementAt(k);
                         tempRec.p = (float)(prob[tempRec.h1]*prob[tempRec.h2]);
                         total+=tempRec.p;
                     }
                     // normalize
-                    for (k=0; k<data[i].nposs; k++) {
+                    for (int k=0; k<data[i].nposs; k++) {
                         tempRec = (Recovery) data[i].poss.elementAt(k);
                         tempRec.p /= total;
                     }
@@ -162,14 +162,14 @@ public class EM {
 
                 // re-estimate prob
 
-                for (j=0; j<num_poss; j++)
+                for (int j=0; j<num_poss; j++)
                 {
                     prob[j]=1e-10;
                 }
                 total=num_poss*1e-10;
 
-                for (i=0; i<num_indivs; i++) {
-                    for (k=0; k<data[i].nposs; k++) {
+                for (int i=0; i<num_indivs; i++) {
+                    for (int k=0; k<data[i].nposs; k++) {
                         tempRec = (Recovery) data[i].poss.elementAt(k);
                         prob[tempRec.h1]+=tempRec.p;
                         prob[tempRec.h2]+=tempRec.p;
@@ -178,24 +178,24 @@ public class EM {
                 }
 
                 // normalize
-                for (j=0; j<num_poss; j++) {
+                for (int j=0; j<num_poss; j++) {
                     prob[j] /= total;
                 }
                 iter++;
             }
 
             // printf("FINAL PROBABILITIES:\n");
-            k=0;
-            for (j=0; j<num_poss; j++) {
+            int m=0;
+            for (int j=0; j<num_poss; j++) {
                 hint[j]=-1;
                 if (prob[j] > .001) {
                     // printf("haplo %s   p = %.4lf\n",haplo_str(j,block_size[block]),prob[j]);
-                    hlist[block][k]=j; hprob[block][k]=prob[j];
-                    hint[j]=k;
-                    k++;
+                    hlist[block][m]=j; hprob[block][m]=prob[j];
+                    hint[j]=m;
+                    m++;
                 }
             }
-            num_hlist[block]=k;
+            num_hlist[block]=m;
 
             // store current block results in super obs structure
             store_block_haplos(hlist, hprob, hint, block, num_indivs);
@@ -223,7 +223,7 @@ public class EM {
         /* run standard EM on supercombos */
 
         /* start prob array with probabilities from full observations */
-        for (j=0; j<poss_full; j++)
+        for (int j=0; j<poss_full; j++)
         {
             superprob[j]=PSEUDOCOUNT;
         }
@@ -233,7 +233,7 @@ public class EM {
         /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
         i.e., flat when nothing is known, close to phase known if a great deal is known */
 
-        for (i=0; i<num_indivs; i++) {
+        for (int i=0; i<num_indivs; i++) {
             if (superdata[i].nsuper==1) {
                 superprob[superdata[i].superposs[0].h1]+=1.0;
                 superprob[superdata[i].superposs[0].h2]+=1.0;
@@ -242,7 +242,7 @@ public class EM {
         }
 
         /* normalize */
-        for (j=0; j<poss_full; j++) {
+        for (int j=0; j<poss_full; j++) {
             superprob[j] /= total;
         }
 
@@ -250,30 +250,30 @@ public class EM {
         iter=0;
         while (iter<20) {
             /* compute probabilities of each possible observation */
-            for (i=0; i<num_indivs; i++) {
+            for (int i=0; i<num_indivs; i++) {
                 total=0.0;
-                for (k=0; k<superdata[i].nsuper; k++) {
+                for (int k=0; k<superdata[i].nsuper; k++) {
                     superdata[i].superposs[k].p = (float)
                             (superprob[superdata[i].superposs[k].h1]*
                             superprob[superdata[i].superposs[k].h2]);
                     total+=superdata[i].superposs[k].p;
                 }
                 /* normalize */
-                for (k=0; k<superdata[i].nsuper; k++) {
+                for (int k=0; k<superdata[i].nsuper; k++) {
                     superdata[i].superposs[k].p /= total;
                 }
             }
 
             /* re-estimate prob */
 
-            for (j=0; j<poss_full; j++)
+            for (int j=0; j<poss_full; j++)
             {
                 superprob[j]=1e-10;
             }
             total=poss_full*1e-10;
 
-            for (i=0; i<num_indivs; i++) {
-                for (k=0; k<superdata[i].nsuper; k++) {
+            for (int i=0; i<num_indivs; i++) {
+                for (int k=0; k<superdata[i].nsuper; k++) {
                     superprob[superdata[i].superposs[k].h1]+=superdata[i].superposs[k].p;
                     superprob[superdata[i].superposs[k].h2]+=superdata[i].superposs[k].p;
                     total+=(2.0*superdata[i].superposs[k].p);
@@ -281,7 +281,7 @@ public class EM {
             }
 
             /* normalize */
-            for (j=0; j<poss_full; j++) {
+            for (int j=0; j<poss_full; j++) {
                 superprob[j] /= total;
             }
             iter++;
@@ -291,17 +291,7 @@ public class EM {
         /* we're done - the indices of superprob now have to be
         decoded to reveal the actual haplotypes they represent */
 
-        k=0;
-        for (j=0; j<poss_full; j++) {
-            if (superprob[j] > .001) {
-                haplos_present.addElement(decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
 
-                //sprintf(haplos_present[k],"%s",decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
-                haplo_freq.addElement(String.valueOf(superprob[j]));
-                k++;
-            }
-        }
-        num_haplos_present[0]=k;
 
         /*
         Enumeration theHaplos = haplos_present.elements();
@@ -313,12 +303,12 @@ public class EM {
         }
                   */
 
-                    /*
+        double[] tempT,totalT,tempU,totalU;
+        Vector obsT = new Vector();
+        Vector obsU = new Vector();
         if(trioPhasing)
         {
-
             int best1=0,best2=0,h1,h2;
-            double[] tempT,totalT,tempU,totalU;
             double tempnorm=0,product,bestProduct=0;
             tempT = new double[poss_full];
             totalT = new double[poss_full];
@@ -326,7 +316,7 @@ public class EM {
             totalU = new double[poss_full];
 
 
-            for (i=0; i<num_indivs; i+=2) {
+            for (int i=0; i<numTrios*2; i+=2) {
                 best1=0; best2=0; bestProduct=-999.999;
 
                 tempnorm=0.00;
@@ -336,6 +326,7 @@ public class EM {
                         if (kid_consistent(superdata[i].superposs[n].h1,
                                 superdata[i+1].superposs[m].h1,num_blocks,
                                 block_size,hlist,num_hlist,i/2,num_loci)) {
+
 
                             product=superdata[i].superposs[n].p*superdata[i+1].superposs[m].p;
                             if (product > bestProduct) {
@@ -351,42 +342,56 @@ public class EM {
                                 tempU[superdata[i+1].superposs[m].h2]+=product;
                             }
                             /* normalize by all possibilities, even double hom */
-                          /*  tempnorm+=product;
+                            tempnorm+=product;
                         }
                     }
                 }
-            }
-            if (tempnorm > 0.00) {
-                for (j=0; j<poss_full; j++) {
-                    if (tempT[j] > 0.0000 || tempU[j] > 0.0000) {
-                        totalT[j] += (tempT[j]/tempnorm);
-                        totalU[j] += (tempU[j]/tempnorm);
-                        tempT[j]=tempU[j]=0.0000;
+
+                if (tempnorm > 0.00) {
+                    for (int j=0; j<poss_full; j++) {
+                        if (tempT[j] > 0.0000 || tempU[j] > 0.0000) {
+                            totalT[j] += (tempT[j]/tempnorm);
+                            totalU[j] += (tempU[j]/tempnorm);
+                            tempT[j]=tempU[j]=0.0000;
+                        }
                     }
+                    tempnorm=0.00;
                 }
-                tempnorm=0.00;
             }
-
-            if (bestProduct > -.00001) {
-                h1 = superdata[i].superposs[best1].h1;
-                h2 = superdata[i].superposs[best1].h2;
-                //fprintf(fpdump,"%s\n",decode_haplo_str(h1,num_blocks,block_size,hlist,num_hlist));
-                //fprintf(fpdump,"%s\n",decode_haplo_str(h2,num_blocks,block_size,hlist,num_hlist));
-                System.out.println(decode_haplo_str(h1,num_blocks,block_size,hlist,num_hlist));
-                System.out.println(decode_haplo_str(h2,num_blocks,block_size,hlist,num_hlist));
-                h1 = superdata[i+1].superposs[best2].h1;
-                h2 = superdata[i+1].superposs[best2].h2;
-                //fprintf(fpdump,"%s\n",decode_haplo_str(h1,num_blocks,block_size,hlist,num_hlist));
-                //fprintf(fpdump,"%s\n",decode_haplo_str(h2,num_blocks,block_size,hlist,num_hlist));
-                System.out.println(decode_haplo_str(h1,num_blocks,block_size,hlist,num_hlist));
-                System.out.println(decode_haplo_str(h2,num_blocks,block_size,hlist,num_hlist));
-
-            } else {
-                //fprintf(stderr,"trio %d unrecovered in emphased.haps\n",i/2);
-                System.out.println("trio "+ i/2 + " unrecovered in emphased.haps\n");
+            for (int j = 0; j <poss_full; j++){
+                if (superprob[j] > .001) {
+                    obsT.add(new Double(totalT[j]));
+                    obsU.add(new Double(totalU[j]));
+                }
             }
         }
-            */
+
+        EMReturn results;
+        Vector haplos_present = new Vector();
+        Vector haplo_freq= new Vector();
+
+        for (int j=0; j<poss_full; j++) {
+            if (superprob[j] > .001) {
+                haplos_present.addElement(decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
+
+                //sprintf(haplos_present[k],"%s",decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
+                haplo_freq.addElement(new Double(superprob[j]));
+
+            }
+        }
+
+        double[] freqs = new double[haplo_freq.size()];
+        for(int j=0;j<haplo_freq.size();j++) {
+            freqs[j] = ((Double)haplo_freq.elementAt(j)).doubleValue();
+        }
+
+        if (trioPhasing){
+            results = new EMReturn((int[][])haplos_present.toArray(new int[0][0]), freqs, obsT, obsU);
+        }else{
+            results = new EMReturn((int[][])haplos_present.toArray(new int[0][0]), freqs);
+        }
+        return results;
+
 
 
         /*
@@ -606,7 +611,7 @@ public class EM {
         }
     }
 
-    public String haplo_str(int h, int num_loci)
+/*    public String haplo_str(int h, int num_loci)
     {
         int i;//, val;
         StringBuffer s = new StringBuffer(num_loci);
@@ -616,18 +621,31 @@ public class EM {
         }
         return(s.toString());
     }
-
-    public String decode_haplo_str(int chap, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist)
+  */
+    public int[] decode_haplo_str(int chap, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist)
     {
-        int i, val;
-        StringBuffer s = new StringBuffer(num_blocks);
+        int i, val,size=0,counter=0;
+        for(i =0;i<num_blocks;i++) {
+            size += block_size[i];
+        }
+        int[] decoded = new int[size];
+
         for (i=0; i<num_blocks; i++) {
+
             val = chap % num_hlist[i];
-            s.append(haplo_str(hlist[i][val],block_size[i]));
+            for(int j=0; j<block_size[i];j++) {
+                if((hlist[i][val] & two_n[j]) == two_n[j]) {
+                    decoded[counter] = 2;
+                }
+                else {
+                    decoded[counter]=1;
+                }
+                counter++;
+            }
             chap -= val;
             chap /= num_hlist[i];
         }
-        return(s.toString());
+        return decoded;
     }
 
     public void create_super_haplos(int num_indivs, int num_blocks, int[] num_hlist)
@@ -706,28 +724,16 @@ public class EM {
     {
         int i, val;
         boolean retval;
-        String tempString1 = new String();
-        String tempString2 = new String();
 
-
-        for (i=0; i<num_blocks; i++) {
-            val = chap1 % num_hlist[i];
-            tempString1 = haplo_str(hlist[i][val],block_size[i]);
-            chap1 -= val;
-            chap1 /= num_hlist[i];
-
-            val = chap2 % num_hlist[i];
-            tempString2 = haplo_str(hlist[i][val],block_size[i]);
-            chap2 -= val;
-            chap2 /= num_hlist[i];
-        }
+        int[] temp1 = decode_haplo_str(chap1,num_blocks,block_size,hlist,num_hlist);
+        int[] temp2 = decode_haplo_str(chap2,num_blocks,block_size,hlist,num_hlist);
 
         retval=false;
         for (i=0; i<num_loci; i++) {
             if (ambighet[this_trio][i] == 0) {
                 //TODO:ask mark if this if statement should break out this way
                 //is this what this method should be doing?
-                if (tempString1.charAt(i) == tempString2.charAt(i))
+                if (temp1[i] == temp2[i])
                 {
                     retval=true;
                     break;
