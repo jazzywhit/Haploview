@@ -15,9 +15,6 @@ import java.io.*;
 import java.util.Vector;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.net.URL;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
@@ -290,9 +287,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 quit();
             }
         });
-
-
-
     }
 
 

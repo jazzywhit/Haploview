@@ -47,7 +47,7 @@ public class HVWrap {
 
         try {
             //if the nogui flag is present we force it into headless mode
-            String runString = "java -Xmx650m -classpath " + jarfile;
+            String runString = "java -Xmx10m -classpath " + jarfile;
             if (headless){
                 runString += " -Djava.awt.headless=true";
             }
@@ -63,20 +63,27 @@ public class HVWrap {
             StringBuffer errorMsg = new StringBuffer("Fatal Error:\n");
             BufferedReader besr = new BufferedReader(new InputStreamReader(child.getErrorStream()));
             String line = null;
-            if ((line = besr.readLine()) != null) {
-                errorMsg.append(line);
-                //if the child generated an error message, kill it
-                child.destroy();
-                dead = true;
+            while ( !dead  && (line = besr.readLine()) != null) {
+                if(line.lastIndexOf("Memory") != -1) {
+                    errorMsg.append(line);
+                    //if the child generated an "Out of Memory" error message, kill it
+                    child.destroy();
+                    dead = true;
+                }
             }
+            final String realErrorMsg = errorMsg.toString();
 
             //if the child died painfully throw up R.I.P. dialog
             if (dead){
                 if (headless){
                     System.out.println(errorMsg);
                 }else{
-                    JFrame jf = new JFrame();
-                    JOptionPane.showMessageDialog(jf, errorMsg, null, JOptionPane.ERROR_MESSAGE);
+                    Runnable showRip = new Runnable() {
+                        public void run() {
+                            JFrame jf = new JFrame();
+                            JOptionPane.showMessageDialog(jf, realErrorMsg, null, JOptionPane.ERROR_MESSAGE);}
+                    };
+                    SwingUtilities.invokeAndWait(showRip);
                 }
                 exitValue = -1;
             }
