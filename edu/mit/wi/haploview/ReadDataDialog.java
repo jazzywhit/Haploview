@@ -23,15 +23,13 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     static final int HAPS = 2;
     static final int PED = 3;
 
-    HaploView caller;
     int fileType;
     JTextField genoFileField, infoFileField;
     JCheckBox doTDT;
     NumberTextField maxComparisonDistField;
 
     public ReadDataDialog(String title, HaploView h){
-        caller = h;
-        setTitle(title);
+        super(h, title);
 
         JPanel contents = new JPanel();
         JButton hapmapButton = new JButton(HAPMAP_DATA);
@@ -53,8 +51,8 @@ public class ReadDataDialog extends JDialog implements ActionListener {
 
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
         this.setContentPane(contents);
-        this.setLocation(caller.getX() + 100,
-                caller.getY() + 100);
+        this.setLocation(this.getParent().getX() + 100,
+                this.getParent().getY() + 100);
         //this.setLocation((getParent().getWidth() - this.getWidth()) / 2,
         //		   (getParent().getHeight() - this.getHeight()) / 2);
         this.setModal(true);
@@ -74,6 +72,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         }else if (command == HAPMAP_DATA){
             //hapmap
         }else if (command == "OK"){
+            HaploView caller = (HaploView)this.getParent();
             String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};
             if (fileType == HAPS){
                 caller.readPhasedGenotypes(returnStrings);
@@ -142,15 +141,27 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         JPanel topFilePanel = new JPanel();
         JPanel botFilePanel = new JPanel();
         genoFileField = new JTextField("",20);
+
         //workaround for dumb Swing can't requestfocus until shown bug
-        genoFileField.requestFocus();
-        genoFileField.dispatchEvent(
+        //this one seems to throw a harmless exception in certain versions of the linux JRE
+        try{
+            SwingUtilities.invokeLater( new Runnable(){
+                public void run()
+                {
+                    genoFileField.requestFocus();
+                }});
+        }catch (RuntimeException re){
+        }
+
+        //this one seems to really fuck over the 1.3 version of the windows JRE
+        //in short: Java sucks.
+        /*genoFileField.dispatchEvent(
                 new FocusEvent(
                         genoFileField,
                         FocusEvent.FOCUS_GAINED,
                         false
                 )
-        );
+        );*/
 
         infoFileField = new JTextField("",20);
         JButton browseGenoButton = new JButton("Browse");
