@@ -5,9 +5,9 @@ import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.haploview.Constants;
 import edu.mit.wi.haploview.Options;
 import edu.mit.wi.haploview.Chromosome;
+import edu.mit.wi.haploview.BasicTableModel;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -79,7 +79,7 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
             tableData.add(tempVect.clone());
         }
 
-        TDTTableModel tm = new TDTTableModel(tableColumnNames, tableData);
+        BasicTableModel tm = new BasicTableModel(tableColumnNames, tableData);
         table = new JTable(tm);
 
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
@@ -129,38 +129,6 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
             this.refreshTable();
         }
     }
-
-    class TDTTableModel extends AbstractTableModel {
-		Vector columnNames; Vector data;
-
-		public TDTTableModel(Vector c, Vector d){
-			columnNames=c;
-			data=d;
-		}
-
-        public String getColumnName(int i){
-            return (String)columnNames.elementAt(i);
-        }
-
-        public Class getColumnClass(int c){
-            //things look nicer if we use the String renderer to left align all the cols.
-            return String.class;
-		}
-
-		public int getColumnCount(){
-			return columnNames.size();
-		}
-
-		public int getRowCount(){
-			return data.size();
-		}
-
-		public Object getValueAt(int row, int column){
-			return ((Vector)data.elementAt(row)).elementAt(column);
-		}
-
-	}
-
 }
 
 

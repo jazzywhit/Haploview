@@ -1,13 +1,12 @@
 package edu.mit.wi.haploview;
 
-import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.Individual;
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.util.Vector;
+import java.util.Arrays;
 
 
 public class FilteredIndividualsDialog extends JDialog implements ActionListener, Constants{
@@ -15,7 +14,7 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
     public FilteredIndividualsDialog(HaploView h, String title) {
         super(h,title);
 
-        FilteredIndividualsTableModel tableModel;
+        BasicTableModel tableModel;
         JTable table;
         JPanel contents = new JPanel();
 
@@ -33,7 +32,7 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
             data[i][2] = currentInd.getReasonImAxed();
         }
 
-        tableModel = new FilteredIndividualsTableModel(columnNames,data);
+        tableModel = new BasicTableModel(new Vector(Arrays.asList(columnNames)),new Vector(Arrays.asList(data)));
         table = new JTable(tableModel);
         table.getColumnModel().getColumn(2).setPreferredWidth(300);
 
@@ -65,40 +64,6 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
             this.dispose();
         }
     }
-
-    //the only reason we implement this is so that the cells arent editable (default for AbstractTableModel)
-    class FilteredIndividualsTableModel extends AbstractTableModel {
-        private String[] columnNames;
-        private String[][] data;
-
-        public FilteredIndividualsTableModel(String[] names, String[][] d ) {
-            columnNames = names;
-            data = d;
-        }
-
-        public int getColumnCount() {
-            return columnNames.length;
-        }
-
-        public int getRowCount() {
-            return data.length;
-        }
-
-        public String getColumnName(int col) {
-            return columnNames[col];
-        }
-
-        public Object getValueAt(int row, int col) {
-            return data[row][col];
-        }
-
-        public Class getColumnClass(int c) {
-            return String.class;
-        }
-
-    }
-
-
 }
 
 

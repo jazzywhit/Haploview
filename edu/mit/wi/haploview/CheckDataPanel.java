@@ -12,7 +12,6 @@ import java.util.Vector;
 
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
-import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
 
 public class CheckDataPanel extends JPanel implements TableModelListener, ActionListener{
@@ -238,30 +237,13 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         }
     }
 
-    class CheckDataTableModel extends AbstractTableModel {
+    class CheckDataTableModel extends BasicTableModel {
 		Vector columnNames; Vector data; int[] ratings; int[] dups;
 
 		public CheckDataTableModel(Vector c, Vector d, int[] r, int[] dups){
-			columnNames=c;
-			data=d;
+			super(c,d);
             ratings = r;
             this.dups = dups;
-		}
-
-		public int getColumnCount(){
-			return columnNames.size();
-		}
-
-		public int getRowCount(){
-			return data.size();
-		}
-
-		public Object getValueAt(int row, int column){
-			return ((Vector)data.elementAt(row)).elementAt(column);
-		}
-
-		public Class getColumnClass(int c){
-			return getValueAt(0, c).getClass();
 		}
 
 		public int getRating(int row){
@@ -278,10 +260,6 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             }
         }
 
-		public String getColumnName(int n){
-			return (String)columnNames.elementAt(n);
-		}
-
 		public boolean isCellEditable(int row, int col){
 			if (getColumnName(col).equals("Rating")){
 				return true;
@@ -289,8 +267,6 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
 				return false;
 			}
 		}
-
-
 
 		public void setValueAt(Object value, int row, int col){
 			((Vector)data.elementAt(row)).set(col, value);
