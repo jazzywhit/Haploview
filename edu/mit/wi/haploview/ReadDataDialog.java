@@ -9,7 +9,7 @@ import java.util.*;
 
 public class ReadDataDialog extends JDialog implements ActionListener, Constants {
 
-    static final String HAPMAP_DATA = "Browse HapMap data from HMP";
+    static final String HAPMAP_DATA = "Load HapMap data";
     static final String RAW_DATA = "Load genotypes (linkage format)";
     static final String PHASED_DATA = "Load phased haplotypes";
     static final String MARKER_DATA_EXT = ".info";

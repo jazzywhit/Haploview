@@ -33,7 +33,8 @@ public class HVWrap {
         String dir = System.getProperty("user.dir");
         String sep = System.getProperty("file.separator");
         String ver = System.getProperty("java.version");
-        System.out.println(ver);
+        //TODO:do some version checking and bitch at people with old JVMs
+        //System.out.println(ver);
         String jarfile = System.getProperty("java.class.path");
 
         String argsToBePassed = new String();
