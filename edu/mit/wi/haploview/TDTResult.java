@@ -16,6 +16,7 @@ public class TDTResult implements Constants{
     boolean tallyHet = false;
     double chiSqVal;
     boolean chiSet = false;
+    NumberFormat nf = NumberFormat.getInstance(Locale.US);
 
 
     public TDTResult(SNP tempSNP) {
@@ -128,6 +129,34 @@ public class TDTResult implements Constants{
         }
         return this.chiSqVal;
     }
+
+    public String getFreqs( int type) {
+        if(type == ASSOC_TRIO || counts == null || counts.length == 1) {
+            return "";
+        }
+        nf.setMinimumFractionDigits(3);
+        nf.setMaximumFractionDigits(3);
+        if (this.counts[0][0] > this.counts[0][1]){
+            if (this.counts[1][0] > this.counts[1][1]){
+                return nf.format((double)this.counts[0][0]/ (this.counts[0][0] + this.counts[0][1])) +
+                        ", " + nf.format((double)this.counts[1][0] / ( this.counts[1][0] + this.counts[1][1]));
+            }else{
+               return nf.format((double)this.counts[0][0]/ (this.counts[0][0] + this.counts[0][1])) +
+                        ", " + nf.format((double)this.counts[1][1] / ( this.counts[1][1] + this.counts[1][0]));
+            }
+        }else{
+            if (this.counts[1][0] > this.counts[1][1]){
+                return nf.format((double)this.counts[0][1]/ (this.counts[0][1] + this.counts[0][0])) +
+                        ", " + nf.format((double)this.counts[1][0] / ( this.counts[1][0] + this.counts[1][1]));
+            }else{
+                return nf.format((double)this.counts[0][1]/ (this.counts[0][1] + this.counts[0][0])) +
+                        ", " + nf.format((double)this.counts[1][1] / ( this.counts[1][1] + this.counts[1][0]));
+            }
+        }
+
+    }
+
+
 
     public String getTURatio(int type) {
         if (type == ASSOC_TRIO){

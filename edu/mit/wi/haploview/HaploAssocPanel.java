@@ -24,7 +24,8 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
 
 
     public HaploAssocPanel(Haplotype[][] haps){
-        //this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+        this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+
         makeTable(haps);
     }
 
@@ -93,7 +94,7 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
             }
             root.add(han);
         }
-        int countsOrRatios = SHOW_COUNTS;
+        int countsOrRatios = SHOW_HAP_COUNTS;
         if(jtt != null) {
             //if were just updating the table, then we want to retain the current status of countsOrRatios
             HaplotypeAssociationModel ham = (HaplotypeAssociationModel) jtt.getTree().getModel();
@@ -133,11 +134,12 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         jtt.setPreferredScrollableViewportSize(new Dimension(600,jtt.getPreferredScrollableViewportSize().height));
 
         JScrollPane treeScroller = new JScrollPane(jtt);
+        treeScroller.setMaximumSize(treeScroller.getPreferredSize());
         add(treeScroller);
 
         if(Options.getAssocTest() == ASSOC_CC) {
             JRadioButton countsButton = new JRadioButton("Show CC counts");
-            JRadioButton ratiosButton = new JRadioButton("Show CC ratios");
+            JRadioButton ratiosButton = new JRadioButton("Show CC frequencies");
 
             ButtonGroup bg = new ButtonGroup();
 
@@ -149,7 +151,7 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
             butPan.add(countsButton);
             butPan.add(ratiosButton);
             add(butPan);
-            if(countsOrRatios == SHOW_RATIOS) {
+            if(countsOrRatios == SHOW_HAP_RATIOS) {
                 ratiosButton.setSelected(true);
             }else{
                 countsButton.setSelected(true);
@@ -196,12 +198,12 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         String command = e.getActionCommand();
         if(command.equals("Show CC counts")) {
             HaplotypeAssociationModel ham = (HaplotypeAssociationModel)jtt.getTree().getModel();
-            ham.setCountsOrRatios(SHOW_COUNTS);
+            ham.setCountsOrRatios(SHOW_HAP_COUNTS);
             jtt.repaint();
         }
-        else if (command.equals("Show CC ratios")) {
+        else if (command.equals("Show CC frequencies")) {
             HaplotypeAssociationModel ham = (HaplotypeAssociationModel)jtt.getTree().getModel();
-            ham.setCountsOrRatios(SHOW_RATIOS);
+            ham.setCountsOrRatios(SHOW_HAP_RATIOS);
             jtt.repaint();
         }
 

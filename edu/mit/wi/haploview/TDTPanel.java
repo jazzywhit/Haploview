@@ -2,18 +2,28 @@ package edu.mit.wi.haploview;
 
 import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.PedFileException;
+import edu.mit.wi.haploview.TreeTable.HaplotypeAssociationModel;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.Vector;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.*;
 
-public class TDTPanel extends JPanel implements Constants {
+public class TDTPanel extends JPanel implements Constants, ActionListener {
 
     Vector result;
     JTable table;
     Vector tableColumnNames = new Vector();
+    //countsorfreqs stores the users current choice for displaying counts or frequencies.
+    //values are SHOW_SINGLE_COUNTS or SHOW_SINGLE_FREQS
+    //default is counts
+    private int countsOrFreqs;
 
     public TDTPanel(PedFile pf) throws PedFileException{
+        this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+
         if (Options.getAssocTest() == ASSOC_TRIO){
             result = TDT.calcTrioTDT(pf);
         }else{
@@ -56,7 +66,12 @@ public class TDTPanel extends JPanel implements Constants {
             tempVect.add(new Integer(Chromosome.realIndex[i]+1));
             tempVect.add(currentResult.getName());
             tempVect.add(currentResult.getOverTransmittedAllele(Options.getAssocTest()));
-            tempVect.add(currentResult.getTURatio(Options.getAssocTest()));
+            if(this.countsOrFreqs == SHOW_SINGLE_FREQS) {
+                tempVect.add(currentResult.getFreqs(Options.getAssocTest()));
+            } else if (this.countsOrFreqs == SHOW_SINGLE_COUNTS) {
+                tempVect.add(currentResult.getTURatio(Options.getAssocTest()));
+            }
+
             tempVect.add(new Double(currentResult.getChiSq(Options.getAssocTest())));
             tempVect.add(currentResult.getPValue());
 
@@ -74,8 +89,43 @@ public class TDTPanel extends JPanel implements Constants {
         table.getColumnModel().getColumn(2).setPreferredWidth(100);
 
         JScrollPane tableScroller = new JScrollPane(table);
+        tableScroller.setMaximumSize(tableScroller.getPreferredSize());
         add(tableScroller);
 
+         if(Options.getAssocTest() == ASSOC_CC) {
+            JRadioButton countsButton = new JRadioButton("Show CC counts");
+            JRadioButton ratiosButton = new JRadioButton("Show CC frequencies");
+
+            ButtonGroup bg = new ButtonGroup();
+
+            bg.add(countsButton);
+            bg.add(ratiosButton);
+            countsButton.addActionListener(this);
+            ratiosButton.addActionListener(this);
+            JPanel buttPan = new JPanel();
+            buttPan.add(countsButton);
+            buttPan.add(ratiosButton);
+            add(buttPan);
+            if(countsOrFreqs == SHOW_SINGLE_FREQS) {
+                ratiosButton.setSelected(true);
+            }else{
+                countsButton.setSelected(true);
+            }
+        }
+
+
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+        if(command.equals("Show CC counts")) {
+            this.countsOrFreqs = SHOW_SINGLE_COUNTS;
+            this.refreshTable();
+        }
+        else if (command.equals("Show CC frequencies")) {
+            this.countsOrFreqs = SHOW_SINGLE_FREQS;
+            this.refreshTable();
+        }
     }
 
     class TDTTableModel extends AbstractTableModel {

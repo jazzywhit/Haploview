@@ -50,10 +50,10 @@ public class HaplotypeAssociationModel extends AbstractTreeTableModel
             case 1:
                 return n.getFreq();
             case 2:
-                if(this.countsOrRatios == SHOW_COUNTS) {
+                if(this.countsOrRatios == SHOW_HAP_COUNTS) {
                     return n.getCounts();
-                } else if(this.countsOrRatios == SHOW_RATIOS) {
-                    return n.getRatios();
+                } else if(this.countsOrRatios == SHOW_HAP_RATIOS) {
+                    return n.getCCFreqs();
                 }
             case 3:
                 return n.getChiSq();

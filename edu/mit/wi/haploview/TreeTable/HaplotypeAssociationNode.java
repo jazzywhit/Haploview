@@ -50,14 +50,18 @@ public class HaplotypeAssociationNode {
     }
 
 
-    public String getRatios() {
+    public String getCCFreqs() {
         //this will only be called if we're doing case control
         if(counts == null || counts.length == 1) {
             //counts.length==1 should never happen,since that means it's Trio
             return "";
         }
-        return nf.format(this.counts[0][0] / this.counts[0][1]) + ", "
-                + nf.format(this.counts[1][0] / this.counts[1][1]) ;
+        nf.setMinimumFractionDigits(3);
+        nf.setMaximumFractionDigits(3);
+        //we divide by the sum of the two numbers since we really want the frequency of this haplotype
+        //for cases/controls
+        return nf.format(this.counts[0][0] / ( this.counts[0][0] + this.counts[0][1])) + ", "
+                + nf.format(this.counts[1][0] / (this.counts[1][0] + this.counts[1][1])) ;
 
     }
 
@@ -66,6 +70,7 @@ public class HaplotypeAssociationNode {
         if (counts == null){
             return ("");
         }
+
         nf.setMinimumFractionDigits(1);
         nf.setMaximumFractionDigits(1);
 
