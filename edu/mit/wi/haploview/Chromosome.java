@@ -7,7 +7,7 @@ class Chromosome{
     private String individual;
     private byte[] genotypes;
     private String origin;
-
+    boolean[] kidMissing;
 
     private boolean transmitted = false;
 
@@ -38,6 +38,16 @@ class Chromosome{
         origin = "unknown";
         trueSize = genotypes.length;
         transmitted = isTransmitted;
+    }
+
+    Chromosome(String p, String i, byte[] g, boolean isTransmitted,boolean[] isKidMissing){
+        ped = p;
+        individual = i;
+        genotypes = g;
+        origin = "unknown";
+        trueSize = genotypes.length;
+        transmitted = isTransmitted;
+        kidMissing = isKidMissing;
     }
 
 

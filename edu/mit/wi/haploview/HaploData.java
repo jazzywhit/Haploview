@@ -309,6 +309,7 @@ public class HaploData{
             currentFamily = pedFile.getFamily(indAndFamID[0]);
             currentInd = currentFamily.getMember(indAndFamID[1]);
 
+
             if(currentInd.getIsTyped()){
                 //singleton
                 if(currentFamily.getNumMembers() == 1){
@@ -326,8 +327,8 @@ public class HaploData{
                             chrom2[i] = 5;
                         }
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2));
+                    //chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1));
+                    //chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2));
                 }
                 else{
                     //skip if indiv is parent in trio or unaffected
@@ -342,6 +343,8 @@ public class HaploData{
                             byte[] momTb = new byte[numMarkers];
                             byte[] momUb = new byte[numMarkers];
 
+                            boolean[] kidMissing = new boolean[numMarkers];
+
                             for (int i = 0; i < numMarkers; i++){
                                 byte[] thisMarker = currentInd.getMarker(i);
                                 byte kid1 = thisMarker[0];
@@ -355,6 +358,7 @@ public class HaploData{
                                 byte dad2 = thisMarker[1];
 
                                 if (kid1 == 0 || kid2 == 0) {
+                                    kidMissing[i] = true;
                                     //kid missing
                                     if (dad1 == dad2) {
                                         dadTb[i] = dad1;
@@ -471,10 +475,10 @@ public class HaploData{
                                 }
                             }
 
-                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb,true));
-                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb,false));
-                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb,true));
-                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb,false));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb,true,kidMissing));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb,false,kidMissing));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb,true,kidMissing));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb,false,kidMissing));
 
 
                             usedParents.add(currentInd.getFamilyID()+" "+currentInd.getDadID());

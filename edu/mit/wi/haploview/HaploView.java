@@ -84,7 +84,9 @@ public class HaploView extends JFrame implements ActionListener{
     private HaploText argParser;
 
     public HaploView(){
-         fc = new JFileChooser(System.getProperty("user.dir"));
+        //TODO: initialize this where its actually used
+        //sometimes has bug: http://developer.java.sun.com/developer/bugParade/bugs/4711700.html
+        fc = new JFileChooser(System.getProperty("user.dir"));
 
         //menu setup
         JMenuBar menuBar = new JMenuBar();

@@ -27,17 +27,24 @@ public class TDT {
             //System.out.println("ind1U: " + chrom1U.getPed() + "\t" + chrom1U.getIndividual() );
             //System.out.println("ind2T: " + chrom2T.getPed() + "\t" + chrom2T.getIndividual() );
             //System.out.println("ind2U: " + chrom2U.getPed() + "\t" + chrom2U.getIndividual() );
+
             for(int j=0;j<numMarkers;j++){
-                byte allele1T = chrom1T.getGenotype(j);
-                byte allele1U = chrom1U.getGenotype(j);
-                byte allele2T = chrom2T.getGenotype(j);
-                byte allele2U = chrom2U.getGenotype(j);
+                if(!chrom1T.kidMissing[j] && !chrom2T.kidMissing[j]) {
+                    byte allele1T = chrom1T.getGenotype(j);
+                    byte allele1U = chrom1U.getGenotype(j);
+                    byte allele2T = chrom2T.getGenotype(j);
+                    byte allele2U = chrom2U.getGenotype(j);
 
-                TDTResult curRes = (TDTResult)results.get(j);
-
-                //System.out.println("marker "+ j + ":\t "  + allele1T + "\t" + allele1U + "\t" + allele2T + "\t" + allele2U);
-                curRes.tallyInd(allele1T,allele1U);
-                curRes.tallyInd(allele2T,allele2U);
+                    if( !(allele1T == 0 && allele1U ==0 && allele2T == 5 && allele2U == 5)
+                         && !(allele2T == 0 && allele2U ==0 && allele1T == 5 && allele1U == 5) ){
+                        TDTResult curRes = (TDTResult)results.get(j);
+                        //if(j==21){
+                        //    System.out.println("marker "+ j + ":\t "  + allele1T + "\t" + allele1U + "\t" + allele2T + "\t" + allele2U);
+                        //}
+                        curRes.tallyInd(allele1T,allele1U);
+                        curRes.tallyInd(allele2T,allele2U);
+                    }
+                }
             }
 
         }
