@@ -1,9 +1,27 @@
 package edu.mit.wi.haploview;
 
 import javax.swing.*;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
+class StreamGobbler extends Thread{
+    InputStream is;
+
+    StreamGobbler(InputStream is){
+        this.is = is;
+    }
+
+    public void run(){
+        try{
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            String line=null;
+            while ( (line = br.readLine()) != null)
+                System.out.println(line);
+        } catch (IOException ioe){
+            ioe.printStackTrace();
+        }
+    }
+}
 
 public class HVWrap {
 
@@ -11,7 +29,7 @@ public class HVWrap {
 
     public static void main(String[] args) {
 
-        JFrame jf = new JFrame();
+        int exitValue = 0;
         String dir = System.getProperty("user.dir");
         String sep = System.getProperty("file.separator");
         String ver = System.getProperty("java.version");
@@ -28,7 +46,6 @@ public class HVWrap {
         }
 
         try {
-
             //if the nogui flag is present we force it into headless mode
             String runString = "java -Xmx650m -classpath " + jarfile;
             if (headless){
@@ -37,33 +54,41 @@ public class HVWrap {
             runString += " edu.mit.wi.haploview.HaploView"+argsToBePassed;
             Process child = Runtime.getRuntime().exec(runString);
 
-            int c;
-            boolean dead = false;
-            StringBuffer errorMsg = new StringBuffer();
-            InputStream es = child.getErrorStream();
-            InputStream is = child.getInputStream();
+            //start up a thread to simply pump out all messages to stdout
+            StreamGobbler isg = new StreamGobbler(child.getInputStream());
+            isg.start();
 
             //while the child is alive we wait for error messages
-            while ((c=es.read())!=-1) {
-                errorMsg.append((char)c);
-                if (!dead){
-                    child.destroy();
-                    dead = true;
-                }
+            boolean dead = false;
+            StringBuffer errorMsg = new StringBuffer("Fatal Error:\n");
+            BufferedReader besr = new BufferedReader(new InputStreamReader(child.getErrorStream()));
+            String line = null;
+            if ((line = besr.readLine()) != null) {
+                errorMsg.append(line);
+                //if the child generated an error message, kill it
+                child.destroy();
+                dead = true;
             }
 
-            //if the child has exited without throwing an error (which should've been caught and dealt
-            //with above) we read all the accumulated msgs to stdout and print them...
-            while ((c=is.read())!=-1){
-                System.out.print((char)c);
-            }
+            //if the child died painfully throw up R.I.P. dialog
             if (dead){
-                JOptionPane.showMessageDialog(jf, "Fatal Error:\n" + errorMsg, null, JOptionPane.ERROR_MESSAGE);
+                if (headless){
+                    System.out.println(errorMsg);
+                }else{
+                    JFrame jf = new JFrame();
+                    JOptionPane.showMessageDialog(jf, errorMsg, null, JOptionPane.ERROR_MESSAGE);
+                }
+                exitValue = -1;
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(jf, "Error:\nUnable to launch Haploview.", null, JOptionPane.ERROR_MESSAGE);
+            if (headless){
+                System.out.println("Error:\nUnable to launch Haploview.\n"+e.getMessage());
+            }else{
+                JFrame jf = new JFrame();
+                JOptionPane.showMessageDialog(jf, "Error:\nUnable to launch Haploview.\n"+e.getMessage(), null, JOptionPane.ERROR_MESSAGE);
+            }
         }
-        System.exit(0);
+        System.exit(exitValue);
     }
 
 
