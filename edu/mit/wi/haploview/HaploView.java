@@ -52,7 +52,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private int currentBlockDef = BLOX_GABRIEL;
     private TDTPanel tdtPanel;
     int assocTest = 0;
-    int currentScheme = 1;
+    int currentScheme = STD_SCHEME;
     private javax.swing.Timer timer;
     long maxCompDist;
 
@@ -352,7 +352,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     private void changeKey(int scheme) {
         keyMenu.removeAll();
-        if (scheme == 1){
+        if (scheme == STD_SCHEME){
             JMenuItem keyItem = new JMenuItem("High D'");
             Dimension size = keyItem.getPreferredSize();
             keyItem.setBackground(Color.red);
@@ -370,7 +370,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             keyItem = new JMenuItem("High D' / Low LOD");
             keyItem.setBackground(new Color(192, 192, 240));
             keyMenu.add(keyItem);
-        } else if (scheme == 2){
+        } else if (scheme == SFS_SCHEME){
             JMenuItem keyItem = new JMenuItem("Strong Linkage");
             keyItem.setBackground(Color.darkGray);
             keyItem.setForeground(Color.white);
@@ -381,7 +381,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             keyItem = new JMenuItem("Recombination");
             keyItem.setBackground(Color.white);
             keyMenu.add(keyItem);
-        } else if (scheme == 3){
+        } else if (scheme == GAM_SCHEME){
             JMenuItem keyItem = new JMenuItem("< 4 Gametes");
             keyItem.setBackground(Color.darkGray);
             keyItem.setForeground(Color.white);
