@@ -113,9 +113,9 @@ public class HaploData{
         }
     }
 
-    void prepareGenotypeInput(File infile) throws IOException{
+    void prepareHapsInput(File infile) throws IOException{
         //this method is called to suck in data from a file (its only argument)
-        //of genotypes and return a vector of Chromosome objects.
+        //of genotypes and sets up the Chromosome objects.
         String currentLine;
         Vector chroms = new Vector();
         byte[] genos = new byte[0];
@@ -158,7 +158,9 @@ public class HaploData{
         //also convert sums of bad genotypes to percentages for each marker
         double numChroms = chroms.size();
         Vector markerInfo = new Vector();
+        Chromosome.realIndex = new int[genos.length];
         for (int i = 0; i < genos.length; i++){
+            Chromosome.realIndex[i] = i;
             //to compute maf, browse chrom list and count instances of each allele
             byte a1 = 0;
             double numa1 = 0; double numa2 = 0;
@@ -385,7 +387,7 @@ public class HaploData{
         numBadGenotypes = new double[numMarkers];
         percentBadGenotypes = new double[numMarkers];
 
-                //set up the indexing to take into account skipped markers. Need
+        //set up the indexing to take into account skipped markers. Need
         //to loop through twice because first time we just count number of
         //unskipped markers
         int count = 0;
@@ -565,8 +567,6 @@ public class HaploData{
                 EMreturn += (String)haplos_present.elementAt(j)+"\t"+(String)haplo_freq.elementAt(j)+"\t";
             }
 
-            //old c version
-            //String EMreturn = runEM(input_haplos.length, theBlock.length, input_haplos, block_size.length, block_size);
 
             StringTokenizer st = new StringTokenizer(EMreturn);
             int p = 0;
@@ -830,17 +830,6 @@ public class HaploData{
         }
         blocks = returnVec;
     }
-
-    /*
-    old c version
-
-    static {
-    System.loadLibrary("haplos");
-    }
-
-    private native String callComputeDPrime(int aa, int ab, int ba, int bb, int doublehet);
-    private native String runEM(int num_haplos, int num_loci, String[] input_haplos, int num_blocks, int[] block_size);
-    */
 
 
     public PairwiseLinkage computeDPrime(int a, int b, int c, int d, int e, double f){

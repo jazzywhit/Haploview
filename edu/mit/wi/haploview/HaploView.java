@@ -449,7 +449,7 @@ public class HaploView extends JFrame implements ActionListener{
         filenames = f;
         theData = new HaploData();
         try{
-            theData.prepareGenotypeInput(new File(filenames[0]));
+            theData.prepareHapsInput(new File(filenames[0]));
             processData();
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
@@ -552,6 +552,7 @@ public class HaploView extends JFrame implements ActionListener{
         dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
         panel.add(dPrimeScroller);
         tabs.addTab(viewItems[0], panel);
+        System.out.println(dPrimeScroller.getSize());
 
         //compute and show haps on next tab
         panel = new JPanel();
@@ -720,7 +721,7 @@ public class HaploView extends JFrame implements ActionListener{
 
             if(!fileType){
                 //read in haps file
-                textData.prepareGenotypeInput(inputFile);
+                textData.prepareHapsInput(inputFile);
             }
             else {
                 //read in ped file
