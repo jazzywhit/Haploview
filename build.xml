@@ -55,6 +55,22 @@
    <copy file="resources/orator.raw" todir="build/classes/edu/mit/wi/haploview/"/>
 </target>
 
+<!-- this target makes the jar with HVWrap as the main class, which -->
+<!-- uses automagic -Xmx stuff, and suppresses error output -->
+<target name = "haploview-release" depends="compile-haploview">
+   <jar jarfile="Haploview.jar">
+     <fileset dir="${haploview.classes}">
+       <include name="edu/mit/wi/**/**"/>
+     </fileset>
+     <manifest>
+       <attribute name="Built-By" value="${user.name}"/>
+       <attribute name="Main-Class" value="edu.mit.wi.haploview.HVWrap"/>
+       <attribute name="Class-Path" value="resources/JimiProClasses.zip"/>
+     </manifest>
+     <zipfileset src="resources/JimiProClasses.zip"/>
+   </jar>
+</target>
+
 
 <!-- Jar the application up -->
 <target name="haploview" depends="compile-haploview">
@@ -77,6 +93,7 @@
   <echo message="where [target-name] is one of the following targets:"/>
   <echo message="compile-haploview --> compiles the haploview classes
   only"/>
+  <echo message="haploview-release --> makes 'wrapped' jar with auto Xmx and error suppression"/>
   <echo message="haploview --> makes the executable jar file"/>
   <echo message="clean --> cleans up after itself removing the build directory"/>
   <echo message="------------------------------------------------------------"/>
