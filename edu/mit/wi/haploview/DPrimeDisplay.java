@@ -308,8 +308,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         exportStop = -1;
-        if (stop >= Chromosome.getUnfilteredSize()){
-            stop = Chromosome.getUnfilteredSize()-1;
+        if (stop > Chromosome.getUnfilteredSize()){
+            stop = Chromosome.getUnfilteredSize();
         }
         while (true){
             //if the marker we want has been filtered walk down until we find a valid one
