@@ -1324,7 +1324,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
                     //get the alleles for the 4 two-marker haplotypes
                     String[] alleleStrings = new String[4];
-                    String[] alleleMap = {"", "A","C","G","T"};
+                    String[] alleleMap = {"X", "A","C","G","T"};
                     if (freqs[0] + freqs[1] > freqs[2] + freqs[3]){
                         alleleStrings[0] = alleleMap[Chromosome.getMarker(boxX).getMajor()];
                         alleleStrings[1] = alleleMap[Chromosome.getMarker(boxX).getMajor()];

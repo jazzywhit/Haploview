@@ -215,12 +215,15 @@ public class EM implements Constants {
                     if (theGeno >= 5){
                         thisHap[j] = 'h';
                     } else {
-                        if (theGeno == a1){
+                        if (theGeno == 0){
+                            thisHap[j] = '0';
+                        }else if (theGeno == a1){
                             thisHap[j] = '1';
                         }else if (theGeno == a2){
                             thisHap[j] = '2';
                         }else{
-                            thisHap[j] = '0';
+                            throw new HaploViewException("Marker with > 2 alleles: " +
+                                    Chromosome.getMarker(theBlock[j]).getName());
                         }
                     }
                 }
