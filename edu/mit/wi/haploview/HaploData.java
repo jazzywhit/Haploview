@@ -2,6 +2,7 @@ package edu.mit.wi.haploview;
 
 
 import edu.mit.wi.pedfile.*;
+import edu.mit.wi.haploview.TreeTable.HaplotypeAssociationNode;
 
 import java.io.*;
 import java.util.*;
@@ -735,7 +736,7 @@ public class HaploData implements Constants{
         return filt;
     }*/
 
-    Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh, boolean crossover) throws HaploViewException{
+    Haplotype[][] generateHaplotypes(Vector blocks, boolean crossover) throws HaploViewException{
         //TODO: output indiv hap estimates
         Haplotype[][] results = new Haplotype[blocks.size()][];
         //String raw = new String();
@@ -770,7 +771,10 @@ public class HaploData implements Constants{
                         if (marker1 > marker2){
                             int tmp = marker1; marker1 = marker2; marker2 = tmp;
                         }
-                        if ( dpTable.getLDStats(marker1,marker2).getRSquared() == 1.0){
+
+
+                        if ( dpTable.getLDStats(marker1,marker2) != null
+                                && dpTable.getLDStats(marker1,marker2).getRSquared() == 1.0){
                             //these two SNPs are redundant
                             equivClass[y] = classCounter;
                         }
@@ -803,7 +807,7 @@ public class HaploData implements Constants{
             EM theEM = new EM(chromosomes,numTrios);
             theEM.doEM(theBlock);
 
-            int p = 0;
+            //int p = 0;
             Haplotype[] tempArray = new Haplotype[theEM.numHaplos()];
             int[][] returnedHaplos = theEM.getHaplotypes();
             double[] returnedFreqs = theEM.getFrequencies();
@@ -875,24 +879,23 @@ public class HaploData implements Constants{
                     }
                 }
 
-                double tempPerc = returnedFreqs[i];
-                if (tempPerc*100 > hapthresh){
-                    tempArray[p] = new Haplotype(genos, tempPerc, preFiltBlock);
-                    //if we are performing association tests, then store the results
-                    if (Options.getAssocTest() == ASSOC_TRIO){
-                        tempArray[p].setTransCount(theEM.getTransCount(i));
-                        tempArray[p].setUntransCount(theEM.getUntransCount(i));
-                    }else if (Options.getAssocTest() == ASSOC_CC){
-                        tempArray[p].setCaseFreq(theEM.getCaseFreq(i));
-                        tempArray[p].setControlFreq(theEM.getControlFreq(i));
-                    }
-                    p++;
+                //if (tempPerc*100 > hapthresh){
+                tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock);
+                //if we are performing association tests, then store the results
+                if (Options.getAssocTest() == ASSOC_TRIO){
+                    tempArray[i].setTransCount(theEM.getTransCount(i));
+                    tempArray[i].setUntransCount(theEM.getUntransCount(i));
+                }else if (Options.getAssocTest() == ASSOC_CC){
+                    tempArray[i].setCaseFreq(theEM.getCaseFreq(i));
+                    tempArray[i].setControlFreq(theEM.getControlFreq(i));
                 }
+                //p++;
+                //}
             }
             //make the results array only large enough to hold haps
             //which pass threshold above
-            results[k] = new Haplotype[p];
-            for (int z = 0; z < p; z++){
+            results[k] = new Haplotype[theEM.numHaplos()];
+            for (int z = 0; z < theEM.numHaplos(); z++){
                 results[k][z] = tempArray[z];
             }
         }
@@ -908,7 +911,7 @@ public class HaploData implements Constants{
 
     Haplotype[][] generateCrossovers(Haplotype[][] haplos) throws HaploViewException{
         Vector crossBlock = new Vector();
-        double CROSSOVER_THRESHOLD = 0.01;   //to what percentage do we want to consider crossings?
+        double CROSSOVER_THRESHOLD = 0.001;   //to what percentage do we want to consider crossings?
 
         if (haplos.length == 0) return null;
 
@@ -954,7 +957,7 @@ public class HaploData implements Constants{
             }
             inputVector.add(intArray);
 
-            Haplotype[] crossHaplos = generateHaplotypes(inputVector, 1,true)[0];  //get haplos of gap
+            Haplotype[] crossHaplos = generateHaplotypes(inputVector,true)[0];  //get haplos of gap
             double[][] multilocusTable = new double[haplos[gap].length][];
             double[] rowSum = new double[haplos[gap].length];
             double[] colSum = new double[haplos[gap+1].length];
@@ -1555,26 +1558,35 @@ public class HaploData implements Constants{
             saveHapsWriter.write("\n");
             //write haps and crossover percentages
             for (int j = 0; j < finishedHaplos[i].length; j++){
-                int[] theGeno = finishedHaplos[i][j].getGeno();
-                StringBuffer theHap = new StringBuffer(theGeno.length);
-                for (int k = 0; k < theGeno.length; k++){
-                    theHap.append(theGeno[k]);
-                }
-                saveHapsWriter.write(theHap.toString() + " (" + nf.format(finishedHaplos[i][j].getPercentage()) + ")");
-                if (i < finishedHaplos.length-1){
-                    saveHapsWriter.write("\t|");
-                    for (int crossCount = 0; crossCount < finishedHaplos[i+1].length; crossCount++){
-                        if (crossCount != 0) saveHapsWriter.write("\t");
-                        saveHapsWriter.write(nf.format(finishedHaplos[i][j].getCrossover(crossCount)));
+                if((finishedHaplos[i][j].getPercentage()*100) >= Options.getHaplotypeDisplayThreshold()) {
+                    int[] theGeno = finishedHaplos[i][j].getGeno();
+                    StringBuffer theHap = new StringBuffer(theGeno.length);
+                    for (int k = 0; k < theGeno.length; k++){
+                        theHap.append(theGeno[k]);
                     }
-                    saveHapsWriter.write("|");
+                    saveHapsWriter.write(theHap.toString() + " (" + nf.format(finishedHaplos[i][j].getPercentage()) + ")");
+                    if (i < finishedHaplos.length-1){
+                        saveHapsWriter.write("\t|");
+                        boolean writeTab = false;
+                        for (int crossCount = 0; crossCount < finishedHaplos[i+1].length; crossCount++){
+                            if((finishedHaplos[i+1][crossCount].getPercentage()*100) >= Options.getHaplotypeDisplayThreshold() ) {
+                                if (crossCount != 0 && writeTab) saveHapsWriter.write("\t");
+                                saveHapsWriter.write(nf.format(finishedHaplos[i][j].getCrossover(crossCount)));
+                                writeTab = true;
+                            }
+                        }
+                        saveHapsWriter.write("|");
+                    }
+                    saveHapsWriter.write("\n");
                 }
-                saveHapsWriter.write("\n");
             }
             if (i < finishedHaplos.length - 1){
                 saveHapsWriter.write("Multiallelic Dprime: " + nf.format(multidprime[i]) + "\n");
             }
+
         }
+
+
         saveHapsWriter.close();
     }
 
@@ -1850,6 +1862,142 @@ public class HaploData implements Constants{
     public Haplotype[][] getHaplotypes() {
         return haplotypes;
     }
+
+
+    public static void saveMarkerAssocToText(Vector markerResults, String outputFileName) {
+        if(markerResults == null) {
+            return;
+        }
+
+        if(Options.getAssocTest() != ASSOC_TRIO && Options.getAssocTest() != ASSOC_CC) {
+            return ;
+        }
+
+        FileWriter fw;
+        try {
+            fw = new FileWriter(outputFileName);
+        } catch(IOException ioe) {
+            System.err.println("An error occured while accessing the marker association output file");
+            return;
+        }
+
+        StringBuffer result = new StringBuffer();
+        //result.append("Marker Association Results\n-------------------------------\n");
+        if(Options.getAssocTest() == ASSOC_TRIO) {
+            result.append("#\tName\tOvertransmitted\tT:U\tChi squared\tP value\n");
+
+        } else if(Options.getAssocTest() == ASSOC_CC) {
+            result.append("#\tName\tMajor Alleles\tCase,Control Ratios\tChi squared\tP value\n");
+        }
+
+        //only output assoc results for markers which werent filtered
+        for(int i=0;i<Chromosome.getSize();i++) {
+            TDTResult currentResult = (TDTResult) markerResults.get(Chromosome.realIndex[i]);
+            result.append((Chromosome.realIndex[i] + 1)).append("\t");
+            result.append(currentResult.getName()).append("\t");
+            result.append(currentResult.getOverTransmittedAllele(Options.getAssocTest())).append("\t");
+            result.append(currentResult.getTURatio(Options.getAssocTest())).append("\t");
+            result.append(currentResult.getChiSq(Options.getAssocTest())).append("\t");
+            result.append(currentResult.getPValue()).append("\n");
+        }
+
+        try {
+            fw.write(result.toString().toCharArray());
+            fw.close();
+        } catch(IOException ioe) {
+            System.err.println("An error occured while writing to the marker association output file.");
+        }
+    }
+
+    public static void saveHapAssocToText(Haplotype[][] haps, String outputFileName) {
+        FileWriter fw;
+        try {
+            fw = new FileWriter(outputFileName);
+        } catch(IOException ioe) {
+            System.err.println("An error occured while accessing the haplotype association output file");
+            return;
+        }
+
+
+        StringBuffer result = new StringBuffer();
+        if(Options.getAssocTest() == ASSOC_TRIO) {
+            result.append("Block\tHaplotype\tFreq.\tT:U\tChi Squared\tP Value\n");
+        } else if(Options.getAssocTest() == ASSOC_CC) {
+            result.append("Block\tHaplotype\tFreq.\tCase, Control Ratios\tChi Squared\tP Value\n");
+        }
+
+        String[] alleleCodes = new String[5];
+        alleleCodes[0] = "X";
+        alleleCodes[1] = "A";
+        alleleCodes[2] = "C";
+        alleleCodes[3] = "G";
+        alleleCodes[4] = "T";
+
+        HaplotypeAssociationNode han;
+        for(int i=0;i< haps.length;i++){
+            Haplotype[] curBlock = haps[i];
+            double chisq;
+
+            result.append("Block " + (i+1)).append("\n");
+
+            for(int j=0;j< curBlock.length; j++) {
+                if (curBlock[j].getPercentage()*100 >= Options.getHaplotypeDisplayThreshold()){
+                    int[] genotypes = curBlock[j].getGeno();
+                    StringBuffer curHap = new StringBuffer(genotypes.length);
+                    for(int k=0;k<genotypes.length;k++) {
+                        curHap.append(alleleCodes[genotypes[k]]);
+                    }
+
+                    double[][] counts;
+                    if(Options.getAssocTest() == ASSOC_TRIO) {
+                        counts = new double[1][2];
+                        counts[0][0] = curBlock[j].getTransCount();
+                        counts[0][1] = curBlock[j].getUntransCount();
+                    }
+                    else {
+                        counts = new double[2][2];
+                        counts[0][0] = curBlock[j].getCaseFreq();
+                        counts[1][0] = curBlock[j].getControlFreq();
+                        double caseSum=0;
+                        double controlSum=0;
+                        for (int k=0; k < curBlock.length; k++){
+                            if (j!=k){
+                                caseSum += curBlock[k].getCaseFreq();
+                                controlSum += curBlock[k].getControlFreq();
+                            }
+                        }
+                        counts[0][1] = caseSum;
+                        counts[1][1] = controlSum;
+                    }
+                    chisq = HaploAssocPanel.getChiSq(counts);
+                    han =new HaplotypeAssociationNode(curHap.toString(),
+                            curBlock[j].getPercentage(),
+                            counts,
+                            chisq,
+                            HaploAssocPanel.getPValue(chisq));
+
+                    result.append("\t");
+                    result.append(han.getName()).append("\t");
+                    result.append(han.getFreq()).append("\t");
+                    result.append(han.getCounts()).append("\t");
+                    result.append(han.getChiSq()).append("\t");
+                    result.append(han.getPVal()).append("\n");
+
+                }
+            }
+        }
+
+        try {
+            fw.write(result.toString().toCharArray());
+            fw.close();
+        } catch(IOException ioe) {
+            System.err.println("An error occured while writing to the haplotype association output file.");
+        }
+
+    }
+
+
+
 
     //this whole method is broken at the very least because it doesn't check for zeroing
     //out of mendel errors correctly. on the other hand we may never want to

@@ -16,8 +16,8 @@ public class HaplotypeDisplay extends JComponent {
     double multidprimeArray[];
     int missingLimit = 5;
     boolean useThickness = true;
-    int thinThresh = 1;
-    int thickThresh = 10;
+    double thinThresh = 1;
+    double thickThresh = 10;
     private boolean forExport = false;
     public int alleleDisp;
     private Color dullRed = new Color(204,51,51);
@@ -51,7 +51,7 @@ public class HaplotypeDisplay extends JComponent {
     public void getHaps() throws HaploViewException{
         if (theData.blocks == null) {return;}
 
-        Haplotype[][] haplos = theData.generateHaplotypes(theData.blocks, 0,false);
+        Haplotype[][] haplos = theData.generateHaplotypes(theData.blocks,false);
 
         orderedHaplos = new Haplotype[haplos.length][];
         for (int i = 0; i < haplos.length; i++) {
@@ -450,7 +450,7 @@ public class HaplotypeDisplay extends JComponent {
                                 filteredHaplos[i][curHapNum].getCrossover(crossCount);
 
                         //draw thin and thick lines
-                        int crossValue = (int) (crossVal*100);
+                        double crossValue = (crossVal*100);
                         if (crossValue > thinThresh) {
                             g.setStroke(crossValue > thickThresh ? thickStroke : thinStroke);
                             int connectTo = filteredHaplos[i+1][crossCount].getListOrder();

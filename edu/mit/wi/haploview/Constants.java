@@ -106,6 +106,9 @@ public interface Constants {
                         "-minGenoPercent <threshold>     Exclude markers with less than <threshold> valid data. <threshold> is a value\n" +
                         "                                between 0 and 1. \n" +
                         "-hwcutoff <threshold>           Exclude markers with a HW p-value greater than <threshold>. <threshold> is a value\n" +
-                        "                                between 0 and 1. \n";
+                        "                                between 0 and 1. \n" + 
+                        "-assocCC                        Outputs case control association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC\n" +
+                        "-assocTDT                       Outputs trio association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC"
+            ;
 
 }

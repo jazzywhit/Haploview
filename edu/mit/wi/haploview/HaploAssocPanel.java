@@ -159,7 +159,7 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         }
     }
 
-    public double getChiSq(double[][] counts) {
+    public static double getChiSq(double[][] counts) {
         double chisq=0;
 
         if (Options.getAssocTest() == ASSOC_TRIO){
@@ -176,7 +176,7 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         chisq = Math.rint(chisq*1000.0)/1000.0;
         return chisq;
     }
-    public String getPValue(double chisq) {
+    public static String getPValue(double chisq) {
         double pval = 0;
         pval= MathUtil.gammq(.5,.5*chisq);
         DecimalFormat df;

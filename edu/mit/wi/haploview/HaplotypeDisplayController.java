@@ -40,7 +40,7 @@ public class HaplotypeDisplayController extends JPanel {
         JPanel thinPanel = new JPanel();
         thinPanel.add(new JLabel("Connect with thin lines if > "));
         thinPanel.add(minThinField =
-                new NumberTextField(String.valueOf(parent.thinThresh), 3, false));
+                new NumberTextField(String.valueOf((int)parent.thinThresh), 3, false));
         thinPanel.add(new JLabel("%"));
         leftPanel.add(thinPanel);
 

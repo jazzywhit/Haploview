@@ -3,6 +3,7 @@ package edu.mit.wi.haploview;
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
+import edu.mit.wi.haploview.TreeTable.HaplotypeAssociationNode;
 
 import java.io.*;
 import java.util.Vector;
@@ -31,7 +32,9 @@ public class HaploText implements Constants{
     private boolean outputPNG;
     private boolean outputCompressedPNG;
 
-
+    public boolean isNogui() {
+        return nogui;
+    }
 
     public String getBatchMode() {
         return batchFileName;
@@ -126,10 +129,12 @@ public class HaploText implements Constants{
         double minimumGenoPercent = -1;
         double hwCutoff = -1;
         int maxMendel = -1;
+        boolean assocTDT = false;
+        boolean assocCC = false;
 
 
         for(int i =0; i < args.length; i++) {
-            if(args[i].equals("-help") || args[i].equals("-h")) {
+            if(args[i].equalsIgnoreCase("-help") || args[i].equalsIgnoreCase("-h")) {
                 System.out.println(HELP_OUTPUT);
                 System.exit(0);
             }
@@ -337,7 +342,12 @@ public class HaploText implements Constants{
                     }
                 }
             }
-
+            else if(args[i].equalsIgnoreCase("-assoctdt")) {
+                assocTDT = true;
+            }
+            else if(args[i].equalsIgnoreCase("-assoccc")) {
+                assocCC = true;
+            }
 
             else if(args[i].equals("-q") || args[i].equals("-quiet")) {
                 quietMode = true;
@@ -410,6 +420,13 @@ public class HaploText implements Constants{
 
         if(spacingThresh != -1) {
             Options.setSpacingThreshold(spacingThresh);
+        }
+
+        if(assocTDT) {
+            Options.setAssocTest(ASSOC_TRIO);
+        }
+        else if(assocCC) {
+            Options.setAssocTest(ASSOC_CC);
         }
 
 
@@ -529,8 +546,6 @@ public class HaploText implements Constants{
             File OutputFile;
             File inputFile;
 
-
-
             if(!quietMode && fileName != null){
                 System.out.println("Using data file " + fileName);
             }
@@ -541,11 +556,8 @@ public class HaploText implements Constants{
                 System.exit(1);
             }
 
-
-
             textData = new HaploData();
             Vector result = null;
-
 
             if(fileType == HAPS){
                 //read in haps file
@@ -615,25 +627,42 @@ public class HaploText implements Constants{
                 }
 
                 //this handles output type ALL
+                Haplotype[][] orderedHaplos;
+                Haplotype[][] crossedHaplos;
                 if(outputType == BLOX_ALL) {
                     OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
-                    textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                    haplos = textData.generateHaplotypes(textData.blocks, false);
+                    orderedHaplos = orderHaps(haplos);
+                    crossedHaplos = textData.generateCrossovers(orderedHaplos);
+                    textData.saveHapsToText(crossedHaplos, textData.getMultiDprime(), OutputFile);
                     OutputFile = validateOutputFile(fileName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
-                    textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                    haplos = textData.generateHaplotypes(textData.blocks, false);
+                    orderedHaplos = orderHaps(haplos);
+                    crossedHaplos = textData.generateCrossovers(orderedHaplos);
+                    textData.saveHapsToText(crossedHaplos, textData.getMultiDprime(), OutputFile);
                     OutputFile = validateOutputFile(fileName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
-                    textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                    haplos = textData.generateHaplotypes(textData.blocks, false);
+                    orderedHaplos = orderHaps(haplos);
+                    crossedHaplos = textData.generateCrossovers(orderedHaplos);
+                    textData.saveHapsToText(crossedHaplos, textData.getMultiDprime(), OutputFile);
                 }else{
                     textData.guessBlocks(outputType, cust);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
-                    textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                    haplos = textData.generateHaplotypes(textData.blocks, false);
+                    orderedHaplos = orderHaps(haplos);
+                    crossedHaplos = textData.generateCrossovers(orderedHaplos);
+                    textData.saveHapsToText(crossedHaplos, textData.getMultiDprime(), OutputFile);
+                }
+
+                //todo: should this output hap assoc for each block type if they do more than one?
+                if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
+                    //Haplotype[][] orderedHaps = orderHaps(textData.getHaplotypes());
+                    HaploData.saveHapAssocToText(orderedHaplos, fileName + ".HAPASSOC");
                 }
             }
+
             if(outputDprime) {
                 OutputFile = validateOutputFile(fileName + ".LD");
                 if (textData.dpTable != null){
@@ -642,6 +671,7 @@ public class HaploText implements Constants{
                     textData.saveDprimeToText(OutputFile, LIVE_TYPE, 0, Chromosome.getSize());
                 }
             }
+
             if (outputPNG || outputCompressedPNG){
                 OutputFile = validateOutputFile(fileName + ".LD.PNG");
                 if (textData.dpTable == null){
@@ -660,10 +690,15 @@ public class HaploText implements Constants{
                 }
             }
 
-            //if(fileType){
-                //TDT.calcTrioTDT(textData.chromosomes);
-                //TODO: Deal with this.  why do we calc TDT? and make sure not to do it except when appropriate
-            //}
+
+            if(Options.getAssocTest() == ASSOC_TRIO){
+                Vector tdtResults = TDT.calcTrioTDT(textData.getPedFile());
+                HaploData.saveMarkerAssocToText(tdtResults, fileName + ".ASSOC");
+            } else if(Options.getAssocTest() == ASSOC_CC) {
+                Vector ccResults = TDT.calcCCTDT(textData.getPedFile());
+                HaploData.saveMarkerAssocToText(ccResults, fileName + ".ASSOC");
+            }
+
         }
         catch(IOException e){
             System.err.println("An error has occured. This probably has to do with file input or output");
@@ -677,7 +712,9 @@ public class HaploText implements Constants{
     }
 
 
-    public static Haplotype[][] orderHaps (Haplotype[][] haplos, HaploData theData) throws HaploViewException{
+    //note: generateCrossovers should never be called before calling orderHaps, since orderHaps does not reorder
+    //the stored crossover values
+    public Haplotype[][] orderHaps (Haplotype[][] haplos) throws HaploViewException{
         Haplotype[][] orderedHaplos = new Haplotype[haplos.length][];
         for (int i = 0; i < haplos.length; i++){
             Vector orderedHaps = new Vector();
@@ -704,6 +741,10 @@ public class HaploText implements Constants{
             }
 
         }
-        return theData.generateCrossovers(orderedHaplos);
+        return orderedHaplos;
     }
+
+
+
+
 }
