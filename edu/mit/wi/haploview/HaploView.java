@@ -48,12 +48,12 @@ public class HaploView extends JFrame implements ActionListener{
     static final int VIEW_HAP_NUM = 1;
     //static final int VIEW_LOD_NUM = 2;
     //these are "optional" tabs so we don't force them into an order
-    static int VIEW_CHECK_NUM, VIEW_TDT_NUM;
-    //static final int VIEW_CHECK_NUM = 2;
-    //static final int VIEW_TDT_NUM = 3;
+    //static int VIEW_CHECK_NUM, VIEW_TDT_NUM;
+    static final int VIEW_CHECK_NUM = 2;
+    static final int VIEW_TDT_NUM = 3;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, "",""
+        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TDT
     };
     JRadioButtonMenuItem viewMenuItems[];
     String zoomItems[] = {
@@ -571,23 +571,15 @@ public class HaploView extends JFrame implements ActionListener{
                 tabs.addTab(viewItems[VIEW_LOD_NUM], panel);
                 viewMenuItems[VIEW_LOD_NUM].setEnabled(true);*/
 
-                int optionalTabCount = 1;
+                //int optionalTabCount = 1;
 
-                //TDT panel
-                if(assocTest > 0) {
-                    optionalTabCount++;
-                    VIEW_TDT_NUM = optionalTabCount;
-                    viewItems[VIEW_TDT_NUM] = VIEW_TDT;
-                    tdtPanel = new TDTPanel(theData.chromosomes, assocTest);
-                    tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
-                    viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
-                }
+
 
                 //check data panel
                 if (checkPanel != null){
-                    optionalTabCount++;
-                    VIEW_CHECK_NUM = optionalTabCount;
-                    viewItems[VIEW_CHECK_NUM] = VIEW_CHECK_PANEL;
+                    //optionalTabCount++;
+                    //VIEW_CHECK_NUM = optionalTabCount;
+                    //viewItems[VIEW_CHECK_NUM] = VIEW_CHECK_PANEL;
                     JPanel metaCheckPanel = new JPanel();
                     metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
                     JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
@@ -632,6 +624,16 @@ public class HaploView extends JFrame implements ActionListener{
                     tabs.addTab(viewItems[VIEW_CHECK_NUM], metaCheckPanel);
                     viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
                     currentTab=VIEW_CHECK_NUM;
+                }
+
+                //TDT panel
+                if(assocTest > 0) {
+                    //optionalTabCount++;
+                    //VIEW_TDT_NUM = optionalTabCount;
+                    //viewItems[VIEW_TDT_NUM] = VIEW_TDT;
+                    tdtPanel = new TDTPanel(theData.chromosomes, assocTest);
+                    tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
+                    viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
                 }
 
                 tabs.setSelectedIndex(currentTab);
