@@ -13,8 +13,8 @@ public class TDTPanel extends JPanel {
         result = TDT.calcTDT(chromosomes);
 
         tableColumnNames.add("Name");
+        tableColumnNames.add("T:U");
         tableColumnNames.add("Chi Squared");
-        tableColumnNames.add("T/U Ratio");
         tableColumnNames.add("p value");
 
         refreshTable();
@@ -30,8 +30,8 @@ public class TDTPanel extends JPanel {
             Vector tempVect = new Vector();
             TDTResult currentResult = (TDTResult)result.get(Chromosome.realIndex[i]);
             tempVect.add(currentResult.getName());
-            tempVect.add(new Double(currentResult.getChiSq()));
             tempVect.add(currentResult.getTURatio());
+            tempVect.add(new Double(currentResult.getChiSq()));
             tempVect.add(new Double(currentResult.getPValue()));
 
             tableData.add(tempVect.clone());
