@@ -29,7 +29,7 @@ class TextMethods {
 	    //write block header
 	    saveHapsWriter.write("BLOCK " + (i+1) + ".  MARKERS:");
 	    int[] markerNums = finishedHaplos[i][0].getMarkers();
-	    for (int j = 0; j < finishedHaplos[i].length; j++){
+	    for (int j = 0; j < markerNums.length; j++){
 		saveHapsWriter.write(" " + (markerNums[j]+1));
 	    }
 	    saveHapsWriter.write("\n");
