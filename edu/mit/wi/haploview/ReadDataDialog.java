@@ -143,6 +143,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         genoFileField = new JTextField("",20);
 
         //workaround for stupid java problem where focus can't be granted until window is displayed
+        //TODO: appears to throw an exception in Linux
         SwingUtilities.invokeLater( new Runnable(){
             public void run()
             {

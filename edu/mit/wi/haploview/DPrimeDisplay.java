@@ -101,7 +101,7 @@ class DPrimeDisplay extends JComponent{
 
         g2.setColor(this.getBackground());
         g2.fillRect(0,0,pref.width,pref.height);
-        g2.setColor(Color.BLACK);
+        g2.setColor(Color.black);
 
         BasicStroke thickerStroke = new BasicStroke(1);
         BasicStroke thinnerStroke = new BasicStroke(0.35f);
@@ -361,7 +361,7 @@ class DPrimeDisplay extends JComponent{
                 gw2.setColor(this.getBackground());
                 gw2.fillRect(1,1,worldmap.getWidth()-2,worldmap.getHeight()-2);
                 //make a pretty border
-                gw2.setColor(Color.BLACK);
+                gw2.setColor(Color.black);
 
                 wmBorder.paintBorder(this,gw2,0,0,worldmap.getWidth()-1,worldmap.getHeight()-1);
                 ir = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth()-1, worldmap.getHeight()-1);
@@ -431,7 +431,7 @@ class DPrimeDisplay extends JComponent{
                     worldmap.getHeight());
 
             //draw the outline of the viewport
-            g2.setColor(Color.BLACK);
+            g2.setColor(Color.black);
             double hRatio = ir.getWidth()/pref.getWidth();
             double vRatio = ir.getHeight()/pref.getHeight();
             int hBump = worldmap.getWidth()-ir.width;
@@ -576,12 +576,12 @@ class DPrimeDisplay extends JComponent{
                                     botEdgeShift = clickY + 5*metrics.getHeight()+15 - visBotBound;
                                 }
 
-                                g.setColor(Color.WHITE);
+                                g.setColor(Color.white);
                                 g.fillRect(clickX+1-rightEdgeShift,
                                         clickY+1-botEdgeShift,
                                         strlen+leftMargin+4,
                                         5*metrics.getHeight()+9);
-                                g.setColor(Color.BLACK);
+                                g.setColor(Color.black);
                                 g.drawRect(clickX-rightEdgeShift,
                                         clickY-botEdgeShift,
                                         strlen+leftMargin+5,

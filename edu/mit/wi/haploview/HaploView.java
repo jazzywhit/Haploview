@@ -525,8 +525,9 @@ public class HaploView extends JFrame implements ActionListener{
                         k++;
                     }
                 }
-                theData.guessBlocks(currentBlockDef);
                 theData.filteredDPrimeTable = theData.getFilteredTable();
+                theData.guessBlocks(currentBlockDef);
+
                 //hack-y way to refresh the image
                 dPrimeDisplay.setVisible(false);
                 dPrimeDisplay.setVisible(true);
@@ -540,6 +541,8 @@ public class HaploView extends JFrame implements ActionListener{
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
+                tdtPanel.refreshTable();
+                //System.out.println(tabs.getComponentAt(VIEW_TDT_NUM));
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 checkPanel.changed=false;
             }

@@ -4,26 +4,13 @@ import java.util.Vector;
 
 
 public class TDT {
-    Vector results;
 
-    public TDT() {
-        results = new Vector();
-    }
-
-    public Vector calcTDT(Vector chromosomes) {
-        int numChroms;
-        Chromosome chromT, chromU,chromTemp;
-        String ped,ind;
-        Vector temp;
-
-        numChroms = chromosomes.size();
-        temp = (Vector)chromosomes.clone();
-        chromosomes = temp;
-
+    public static Vector calcTDT(Vector chromosomes) {
+        Vector results = new Vector();
         int numMarkers = Chromosome.getSize();
 
         for(int k=0;k<numMarkers;k++){
-            this.results.add(new TDTResult(Chromosome.getMarker(k)));
+            results.add(new TDTResult(Chromosome.getMarker(k)));
         }
 
         for(int i=0;i<chromosomes.size()-3;i++){
@@ -56,11 +43,11 @@ public class TDT {
             }
 
         }
-        for(int i=0;i<this.results.size();i++){
-            TDTResult tempRes = (TDTResult)this.results.get(i);
+        for(int i=0;i<results.size();i++){
+            TDTResult tempRes = (TDTResult)results.get(i);
             int[][] counts = tempRes.counts;
             //System.out.println( counts[0][0] + "\t" + counts[1][1] + "\t" + counts[0][1] + "\t" + counts[1][0]);
         }
-        return this.results;
+        return results;
     }
 }
