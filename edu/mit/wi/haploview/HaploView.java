@@ -336,7 +336,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             //coloring clauses
         }else if (command.startsWith("color")){
-            Options.setLDColorScheme(Integer.valueOf(command.substring(5)).intValue()+1);
+            Options.setLDColorScheme(Integer.valueOf(command.substring(5)).intValue());
             dPrimeDisplay.colorDPrime();
             changeKey();
             //exporting clauses
@@ -831,137 +831,130 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     }
 
     public void clearDisplays() {
-        if (dPrimeDisplay != null){
-            dPrimeDisplay.setVisible(false);
-            dPrimeDisplay = null;
-        }
-        if (hapDisplay != null){
-            hapDisplay.setVisible(false);
-            hapDisplay = null;
-        }
-        if (tdtPanel != null){
-            tdtPanel.setVisible(false);
-            tdtPanel = null;
+        if (tabs != null){
+            tabs.removeAll();
         }
     }
 
     class TabChangeListener implements ChangeListener{
         public void stateChanged(ChangeEvent e) {
-            int tabNum = tabs.getSelectedIndex();
-            if (tabNum == VIEW_D_NUM || tabNum == VIEW_HAP_NUM){
-                exportMenuItems[0].setEnabled(true);
-                exportMenuItems[1].setEnabled(true);
-            }else if (tabNum == VIEW_TDT_NUM || tabNum == VIEW_CHECK_NUM){
-                exportMenuItems[0].setEnabled(true);
-                exportMenuItems[1].setEnabled(false);
-            }else{
-                exportMenuItems[0].setEnabled(false);
-                exportMenuItems[1].setEnabled(false);
-            }
-
-            //if we've adjusted the haps display thresh we need to change the haps ass panel
-            if (tabNum == VIEW_TDT_NUM){
-                JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
-                //this is the haps ass tab inside the assoc super-tab
-                HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
-                if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
-                    htp.makeTable(theData.getHaplotypes());
-                }
-            }
-
-            if (tabNum == VIEW_D_NUM){
-                keyMenu.setEnabled(true);
-            }else{
-                keyMenu.setEnabled(false);
-            }
-
-            viewMenuItems[tabs.getSelectedIndex()].setSelected(true);
-
-            if (checkPanel != null && checkPanel.changed){
-                //first store up the current blocks
-                Vector currentBlocks = new Vector();
-                for (int blocks = 0; blocks < theData.blocks.size(); blocks++){
-                    int thisBlock[] = (int[]) theData.blocks.elementAt(blocks);
-                    int thisBlockReal[] = new int[thisBlock.length];
-                    for (int marker = 0; marker < thisBlock.length; marker++){
-                        thisBlockReal[marker] = Chromosome.realIndex[thisBlock[marker]];
-                    }
-                    currentBlocks.add(thisBlockReal);
-                }
-
-                window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                JTable table = checkPanel.getTable();
-                boolean[] markerResults = new boolean[table.getRowCount()];
-                for (int i = 0; i < table.getRowCount(); i++){
-                    markerResults[i] = ((Boolean)table.getValueAt(i,CheckDataPanel.STATUS_COL)).booleanValue();
-                }
-
-                Chromosome.doFilter(markerResults);
-
-
-                //after editing the filtered marker list, needs to be prodded into
-                //resizing correctly
-                dPrimeDisplay.computePreferredSize();
-                dPrimeDisplay.colorDPrime();
-
-                hapDisplay.theData = theData;
-
-                if (currentBlockDef != BLOX_CUSTOM){
-                    changeBlocks(currentBlockDef);
+            if (tabs.getSelectedIndex() != -1){
+                int tabNum = tabs.getSelectedIndex();
+                if (tabNum == VIEW_D_NUM || tabNum == VIEW_HAP_NUM){
+                    exportMenuItems[0].setEnabled(true);
+                    exportMenuItems[1].setEnabled(true);
+                }else if (tabNum == VIEW_TDT_NUM || tabNum == VIEW_CHECK_NUM){
+                    exportMenuItems[0].setEnabled(true);
+                    exportMenuItems[1].setEnabled(false);
                 }else{
-                    //adjust the blocks
-                    Vector theBlocks = new Vector();
-                    for (int x = 0; x < currentBlocks.size(); x++){
-                        Vector goodies = new Vector();
-                        int currentBlock[] = (int[])currentBlocks.elementAt(x);
-                        for (int marker = 0; marker < currentBlock.length; marker++){
-                            for (int y = 0; y < Chromosome.realIndex.length; y++){
-                                //we only keep markers from the input that are "good" from checkdata
-                                //we also realign the input file to the current "good" subset since input is
-                                //indexed of all possible markers in the dataset
-                                if (Chromosome.realIndex[y] == currentBlock[marker]){
-                                    goodies.add(new Integer(y));
+                    exportMenuItems[0].setEnabled(false);
+                    exportMenuItems[1].setEnabled(false);
+                }
+
+                //if we've adjusted the haps display thresh we need to change the haps ass panel
+                if (tabNum == VIEW_TDT_NUM){
+                    JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
+                    //this is the haps ass tab inside the assoc super-tab
+                    HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
+                    if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
+                        htp.makeTable(theData.getHaplotypes());
+                    }
+                }
+
+                if (tabNum == VIEW_D_NUM){
+                    keyMenu.setEnabled(true);
+                }else{
+                    keyMenu.setEnabled(false);
+                }
+
+                viewMenuItems[tabs.getSelectedIndex()].setSelected(true);
+
+                if (checkPanel != null && checkPanel.changed){
+                    //first store up the current blocks
+                    Vector currentBlocks = new Vector();
+                    for (int blocks = 0; blocks < theData.blocks.size(); blocks++){
+                        int thisBlock[] = (int[]) theData.blocks.elementAt(blocks);
+                        int thisBlockReal[] = new int[thisBlock.length];
+                        for (int marker = 0; marker < thisBlock.length; marker++){
+                            thisBlockReal[marker] = Chromosome.realIndex[thisBlock[marker]];
+                        }
+                        currentBlocks.add(thisBlockReal);
+                    }
+
+                    window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    JTable table = checkPanel.getTable();
+                    boolean[] markerResults = new boolean[table.getRowCount()];
+                    for (int i = 0; i < table.getRowCount(); i++){
+                        markerResults[i] = ((Boolean)table.getValueAt(i,CheckDataPanel.STATUS_COL)).booleanValue();
+                    }
+
+                    Chromosome.doFilter(markerResults);
+
+
+                    //after editing the filtered marker list, needs to be prodded into
+                    //resizing correctly
+                    dPrimeDisplay.computePreferredSize();
+                    dPrimeDisplay.colorDPrime();
+
+                    hapDisplay.theData = theData;
+
+                    if (currentBlockDef != BLOX_CUSTOM){
+                        changeBlocks(currentBlockDef);
+                    }else{
+                        //adjust the blocks
+                        Vector theBlocks = new Vector();
+                        for (int x = 0; x < currentBlocks.size(); x++){
+                            Vector goodies = new Vector();
+                            int currentBlock[] = (int[])currentBlocks.elementAt(x);
+                            for (int marker = 0; marker < currentBlock.length; marker++){
+                                for (int y = 0; y < Chromosome.realIndex.length; y++){
+                                    //we only keep markers from the input that are "good" from checkdata
+                                    //we also realign the input file to the current "good" subset since input is
+                                    //indexed of all possible markers in the dataset
+                                    if (Chromosome.realIndex[y] == currentBlock[marker]){
+                                        goodies.add(new Integer(y));
+                                    }
                                 }
                             }
+                            int thisBlock[] = new int[goodies.size()];
+                            for (int marker = 0; marker < thisBlock.length; marker++){
+                                thisBlock[marker] = ((Integer)goodies.elementAt(marker)).intValue();
+                            }
+                            if (thisBlock.length > 1){
+                                theBlocks.add(thisBlock);
+                            }
                         }
-                        int thisBlock[] = new int[goodies.size()];
-                        for (int marker = 0; marker < thisBlock.length; marker++){
-                            thisBlock[marker] = ((Integer)goodies.elementAt(marker)).intValue();
-                        }
-                        if (thisBlock.length > 1){
-                            theBlocks.add(thisBlock);
-                        }
+                        theData.guessBlocks(BLOX_CUSTOM, theBlocks);
                     }
-                    theData.guessBlocks(BLOX_CUSTOM, theBlocks);
-                }
 
-                if (tdtPanel != null){
-                    tdtPanel.refreshTable();
-                }
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                checkPanel.changed=false;
-            }
-
-            if (hapDisplay != null && theData.blocksChanged){
-                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                try{
-                    hapDisplay.getHaps();
-                    if(Options.getAssocTest() != ASSOC_NONE) {
-                        JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(VIEW_TDT_NUM);
-                        //this is the haps ass tab inside the assoc super-tab
-                        HaploAssocPanel hasp = (HaploAssocPanel)metaAssoc.getComponent(1);
-                        hasp.makeTable(theData.getHaplotypes());
+                    if (tdtPanel != null){
+                        tdtPanel.refreshTable();
                     }
-                }catch(HaploViewException hv){
-                    JOptionPane.showMessageDialog(window,
-                            hv.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    checkPanel.changed=false;
                 }
-                hapScroller.setViewportView(hapDisplay);
 
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                theData.blocksChanged = false;
+                if (hapDisplay != null && theData.blocksChanged){
+                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                    try{
+                        hapDisplay.getHaps();
+                        if(Options.getAssocTest() != ASSOC_NONE) {
+                            JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(VIEW_TDT_NUM);
+                            //this is the haps ass tab inside the assoc super-tab
+                            HaploAssocPanel hasp = (HaploAssocPanel)metaAssoc.getComponent(1);
+                            hasp.makeTable(theData.getHaplotypes());
+                        }
+                    }catch(HaploViewException hv){
+                        JOptionPane.showMessageDialog(window,
+                                hv.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                    hapScroller.setViewportView(hapDisplay);
+
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    theData.blocksChanged = false;
+                }
             }
         }
     }
@@ -1106,6 +1099,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         Options.setHaplotypeDisplayThreshold(1);
         Options.setMaxDistance(500);
         Options.setLDColorScheme(STD_SCHEME);
+        Options.setShowGBrowse(false);
 
         //this parses the command line arguments. if nogui mode is specified,
         //then haploText will execute whatever the user specified
