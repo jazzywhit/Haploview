@@ -8,6 +8,9 @@ class Chromosome{
     private byte[] genotypes;
     private String origin;
 
+    static int[] realIndex;
+    static Object[] markers;
+
     Chromosome(String p, String i, byte[] g, String o){
         ped = p;
         individual = i;
@@ -23,10 +26,19 @@ class Chromosome{
     }
 
     public byte elementAt(int i){
+        return genotypes[realIndex[i]];
+    }
+
+    public byte unfilteredElementAt(int i){
         return genotypes[i];
     }
-    public int size(){
-        return genotypes.length;
+
+    public static int size(){
+        return realIndex.length;
+    }
+
+    public static SNP getMarker(int i){
+        return (SNP)markers[realIndex[i]];
     }
 
     public String getPed(){

@@ -512,7 +512,7 @@ public class HaploView extends JFrame implements ActionListener{
             }else{
                 infoKnown=true;
                 if (dPrimeDisplay != null){
-                    dPrimeDisplay.loadMarkers(theData.markerInfo);
+                    dPrimeDisplay.loadMarkers();
                 }
             }
         }catch (IOException ioexec){
@@ -545,7 +545,7 @@ public class HaploView extends JFrame implements ActionListener{
         //first, draw the D' picture
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        dPrimeDisplay = new DPrimeDisplay(theData.dPrimeTable, infoKnown, theData.markerInfo);
+        dPrimeDisplay = new DPrimeDisplay(theData.dPrimeTable, infoKnown);
         JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
         dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
@@ -645,7 +645,7 @@ public class HaploView extends JFrame implements ActionListener{
             fc.setSelectedFile(null);
             int returnVal = fc.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                new TextMethods().saveDprimeToText(theData.dPrimeTable, fc.getSelectedFile(), infoKnown, theData.markerInfo);
+                new TextMethods().saveDprimeToText(theData.dPrimeTable, fc.getSelectedFile(), infoKnown, new Vector());
             }
         }catch (IOException ioexec){
             JOptionPane.showMessageDialog(this,
@@ -811,12 +811,14 @@ public class HaploView extends JFrame implements ActionListener{
             window = new HaploView(args);
         }
         else {
-            window =  new HaploView();
-            window.argHandler(args);
+
 
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) { }
+
+            window =  new HaploView();
+            window.argHandler(args);
 
             //setup view object
             window.setTitle("HaploView beta");

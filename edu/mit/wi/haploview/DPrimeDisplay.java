@@ -34,19 +34,17 @@ class DPrimeDisplay extends JComponent{
 
     boolean markersLoaded;
     PairwiseLinkage dPrimeTable[][];
-    Vector markers;
+    //Vector markers;
 
-    DPrimeDisplay(PairwiseLinkage[][] t, boolean b, Vector v){
+    DPrimeDisplay(PairwiseLinkage[][] t, boolean b){
         markersLoaded = b;
         dPrimeTable = t;
-        markers = v;
         this.setDoubleBuffered(true);
         addMouseListener(new PopMouseListener(this));
     }
 
-    public void loadMarkers(Vector v){
+    public void loadMarkers(){
         markersLoaded = true;
-        markers = v;
         repaint();
     }
 
@@ -106,8 +104,8 @@ class DPrimeDisplay extends JComponent{
             //TODO: talk to kirby about locusview scaling gizmo
             int lineLeft = wide/20;
             int lineSpan = (wide/10)*9;
-            long minpos = ((SNP)markers.elementAt(0)).getPosition();
-            long maxpos = ((SNP)markers.elementAt(markers.size()-1)).getPosition();
+            long minpos = Chromosome.getMarker(0).getPosition();
+            long maxpos = Chromosome.getMarker(Chromosome.size()-1).getPosition();
             double spanpos = maxpos - minpos;
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
@@ -115,8 +113,8 @@ class DPrimeDisplay extends JComponent{
             g2.setColor(Color.black);
             g2.drawRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
 
-            for (int i = 0; i < markers.size(); i++) {
-                double pos = (((SNP)markers.elementAt(i)).getPosition() - minpos) / spanpos;
+            for (int i = 0; i < Chromosome.size(); i++) {
+                double pos = (Chromosome.getMarker(i).getPosition() - minpos) / spanpos;
                 int xx = (int) (left + lineLeft + lineSpan*pos);
                 g2.setStroke(thickerStroke);
                 g.drawLine(xx, 5, xx, 5 + TICK_HEIGHT);
@@ -131,9 +129,9 @@ class DPrimeDisplay extends JComponent{
                 metrics = g.getFontMetrics();
                 ascent = metrics.getAscent();
 
-                widestMarkerName = metrics.stringWidth(((SNP)markers.elementAt(0)).getName());
+                widestMarkerName = metrics.stringWidth(Chromosome.getMarker(0).getName());
                 for (int x = 1; x < dPrimeTable.length; x++) {
-                    int thiswide = metrics.stringWidth(((SNP)markers.elementAt(x)).getName());
+                    int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }
                 //System.out.println(widest);
@@ -141,7 +139,7 @@ class DPrimeDisplay extends JComponent{
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
                 for (int x = 0; x < dPrimeTable.length; x++) {
-                    g2.drawString(((SNP)markers.elementAt(x)).getName(),TEXT_NUMBER_GAP, x*boxSize + ascent/3);
+                    g2.drawString(Chromosome.getMarker(x).getName(),TEXT_NUMBER_GAP, x*boxSize + ascent/3);
                 }
 
                 g2.rotate(Math.PI / 2.0);
@@ -160,7 +158,7 @@ class DPrimeDisplay extends JComponent{
             metrics = g.getFontMetrics();
             ascent = metrics.getAscent();
             for (int x = 0; x < dPrimeTable.length; x++) {
-                String mark = String.valueOf(x + 1);
+                String mark = String.valueOf(Chromosome.realIndex[x] + 1);
                 g.drawString(mark,
                         left + x*boxSize - metrics.stringWidth(mark)/2,
                         top + ascent);
@@ -315,10 +313,11 @@ class DPrimeDisplay extends JComponent{
                                 final int leftMargin = 12;
                                 String[] displayStrings = new String[5];
                                 if (markersLoaded){
-                                    displayStrings[0] = new String ("(" +((SNP)markers.elementAt(boxX)).getName() +
-                                            ", " + ((SNP)markers.elementAt(boxY)).getName() + ")");
+                                    displayStrings[0] = new String ("(" +Chromosome.getMarker(boxX).getName() +
+                                            ", " + Chromosome.getMarker(boxY).getName() + ")");
                                 }else{
-                                    displayStrings[0] = new String("(" + (boxX+1) + ", " + (boxY+1) + ")");
+                                    displayStrings[0] = new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
+                                            (Chromosome.realIndex[boxY]+1) + ")");
                                 }
                                 displayStrings[1] = new String ("D': " + dPrimeTable[boxX][boxY].getDPrime());
                                 displayStrings[2] = new String ("LOD: " + dPrimeTable[boxX][boxY].getLOD());

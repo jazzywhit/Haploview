@@ -10,6 +10,7 @@ import java.util.Vector;
 //import java.util.Hashtable;
 
 class TextMethods {
+      //TODO: TOTALLY BROX0R3D
 
     public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,  File saveHapsFile) throws IOException{
 

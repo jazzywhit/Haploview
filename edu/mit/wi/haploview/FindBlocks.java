@@ -5,17 +5,17 @@ import java.awt.Color;
 
 class FindBlocks {
     PairwiseLinkage[][] dPrime;
-    Vector markerInfo;
+    //Vector markerInfo;
     double fourGameteCutoff = 0.01;
 
     FindBlocks(PairwiseLinkage[][] data){
         dPrime = data;
     }
 
-    FindBlocks(PairwiseLinkage[][] data, Vector info){
+ /*   FindBlocks(PairwiseLinkage[][] data, Vector info){
         dPrime=data;
         markerInfo = info;
-    }
+    }*/
 
     Vector do4Gamete(){
         Vector blocks = new Vector();
@@ -131,7 +131,7 @@ class FindBlocks {
         //first set up a filter of markers which fail the MAF threshhold
         boolean[] skipMarker = new boolean[dPrime.length];
         for (int x = 0; x < dPrime.length; x++){
-            if (((SNP)markerInfo.elementAt(x)).getMAF() < mafThresh){
+            if (Chromosome.getMarker(x).getMAF() < mafThresh){
                 skipMarker[x]=true;
             }else{
                 skipMarker[x]=false;
@@ -167,7 +167,7 @@ class FindBlocks {
 
                 long sep;
                 //compute actual separation
-                sep = ((SNP)markerInfo.elementAt(y)).getPosition() - ((SNP)markerInfo.elementAt(x)).getPosition();
+                sep = Chromosome.getMarker(y).getPosition() - Chromosome.getMarker(x).getPosition();
 
                 addMe.add(String.valueOf(x)); addMe.add(String.valueOf(y)); addMe.add(String.valueOf(sep));
                 if (strongPairs.size() == 0){ //put first pair first
@@ -344,7 +344,12 @@ class FindBlocks {
             //one which is good
             for (int m = verticalExtent; m > i; m--){
                 for (int k = i; k < m; k++){
+
                     PairwiseLinkage thisPair = dPrime[k][m];
+                    if (thisPair == null){
+                        continue;
+                    }
+
                     if(thisPair.getDPrime() < 0.8){
                         if (baddies < 1){
                             baddies++;

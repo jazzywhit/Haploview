@@ -8,32 +8,32 @@ class SNP{
     private double MAF;
 
     SNP(String n, long p, String o, double m){
-	name = n;
-	position = p;
-	origin = o;
-	MAF = m;
+        name = n;
+        position = p;
+        origin = o;
+        MAF = m;
     }
 
     SNP(String n, long p, double m){
-	name = n;
-	position = p;
-	origin = "unknown";
-	MAF = m;
+        name = n;
+        position = p;
+        origin = "unknown";
+        MAF = m;
     }
 
     public String getName(){
-	return name;
+        return name;
     }
-    
+
     public long getPosition(){
-	return position;
+        return position;
     }
 
     public String getOrigin(){
-	return origin;
+        return origin;
     }
 
     public double getMAF(){
-	return MAF;
+        return MAF;
     }
 }
