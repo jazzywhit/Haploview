@@ -373,13 +373,27 @@ public class HaploView extends JFrame implements ActionListener{
 
         //first, draw the D' picture
         JPanel panel = new JPanel();
+        //JLayeredPane layerPane = new JLayeredPane();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         dPrimeDisplay = new DPrimeDisplay(theData.dPrimeTable, infoKnown, theData.markerInfo);
         JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
         dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
         dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
+        //Dimension vs = dPrimeScroller.getViewport().getViewSize();
+        //dPrimeScroller.setBounds(0,0,vs.width,vs.height);
+        //dPrimeScroller.setOpaque(true);
+        //layerPane.add(dPrimeScroller, JLayeredPane.DEFAULT_LAYER);
         panel.add(dPrimeScroller);
+        JPanel arsePanel = new JPanel();
+        arsePanel.setBackground(Color.RED);
+        arsePanel.setPreferredSize(new Dimension(100,100));
+        arsePanel.setBounds(100,100,200,200);
+        arsePanel.setOpaque(true);
+        //layerPane.add(arsePanel, JLayeredPane.POPUP_LAYER);
+        //layerPane.add(new JButton("FOO"), JLayeredPane.DEFAULT_LAYER);
+        //panel.add(arsePanel);
+        //panel.add(layerPane);
         tabs.addTab(viewItems[0], panel);
 
         //compute and show haps on next tab
@@ -526,7 +540,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
 
-    /**
+    /*
      * this method finds haplotypes and caclulates dprime without using any graphics
      */
 
@@ -748,6 +762,7 @@ public class HaploView extends JFrame implements ActionListener{
             } catch (Exception e) { }
 
             //setup view object
+            HaploView.setDefaultLookAndFeelDecorated(true);
             HaploView window = new HaploView();
             window.setTitle("HaploView beta");
             window.setSize(800,600);

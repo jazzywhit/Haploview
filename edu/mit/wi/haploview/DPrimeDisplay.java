@@ -41,7 +41,7 @@ class DPrimeDisplay extends JComponent{
         dPrimeTable = t;
         markers = v;
         this.setDoubleBuffered(true);
-        addMouseListener(new popMouseListener(this));
+        addMouseListener(new PopMouseListener(this));
     }
 
     public void loadMarkers(Vector v){
@@ -280,9 +280,9 @@ class DPrimeDisplay extends JComponent{
         returnArray[1] = 10+(30-fm.getAscent())/2;
         return returnArray;
     }
-    class popMouseListener implements MouseListener{
+    class PopMouseListener implements MouseListener{
         JComponent caller;
-        public popMouseListener(JComponent c){
+        public PopMouseListener(JComponent c){
               caller = c;
         }
 

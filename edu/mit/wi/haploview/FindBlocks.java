@@ -25,7 +25,7 @@ class FindBlocks {
         for (int x = 0; x < dPrime.length-1; x++){
             for (int y = x+1; y < dPrime.length; y++){
                 PairwiseLinkage thisPair = dPrime[x][y];
-                if (thisPair == null){
+                if (thisPair == null) {
                     continue;
                 }
 
@@ -76,7 +76,12 @@ class FindBlocks {
             for (int y = first+1; y <= last; y++){
                 //loop over columns in row y
                 for (int x = first; x < y; x++){
+
                     PairwiseLinkage thisPair = dPrime[x][y];
+                    if(thisPair == null){
+                        continue;
+                    }
+
                     double[] freqs = thisPair.getFreqs();
                     int numGam = 0;
                     for (int i = 0; i < freqs.length; i++){
@@ -212,7 +217,11 @@ class FindBlocks {
                 //loop over columns in row y
                 for (int x = first; x < y; x++){
                     if (skipMarker[x]) continue;
+
                     PairwiseLinkage thisPair = dPrime[x][y];
+                    if (thisPair == null){
+                        continue;
+                    }
                     //get the right bits
                     double lod = thisPair.getLOD();
                     double lowCI = thisPair.getConfidenceLow();
