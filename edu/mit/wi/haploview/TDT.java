@@ -6,6 +6,7 @@ import edu.mit.wi.pedfile.Family;
 import edu.mit.wi.pedfile.PedFileException;
 
 import java.util.Vector;
+import java.util.Enumeration;
 
 
 public class  TDT {
@@ -14,14 +15,24 @@ public class  TDT {
         int numMarkers = Chromosome.getUnfilteredSize();
         for (int i = 0; i < numMarkers; i++){
             TDTResult thisResult = new TDTResult(Chromosome.getUnfilteredMarker(i));
-            Vector indList = pf.getOrder();
+            Vector indList = pf.getUnrelatedIndividuals();
             Individual currentInd;
+            Family currentFam;
             for (int j = 0; j < indList.size(); j++){
+                //need to check below to make sure we don't include parents and kids of trios
                 currentInd = (Individual)indList.elementAt(j);
-                if (!currentInd.hasKids()){
-                    //anybody without kids is in the "bottom" generation, so we'll include them in the C/C
-                    //analysis.
+                currentFam = pf.getFamily(currentInd.getFamilyID());
+                if (!(currentFam.containsMember(currentInd.getMomID()) &&
+                        currentFam.containsMember(currentInd.getDadID()))){
                     thisResult.tallyCCInd(currentInd.getMarker(i), currentInd.getAffectedStatus());
+                }else{
+                    try{
+                        if (!(indList.contains(currentFam.getMember(currentInd.getMomID())) ||
+                                indList.contains(currentFam.getMember(currentInd.getDadID())))){
+                            thisResult.tallyCCInd(currentInd.getMarker(i), currentInd.getAffectedStatus());
+                        }
+                    }catch (PedFileException pfe){
+                    }
                 }
             }
             results.add(thisResult);
@@ -36,13 +47,15 @@ public class  TDT {
         int numMarkers = Chromosome.getUnfilteredSize();
         for (int i = 0; i < numMarkers; i++){
             TDTResult thisResult = new TDTResult(Chromosome.getUnfilteredMarker(i));
-            Vector indList = pf.getOrder();
+            Vector indList = pf.getAllIndividuals();
             Individual currentInd;
             Family currentFam;
             for (int j = 0; j < indList.size(); j++){
                 currentInd = (Individual)indList.elementAt(j);
                 currentFam = pf.getFamily(currentInd.getFamilyID());
-                if (currentInd.hasBothParents() && currentInd.getAffectedStatus() == 2){
+                if (currentFam.containsMember(currentInd.getMomID()) &&
+                        currentFam.containsMember(currentInd.getDadID()) &&
+                        currentInd.getAffectedStatus() == 2){
                     //if he has both parents, and is affected, we can get a transmission
                     Individual mom = currentFam.getMember(currentInd.getMomID());
                     Individual dad = currentFam.getMember(currentInd.getDadID());
@@ -116,8 +129,8 @@ public class  TDT {
                     thisResult.tallyTrioInd(momT, momU);
                 }
             }
-                results.add(thisResult);
-            }
+            results.add(thisResult);
+        }
         return results;
     }
 }

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.37 2005/01/10 18:29:37 jcbarret Exp $
+* $Id: PedFile.java,v 1.38 2005/01/25 21:30:40 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -14,9 +14,12 @@ package edu.mit.wi.pedfile;
 
 import edu.mit.wi.haploview.Chromosome;
 import edu.mit.wi.haploview.Options;
+import edu.mit.wi.pedparser.PedParser;
+import edu.mit.wi.pedparser.PedigreeException;
 
 import java.util.*;
-//import edu.mit.wi.haploview.Chromosome;
+
+import org._3pq.jgrapht.graph.SimpleGraph;
 
 /**
  * Handles input and storage of Pedigree files
@@ -29,15 +32,13 @@ public class PedFile {
     private Hashtable families;
 
     private Vector axedPeople = new Vector();
-    private Vector axedFamilies = new Vector();
 
-    /*
-    * stores the familyIDs and individualIDs of all individuals found by parse()
-    * in order. this is useful for outputting Pedigree information to a file of another type.
-    * the information is stored as an array of two strings.
-    * also used in parsing hapmap data
-    */
-    private Vector order;
+    //stores the individuals found by parse() in allIndividuals. this is useful for outputting Pedigree information to a file of another type.
+    private Vector allIndividuals;
+
+    //stores the individuals chosen by pedparser
+    private Vector unrelatedIndividuals;
+
     private Vector results = null;
     private String[][] hminfo;
     //bogusParents is true if someone in the file referenced a parent not in the file
@@ -54,22 +55,22 @@ public class PedFile {
         hapMapTranslate.put("NA10846", "1334 NA10846 NA12144 NA12145 1 0" );
         hapMapTranslate.put("NA12144", "1334 NA12144 0 0 1 0");
         hapMapTranslate.put("NA12145", "1334 NA12145 0 0 2 0");
-        hapMapTranslate.put("NA10847", "1334 NA10847 NA12146 NA12239 2 0" );
-        hapMapTranslate.put("NA12146", "1334 NA12146 0 0 1 0");
-        hapMapTranslate.put("NA12239", "1334 NA12239 0 0 2 0");
+        hapMapTranslate.put("NA10847", "1334a NA10847 NA12146 NA12239 2 0" );
+        hapMapTranslate.put("NA12146", "1334a NA12146 0 0 1 0");
+        hapMapTranslate.put("NA12239", "1334a NA12239 0 0 2 0");
         hapMapTranslate.put("NA07029", "1340 NA07029 NA06994 NA07000 1 0" );
         hapMapTranslate.put("NA06994", "1340 NA06994 0 0 1 0");
         hapMapTranslate.put("NA07000", "1340 NA07000 0 0 2 0");
-        hapMapTranslate.put("NA07019", "1340 NA07019 NA07022 NA07056 2 0" );
-        hapMapTranslate.put("NA07022", "1340 NA07022 0 0 1 0");
-        hapMapTranslate.put("NA07056", "1340 NA07056 0 0 2 0");
+        hapMapTranslate.put("NA07019", "1340a NA07019 NA07022 NA07056 2 0" );
+        hapMapTranslate.put("NA07022", "1340a NA07022 0 0 1 0");
+        hapMapTranslate.put("NA07056", "1340a NA07056 0 0 2 0");
         hapMapTranslate.put("NA07048", "1341 NA07048 NA07034 NA07055 1 0" );
         hapMapTranslate.put("NA07034", "1341 NA07034 0 0 1 0");
         hapMapTranslate.put("NA07055", "1341 NA07055 0 0 2 0");
-        hapMapTranslate.put("NA06991", "1341 NA06991 NA06993 NA06985 2 0" );
-        hapMapTranslate.put("NA06993", "1341 NA06993 0 0 1 0");
+        hapMapTranslate.put("NA06991", "1341a NA06991 NA06993 NA06985 2 0" );
+        hapMapTranslate.put("NA06993", "1341a NA06993 0 0 1 0");
         //hapMapTranslate.put("NA06993.dup", "dup NA06993.dup 0 0 1 0");
-        hapMapTranslate.put("NA06985", "1341 NA06985 0 0 2 0");
+        hapMapTranslate.put("NA06985", "1341a NA06985 0 0 2 0");
         hapMapTranslate.put("NA10851", "1344 NA10851 NA12056 NA12057 1 0" );
         hapMapTranslate.put("NA12056", "1344 NA12056 0 0 1 0");
         hapMapTranslate.put("NA12057", "1344 NA12057 0 0 2 0");
@@ -88,9 +89,9 @@ public class PedFile {
         hapMapTranslate.put("NA10856", "1350 NA10856 NA11829 NA11830 1 0" );
         hapMapTranslate.put("NA11829", "1350 NA11829 0 0 1 0");
         hapMapTranslate.put("NA11830", "1350 NA11830 0 0 2 0");
-        hapMapTranslate.put("NA10855", "1350 NA10855 NA11831 NA11832 2 0" );
-        hapMapTranslate.put("NA11831", "1350 NA11831 0 0 1 0");
-        hapMapTranslate.put("NA11832", "1350 NA11832 0 0 2 0");
+        hapMapTranslate.put("NA10855", "1350a NA10855 NA11831 NA11832 2 0" );
+        hapMapTranslate.put("NA11831", "1350a NA11831 0 0 1 0");
+        hapMapTranslate.put("NA11832", "1350a NA11832 0 0 2 0");
         hapMapTranslate.put("NA12707", "1358 NA12707 NA12716 NA12717 1 0" );
         hapMapTranslate.put("NA12716", "1358 NA12716 0 0 1 0");
         hapMapTranslate.put("NA12717", "1358 NA12717 0 0 2 0");
@@ -98,18 +99,18 @@ public class PedFile {
         hapMapTranslate.put("NA11992", "1362 NA11992 0 0 1 0");
         hapMapTranslate.put("NA11993", "1362 NA11993 0 0 2 0");
        // hapMapTranslate.put("NA11993.dup", "dup NA11993.dup 0 0 2 0");
-        hapMapTranslate.put("NA10861", "1362 NA10861 NA11994 NA11995 2 0" );
-        hapMapTranslate.put("NA11994", "1362 NA11994 0 0 1 0");
-        hapMapTranslate.put("NA11995", "1362 NA11995 0 0 2 0");
+        hapMapTranslate.put("NA10861", "1362a NA10861 NA11994 NA11995 2 0" );
+        hapMapTranslate.put("NA11994", "1362a NA11994 0 0 1 0");
+        hapMapTranslate.put("NA11995", "1362a NA11995 0 0 2 0");
         hapMapTranslate.put("NA10863", "1375 NA10863 NA12264 NA12234 2 0" );
         hapMapTranslate.put("NA12264", "1375 NA12264 0 0 1 0");
         hapMapTranslate.put("NA12234", "1375 NA12234 0 0 2 0");
         hapMapTranslate.put("NA10830", "1408 NA10830 NA12154 NA12236 1 0" );
         hapMapTranslate.put("NA12154", "1408 NA12154 0 0 1 0");
         hapMapTranslate.put("NA12236", "1408 NA12236 0 0 2 0");
-        hapMapTranslate.put("NA10831", "1408 NA10831 NA12155 NA12156 2 0" );
-        hapMapTranslate.put("NA12155", "1408 NA12155 0 0 1 0");
-        hapMapTranslate.put("NA12156", "1408 NA12156 0 0 2 0");
+        hapMapTranslate.put("NA10831", "1408a NA10831 NA12155 NA12156 2 0" );
+        hapMapTranslate.put("NA12155", "1408a NA12155 0 0 1 0");
+        hapMapTranslate.put("NA12156", "1408a NA12156 0 0 2 0");
         //hapMapTranslate.put("NA12156.dup", "dup NA12156.dup 0 0 2 0");
         hapMapTranslate.put("NA10835", "1416 NA10835 NA12248 NA12249 1 0" );
         hapMapTranslate.put("NA12248", "1416 NA12248 0 0 1 0");
@@ -119,30 +120,30 @@ public class PedFile {
         hapMapTranslate.put("NA12003", "1420 NA12003 0 0 1 0");
         //hapMapTranslate.put("NA12003.dup", "dup NA12003.dup 0 0 1 0");
         hapMapTranslate.put("NA12004", "1420 NA12004 0 0 2 0");
-        hapMapTranslate.put("NA10839", "1420 NA10839 NA12005 NA12006 2 0" );
-        hapMapTranslate.put("NA12005", "1420 NA12005 0 0 1 0");
-        hapMapTranslate.put("NA12006", "1420 NA12006 0 0 2 0");
+        hapMapTranslate.put("NA10839", "1420a NA10839 NA12005 NA12006 2 0" );
+        hapMapTranslate.put("NA12005", "1420a NA12005 0 0 1 0");
+        hapMapTranslate.put("NA12006", "1420a NA12006 0 0 2 0");
         hapMapTranslate.put("NA12740", "1444 NA12740 NA12750 NA12751 2 0" );
         hapMapTranslate.put("NA12750", "1444 NA12750 0 0 1 0");
         hapMapTranslate.put("NA12751", "1444 NA12751 0 0 2 0");
         hapMapTranslate.put("NA12752", "1447 NA12752 NA12760 NA12761 1 0" );
         hapMapTranslate.put("NA12760", "1447 NA12760 0 0 1 0");
         hapMapTranslate.put("NA12761", "1447 NA12761 0 0 2 0");
-        hapMapTranslate.put("NA12753", "1447 NA12753 NA12762 NA12763 2 0" );
-        hapMapTranslate.put("NA12762", "1447 NA12762 0 0 1 0");
-        hapMapTranslate.put("NA12763", "1447 NA12763 0 0 2 0");
+        hapMapTranslate.put("NA12753", "1447a NA12753 NA12762 NA12763 2 0" );
+        hapMapTranslate.put("NA12762", "1447a NA12762 0 0 1 0");
+        hapMapTranslate.put("NA12763", "1447a NA12763 0 0 2 0");
         hapMapTranslate.put("NA12801", "1454 NA12801 NA12812 NA12813 1 0" );
         hapMapTranslate.put("NA12812", "1454 NA12812 0 0 1 0");
         hapMapTranslate.put("NA12813", "1454 NA12813 0 0 2 0");
-        hapMapTranslate.put("NA12802", "1454 NA12802 NA12814 NA12815 2 0" );
-        hapMapTranslate.put("NA12814", "1454 NA12814 0 0 1 0");
-        hapMapTranslate.put("NA12815", "1454 NA12815 0 0 2 0");
+        hapMapTranslate.put("NA12802", "1454a NA12802 NA12814 NA12815 2 0" );
+        hapMapTranslate.put("NA12814", "1454a NA12814 0 0 1 0");
+        hapMapTranslate.put("NA12815", "1454a NA12815 0 0 2 0");
         hapMapTranslate.put("NA12864", "1459 NA12864 NA12872 NA12873 1 0" );
         hapMapTranslate.put("NA12872", "1459 NA12872 0 0 1 0");
         hapMapTranslate.put("NA12873", "1459 NA12873 0 0 2 0");
-        hapMapTranslate.put("NA12865", "1459 NA12865 NA12874 NA12875 2 0" );
-        hapMapTranslate.put("NA12874", "1459 NA12874 0 0 1 0");
-        hapMapTranslate.put("NA12875", "1459 NA12875 0 0 2 0");
+        hapMapTranslate.put("NA12865", "1459a NA12865 NA12874 NA12875 2 0" );
+        hapMapTranslate.put("NA12874", "1459a NA12874 0 0 1 0");
+        hapMapTranslate.put("NA12875", "1459a NA12875 0 0 2 0");
         hapMapTranslate.put("NA12878", "1463 NA12878 NA12891 NA12892 2 0" );
         hapMapTranslate.put("NA12891", "1463 NA12891 0 0 1 0");
         hapMapTranslate.put("NA12892", "1463 NA12892 0 0 2 0");
@@ -334,11 +335,15 @@ public class PedFile {
     }
 
     /**
-     * gets the order Vector
+     * gets the allIndividuals Vector
      * @return
      */
-    public Vector getOrder() {
-        return order;
+    public Vector getAllIndividuals() {
+        return allIndividuals;
+    }
+
+    public Vector getUnrelatedIndividuals() {
+        return unrelatedIndividuals;
     }
 
     /**
@@ -405,7 +410,6 @@ public class PedFile {
         return 0;
     }
 
-
     /**
      * takes in a pedigree file in the form of a vector of strings and parses it.
      * data is stored in families in the member hashtable families
@@ -420,7 +424,7 @@ public class PedFile {
         }
         Individual ind;
 
-        this.order = new Vector();
+        this.allIndividuals = new Vector();
 
         for(int k=0; k<numLines; k++){
             StringTokenizer tokenizer = new StringTokenizer((String)pedigrees.get(k), "\n\t\" \"");
@@ -491,14 +495,14 @@ public class PedFile {
 
                 fam.addMember(ind);
                 this.families.put(ind.getFamilyID(),fam);
-                this.order.add(ind);
+                this.allIndividuals.add(ind);
 
             }
         }
 
         //now we check if anyone has a reference to a parent who isnt in the file, and if so, we remove the reference
-        for(int i=0;i<order.size();i++) {
-            Individual currentInd = (Individual) order.get(i);
+        for(int i=0;i<allIndividuals.size();i++) {
+            Individual currentInd = (Individual) allIndividuals.get(i);
             Hashtable curFam = ((Family)(families.get(currentInd.getFamilyID())) ).getMembers();
             if( !currentInd.getDadID().equals("0") && ! (curFam.containsKey(currentInd.getDadID()))) {
                 currentInd.setDadID("0");
@@ -521,7 +525,7 @@ public class PedFile {
         }
         Individual ind;
 
-        this.order = new Vector();
+        this.allIndividuals = new Vector();
 
         //sort first
         Vector lines = new Vector();
@@ -592,7 +596,7 @@ public class PedFile {
             }
             fam.addMember(ind);
             this.families.put(ind.getFamilyID(),fam);
-            this.order.add(ind);
+            this.allIndividuals.add(ind);
         }
 
         //start at k=1 to skip header which we just processed above.
@@ -648,7 +652,7 @@ public class PedFile {
                         continue;
                     }
 
-                    ind = (Individual)order.elementAt(index);
+                    ind = (Individual)allIndividuals.elementAt(index);
                     int allele1=0, allele2=0;
                     if (alleles.substring(0,1).equals("A")){
                         allele1 = 1;
@@ -681,100 +685,57 @@ public class PedFile {
     public Vector check() throws PedFileException{
         //before we perform the check we want to prune out individuals with too much missing data
         //or trios which contain individuals with too much missing data
-        Vector indList = (Vector)order.clone();
+
+        Iterator fitr = families.values().iterator();
+        Vector useable = new Vector();
+        while (fitr.hasNext()){
+            Family curFam = (Family) fitr.next();
+            Enumeration indIDEnum = curFam.getMemberList();
+            Vector victor = new Vector();
+            while (indIDEnum.hasMoreElements()){
+                victor.add(curFam.getMember((String) indIDEnum.nextElement()));
+            }
+            if (victor.size() > 1){
+                PedParser pp = new PedParser();
+                try {
+                    SimpleGraph sg = pp.buildGraph(victor, Options.getMissingThreshold());
+                    Vector indStrings = pp.parsePed(sg);
+                    if (indStrings != null){
+                        Iterator sitr = indStrings.iterator();
+                        while (sitr.hasNext()){
+                            useable.add(curFam.getMember((String)sitr.next()));
+                        }
+                    }
+                }catch (PedigreeException pe){
+                    throw new PedFileException(pe.getMessage() + "\nin family " + curFam.getFamilyName());
+                }
+            }else{
+                useable.addAll(victor);
+            }
+        }
+        unrelatedIndividuals = useable;
+
+        Vector indList = (Vector)allIndividuals.clone();
         Individual currentInd;
         Family currentFamily;
 
         //deal with individuals who are missing too much data
         for(int x=0; x < indList.size(); x++){
             currentInd = (Individual)indList.elementAt(x);
-            if(axedPeople.contains(currentInd)){
-                continue;
-            }
             currentFamily = getFamily(currentInd.getFamilyID());
-            double numMissing = 0;
-            int numMarkers = currentInd.getNumMarkers();
-            for (int i = 0; i < numMarkers; i++){
-                byte[] thisMarker = currentInd.getMarker(i);
-                if (thisMarker[0] == 0 || thisMarker[1] == 0){
-                    numMissing++;
-                }
-            }
 
-
-            double genoPctMissing = numMissing/numMarkers;
-            if (genoPctMissing > Options.getMissingThreshold()){
-                //this person is missing too much data so remove him and then deal
-                //with his family connections
-                order.removeElement(currentInd);
-                currentInd.setReasonImAxed("% Genotypes: "+ new Double(((1-genoPctMissing)*100)).intValue());
+            if (currentInd.getGenoPC() < 1 - Options.getMissingThreshold()){
+                allIndividuals.removeElement(currentInd);
                 axedPeople.add(currentInd);
-                if (currentFamily.getNumMembers() > 1){
-                    //there are more people in this family so deal with relatives appropriately
-                    if (currentInd.hasEitherParent()){
-                        //I have parents, so kick out any of my kids.
-                        removeDescendants(currentFamily,currentInd.getIndividualID());
-                    }else{
-                        //I have no parents but need to check if my spouse does
-                        String spouseID = "";
-                        Enumeration peopleinFam = currentFamily.getMemberList();
-                        while (peopleinFam.hasMoreElements()){
-                            Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
-                            if (nextMember.getDadID().equals(currentInd.getIndividualID()))
-                                spouseID = nextMember.getMomID();
-                            if (nextMember.getMomID().equals(currentInd.getIndividualID()))
-                                spouseID = nextMember.getDadID();
-                        }
-                        if (!spouseID.equals("")){
-                            if (currentFamily.getMember(spouseID).hasEitherParent()){
-                                //remove my kids and leave my spouse alone
-                                removeDescendants(currentFamily,currentInd.getIndividualID());
-                            }else{
-                                //knock off my spouse and make my first kid a founder (i.e. "0" for parents)
-                                //and remove any other kids
-                                Individual spouse = currentFamily.getMember(spouseID);
-                                order.removeElement(spouse);
-                                spouse.setReasonImAxed("Spouse " + currentInd.getIndividualID() + " missing data.");
-                                axedPeople.add(spouse);
-                                currentFamily.removeMember(spouseID);
-                                peopleinFam = currentFamily.getMemberList();
-                                boolean oneFound = false;
-                                while (peopleinFam.hasMoreElements() && !oneFound){
-                                    Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
-                                    if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
-                                            nextMember.getMomID().equals(currentInd.getIndividualID())){
-                                            nextMember.setDadID("0");
-                                            nextMember.setMomID("0");
-                                            oneFound = true;
-                                    }
-                                }
-                                removeDescendants(currentFamily,currentInd.getIndividualID());
-                            }
-                        }
-                    }
-                }
-
+                currentInd.setReasonImAxed("% Genotypes: " + new Double(currentInd.getGenoPC()*100).intValue());
                 currentFamily.removeMember(currentInd.getIndividualID());
                 if (currentFamily.getNumMembers() == 0){
                     //if everyone in a family is gone, we remove it from the list
                     families.remove(currentInd.getFamilyID());
-                    axedFamilies.add(currentInd.getFamilyID());
                 }
-            }
-        }
-        indList = getOrder();
-        for (int x = 0; x < indList.size(); x++){
-            //after we've done all that go through and set the boolean for each person who has any kids
-            currentInd = (Individual)indList.elementAt(x);
-            currentFamily = getFamily(currentInd.getFamilyID());
-            Enumeration peopleinFam = currentFamily.getMemberList();
-            while (peopleinFam.hasMoreElements()){
-                Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
-                if (nextMember.getMomID().equals(currentInd.getIndividualID()) ||
-                        nextMember.getDadID().equals(currentInd.getIndividualID())){
-                    currentInd.setHasKids(true);
-                    break;
-                }
+            }else if (!useable.contains(currentInd)){
+                axedPeople.add(currentInd);
+                currentInd.setReasonImAxed("Not a member of maximum unrelated subset.");
             }
         }
 
@@ -796,31 +757,8 @@ public class PedFile {
         results = res;
     }
 
-    private void removeDescendants(Family f, String indID)throws PedFileException{
-        Vector peopleRemovedThisLoop = new Vector();
-        Enumeration peopleinFam = f.getMemberList();
-        while (peopleinFam.hasMoreElements()){
-            Individual nextMember = f.getMember((String)peopleinFam.nextElement());
-            if (nextMember.getDadID().equals(indID) ||
-                    nextMember.getMomID().equals(indID)){
-                order.removeElement(nextMember);
-                nextMember.setReasonImAxed("Ancestor " +indID + " missing data.");
-                axedPeople.add(nextMember);
-                f.removeMember(nextMember.getIndividualID());
-                peopleRemovedThisLoop.add(nextMember.getIndividualID());
-            }
-        }
-        for (int i = 0; i < peopleRemovedThisLoop.size(); i++){
-            removeDescendants(f, (String)peopleRemovedThisLoop.elementAt(i));
-        }
-    }
-
     public Vector getAxedPeople() {
         return axedPeople;
-    }
-
-    public Vector getAxedFamilies() {
-        return axedFamilies;
     }
 
     public boolean isBogusParents() {

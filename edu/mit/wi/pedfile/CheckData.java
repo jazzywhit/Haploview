@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 1.18 2004/10/05 17:04:44 jcbarret Exp $
+* $Id: CheckData.java,v 1.19 2005/01/25 21:30:39 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -103,7 +103,8 @@ public class CheckData {
                 //no allele data missing
                 if(allele1 > 0 && allele2 >0){
                     //make sure entry has parents
-                    if(!(currentInd.getMomID().equals("0") || currentInd.getDadID().equals("0"))){
+                    if (currentFamily.containsMember(currentInd.getMomID()) &&
+                            currentFamily.containsMember(currentInd.getDadID())){
                         //do mendel check
                         //byte[] marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getMomID())).getUnfilteredMarker(loc);
                         byte[] marker = (currentFamily.getMember(currentInd.getMomID())).getMarker(loc);

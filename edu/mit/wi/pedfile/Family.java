@@ -1,5 +1,5 @@
 /*
-* $Id: Family.java,v 1.3 2004/08/26 21:02:49 jcbarret Exp $
+* $Id: Family.java,v 1.4 2005/01/25 21:30:39 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -93,6 +93,14 @@ public class Family {
 
     public void removeMember(String id){
         members.remove(id);
+    }
+
+    public boolean containsMember(String id){
+        if (members.containsKey(id)){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     /**

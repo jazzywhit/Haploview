@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.9 2005/01/10 18:29:37 jcbarret Exp $
+* $Id: Individual.java,v 1.10 2005/01/25 21:30:39 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -30,11 +30,10 @@ public class Individual {
     private int gender;
     private int affectedStatus;
 
-    private boolean haskids;
     private String reasonImAxed;
     private int liability; //optional
     private Vector markers;
-    //private Vector zeroed;
+    private double numGoodMarkers;
     private boolean[] zeroed;
     //this is used to keep track of the index of the last marker added
     private int currMarker;
@@ -56,30 +55,6 @@ public class Individual {
         //this.zeroed = new Vector(numLines);
         this.zeroed = new boolean[numLines];
         this.currMarker = 0;
-    }
-
-    public boolean hasBothParents(){
-        if (momID.equals("0") || dadID.equals("0")){
-            return false;
-        }else{
-            return true;
-        }
-    }
-
-    public boolean hasEitherParent(){
-        if (momID.equals("0") && dadID.equals("0")){
-            return false;
-        }else{
-            return true;
-        }
-    }
-
-    public void setHasKids(boolean b){
-        haskids = b;
-    }
-
-    public boolean hasKids(){
-        return haskids;
     }
 
     /**
@@ -219,6 +194,9 @@ public class Individual {
         //this.zeroed.add(new Boolean(false));
         this.zeroed[currMarker] = false;
         this.currMarker++;
+        if (!(marker[0] == 0 || marker[1] == 0)){
+            numGoodMarkers++;
+        }
     }
 
     /**
@@ -255,4 +233,8 @@ public class Individual {
         this.reasonImAxed = reasonImAxed;
     }
 
+    public double getGenoPC(){
+        return numGoodMarkers/markers.size();
+    }
 }
+

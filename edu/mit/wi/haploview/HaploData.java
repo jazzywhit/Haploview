@@ -235,7 +235,7 @@ public class HaploData implements Constants{
                         sortedRes.add(unsortedRes.elementAt(realPos[i]));
                     }
                     pedFile.setResults(sortedRes);
-                    Vector o = pedFile.getOrder();
+                    Vector o = pedFile.getAllIndividuals();
                     for (int i = 0; i < o.size(); i++){
                         Individual ind = (Individual) o.get(i);
                         Vector unsortedMarkers = ind.getMarkers();
@@ -458,60 +458,28 @@ public class HaploData implements Constants{
         }
 
         Vector result = pedFile.check();
-        Vector indList = pedFile.getOrder();
+        Vector indList = pedFile.getUnrelatedIndividuals();
+        Vector indsInTrio = new Vector();
         int numMarkers = 0;
         numSingletons = 0;
         numTrios = 0;
         numPeds = pedFile.getNumFamilies();
         Individual currentInd;
         Family currentFamily;
-        Vector usedParents = new Vector();
         Vector chrom = new Vector();
-        Vector chromTrios = new Vector();
+        byte[] zeroArray = {0,0};
 
+        //first time through we deal with trios.
         for(int x=0; x < indList.size(); x++){
 
             currentInd = (Individual)indList.elementAt(x);
             currentFamily = pedFile.getFamily(currentInd.getFamilyID());
-
-            byte[] zeroArray = {0,0};
-            if(!currentInd.hasEitherParent()){
-                if (!currentInd.hasKids()){
-                    //ind has no parents or kids -- he's a singleton
-                    numMarkers = currentInd.getNumMarkers();
-                    byte[] chrom1 = new byte[numMarkers];
-                    byte[] chrom2 = new byte[numMarkers];
-                    for (int i = 0; i < numMarkers; i++){
-                        byte[] thisMarker;
-                        if (currentInd.getZeroed(i)){
-                            thisMarker = zeroArray;
-                        }else{
-                            thisMarker = currentInd.getMarker(i);
-                        }
-                        if (thisMarker[0] == thisMarker[1] || thisMarker[0] == 0 || thisMarker[1] == 0){
-                            chrom1[i] = thisMarker[0];
-                            chrom2[i] = thisMarker[1];
-                        }else{
-                            chrom1[i] = (byte)(4+thisMarker[0]);
-                            chrom2[i] = (byte)(4+thisMarker[1]);
-                        }
-                    }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus()));
-                    numSingletons++;
-                }
-            }else if (currentInd.hasBothParents()){
+            if (currentFamily.containsMember(currentInd.getMomID()) &&
+                    currentFamily.containsMember(currentInd.getDadID())){
                 //if indiv has both parents
                 Individual mom = currentFamily.getMember(currentInd.getMomID());
                 Individual dad = currentFamily.getMember(currentInd.getDadID());
-                //but doesn't have grandparents (i.e. is the kid in a founding trio)
-                //and his parents haven't already been counted
-                if (!(mom.hasBothParents() || dad.hasBothParents()) &&
-                        !(usedParents.contains(mom) || usedParents.contains(dad))){
-                    //we note that we've used these founders so we won't re use them if more of their kids
-                    //are in the file
-                    usedParents.add(mom);
-                    usedParents.add(dad);
+                if (indList.contains(mom) && indList.contains(dad)){
                     numMarkers = currentInd.getNumMarkers();
                     byte[] dadTb = new byte[numMarkers];
                     byte[] dadUb = new byte[numMarkers];
@@ -661,70 +629,45 @@ public class HaploData implements Constants{
                         }
 
                     }
-                    chromTrios.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb, currentInd.getAffectedStatus()));
-                    chromTrios.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb, currentInd.getAffectedStatus()));
-                    chromTrios.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb, currentInd.getAffectedStatus()));
-                    chromTrios.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb, currentInd.getAffectedStatus()));
                     numTrios++;
-                }else if (mom.hasBothParents() && !dad.hasBothParents() && !usedParents.contains(dad)){
-                    //in this case dad is a founder so we toss him in as a singleton.
-                    //this only happens in the bizarre case where we have grandparents on one side
-                    //of a family but not the other
-                    usedParents.add(dad);
-                    numMarkers = dad.getNumMarkers();
-                    byte[] chrom1 = new byte[numMarkers];
-                    byte[] chrom2 = new byte[numMarkers];
-                    for (int i = 0; i < numMarkers; i++){
-                        byte[] thisMarker;
-                        if (dad.getZeroed(i)){
-                            thisMarker = zeroArray;
-                        }else{
-                            thisMarker = dad.getMarker(i);
-                        }
-                        if (thisMarker[0] == thisMarker[1] || thisMarker[0] == 0 || thisMarker[1] == 0){
-                            chrom1[i] = thisMarker[0];
-                            chrom2[i] = thisMarker[1];
-                        }else{
-                            chrom1[i] = (byte)(4+thisMarker[0]);
-                            chrom2[i] = (byte)(4+thisMarker[1]);
-                        }
-                    }
-                    chrom.add(new Chromosome(dad.getFamilyID(),dad.getIndividualID(),chrom1,dad.getAffectedStatus()));
-                    chrom.add(new Chromosome(dad.getFamilyID(),dad.getIndividualID(),chrom2,dad.getAffectedStatus()));
-                    numSingletons++;
-                }else if (dad.hasBothParents() && !mom.hasBothParents() && !usedParents.contains(mom)){
-                    //in this case mom is a founder so we toss here in as a singleton
-                    //rarely occurs, see above
-                    usedParents.add(mom);
-                    numMarkers = mom.getNumMarkers();
-                    byte[] chrom1 = new byte[numMarkers];
-                    byte[] chrom2 = new byte[numMarkers];
-                    for (int i = 0; i < numMarkers; i++){
-                        byte[] thisMarker;
-                        if (mom.getZeroed(i)){
-                            thisMarker = zeroArray;
-                        }else{
-                            thisMarker = mom.getMarker(i);
-                        }
-                        if (thisMarker[0] == thisMarker[1] || thisMarker[0] == 0 || thisMarker[1] == 0){
-                            chrom1[i] = thisMarker[0];
-                            chrom2[i] = thisMarker[1];
-                        }else{
-                            chrom1[i] = (byte)(4+thisMarker[0]);
-                            chrom2[i] = (byte)(4+thisMarker[1]);
-                        }
-                    }
-                    chrom.add(new Chromosome(mom.getFamilyID(),mom.getIndividualID(),chrom1,mom.getAffectedStatus()));
-                    chrom.add(new Chromosome(mom.getFamilyID(),mom.getIndividualID(),chrom2,mom.getAffectedStatus()));
-                    numSingletons++;
+                    indsInTrio.add(mom);
+                    indsInTrio.add(dad);
+                    indsInTrio.add(currentInd);
                 }
-
             }
         }
-
-
-        chromTrios.addAll(chrom);
-        chromosomes = chromTrios;
+        for (int x=0; x<indList.size(); x++){
+            currentInd = (Individual)indList.elementAt(x);
+            if (!indsInTrio.contains(currentInd)){
+               //ind has no parents or kids -- he's a singleton
+                    numMarkers = currentInd.getNumMarkers();
+                    byte[] chrom1 = new byte[numMarkers];
+                    byte[] chrom2 = new byte[numMarkers];
+                    for (int i = 0; i < numMarkers; i++){
+                        byte[] thisMarker;
+                        if (currentInd.getZeroed(i)){
+                            thisMarker = zeroArray;
+                        }else{
+                            thisMarker = currentInd.getMarker(i);
+                        }
+                        if (thisMarker[0] == thisMarker[1] || thisMarker[0] == 0 || thisMarker[1] == 0){
+                            chrom1[i] = thisMarker[0];
+                            chrom2[i] = thisMarker[1];
+                        }else{
+                            chrom1[i] = (byte)(4+thisMarker[0]);
+                            chrom2[i] = (byte)(4+thisMarker[1]);
+                        }
+                    }
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus()));
+                    numSingletons++;
+            }
+        }
+        chromosomes = chrom;
         //wipe clean any existing marker info so we know we're starting with a new file
         Chromosome.markers = null;
         return result;
@@ -2078,7 +2021,7 @@ public class HaploData implements Constants{
     String hapFileName)throws IOException, PedFileException{
     FileWriter linkageToHapsWriter = new FileWriter(new File(hapFileName));
 
-    Vector indList = pedFile.getOrder();
+    Vector indList = pedFile.getAllIndividuals();
     int numMarkers = 0;
     Vector usedParents = new Vector();
     Individual currentInd;
