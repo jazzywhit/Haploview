@@ -571,6 +571,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 setVisible(true);
 
                 theData.finished = true;
+                setTitle(TITLE_STRING + " -- " + inputOptions[0]);
                 return null;
             }
         };
