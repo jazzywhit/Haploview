@@ -80,6 +80,7 @@
      <zipfileset src="resources/JimiProClasses.zip"/>
      <zipfileset src="resources/jh.jar"/>
      <zipfileset src="resources/haplohelp.jar"/>
+     <zipfileset src="resources/jgrapht-0.5.3.jar"/>
    </jar>
 </target>
 
@@ -97,6 +98,7 @@
      <zipfileset src="resources/JimiProClasses.zip"/>
      <zipfileset src="resources/jh.jar"/>
      <zipfileset src="resources/haplohelp.jar"/>
+     <zipfileset src="resources/jgrapht-0.5.3.jar"/>
    </jar>
 </target>
 
@@ -112,6 +114,7 @@
      <zipfileset src="resources/JimiProClasses.zip"/>
      <zipfileset src="resources/jh.jar"/>
      <zipfileset src="resources/haplohelp.jar"/>
+     <zipfileset src="resources/jgrapht-0.5.3.jar"/>
    </jar>
 </target>
 
