@@ -147,23 +147,24 @@ class DrawingMethods {
 							  (verticalOffset-regfm.getAscent()/2+((regfm.getHeight()+5)*hapsInBlocks[i+1][crossCount].getListOrder()))));
 			    }
 			}else{
-				//draw colored lines
+			    //draw colored lines
+			    //only draw if this connection is strong enough
 			    if(crossVal*100 > mycolorThresh){
 				g.setStroke(stroke);
-				double overThresh = crossVal*100 - mycolorThresh;
-				float lineRed, lineGreen, lineBlue;
-				if(overThresh < (50-mycolorThresh)/2){
-				    //cold colors
-				    lineRed=0.0f;
-				    lineBlue=new Double(0.9-((overThresh/((50-mycolorThresh)/2))*0.9)).floatValue();
-				    lineGreen=0.9f-lineBlue;
+				Color lineColor;
+				//set the color based on strength
+				if (crossVal > 0.25){
+				    lineColor = new Color(255,0,0);
+				}else if (crossVal > 0.20){
+				    lineColor = new Color(255,153,0);
+				}else if (crossVal > 0.15){
+				    lineColor = new Color(0,204,0);
+				}else if (crossVal > 0.5){
+				    lineColor = new Color(0,51,204);
 				}else{
-				    //hot colors
-				    lineBlue=0.0f;
-				    lineRed=new Double(((overThresh-(50-mycolorThresh)/2)/((50-mycolorThresh)/2))*0.9).floatValue();
-				    lineGreen=0.9f-lineRed;
+				    lineColor = new Color(0,0,153);
 				}
-				Color lineColor = new Color(lineRed, lineGreen, lineBlue);
+
 				g.setColor(lineColor);
 				g.setStroke(new BasicStroke(1.5f));
 				g.draw(new Line2D.Double((x+totalWidth+3),
