@@ -167,6 +167,7 @@ public class HaploData{
                         }
                     }
                 }
+                filteredDPrimeTable = getFilteredTable();
             }
             infoKnown=true;
         }else{
