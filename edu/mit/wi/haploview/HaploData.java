@@ -314,7 +314,7 @@ public class HaploData{
         this.linkageToChrom(infile, type, false);
     }
 
-    public void linkageToChrom(File infile, int type, boolean skipCheck)
+    public Vector linkageToChrom(File infile, int type, boolean skipCheck)
             throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
 
         //okay, for now we're going to assume the ped file has no header
@@ -592,6 +592,7 @@ public class HaploData{
         }catch(HaploViewException e){
         }catch(IOException e){
         }
+        return result;
     }
 
     void generateDPrimeTable(long maxdist){

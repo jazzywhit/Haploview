@@ -19,6 +19,7 @@ public class HaploText {
     private Vector arg_ignoreMarkers = new Vector();
     private boolean arg_quiet = false;
     private int arg_output;
+    private boolean arg_check;
     private int arg_distance;
     private boolean arg_dprime;
 
@@ -91,6 +92,7 @@ public class HaploText {
         int maxDistance = -1;
         boolean quietMode = false;
         boolean outputDprime=false;
+        boolean outputCheck=false;
 
         for(int i =0; i < args.length; i++) {
             if(args[i].equals("-help") || args[i].equals("-h")) {
@@ -105,12 +107,13 @@ public class HaploText {
                         //TODO: fix ignoremarkers
                         //"         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
                         //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
-                        "-ha <hapsfile>                specify an input file in .haps format\n" +
                         "-a <hapmapfile>               specify an input file in HapMap format\n" +
+                        "-l <hapsfile>                 specify an input file in .haps format\n" +
                         "-i <infofile>                 specify a marker info file\n" +
                         "-b <batchfile>                batch mode. batchfile should contain a list of files either all genotype or alternating genotype/info\n" +
-                        "-d                      outputs dprime to <inputfile>.DPRIME\n" +
-                        "             note: -d defaults to no blocks output. use -o to also output blocks\n" +
+                        "-d                            outputs dprime to <inputfile>.DPRIME\n" +
+                        "-c                            outputs marker checks to <inputfile>.CHECK\n" +
+                        "                              note: -d  and -c default to no blocks output. use -o to also output blocks\n" +
                         "-o <SFS,GAM,MJD,ALL>          output type. SFS, 4 gamete, MJD output or all 3. default is SFS.\n" +
                         "-m <distance>                 maximum comparison distance in kilobases (integer). default is 500");
 
@@ -152,7 +155,7 @@ public class HaploText {
                     }
                 }
             } */
-            else if(args[i].equals("-ha")) {
+            else if(args[i].equals("-ha") || args[i].equals("-l")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
                     System.out.println("-ha requires a filename");
@@ -219,6 +222,9 @@ public class HaploText {
             else if(args[i].equals("-d") || args[i].equals("--dprime")) {
                 outputDprime = true;
             }
+            else if (args[i].equals("-c")){
+                outputCheck = true;
+            }
             else if(args[i].equals("-m")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
@@ -262,7 +268,7 @@ public class HaploText {
 
         //mess with vars, set defaults, etc
 
-        if( outputType == -1 && ( !pedFileName.equals("") || !hapsFileName.equals("") || !batchMode.equals("")) && !outputDprime ) {
+        if( outputType == -1 && ( !pedFileName.equals("") || !hapsFileName.equals("") || !batchMode.equals("")) && !outputDprime && !outputCheck) {
             outputType = 0;
             if(nogui && !quietMode) {
                 System.out.println("No output type specified. Default of SFS will be used");
@@ -292,6 +298,7 @@ public class HaploText {
         arg_batchMode = batchMode;
         arg_quiet = quietMode;
         arg_dprime = outputDprime;
+        arg_check = outputCheck;
     }
 
 
@@ -427,16 +434,13 @@ public class HaploText {
                     }
                 }*/
 
-                textData.linkageToChrom(inputFile, 3, arg_skipCheck);
+                result = textData.linkageToChrom(inputFile, 3, arg_skipCheck);
 
             }else{
                 //read in hapmapfile
-                textData.linkageToChrom(inputFile,4,arg_skipCheck);
+                result = textData.linkageToChrom(inputFile,4,arg_skipCheck);
             }
 
-
-            String name = fileName;
-            String baseName = fileName.substring(0,name.length()-5);
 
             if(!infoFileName.equals("")) {
                 File infoFile = new File(infoFileName);
@@ -451,20 +455,11 @@ public class HaploText {
                     System.out.println("info file " + infoFileName + " does not exist");
                 }
             }
-            else {
-                File maybeInfo = new File(baseName + ".info");
-                if (maybeInfo.exists()){
-                    textData.prepareMarkerInput(maybeInfo,maxDistance,null);
-                    if(!arg_quiet){
-                        System.out.println("Using marker file " + maybeInfo.getName());
-                    }
-                    textData.infoKnown = true;
-                }
-            }
+
 
             if(this.arg_showCheck && result != null) {
                 System.out.println("Data check results:\n" +
-                        "Name\t\tObsHET\tPredHET\tHWpval\t%Geno\tFamTrio\tMendErr");
+                        "Name\tObsHET\tPredHET\tHWpval\t%Geno\tFamTrio\tMendErr");
                 for(int i=0;i<result.size();i++){
                     MarkerResult currentResult = (MarkerResult)result.get(i);
                     System.out.println(
@@ -479,7 +474,23 @@ public class HaploText {
 
             }
 
-
+            if(this.arg_check && result != null){
+                OutputFile = new File (fileName + ".CHECK");
+                FileWriter saveCheckWriter = new FileWriter(OutputFile);
+                saveCheckWriter.write("Name\tObsHET\tPredHET\tHWpval\t%Geno\tFamTrio\tMendErr\n");
+                for(int i=0;i<result.size();i++){
+                    MarkerResult currentResult = (MarkerResult)result.get(i);
+                    saveCheckWriter.write(
+                            Chromosome.getMarker(i).getName()        +"\t"+
+                            currentResult.getObsHet()      +"\t"+
+                            currentResult.getPredHet()     +"\t"+
+                            currentResult.getHWpvalue()    +"\t"+
+                            currentResult.getGenoPercent() +"\t"+
+                            currentResult.getFamTrioNum()  +"\t"+
+                            currentResult.getMendErrNum()  +"\n");
+                }
+                saveCheckWriter.close();
+            }
 
             if(outputType != -1){
                 textData.generateDPrimeTable(maxDistance);
