@@ -438,14 +438,14 @@ public class HaploData implements Constants{
                                 if (dad1 == dad2) {
                                     dadTb[i] = dad1;
                                     dadUb[i] = dad1;
-                                } else {
+                                } else if (dad1 != 0 && dad2 != 0) {
                                     dadTb[i] = (byte)(4+dad1);
                                     dadUb[i] = (byte)(4+dad2);
                                 }
                                 if (mom1 == mom2) {
                                     momTb[i] = mom1;
                                     momUb[i] = mom1;
-                                } else {
+                                } else if (mom1 != 0 && mom2 != 0){
                                     momTb[i] = (byte)(4+mom1);
                                     momUb[i] = (byte)(4+mom2);
                                 }

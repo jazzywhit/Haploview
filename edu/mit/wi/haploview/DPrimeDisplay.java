@@ -90,6 +90,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         this.setAutoscrolls(true);
     }
 
+    DPrimeDisplay(HaploData hd){
+        theData = hd;
+        this.colorDPrime(STD_SCHEME);
+    }
+
     public void refresh(){
         noImage = true;
         repaint();
@@ -177,7 +182,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
     }
 
-    public BufferedImage export(int start, int stop){
+    public BufferedImage export(int start, int stop, boolean compress){
         forExport = true;
         exportStart = start;
         if (exportStart < 0){
@@ -187,10 +192,36 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         if (exportStop > theData.filteredDPrimeTable.length){
             exportStop = theData.filteredDPrimeTable.length;
         }
+
+        int startBS = boxSize;
+        int startBR = boxRadius;
+        boolean startPD = printDetails;
+        if (compress){
+            printDetails = false;
+            if (boxSize > (1200/(stop - start))){
+                boxSize = 1200/(stop - start);
+
+                if (boxSize < 2){
+                    boxSize = 2;
+                }
+                //to make picture not look dumb we need to avoid odd numbers for really teeny boxes
+                if (boxSize < 10){
+                    if (boxSize%2 != 0){
+                        boxSize++;
+                    }
+                }
+                boxRadius = boxSize/2;
+            }
+        }
+
         Dimension pref = getPreferredSize();
         BufferedImage i = new BufferedImage(pref.width, pref.height,
                 BufferedImage.TYPE_3BYTE_BGR);
         paintComponent(i.getGraphics());
+
+        boxSize = startBS;
+        boxRadius = startBR;
+        printDetails = startPD;
         forExport = false;
         return i;
     }
@@ -199,6 +230,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         int diff = type - zoomLevel;
 
         zoomLevel = type;
+        if (zoomLevel == 0){
+            printDetails = true;
+        } else{
+            printDetails = false;
+        }
         int x=0, y=0;
         int oldX = getVisibleRect().x;
         int oldY = getVisibleRect().y;
@@ -242,11 +278,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }else{
             showWM = false;
         }
-        if (zoomLevel == 0){
-            printDetails = true;
-        } else{
-            printDetails = false;
-        }
+
 
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
@@ -748,12 +780,14 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         count ++;
 
         Graphics g = this.getGraphics();
-        g.setFont(markerNameFont);
-        FontMetrics fm = g.getFontMetrics();
-        if (printDetails){
-            blockDispHeight = boxSize/3 + fm.getAscent();
-        }else{
-            blockDispHeight = boxSize/3;
+        if (g != null){
+            g.setFont(markerNameFont);
+            FontMetrics fm = g.getFontMetrics();
+            if (printDetails){
+                blockDispHeight = boxSize/3 + fm.getAscent();
+            }else{
+                blockDispHeight = boxSize/3;
+            }
         }
 
         int high = 2*V_BORDER + count*boxSize/2 + blockDispHeight;

@@ -11,6 +11,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
     JRadioButton dpButton, hapButton, checkButton, assocButton;
     JRadioButton txtButton, pngButton;
     JRadioButton allButton, someButton, adjButton;
+    JCheckBox compressCheckBox;
     NumberTextField lowRange, upperRange;
 
     public ExportDialog(HaploView h){
@@ -76,6 +77,9 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
         pngButton.addActionListener(this);
         formatPanel.add(pngButton);
         g2.add(pngButton);
+        compressCheckBox = new JCheckBox("Compress image (smaller file)");
+        formatPanel.add(compressCheckBox);
+        compressCheckBox.setEnabled(false);
         if (currTab == VIEW_CHECK_NUM || currTab == VIEW_TDT_NUM){
             pngButton.setEnabled(false);
         }
@@ -130,7 +134,9 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
         if (dpButton.isSelected()){
             if(txtButton.isSelected()){
                 adjButton.setEnabled(true);
+                compressCheckBox.setEnabled(false);
             }else{
+                compressCheckBox.setEnabled(true);
                 adjButton.setEnabled(false);
                 if (adjButton.isSelected()){
                     allButton.setSelected(true);
@@ -138,6 +144,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             }
             someButton.setEnabled(true);
         }else{
+            compressCheckBox.setEnabled(false);
             someButton.setEnabled(false);
             adjButton.setEnabled(false);
             if (adjButton.isSelected() || someButton.isSelected()){
@@ -161,7 +168,11 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
         }else if (command.equals("OK")){
             int format, tab;
             if (pngButton.isSelected()){
-                format = PNG_MODE;
+                if (compressCheckBox.isSelected()){
+                    format = COMPRESSED_PNG_MODE;
+                }else{
+                    format = PNG_MODE;
+                }
             }else{
                 format = TXT_MODE;
             }
@@ -178,7 +189,14 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             if (allButton.isSelected()){
                 hv.export(tab,format,0,Chromosome.getSize());
             }else if (someButton.isSelected()){
-                hv.export(tab,format,Integer.parseInt(lowRange.getText())-1, Integer.parseInt(upperRange.getText()));
+                try{
+                    hv.export(tab,format,Integer.parseInt(lowRange.getText())-1, Integer.parseInt(upperRange.getText()));
+                }catch (NumberFormatException nfe){
+                    JOptionPane.showMessageDialog(hv,
+                    "Invalid marker range: " + lowRange.getText() + " - " + upperRange.getText(),
+                    "Export Error",
+                    JOptionPane.ERROR_MESSAGE);
+                }
             }else{
                 hv.export(tab,format,-1,-1);
             }

@@ -131,7 +131,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             exportMenuItems[i].setEnabled(false);
             fileMenu.add(exportMenuItems[i]);
         }
-        exportMenuItems[2].setEnabled(true);
 
         fileMenu.addSeparator();
         fileMenu.setMnemonic(KeyEvent.VK_F);
@@ -604,6 +603,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         clearBlocksItem.setEnabled(true);
                         readMarkerItem.setEnabled(true);
                         blocksItem.setEnabled(true);
+                        exportMenuItems[2].setEnabled(true);
 
                         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
@@ -829,10 +829,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         fc.setSelectedFile(new File(""));
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
             File outfile = fc.getSelectedFile();
-            if (format == PNG_MODE){
+            if (format == PNG_MODE || format == COMPRESSED_PNG_MODE){
                 BufferedImage image;
                 if (tabNum == VIEW_D_NUM){
-                    image = dPrimeDisplay.export(start, stop);
+                    if (format == PNG_MODE){
+                        image = dPrimeDisplay.export(start, stop, false);
+                    }else{
+                        image = dPrimeDisplay.export(start, stop, true);
+                    }
                 }else if (tabNum == VIEW_HAP_NUM){
                     image = hapDisplay.export();
                 }else{

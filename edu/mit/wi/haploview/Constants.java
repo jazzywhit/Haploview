@@ -34,6 +34,7 @@ public interface Constants {
     //export modes
     public static final int PNG_MODE = 0;
     public static final int TXT_MODE = 1;
+    public static final int COMPRESSED_PNG_MODE = 2;
     public static final int TABLE_TYPE = 0;
     public static final int LIVE_TYPE = 1;
 

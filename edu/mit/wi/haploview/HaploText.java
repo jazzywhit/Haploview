@@ -6,6 +6,10 @@ import edu.mit.wi.pedfile.PedFileException;
 import java.io.*;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import java.awt.image.BufferedImage;
+
+import com.sun.jimi.core.Jimi;
+import com.sun.jimi.core.JimiException;
 
 public class HaploText implements Constants{
 
@@ -16,6 +20,7 @@ public class HaploText implements Constants{
     private String arg_pedfile;
     private String arg_hapmapfile;
     private String arg_blockfile;
+    private String arg_trackName;
     private boolean arg_showCheck = false;
     private boolean arg_skipCheck = false;
     private Vector arg_ignoreMarkers = new Vector();
@@ -24,6 +29,8 @@ public class HaploText implements Constants{
     private boolean arg_check;
     private int arg_distance;
     private boolean arg_dprime;
+    private boolean arg_png;
+    private boolean arg_smallpng;
 
     public boolean isNoGui() {
         return arg_nogui;
@@ -65,11 +72,13 @@ public class HaploText implements Constants{
         this.argHandler(args);
 
         if(!this.arg_batchMode.equals("")) {
+            System.out.println(TITLE_STRING);
             this.doBatch();
         }
 
         if(!(this.arg_pedfile.equals("")) || !(this.arg_hapsfile.equals("")) || !(this.arg_hapmapfile.equals(""))){
             if(arg_nogui){
+                System.out.println(TITLE_STRING);
                 processTextOnly();
             }
         }
@@ -94,6 +103,8 @@ public class HaploText implements Constants{
         int maxDistance = -1;
         boolean quietMode = false;
         boolean outputDprime=false;
+        boolean outputPNG = false;
+        boolean outputSmallPNG = false;
         boolean outputCheck=false;
 
         for(int i =0; i < args.length; i++) {
@@ -185,6 +196,21 @@ public class HaploText implements Constants{
                     System.exit(1);
                 }
             }
+            else if (args[i].equals("-png")){
+                outputPNG = true;
+            }
+            else if (args[i].equals("-smallpng")){
+                outputSmallPNG = true;
+            }
+            else if (args[i].equals("-track")){
+                i++;
+                if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                   arg_trackName = args[i];
+                }else{
+                    System.out.println("-track requires a filename");
+                    System.exit(1);
+                }
+            }
             else if(args[i].equals("-o")) {
                 i++;
                 if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
@@ -262,7 +288,7 @@ public class HaploText implements Constants{
 
         if( outputType == -1 && ( !pedFileName.equals("") ||
                 !hapsFileName.equals("") || !batchMode.equals("") || !hapmapFileName.equals(""))
-                && !outputDprime && !outputCheck) {
+                && !outputDprime && !outputCheck && !outputPNG && !outputSmallPNG) {
             outputType = BLOX_GABRIEL;
             if(nogui && !quietMode) {
                 System.out.println("No output type specified. Default of Gabriel will be used");
@@ -293,6 +319,8 @@ public class HaploText implements Constants{
         arg_batchMode = batchMode;
         arg_quiet = quietMode;
         arg_dprime = outputDprime;
+        arg_png = outputPNG;
+        arg_smallpng = outputSmallPNG;
         arg_check = outputCheck;
     }
 
@@ -386,8 +414,7 @@ public class HaploText implements Constants{
      * @param fileType true means pedfilem false means hapsfile
      * @param infoFileName
      */
-    private void processFile(String fileName,int fileType,String infoFileName){
-        System.out.println(TITLE_STRING);
+    private void processFile(String fileName, int fileType, String infoFileName){
         try {
             int outputType;
             long maxDistance;
@@ -449,7 +476,6 @@ public class HaploText implements Constants{
             if(!arg_quiet && infoFile != null){
                 System.out.println("Using marker file " + infoFile.getName());
             }
-            textData.infoKnown = true;
 
 
             if(this.arg_showCheck && result != null) {
@@ -516,6 +542,23 @@ public class HaploText implements Constants{
                     textData.saveDprimeToText(OutputFile, TABLE_TYPE, 0, Chromosome.getFilteredSize());
                 }else{
                     textData.saveDprimeToText(OutputFile, LIVE_TYPE, 0, Chromosome.getFilteredSize());
+                }
+            }
+            if (this.arg_png || this.arg_smallpng){
+                OutputFile = new File(fileName + ".LD.PNG");
+                if (textData.filteredDPrimeTable == null){
+                    textData.generateDPrimeTable();
+                    textData.guessBlocks(BLOX_CUSTOM, new Vector());
+                }
+                if (this.arg_trackName != null){
+                    textData.readAnalysisTrack(new File(arg_trackName));
+                }
+                DPrimeDisplay dpd = new DPrimeDisplay(textData);
+                BufferedImage i = dpd.export(0,Chromosome.getSize(),this.arg_smallpng);
+                try{
+                    Jimi.putImage("image/png", i, OutputFile.getName());
+                }catch(JimiException je){
+                    System.out.println(je.getMessage());
                 }
             }
 
