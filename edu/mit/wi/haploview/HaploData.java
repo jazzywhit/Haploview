@@ -381,7 +381,7 @@ class HaploData{
 	return bestSubset;
     }	
 	    
-    void prepareMarkerInput(File infile) throws IOException{
+    int prepareMarkerInput(File infile) throws IOException{
 	//this method is called to gather data about the markers used.
 	//It is assumed that the input file is two columns, the first being
 	//the name and the second the absolute position
@@ -395,7 +395,12 @@ class HaploData{
 	    StringTokenizer st = new StringTokenizer(currentLine);
 	    markers.add(new SNP(st.nextToken(), Long.parseLong(st.nextToken()), infile.getName()));
 	}
-	markerInfo = markers;
+	if (markerInfo.size() == markers.size()){
+	    markerInfo = markers;
+	    return 1;
+	}else{
+	    return -1;
+	}
     }
     
     Vector prepareGenotypeInput(File infile) throws IOException{

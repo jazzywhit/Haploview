@@ -488,10 +488,17 @@ public class HaploView extends JFrame implements ActionListener{
 	    int returnVal = fc.showOpenDialog(this);
 	    if (returnVal == JFileChooser.APPROVE_OPTION) {
 		try{
-		    theData.prepareMarkerInput(fc.getSelectedFile());
-		    infoKnown=true;
-		    // loadInfoMenuItem.setEnabled(false);
-		    drawPicture(theData);
+		    int good = theData.prepareMarkerInput(fc.getSelectedFile());
+		    if (good == -1){
+			JOptionPane.showMessageDialog(this, 
+						      "Number of markers in info file does not match number of markers in dataset.",
+						      "Error",
+						      JOptionPane.ERROR_MESSAGE);
+		    }else{
+			infoKnown=true;
+			// loadInfoMenuItem.setEnabled(false);
+			drawPicture(theData);
+		    }
 		}catch (IOException ioexec){
 		    JOptionPane.showMessageDialog(this, 
 						  ioexec.getMessage(), 
