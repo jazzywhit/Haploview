@@ -827,9 +827,11 @@ public class HaploText implements Constants{
                 snpsByName.put(snp.getName(), snp);
             }
 
-            for(int i=0;i<forceIncludeTags.size();i++) {
-                if(snpsByName.containsKey(forceIncludeTags.get(i))) {
-                    whiteListedCustomMarkers.add(snpsByName.get(forceIncludeTags.get(i)));
+            if(forceIncludeTags != null) {
+                for(int i=0;i<forceIncludeTags.size();i++) {
+                    if(snpsByName.containsKey(forceIncludeTags.get(i))) {
+                        whiteListedCustomMarkers.add(snpsByName.get(forceIncludeTags.get(i)));
+                    }
                 }
             }
 
