@@ -40,7 +40,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     };
     JRadioButtonMenuItem zoomMenuItems[];
     String colorItems[] = {
-        "Standard", "R-squared", "D' / LOD (alt)", "Confidence bounds", "4 Gamete"
+        "Standard (D' / LOD)", "R-squared", "D' / LOD (alt)", "Confidence bounds", "4 Gamete"
     };
     JRadioButtonMenuItem colorMenuItems[];
     JRadioButtonMenuItem blockMenuItems[];
@@ -407,6 +407,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     return null;
                 }
                 public void finished() {
+                    window.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                     if(uc != null) {
                         if(uc.isNewVersionAvailable()) {
                             UpdateDisplayDialog udp = new UpdateDisplayDialog(window,"Update Check",uc);
@@ -419,7 +420,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                                     JOptionPane.INFORMATION_MESSAGE);
                         }
                     }
-                    window.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+
                 }
             };
             setCursor(new Cursor(Cursor.WAIT_CURSOR));
