@@ -1090,6 +1090,17 @@ BLOCK 2.  MARKERS: 10! 11! 12
 
     <section>
       <title>Change Log</title>
+
+      <section>
+	<title>Version 3.11, 04 February 2005</title>
+	<itemizedlist>
+	  <listitem>improved parsing of families with unrelated members</listitem>
+	  <listitem>fixed bug with singletons with large amounts of missing data</listitem>
+	  <listitem>fixed bug with java path differences from cmd line</listitem>
+	  <listitem>fixed export issues for LD display</listitem>
+	  <listitem>fixed bug with block output for files without blocks</listitem>
+	</itemizedlist>
+      </section>
       
       <section>
 	<title>Version 3.1, 27 January 2005</title>
