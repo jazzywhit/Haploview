@@ -525,10 +525,11 @@ public class AssociationTestSet implements Constants{
 
         String getName(){
             StringBuffer sb = new StringBuffer();
-            for (int i = 0; i < markers.size(); i++){
-                sb.append(((Integer)markers.get(i)).intValue()+1);
-                sb.append(" ");
+            for (int i = 0; i < markers.size() - 1; i++){
+                sb.append(Chromosome.getUnfilteredMarker(((Integer)markers.get(i)).intValue()).getName());
+                sb.append(",");
             }
+            sb.append(Chromosome.getUnfilteredMarker(((Integer)markers.get(markers.size()-1)).intValue()).getName());
 
             return sb.toString();
         }
