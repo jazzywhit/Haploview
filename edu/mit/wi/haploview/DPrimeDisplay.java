@@ -1101,9 +1101,13 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
                 mt.waitForID(0);
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                gBrowseImage = new BufferedImage(i.getWidth(this), i.getHeight(this), BufferedImage.TYPE_INT_RGB);
-                gBrowseImage.getGraphics().drawImage(i,0,0, this);
-                gbImageHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
+                if (i.getWidth(this) > 0 && i.getHeight(this) > 0){
+                    gBrowseImage = new BufferedImage(i.getWidth(this), i.getHeight(this), BufferedImage.TYPE_INT_RGB);
+                    gBrowseImage.getGraphics().drawImage(i,0,0, this);
+                    gbImageHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
+                }else{
+                    gBrowseImage = null;
+                }
             }catch (MalformedURLException mue){
                 //this exception sucks walnuts, so I refuse to handle it on principle
             }catch (InterruptedException e){
