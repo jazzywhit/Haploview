@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 3.1 2005/02/04 16:50:35 jcbarret Exp $
+* $Id: CheckData.java,v 3.2 2005/03/31 20:39:14 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -11,6 +11,8 @@
 */
 
 package edu.mit.wi.pedfile;
+
+import edu.mit.wi.haploview.Chromosome;
 
 import java.util.*;
 
@@ -215,7 +217,12 @@ public class CheckData {
             }
         }
         double obsHET = getObsHET(het, hom);
-        double[] freqStuff = getFreqStuff(count);
+        double freqStuff[] = null;
+        try{
+            freqStuff = getFreqStuff(count);
+        }catch (PedFileException pfe){
+            throw new PedFileException("More than two alleles at marker " + (loc+1));
+        }
         double preHET = freqStuff[0];
         double maf = freqStuff[1];
 
@@ -256,11 +263,13 @@ public class CheckData {
         return obsHET;
     }
 
-    private double[] getFreqStuff(int[] count){
+    private double[] getFreqStuff(int[] count) throws PedFileException{
         double[] freqStuff = new double[2];
         int sumsq=0, sum=0, num=0, mincount = -1;
+        int numberOfAlleles = 0;
         for(int i=0;i<count.length;i++){
             if(count[i] != 0){
+                numberOfAlleles++;
                 num = count[i];
                 sumsq += num*num;
                 sum += num;
@@ -269,6 +278,11 @@ public class CheckData {
                 }
             }
         }
+
+        if (numberOfAlleles > 2){
+            throw new PedFileException("More than two alleles!");
+        }
+
         if (sum == 0){
             freqStuff[0] = 0;
             freqStuff[1] = 0;
