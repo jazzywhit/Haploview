@@ -1,6 +1,7 @@
 package edu.mit.wi.haploview;
 
 import java.util.Vector;
+import java.util.Arrays;
 //import java.util.Enumeration;
 
 public class EM implements Constants {
@@ -8,7 +9,7 @@ public class EM implements Constants {
     private int[][] haplotypes;
     private double[] frequencies;
     private Vector obsT, obsU;
-    private Vector controlFreqs, caseFreqs;
+    private Vector controlCounts, caseCounts;
 
     final int MISSINGLIMIT = 4;
     final int MAXLOCI = 100;
@@ -18,9 +19,13 @@ public class EM implements Constants {
     SUPER_OBS[] superdata;
     int[] two_n = new int[32];
     double[] prob;
+    double[] superprob;
     int[][] ambighet;
     private Vector chromosomes;
     private int numTrios;
+    private int numFileteredTrios;
+    private boolean[][][] kidConsistentCache;
+    private Vector realAffectedStatus;
 
     EM(Vector chromosomes, int numTrios){
 
@@ -252,18 +257,18 @@ public class EM implements Constants {
                 }
             }
         }
-        int trioCount  = inputHaploTrios.size() / 4;
+        numFileteredTrios  = inputHaploTrios.size() / 4;
         inputHaploTrios.addAll(inputHaploSingletons);
         affTrios.addAll(affSingletons);
 
         byte[][] input_haplos = (byte[][])inputHaploTrios.toArray(new byte[0][0]);
 
-        full_em_breakup(input_haplos, block_size, trioCount, affTrios);
+        full_em_breakup(input_haplos, block_size, affTrios);
 
 
     }
 
-    private void full_em_breakup( byte[][] input_haplos, int[] block_size, int numTrios, Vector affStatus) throws HaploViewException{
+    private void full_em_breakup( byte[][] input_haplos, int[] block_size, Vector affStatus) throws HaploViewException{
         int num_poss, iter;//, maxk, numk;
         double total;//, maxprob;
         int block, start_locus, end_locus, biggest_block_size;
@@ -419,7 +424,7 @@ to using a smaller number (e.g., > .002, .005)
 //printf("too many possibilities: %d\n",poss_full);
 return(-5);
 }*/
-        double[] superprob = new double[poss_full];
+        superprob = new double[poss_full];
 
         create_super_haplos(num_indivs,num_blocks,num_hlist);
 
@@ -492,119 +497,27 @@ return(-5);
         /* we're done - the indices of superprob now have to be
         decoded to reveal the actual haplotypes they represent */
 
-
-
-        /*
-        Enumeration theHaplos = haplos_present.elements();
-        String tempHap;
-        while(theHaplos.hasMoreElements())
-        {
-        tempHap = (String)theHaplos.nextElement();
-        System.out.println(tempHap);
-        }
-        */
-
-        Vector caseFreqs = new Vector();
-        Vector controlFreqs = new Vector(); //suffers from OCD :)
-        double[] tempCase, tempControl, totalCase, totalControl;
-        if (Options.getAssocTest() == ASSOC_CC){
-            tempCase = new double[poss_full];
-            tempControl = new double[poss_full];
-            totalCase = new double[poss_full];
-            totalControl = new double[poss_full];
-            double tempnorm=0;
-            for (int i = numTrios*2; i < num_indivs; i++){
-                for (int n=0; n<superdata[i].nsuper; n++) {
-                    if (((Integer)affStatus.elementAt(i)).intValue() == 1){
-                        tempControl[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
-                        tempControl[superdata[i].superposs[n].h2] += superdata[i].superposs[n].p;
-                    }else if (((Integer)affStatus.elementAt(i)).intValue() == 2){
-                        tempCase[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
-                        tempCase[superdata[i].superposs[n].h2] += superdata[i].superposs[n].p;
-                    }
-                    tempnorm += superdata[i].superposs[n].p;
-                }
-                if (tempnorm > 0.00) {
-                    for (int j=0; j<poss_full; j++) {
-                        if (tempCase[j] > 0.0000 || tempControl[j] > 0.0000) {
-                            totalCase[j] += (tempCase[j]/tempnorm);
-                            totalControl[j] += (tempControl[j]/tempnorm);
-                            tempCase[j]=tempControl[j]=0.0000;
-                        }
-                    }
-                    tempnorm=0.00;
-                }
-            }
-            for (int j = 0; j <poss_full; j++){
-                if (superprob[j] > .001) {
-                    caseFreqs.add(new Double(totalCase[j]));
-                    controlFreqs.add(new Double(totalControl[j]));
-                }
-            }
-        }
-
-
-        double[] tempT,totalT,tempU,totalU;
-        Vector obsT = new Vector();
-        Vector obsU = new Vector();
-        if(Options.getAssocTest() == ASSOC_TRIO)
-        {
-            double tempnorm=0,product;
-            tempT = new double[poss_full];
-            totalT = new double[poss_full];
-            tempU = new double[poss_full];
-            totalU = new double[poss_full];
-
-
-            for (int i=0; i<numTrios*2; i+=2) {
+        if(Options.getAssocTest() == ASSOC_TRIO) {
+            kidConsistentCache = new boolean[numFileteredTrios][][];
+            for(int i=0;i<numFileteredTrios*2;i+=2) {
                 if (((Integer)affStatus.elementAt(i)).intValue() == 2){
-                    tempnorm=0.00;
+                    kidConsistentCache[i/2] = new boolean[superdata[i].nsuper][];
                     for (int n=0; n<superdata[i].nsuper; n++) {
+                        kidConsistentCache[i/2][n] = new boolean[superdata[i+1].nsuper];
                         for (int m=0; m<superdata[i+1].nsuper; m++) {
-
-                            if (kid_consistent(superdata[i].superposs[n].h1,
+                            kidConsistentCache[i/2][n][m] = kid_consistent(superdata[i].superposs[n].h1,
                                     superdata[i+1].superposs[m].h1,num_blocks,
-                                    block_size,hlist,num_hlist,i/2,num_loci)) {
-
-                                product=superdata[i].superposs[n].p*superdata[i+1].superposs[m].p;
-
-                                /*if(i<5) {
-                                    System.out.println(superdata[i+1].superposs[m].h1 + "\t" + product);
-                                } */
-                                if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
-
-                                    tempT[superdata[i].superposs[n].h1]+=product;
-                                    tempU[superdata[i].superposs[n].h2]+=product;
-                                }
-                                if (superdata[i+1].superposs[m].h1 != superdata[i+1].superposs[m].h2) {
-                                    tempT[superdata[i+1].superposs[m].h1]+=product;
-                                    tempU[superdata[i+1].superposs[m].h2]+=product;
-                                }
-                                /* normalize by all possibilities, even double hom */
-                                tempnorm+=product;
-                            }
+                                    block_size,hlist,num_hlist,i/2,num_loci);
                         }
                     }
-
-                    if (tempnorm > 0.00) {
-                        for (int j=0; j<poss_full; j++) {
-                            if (tempT[j] > 0.0000 || tempU[j] > 0.0000) {
-                                totalT[j] += (tempT[j]/tempnorm);
-                                totalU[j] += (tempU[j]/tempnorm);
-                                tempT[j]=tempU[j]=0.0000;
-                            }
-                        }
-                        tempnorm=0.00;
-                    }
-                }
-            }
-            for (int j = 0; j <poss_full; j++){
-                if (superprob[j] > .001) {
-                    obsT.add(new Double(totalT[j]));
-                    obsU.add(new Double(totalU[j]));
                 }
             }
         }
+
+        realAffectedStatus = affStatus;
+
+        doAssociationTests(affStatus, null);
+
 
         Vector haplos_present = new Vector();
         Vector haplo_freq= new Vector();
@@ -627,13 +540,7 @@ return(-5);
 
         this.haplotypes = (int[][])haplos_present.toArray(new int[0][0]);
         this.frequencies = freqs;
-        if (Options.getAssocTest() == ASSOC_TRIO){
-            this.obsT = obsT;
-            this.obsU = obsU;
-        } else if (Options.getAssocTest() == ASSOC_CC){
-            this.caseFreqs = caseFreqs;
-            this.controlFreqs = controlFreqs;
-        }
+
 
         /*
         if (dump_phased_haplos) {
@@ -658,6 +565,133 @@ return(-5);
         //return 0;
     }
 
+    public void doAssociationTests(Vector affStatus, boolean[] permuteInd) {
+        if(superprob == null || superdata == null || realAffectedStatus == null) {
+            return;
+        }
+        if(affStatus == null){
+            affStatus = realAffectedStatus;
+        }
+        if(permuteInd == null) {
+            permuteInd = new boolean[superdata.length];
+            Arrays.fill(permuteInd, false);
+        }
+
+
+        Vector caseCounts = new Vector();
+        Vector controlCounts = new Vector();
+        double[] tempCase, tempControl, totalCase, totalControl;
+        if (Options.getAssocTest() == ASSOC_CC){
+            tempCase = new double[superprob.length];
+            tempControl = new double[superprob.length];
+            totalCase = new double[superprob.length];
+            totalControl = new double[superprob.length];
+            double tempnorm=0;
+            for (int i = numFileteredTrios*2; i < superdata.length; i++){
+                for (int n=0; n<superdata[i].nsuper; n++) {
+                    if (((Integer)affStatus.elementAt(i)).intValue() == 1){
+                        tempControl[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
+                        tempControl[superdata[i].superposs[n].h2] += superdata[i].superposs[n].p;
+                    }else if (((Integer)affStatus.elementAt(i)).intValue() == 2){
+                        tempCase[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
+                        tempCase[superdata[i].superposs[n].h2] += superdata[i].superposs[n].p;
+                    }
+                    tempnorm += superdata[i].superposs[n].p;
+                }
+                if (tempnorm > 0.00) {
+                    for (int j=0; j<superprob.length; j++) {
+                        if (tempCase[j] > 0.0000 || tempControl[j] > 0.0000) {
+                            totalCase[j] += (tempCase[j]/tempnorm);
+                            totalControl[j] += (tempControl[j]/tempnorm);
+                            tempCase[j]=tempControl[j]=0.0000;
+                        }
+                    }
+                    tempnorm=0.00;
+                }
+            }
+            for (int j = 0; j <superprob.length; j++){
+                if (superprob[j] > .001) {
+                    caseCounts.add(new Double(totalCase[j]));
+                    controlCounts.add(new Double(totalControl[j]));
+                }
+            }
+        }
+
+        double[] tempT,totalT,tempU,totalU;
+        Vector obsT = new Vector();
+        Vector obsU = new Vector();
+        if(Options.getAssocTest() == ASSOC_TRIO)
+        {
+            double tempnorm=0,product;
+            tempT = new double[superprob.length];
+            totalT = new double[superprob.length];
+            tempU = new double[superprob.length];
+            totalU = new double[superprob.length];
+
+            for (int i=0; i<numFileteredTrios*2; i+=2) {
+                if (((Integer)affStatus.elementAt(i)).intValue() == 2){
+                    tempnorm=0.00;
+                    for (int n=0; n<superdata[i].nsuper; n++) {
+                        for (int m=0; m<superdata[i+1].nsuper; m++) {
+                            if(kidConsistentCache[i/2][n][m]) {
+                                product=superdata[i].superposs[n].p*superdata[i+1].superposs[m].p;
+
+                                /*if(i<5) {
+                                    System.out.println(superdata[i+1].superposs[m].h1 + "\t" + product);
+                                } */
+                                if(permuteInd[i]) {
+                                    if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
+                                        tempU[superdata[i].superposs[n].h1]+=product;
+                                        tempT[superdata[i].superposs[n].h2]+=product;
+                                    }
+                                    if (superdata[i+1].superposs[m].h1 != superdata[i+1].superposs[m].h2) {
+                                        tempU[superdata[i+1].superposs[m].h1]+=product;
+                                        tempT[superdata[i+1].superposs[m].h2]+=product;
+                                    }
+                                } else {
+                                    if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
+                                        tempT[superdata[i].superposs[n].h1]+=product;
+                                        tempU[superdata[i].superposs[n].h2]+=product;
+                                    }
+                                    if (superdata[i+1].superposs[m].h1 != superdata[i+1].superposs[m].h2) {
+                                        tempT[superdata[i+1].superposs[m].h1]+=product;
+                                        tempU[superdata[i+1].superposs[m].h2]+=product;
+                                    }
+                                }
+                                /* normalize by all possibilities, even double hom */
+                                tempnorm+=product;
+                            }
+                        }
+                    }
+
+                    if (tempnorm > 0.00) {
+                        for (int j=0; j<superprob.length; j++) {
+                            if (tempT[j] > 0.0000 || tempU[j] > 0.0000) {
+                                totalT[j] += (tempT[j]/tempnorm);
+                                totalU[j] += (tempU[j]/tempnorm);
+                                tempT[j]=tempU[j]=0.0000;
+                            }
+                        }
+                        tempnorm=0.00;
+                    }
+                }
+            }
+            for (int j = 0; j <superprob.length; j++){
+                if (superprob[j] > .001) {
+                    obsT.add(new Double(totalT[j]));
+                    obsU.add(new Double(totalU[j]));
+                }
+            }
+        }
+
+        if (Options.getAssocTest() == ASSOC_TRIO){
+            this.obsT = obsT;
+            this.obsU = obsU;
+        } else if (Options.getAssocTest() == ASSOC_CC){
+            this.caseCounts = caseCounts;
+            this.controlCounts = controlCounts;
+        }
+    }
 
 
     public int read_observations(int num_haplos, int num_loci, byte[][] haplo, int start_locus, int end_locus) throws HaploViewException {
@@ -1012,20 +1046,20 @@ return(s.toString());
         this.obsU = obsU;
     }
 
-    public double getControlFreq(int i) {
-        return ((Double)controlFreqs.elementAt(i)).doubleValue();
+    public double getControlCount(int i) {
+        return ((Double)controlCounts.elementAt(i)).doubleValue();
     }
 
-    public void setControlFreqs(Vector controlFreqs) {
-        this.controlFreqs = controlFreqs;
+    public void setControlCounts(Vector controlCounts) {
+        this.controlCounts = controlCounts;
     }
 
-    public double getCaseFreq(int i) {
-        return ((Double)caseFreqs.elementAt(i)).doubleValue();
+    public double getCaseCount(int i) {
+        return ((Double)caseCounts.elementAt(i)).doubleValue();
     }
 
-    public void setCaseFreqs(Vector caseFreqs) {
-        this.caseFreqs = caseFreqs;
+    public void setCaseCounts(Vector caseCounts) {
+        this.caseCounts = caseCounts;
     }
 
     public int numHaplos(){
