@@ -213,7 +213,6 @@ class DPrimeDisplay extends JComponent{
                 if (dPrimeTable[x][y] == null){
                     continue;
                 }
-                //TODO:if you load data then info it doesn't handle selective drawing correctly
                 double d = dPrimeTable[x][y].getDPrime();
                 //double l = dPrimeTable[x][y].getLOD();
                 Color boxColor = dPrimeTable[x][y].getColor();
