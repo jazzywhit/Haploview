@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.8 2004/01/20 18:50:14 jcbarret Exp $
+ * $Id: CheckData.java,v 1.9 2004/04/01 22:21:24 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -299,7 +299,11 @@ public class CheckData {
             freqStuff[1] = 0;
         }else{
             freqStuff[0] = 1.0 - (sumsq/((sum*sum)+0.0));
-            freqStuff[1] = mincount/(sum+0.0);
+            if (mincount/(sum+0.0) == 1){
+                freqStuff[1] = 0.0;
+            }else{
+                freqStuff[1] = mincount/(sum+0.0);
+            }
         }
 		return freqStuff;
 	}
