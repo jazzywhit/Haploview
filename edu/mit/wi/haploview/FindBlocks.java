@@ -30,6 +30,14 @@ class FindBlocks {
 		for (int i = 0; i < freqs.length; i++){
 		    if (freqs[i] > fourGameteCutoff) numGam++;
 		}
+
+		//color in squares
+		if(numGam > 3){
+		    thisPair.setColor(Color.white);
+		}else{
+		    thisPair.setColor(Color.darkGray);
+		}
+
 		if (numGam > 3){ continue; }
 
 		Vector addMe = new Vector(); //a vector of x, y, separation
