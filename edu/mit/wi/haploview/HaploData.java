@@ -1598,6 +1598,10 @@ public class HaploData implements Constants{
     }
 
     public void readAnalysisTrack(File inFile) throws HaploViewException, IOException{
+        //clear out the vector of old values
+        analysisPositions = new Vector();
+        analysisValues = new Vector();
+
         if (!inFile.exists()){
             throw new HaploViewException("File " + inFile.getName() + " doesn't exist!");
         }
