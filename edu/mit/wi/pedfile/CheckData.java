@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.6 2003/12/17 21:29:29 jcbarret Exp $
+ * $Id: CheckData.java,v 1.7 2004/01/09 18:46:39 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -332,6 +332,9 @@ public class CheckData {
         //
         // (c) 2003 Jan Wigginton, Goncalo Abecasis
         int diplotypes =  obsAA + obsAB + obsBB;
+        if (diplotypes <= 0){
+            throw new PedFileException("No valid genotypes or no complete trios!");
+        }
         int rare = (obsAA*2) + obsAB;
         int hets = obsAB;
 
