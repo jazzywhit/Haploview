@@ -32,6 +32,10 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
     public void makeTable(Haplotype[][] haps) {
         this.removeAll();
 
+        if(haps == null) {
+            return ;
+        }
+
         initialHaplotypeDisplayThreshold = Options.getHaplotypeDisplayThreshold();
         Vector colNames = new Vector();
 
