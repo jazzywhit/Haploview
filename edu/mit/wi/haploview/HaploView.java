@@ -327,12 +327,12 @@ public class HaploView extends JFrame implements ActionListener{
 
         //exporting clauses
         }else if (command == EXPORT_PNG){
-            //JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+            fc.setSelectedFile(null);
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                 export(tabs.getSelectedIndex(), PNG_MODE, fc.getSelectedFile());
             }
         }else if (command == EXPORT_TEXT){
-            //JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+            fc.setSelectedFile(null);
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                 export(tabs.getSelectedIndex(), TXT_MODE, fc.getSelectedFile());
             }
