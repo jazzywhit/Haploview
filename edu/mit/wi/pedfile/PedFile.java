@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.6 2005/03/13 22:10:27 jcbarret Exp $
+* $Id: PedFile.java,v 3.7 2005/04/04 14:06:07 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -503,7 +503,6 @@ public class PedFile {
             if(colNum != tokenizer.countTokens()) {
                 //this line has a different number of columns
                 //should send some sort of error message
-                //TODO: add something which stores number of markers for all lines and checks that they're consistent
                 throw new PedFileException("Line number mismatch in pedfile. line " + (k+1));
             }
 
@@ -581,32 +580,15 @@ public class PedFile {
 
     }
 
-    public void parseHapMap(Vector rawLines) throws PedFileException {
+    public void parseHapMap(Vector lines) throws PedFileException {
         int colNum = -1;
-        int numLines = rawLines.size();
+        int numLines = lines.size();
         if (numLines < 2){
             throw new PedFileException("Hapmap data format error: empty file");
         }
         Individual ind;
 
         this.allIndividuals = new Vector();
-
-        //sort first
-        Vector lines = new Vector();
-        Hashtable sortHelp = new Hashtable(numLines-1,1.0f);
-        long[] pos = new long[numLines-1];
-        lines.add(rawLines.get(0));
-        for (int k = 1; k < numLines; k++){
-            StringTokenizer st = new StringTokenizer((String) rawLines.get(k));
-            //strip off 1st 3 cols
-            st.nextToken();st.nextToken();st.nextToken();
-            pos[k-1] = new Long(st.nextToken()).longValue();
-            sortHelp.put(new Long(pos[k-1]),rawLines.get(k));
-        }
-        Arrays.sort(pos);
-        for (int i = 0; i < pos.length; i++){
-            lines.add(sortHelp.get(new Long(pos[i])));
-        }
 
         //enumerate indivs
         StringTokenizer st = new StringTokenizer((String)lines.get(0), "\n\t\" \"");

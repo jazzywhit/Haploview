@@ -127,28 +127,6 @@ public class HaploData implements Constants{
                     extras.add(extra);
                 }
 
-                //check for duplicate names
-                Iterator ditr = dupCheck.iterator();
-                while (ditr.hasNext()){
-                    String n = (String) ditr.next();
-                    int numdups = 1;
-                    for (int i = 0; i < names.size(); i++){
-                        if (names.get(i).equals(n)){
-                            //leave the first instance of the duplicate name the same
-                            if (numdups > 1){
-                                String newName = n + "." + numdups;
-                                while (names.contains(newName)){
-                                    numdups++;
-                                    newName = n + "." + numdups;
-                                }
-                                names.setElementAt(newName,i);
-                                dupNames = true;
-                            }
-                            numdups++;
-                        }
-                    }
-                }
-
                 if (lineCount > Chromosome.getUnfilteredSize()){
                     throw(new HaploViewException("Info file error:\nMarker number mismatch: too many\nmarkers in info file compared to data file."));
                 }
@@ -164,107 +142,128 @@ public class HaploData implements Constants{
                     names.add(hapmapGoodies[x][0]);
                     positions.add(hapmapGoodies[x][1]);
                     extras.add(null);
+                    if (names.contains(hapmapGoodies[x][0])){
+                        dupCheck.add(hapmapGoodies[x][0]);
+                    }
                 }
                 infoKnown = true;
             }
-            else if (infile != null){
-                //we only sort if we read the info from an info file. if
-                //it is from a hapmap file, then the markers were already sorted
-                //when they were read in (in class Pedfile).
 
-                int numLines = names.size();
-
-                class SortingHelper implements Comparable{
-                    long pos;
-                    int orderInFile;
-
-                    public SortingHelper(long pos, int order){
-                        this.pos = pos;
-                        this.orderInFile = order;
-                    }
-
-                    public int compareTo(Object o) {
-                        SortingHelper sh = (SortingHelper)o;
-                        if (sh.pos > pos){
-                            return -1;
-                        }else if (sh.pos < pos){
-                            return 1;
-                        }else{
-                            return 0;
+            //check for duplicate names
+            Iterator ditr = dupCheck.iterator();
+            while (ditr.hasNext()){
+                String n = (String) ditr.next();
+                int numdups = 1;
+                for (int i = 0; i < names.size(); i++){
+                    if (names.get(i).equals(n)){
+                        //leave the first instance of the duplicate name the same
+                        if (numdups > 1){
+                            String newName = n + "." + numdups;
+                            while (names.contains(newName)){
+                                numdups++;
+                                newName = n + "." + numdups;
+                            }
+                            names.setElementAt(newName,i);
+                            dupNames = true;
                         }
-                    }
-                }
-
-                boolean needSort = false;
-                Vector sortHelpers = new Vector();
-
-                for (int k = 0; k < (numLines); k++){
-                    sortHelpers.add(new SortingHelper(Long.parseLong((String)positions.get(k)),k));
-                }
-
-                //loop through and check if any markers are out of order
-                for (int k = 1; k < (numLines); k++){
-                    if(((SortingHelper)sortHelpers.get(k)).compareTo(sortHelpers.get(k-1)) < 0) {
-                        needSort = true;
-                        break;
-                    }
-                }
-                //if any were out of order, then we need to put them in order
-                if(needSort)
-                {
-                    //sort the positions
-                    Collections.sort(sortHelpers);
-                    Vector newNames = new Vector();
-                    Vector newExtras = new Vector();
-                    Vector newPositions = new Vector();
-                    int[] realPos = new int[numLines];
-
-                    //reorder the vectors names and extras so that they have the same order as the sorted markers
-                    for (int i = 0; i < sortHelpers.size(); i++){
-                        realPos[i] = ((SortingHelper)sortHelpers.get(i)).orderInFile;
-                        newNames.add(names.get(realPos[i]));
-                        newPositions.add(positions.get(realPos[i]));
-                        newExtras.add(extras.get(realPos[i]));
-                    }
-
-                    names = newNames;
-                    extras = newExtras;
-                    positions = newPositions;
-
-                    byte[] tempGenotype = new byte[sortHelpers.size()];
-                    //now we reorder all the individuals genotypes according to the sorted marker order
-                    for(int j=0;j<chromosomes.size();j++){
-                        Chromosome tempChrom = (Chromosome)chromosomes.elementAt(j);
-                        for(int i =0;i<sortHelpers.size();i++){
-                            tempGenotype[i] = tempChrom.getUnfilteredGenotype(realPos[i]);
-                        }
-                        for(int i=0;i<sortHelpers.size();i++){
-                            tempChrom.setGenotype(tempGenotype[i],i);
-                        }
-                    }
-
-                    //sort pedfile objects
-                    //todo: this should really be done before pedfile is subjected to any processing.
-                    //todo: that would require altering some order of operations in dealing with inputs
-
-                    Vector unsortedRes = pedFile.getResults();
-                    Vector sortedRes = new Vector();
-                    for (int i = 0; i < realPos.length; i++){
-                        sortedRes.add(unsortedRes.elementAt(realPos[i]));
-                    }
-                    pedFile.setResults(sortedRes);
-                    Vector o = pedFile.getAllIndividuals();
-                    for (int i = 0; i < o.size(); i++){
-                        Individual ind = (Individual) o.get(i);
-                        Vector unsortedMarkers = ind.getMarkers();
-                        Vector sortedMarkers = new Vector();
-                        for (int j = 0; j < unsortedMarkers.size(); j++){
-                            sortedMarkers.add(unsortedMarkers.elementAt(realPos[j]));
-                        }
-                        ind.setMarkers(sortedMarkers);
+                        numdups++;
                     }
                 }
             }
+
+            //sort the  markers
+            int numLines = names.size();
+
+            class SortingHelper implements Comparable{
+                long pos;
+                int orderInFile;
+
+                public SortingHelper(long pos, int order){
+                    this.pos = pos;
+                    this.orderInFile = order;
+                }
+
+                public int compareTo(Object o) {
+                    SortingHelper sh = (SortingHelper)o;
+                    if (sh.pos > pos){
+                        return -1;
+                    }else if (sh.pos < pos){
+                        return 1;
+                    }else{
+                        return 0;
+                    }
+                }
+            }
+
+            boolean needSort = false;
+            Vector sortHelpers = new Vector();
+
+            for (int k = 0; k < (numLines); k++){
+                sortHelpers.add(new SortingHelper(Long.parseLong((String)positions.get(k)),k));
+            }
+
+            //loop through and check if any markers are out of order
+            for (int k = 1; k < (numLines); k++){
+                if(((SortingHelper)sortHelpers.get(k)).compareTo(sortHelpers.get(k-1)) < 0) {
+                    needSort = true;
+                    break;
+                }
+            }
+            //if any were out of order, then we need to put them in order
+            if(needSort){
+                //sort the positions
+                Collections.sort(sortHelpers);
+                Vector newNames = new Vector();
+                Vector newExtras = new Vector();
+                Vector newPositions = new Vector();
+                int[] realPos = new int[numLines];
+
+                //reorder the vectors names and extras so that they have the same order as the sorted markers
+                for (int i = 0; i < sortHelpers.size(); i++){
+                    realPos[i] = ((SortingHelper)sortHelpers.get(i)).orderInFile;
+                    newNames.add(names.get(realPos[i]));
+                    newPositions.add(positions.get(realPos[i]));
+                    newExtras.add(extras.get(realPos[i]));
+                }
+
+                names = newNames;
+                extras = newExtras;
+                positions = newPositions;
+
+                byte[] tempGenotype = new byte[sortHelpers.size()];
+                //now we reorder all the individuals genotypes according to the sorted marker order
+                for(int j=0;j<chromosomes.size();j++){
+                    Chromosome tempChrom = (Chromosome)chromosomes.elementAt(j);
+                    for(int i =0;i<sortHelpers.size();i++){
+                        tempGenotype[i] = tempChrom.getUnfilteredGenotype(realPos[i]);
+                    }
+                    for(int i=0;i<sortHelpers.size();i++){
+                        tempChrom.setGenotype(tempGenotype[i],i);
+                    }
+                }
+
+                //sort pedfile objects
+                //todo: this should really be done before pedfile is subjected to any processing.
+                //todo: that would require altering some order of operations in dealing with inputs
+
+                Vector unsortedRes = pedFile.getResults();
+                Vector sortedRes = new Vector();
+                for (int i = 0; i < realPos.length; i++){
+                    sortedRes.add(unsortedRes.elementAt(realPos[i]));
+                }
+                pedFile.setResults(sortedRes);
+                Vector o = pedFile.getAllIndividuals();
+                for (int i = 0; i < o.size(); i++){
+                    Individual ind = (Individual) o.get(i);
+                    Vector unsortedMarkers = ind.getMarkers();
+                    Vector sortedMarkers = new Vector();
+                    for (int j = 0; j < unsortedMarkers.size(); j++){
+                        sortedMarkers.add(unsortedMarkers.elementAt(realPos[j]));
+                    }
+                    ind.setMarkers(sortedMarkers);
+                }
+            }
+
         }catch (HaploViewException e){
             throw(e);
         }finally{
