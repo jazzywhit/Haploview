@@ -16,7 +16,6 @@ import com.sun.jimi.core.JimiException;
 public class HaploView extends JFrame implements ActionListener{
 
     boolean DEBUG = false;
-    long maxCompDist;
 
     //some constants etc.
     static final String MARKER_DATA_EXT = ".info";
@@ -31,11 +30,10 @@ public class HaploView extends JFrame implements ActionListener{
         EXPORT_TEXT, EXPORT_PNG
     };
     JMenuItem exportMenuItems[];
+    JMenu keyMenu;
 
-    static final String DEFINE_BLOCKS = "Define blocks";
     static final String CLEAR_BLOCKS = "Clear all blocks";
     JMenuItem clearBlocksItem;
-    JMenuItem defineBlocksItem;
 
     static final String QUIT = "Quit";
 
@@ -59,6 +57,14 @@ public class HaploView extends JFrame implements ActionListener{
         "Zoomed", "Medium", "Unzoomed"
     };
     JRadioButtonMenuItem zoomMenuItems[];
+    String colorItems[] = {
+        "Standard", "Confidence bounds", "4 Gamete"
+    };
+    JRadioButtonMenuItem colorMenuItems[];
+    JRadioButtonMenuItem blockMenuItems[];
+    String blockItems[] = {"95% of informative pairwise comparisons show strong LD via confidence intervals (SFS)",
+                                  "Four Gamete Rule",
+                                  "Solid block of strong LD via D prime (MJD)"};
 
     static final int PNG_MODE = 0;
     static final int TXT_MODE = 1;
@@ -72,6 +78,7 @@ public class HaploView extends JFrame implements ActionListener{
     private TDTPanel tdtPanel;
     boolean doTDT = false;
     private javax.swing.Timer timer;
+    long maxCompDist;
 
     static HaploView window;
     DPrimeDisplay dPrimeDisplay;
@@ -129,6 +136,7 @@ public class HaploView extends JFrame implements ActionListener{
         }
 
         fileMenu.addSeparator();
+        fileMenu.setMnemonic(KeyEvent.VK_F);
 
         menuItem = new JMenuItem(QUIT);
         setAccelerator(menuItem, 'Q', false);
@@ -138,6 +146,7 @@ public class HaploView extends JFrame implements ActionListener{
         /// display menu
 
         JMenu displayMenu = new JMenu("Display");
+        displayMenu.setMnemonic(KeyEvent.VK_D);
         menuBar.add(displayMenu);
 
         ButtonGroup group = new ButtonGroup();
@@ -157,32 +166,64 @@ public class HaploView extends JFrame implements ActionListener{
         //a submenu
         ButtonGroup zg = new ButtonGroup();
         JMenu zoomMenu = new JMenu("D prime zoom");
+        zoomMenu.setMnemonic(KeyEvent.VK_Z);
         zoomMenuItems = new JRadioButtonMenuItem[zoomItems.length];
         for (int i = 0; i < zoomItems.length; i++){
             zoomMenuItems[i] = new JRadioButtonMenuItem(zoomItems[i], i==0);
             zoomMenuItems[i].addActionListener(this);
+            zoomMenuItems[i].setActionCommand("zoom" + i);
             zoomMenu.add(zoomMenuItems[i]);
             zg.add(zoomMenuItems[i]);
         }
         displayMenu.add(zoomMenu);
-
-        //displayOptionsItem = new JMenuItem(DISPLAY_OPTIONS);
-        //setAccelerator(displayOptionsItem, 'D', false);
+        //another submenu
+        ButtonGroup cg = new ButtonGroup();
+        JMenu colorMenu = new JMenu("D prime color scheme");
+        colorMenu.setMnemonic(KeyEvent.VK_C);
+        colorMenuItems = new JRadioButtonMenuItem[colorItems.length];
+        for (int i = 0; i< colorItems.length; i++){
+            colorMenuItems[i] = new JRadioButtonMenuItem(colorItems[i],i==0);
+            colorMenuItems[i].addActionListener(this);
+            colorMenuItems[i].setActionCommand("color" + i);
+            colorMenu.add(colorMenuItems[i]);
+            cg.add(colorMenuItems[i]);
+            if (i != 0){
+                colorMenuItems[i].setEnabled(false);
+            }
+        }
+        displayMenu.add(colorMenu);
 
         //analysis menu
         JMenu analysisMenu = new JMenu("Analysis");
+        analysisMenu.setMnemonic(KeyEvent.VK_A);
         menuBar.add(analysisMenu);
-        defineBlocksItem = new JMenuItem(DEFINE_BLOCKS);
-        setAccelerator(defineBlocksItem, 'B', false);
-        defineBlocksItem.addActionListener(this);
-        defineBlocksItem.setEnabled(false);
-        analysisMenu.add(defineBlocksItem);
+        //a submenu
+        ButtonGroup bg = new ButtonGroup();
+        JMenu blockMenu = new JMenu("Define Blocks");
+        blockMenu.setMnemonic(KeyEvent.VK_B);
+        blockMenuItems = new JRadioButtonMenuItem[blockItems.length];
+        for (int i = 0; i < blockItems.length; i++){
+            blockMenuItems[i] = new JRadioButtonMenuItem(blockItems[i], i==0);
+            blockMenuItems[i].addActionListener(this);
+            blockMenuItems[i].setActionCommand("block" + i);
+            blockMenu.add(blockMenuItems[i]);
+            bg.add(blockMenuItems[i]);
+            if (i != 0){
+                blockMenuItems[i].setEnabled(false);
+            }
+        }
+        analysisMenu.add(blockMenu);
         clearBlocksItem = new JMenuItem(CLEAR_BLOCKS);
         setAccelerator(clearBlocksItem, 'C', false);
         clearBlocksItem.addActionListener(this);
         clearBlocksItem.setEnabled(false);
         analysisMenu.add(clearBlocksItem);
 
+        //color key
+        keyMenu = new JMenu("Key");
+        changeColor(1);
+        menuBar.add(Box.createHorizontalGlue());
+        menuBar.add(keyMenu);
 
 
         /** NEEDS FIXING
@@ -237,7 +278,12 @@ public class HaploView extends JFrame implements ActionListener{
             }
         }else if (command == CLEAR_BLOCKS){
             theData.guessBlocks(3);
-            dPrimeDisplay.refresh();
+            colorMenuItems[0].setSelected(true);
+            for (int i = 1; i< colorMenuItems.length; i++){
+                colorMenuItems[i].setEnabled(false);
+            }
+            dPrimeDisplay.refresh(1);
+            changeColor(1);
             try{
                 hapDisplay.getHaps();
             }catch(HaploViewException hve){
@@ -247,27 +293,45 @@ public class HaploView extends JFrame implements ActionListener{
                         JOptionPane.ERROR_MESSAGE);
             }
             hapScroller.setViewportView(hapDisplay);
-        }else if (command == DEFINE_BLOCKS){
+
+        //blockdef clauses
+        }else if (command.startsWith("block")){
             try {
-                defineBlocks();
+                int method = Integer.valueOf(command.substring(5)).intValue();
+                theData.guessBlocks(method);
+                for (int i = 1; i < colorMenuItems.length; i++){
+                    if (method+1 == i){
+                        colorMenuItems[i].setEnabled(true);
+                    }else{
+                        colorMenuItems[i].setEnabled(false);
+                    }
+                }
+                colorMenuItems[0].setSelected(true);
+                dPrimeDisplay.refresh(1);
+                changeColor(1);
+                if (tabs.getSelectedIndex() == VIEW_HAP_NUM){
+                    hapDisplay.getHaps();
+                    hapScroller.setViewportView(hapDisplay);
+                }
+                currentBlockDef = method;
+
             }catch(HaploViewException hve) {
                 JOptionPane.showMessageDialog(this,
                         hve.getMessage(),
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
-        }else if (command == "Zoomed"){
-            if (dPrimeDisplay != null){
-                dPrimeDisplay.zoom(0);
-            }
-        }else if (command == "Medium"){
-            if (dPrimeDisplay != null){
-                dPrimeDisplay.zoom(1);
-            }
-        }else if (command == "Unzoomed"){
-            if (dPrimeDisplay != null){
-                dPrimeDisplay.zoom(2);
-            }
+
+        //zooming clauses
+        }else if (command.startsWith("zoom")){
+            dPrimeDisplay.zoom(Integer.valueOf(command.substring(4)).intValue());
+
+        //coloring clauses
+        }else if (command.startsWith("color")){
+            dPrimeDisplay.refresh(Integer.valueOf(command.substring(5)).intValue()+1);
+            changeColor(Integer.valueOf(command.substring(5)).intValue()+1);
+
+        //exporting clauses
         }else if (command == EXPORT_PNG){
             JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
@@ -286,6 +350,51 @@ public class HaploView extends JFrame implements ActionListener{
             for (int i = 0; i < viewItems.length; i++) {
                 if (command == viewItems[i]) tabs.setSelectedIndex(i);
             }
+        }
+    }
+
+    private void changeColor(int scheme) {
+        keyMenu.removeAll();
+        if (scheme == 1){
+            JMenuItem keyItem = new JMenuItem("High D'");
+            Dimension size = keyItem.getPreferredSize();
+            keyItem.setBackground(Color.red);
+            keyMenu.add(keyItem);
+            for (int i = 1; i < 4; i++){
+                double blgr = (255-32)*2*(0.5*i/3);
+                keyItem = new JMenuItem("");
+                keyItem.setPreferredSize(size);
+                keyItem.setBackground(new Color(255,(int)blgr, (int)blgr));
+                keyMenu.add(keyItem);
+            }
+            keyItem = new JMenuItem("Low D'");
+            keyItem.setBackground(Color.white);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("High D' / Low LOD");
+            keyItem.setBackground(new Color(192, 192, 240));
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("High LOD / Low D'");
+            keyItem.setBackground(new Color(224, 224, 224));
+            keyMenu.add(keyItem);
+        } else if (scheme == 2){
+            JMenuItem keyItem = new JMenuItem("Strong Linkage");
+            keyItem.setBackground(Color.darkGray);
+            keyItem.setForeground(Color.white);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("Uninformative");
+            keyItem.setBackground(Color.lightGray);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("Recombination");
+            keyItem.setBackground(Color.white);
+            keyMenu.add(keyItem);
+        } else if (scheme == 3){
+            JMenuItem keyItem = new JMenuItem("< 4 Gametes");
+            keyItem.setBackground(Color.darkGray);
+            keyItem.setForeground(Color.white);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("4 Gametes");
+            keyItem.setBackground(Color.white);
+            keyMenu.add(keyItem);
         }
     }
 
@@ -388,6 +497,8 @@ public class HaploView extends JFrame implements ActionListener{
                 }
                 theData.generateDPrimeTable(maxCompDist);
                 theData.guessBlocks(0);
+                colorMenuItems[0].setSelected(true);
+                colorMenuItems[1].setEnabled(true);
                 theData.blocksChanged = false;
                 Container contents = getContentPane();
                 contents.removeAll();
@@ -460,7 +571,9 @@ public class HaploView extends JFrame implements ActionListener{
             public void actionPerformed(ActionEvent evt){
                 if (theData.finished){
                     timer.stop();
-                    defineBlocksItem.setEnabled(true);
+                    for (int i = 0; i < blockMenuItems.length; i++){
+                        blockMenuItems[i].setEnabled(true);
+                    }
                     clearBlocksItem.setEnabled(true);
                     readMarkerItem.setEnabled(true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -494,7 +607,7 @@ public class HaploView extends JFrame implements ActionListener{
                     JOptionPane.ERROR_MESSAGE);
         }
         if (dPrimeDisplay != null){
-            dPrimeDisplay.refresh();
+            dPrimeDisplay.refresh(0);
         }
     }
 
@@ -546,7 +659,7 @@ public class HaploView extends JFrame implements ActionListener{
                 if (size.width != pref.width && size.width > visRect.width){
                     ((JViewport)dPrimeDisplay.getParent()).setViewSize(pref);
                 }
-                dPrimeDisplay.refresh();
+                dPrimeDisplay.refresh(0);
 
                 hapDisplay.theData = theData;
                 try{
@@ -585,7 +698,7 @@ public class HaploView extends JFrame implements ActionListener{
     class ResizeListener implements ComponentListener{
         public void componentResized(ComponentEvent e) {
             if (dPrimeDisplay != null){
-                dPrimeDisplay.refresh();
+                dPrimeDisplay.refresh(0);
             }
         }
 
@@ -720,26 +833,6 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
 
-    void defineBlocks() throws HaploViewException{
-        String[] methodStrings = {"95% of informative pairwise comparisons show strong LD via confidence intervals (SFS)",
-                                  "Four Gamete Rule",
-                                  "Solid block of strong LD via D prime (MJD)"};
-        JComboBox methodList = new JComboBox(methodStrings);
-        JOptionPane.showMessageDialog(this,
-                methodList,
-                "Select a block-finding algorithm",
-                JOptionPane.QUESTION_MESSAGE);
-        theData.guessBlocks(methodList.getSelectedIndex());
-        dPrimeDisplay.refresh();
-        if (tabs.getSelectedIndex() == VIEW_HAP_NUM){
-            hapDisplay.getHaps();
-            hapScroller.setViewportView(hapDisplay);
-        }
-        dPrimeDisplay.refresh();
-        currentBlockDef = methodList.getSelectedIndex();
-    }
-
-
     public static void main(String[] args) {
         boolean nogui = false;
         //HaploView window;
@@ -755,6 +848,7 @@ public class HaploView extends JFrame implements ActionListener{
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) { }
+            System.setProperty("swing.disableFileChooserSpeedFix", "true");
 
             window  =  new HaploView();
             window.argHandler(args);
