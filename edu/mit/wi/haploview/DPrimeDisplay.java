@@ -302,7 +302,7 @@ class DPrimeDisplay extends JComponent{
                 final int clickY = e.getY();
                 double dboxX = (double)(clickX - clickXShift - (clickY-clickYShift))/boxSize;
                 double dboxY = (double)(clickX - clickXShift + (clickY-clickYShift))/boxSize;
-                int boxX, boxY;
+                final int boxX, boxY;
                 if (dboxX < 0){
                     boxX = (int)(dboxX - 0.5);
                 } else{
@@ -313,17 +313,45 @@ class DPrimeDisplay extends JComponent{
                 }else{
                     boxY = (int)(dboxY + 0.5);
                 }
-                System.out.println(boxX + " " + boxY);
                 if ((boxX >= lowX && boxX <= highX) && (boxY > boxX && boxY < highY)){
-                    final SwingWorker worker = new SwingWorker(){
-                        public Object construct(){
-                            Graphics g = caller.getGraphics();
-
-                            g.fillRect(clickX,clickY,20,20);
-                            return "";
-                        }
-                    };
-                    worker.start();
+                    if (dPrimeTable[boxX][boxY] != null){
+                        final SwingWorker worker = new SwingWorker(){
+                            public Object construct(){
+                                final int leftMargin = 12;
+                                String[] displayStrings = new String[5];
+                                if (markersLoaded){
+                                    displayStrings[0] = new String ("(" +((SNP)markers.elementAt(boxX)).getName() +
+                                            ", " + ((SNP)markers.elementAt(boxY)).getName() + ")");
+                                }else{
+                                    displayStrings[0] = new String("(" + (boxX+1) + ", " + (boxY+1) + ")");
+                                }
+                                displayStrings[1] = new String ("D': " + dPrimeTable[boxX][boxY].getDPrime());
+                                displayStrings[2] = new String ("LOD: " + dPrimeTable[boxX][boxY].getLOD());
+                                displayStrings[3] = new String ("r^2: " + dPrimeTable[boxX][boxY].getRSquared());
+                                displayStrings[4] = new String ("D' conf. bounds: " +
+                                        dPrimeTable[boxX][boxY].getConfidenceLow() + "-" +
+                                        dPrimeTable[boxX][boxY].getConfidenceHigh());
+                                Graphics g = caller.getGraphics();
+                                g.setFont(boxFont);
+                                FontMetrics metrics = g.getFontMetrics();
+                                int strlen = 0;
+                                for (int x = 0; x < 5; x++){
+                                    if (strlen < metrics.stringWidth(displayStrings[x])){
+                                        strlen = metrics.stringWidth(displayStrings[x]);
+                                    }
+                                }
+                                g.setColor(Color.WHITE);
+                                g.fillRect(clickX+1,clickY+1,strlen+leftMargin+4,5*metrics.getHeight()+9);
+                                g.setColor(Color.BLACK);
+                                g.drawRect(clickX,clickY,strlen+leftMargin+5,5*metrics.getHeight()+10);
+                                for (int x = 0; x < 5; x++){
+                                    g.drawString(displayStrings[x],clickX + leftMargin, clickY+5+((x+1)*metrics.getHeight()));
+                                }
+                                return "";
+                            }
+                        };
+                        worker.start();
+                    }
                 }
             }
         }
