@@ -46,8 +46,8 @@ public class PermutationTestSet implements Constants{
 
         double curBest = 0;
         String curName = "";
-        for(int i=0;i<ats.getResults().size();i++) {
-            AssociationResult tmpRes = (AssociationResult) ats.getResults().get(i);
+        for(int i=0;i<ats.getFilteredResults().size();i++) {
+            AssociationResult tmpRes = (AssociationResult) ats.getFilteredResults().get(i);
             for (int j = 0; j < tmpRes.getAlleleCount(); j++){
                 if (tmpRes.getChiSquare(j) > curBest){
                     curName = tmpRes.getDisplayName(j);

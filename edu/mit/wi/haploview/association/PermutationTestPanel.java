@@ -40,6 +40,8 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
     private JLabel scoreBoardNumTotalLabel;
     private JPanel scoreBoardPanel;
     private boolean finishedPerms;
+    private JPanel bestObsPanel;
+    private JPanel bestPermPanel;
 
     public PermutationTestPanel(PermutationTestSet pts) {
         if(pts == null) {
@@ -51,15 +53,14 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
         JPanel permCountPanel = new JPanel();
-        permCountPanel.setMaximumSize(new Dimension(600,30));
         JLabel permCountTextLabel = new JLabel("Number of Permutations To Perform: ");
         permCountField = new NumberTextField("", 10, false);
         permCountPanel.add(permCountTextLabel);
         permCountPanel.add(permCountField);
+        permCountPanel.setMaximumSize(permCountPanel.getPreferredSize());
         this.add(permCountPanel);
 
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setMaximumSize(new Dimension(600,30));
         doPermutationsButton = new JButton("Do Permutations");
         doPermutationsButton.addActionListener(this);
         stopPermutationsButton = new JButton("Stop");
@@ -67,32 +68,34 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         stopPermutationsButton.setEnabled(false);
         buttonPanel.add(doPermutationsButton);
         buttonPanel.add(stopPermutationsButton);
+        buttonPanel.setMaximumSize(buttonPanel.getPreferredSize());
         this.add(buttonPanel);
 
-        JPanel bestObsPanel = new JPanel();
-        bestObsPanel.setMaximumSize(new Dimension(300,30));
+        bestObsPanel = new JPanel();
         JLabel bestObsTextLabel = new JLabel("Best Observed Chi-Square: ");
         bestObsValueLabel = new JLabel(testSet.getBestObsChiSq() + " (" + testSet.getBestObsName() + ")");
         bestObsPanel.add(bestObsTextLabel);
         bestObsPanel.add(bestObsValueLabel);
+        bestObsPanel.setMaximumSize(bestObsPanel.getPreferredSize());
         this.add(bestObsPanel);
 
-        JPanel bestPermPanel = new JPanel();
-        bestPermPanel.setMaximumSize(new Dimension(300,30));
+        bestPermPanel = new JPanel();
         JLabel bestPermTextLabel = new JLabel("Best Permutation Chi-Square: ");
         bestPermutationValueLabel = new JLabel("");
         bestPermPanel.add(bestPermTextLabel);
         bestPermPanel.add(bestPermutationValueLabel);
+        bestPermPanel.setMaximumSize(bestPermPanel.getPreferredSize());
         this.add(bestPermPanel);
+
 
         scoreBoardPanel = new JPanel();
         scoreBoardNumPassLabel = new JLabel();
         scoreBoardNumTotalLabel = new JLabel();
         scoreBoardPanel.add(scoreBoardNumPassLabel);
-        scoreBoardPanel.add(new JLabel(" permutations out of "));
+        scoreBoardPanel.add(new JLabel("permutations out of"));
         scoreBoardPanel.add(scoreBoardNumTotalLabel);
-        scoreBoardPanel.add(new JLabel(" exceed highest observed chi square."));
-        scoreBoardPanel.setMaximumSize(new Dimension(600,30));
+        scoreBoardPanel.add(new JLabel("exceed highest observed chi square."));
+        scoreBoardPanel.setMaximumSize(new Dimension(500,60));
         scoreBoardPanel.setVisible(false);
         add(scoreBoardPanel);
 
@@ -119,6 +122,8 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
 
     public void setTestSet(PermutationTestSet pts){
         testSet = pts;
+        bestObsValueLabel.setText(testSet.getBestObsChiSq() + " (" + testSet.getBestObsName() + ")");
+        bestObsPanel.setMaximumSize(bestObsPanel.getPreferredSize());
     }
 
     public void startPerms() {
@@ -163,6 +168,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         stopPermutationsButton.setEnabled(false);
         this.remove(permProgressBar);
         bestPermutationValueLabel.setText(String.valueOf(testSet.getBestPermChiSquare()));
+        bestPermPanel.setMaximumSize(bestPermPanel.getPreferredSize());
         makeTable();
         resultsPanel.revalidate();
         finishedPerms = true;
@@ -241,6 +247,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
                     scoreBoardNumTotalLabel.setText(String.valueOf(testSet.getPermutationsPerformed()));
                     scoreBoardNumPassLabel.setText(String.valueOf(testSet.getBestExceededCount()));
                     bestPermutationValueLabel.setText(String.valueOf(testSet.getBestPermChiSquare()));
+                    bestPermPanel.setMaximumSize(bestPermPanel.getPreferredSize());                    
                     sleep(200);
                 }
             } catch(InterruptedException ie) {}
