@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.15 2004/04/29 22:50:10 jcbarret Exp $
+* $Id: PedFile.java,v 1.16 2004/05/10 19:20:24 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -251,6 +251,7 @@ public class PedFile {
                 ind.setDadID(tokenizer.nextToken().trim());
                 ind.setMomID(tokenizer.nextToken().trim());
                 try {
+                    //TODO: affected/liability should not be forced into Integers!
                     ind.setGender(Integer.parseInt(tokenizer.nextToken().trim()));
                     ind.setAffectedStatus(Integer.parseInt(tokenizer.nextToken().trim()));
                     if(withOptionalColumn) {
