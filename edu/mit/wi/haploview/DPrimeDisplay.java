@@ -281,7 +281,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         repaint();
     }
 
-    public BufferedImage export(int start, int stop, boolean compress){
+    public BufferedImage export(int start, int stop, boolean compress) throws HaploViewException {
         forExport = true;
         exportStart = start;
         if (exportStart < 0){
@@ -321,6 +321,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         Dimension pref = getPreferredSize();
+        if(pref.width > 10000 || pref.height > 10000) {
+            throw new HaploViewException("Image too large. Try saving as compressed PNG.");
+        }
         BufferedImage i = new BufferedImage(pref.width, pref.height,
                 BufferedImage.TYPE_3BYTE_BGR);
         paintComponent(i.getGraphics());

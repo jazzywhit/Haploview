@@ -186,6 +186,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
                 tab = VIEW_TDT_NUM;
             }
             this.dispose();
+
             if (allButton.isSelected()){
                 hv.export(tab,format,0,Chromosome.getSize());
             }else if (someButton.isSelected()){
@@ -193,13 +194,15 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
                     hv.export(tab,format,Integer.parseInt(lowRange.getText())-1, Integer.parseInt(upperRange.getText()));
                 }catch (NumberFormatException nfe){
                     JOptionPane.showMessageDialog(hv,
-                    "Invalid marker range: " + lowRange.getText() + " - " + upperRange.getText(),
-                    "Export Error",
-                    JOptionPane.ERROR_MESSAGE);
+                            "Invalid marker range: " + lowRange.getText() + " - " + upperRange.getText(),
+                            "Export Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
+
             }else{
                 hv.export(tab,format,-1,-1);
             }
+
         }else if (command.equals("Cancel")){
             this.dispose();
         }

@@ -45,7 +45,8 @@ public class Options {
     }
 
     public static void setSpacingThreshold(double spacingThreshold) {
-        Options.spacingThreshold = spacingThreshold;
+        //we scale from (0 to 1) to (0 to .5) since values greater than .5 cause the display to look really stupid 
+        Options.spacingThreshold = spacingThreshold*0.5;
     }
 
     public static int getAssocTest() {

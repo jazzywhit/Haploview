@@ -2,6 +2,7 @@ package edu.mit.wi.haploview;
 
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFileException;
+import edu.mit.wi.pedfile.CheckData;
 
 import java.io.*;
 import java.util.Vector;
@@ -29,6 +30,7 @@ public class HaploText implements Constants{
     private boolean outputDprime;
     private boolean outputPNG;
     private boolean outputCompressedPNG;
+
 
 
     public String getBatchMode() {
@@ -98,6 +100,10 @@ public class HaploText implements Constants{
         int maxDistance = -1;
         //this means that user didn't specify any output type if it doesn't get changed below
         outputType = -1;
+        double hapThresh = -1;
+        double minimumMAF=-1;
+        double spacingThresh = -1;
+
 
         for(int i =0; i < args.length; i++) {
             if(args[i].equals("-help") || args[i].equals("-h")) {
@@ -265,6 +271,65 @@ public class HaploText implements Constants{
                     batchFileName = args[i];
                 }
             }
+            else if(args[i].equals("-hapthresh")) {
+                try {
+                    i++;
+                    if(i>=args.length || ((args[i].charAt(0)) == '-'))   {
+                        System.out.println("-hapthresh requires a value between 0 and 1");
+                        System.exit(1);
+                    }
+                    hapThresh = Double.parseDouble(args[i]);
+                    if(hapThresh<0 || hapThresh>1) {
+                        System.out.println("Haplotype threshold must be between 0 and 1");
+                        System.exit(1);
+                    }
+
+                }catch(NumberFormatException nfe) {
+                    System.out.println("Haplotype threshold must be a number between 0 and 1");
+                    System.exit(1);
+                }
+
+            }
+            else if(args[i].equals("-spacing")) {
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')) {
+                    System.out.println("-spacing requires a value between 0 and 1");
+                    System.exit(1);
+                }
+                try {
+                    spacingThresh = Double.parseDouble(args[i]);
+                    if(spacingThresh<0 || spacingThresh>1) {
+                        System.out.println("-spacing argument must be between 0 and 1");
+                        System.exit(1);
+                    }
+                }catch(NumberFormatException nfe) {
+                    System.out.println("-spacing argument must be a number between 0 and 1");
+                    System.exit(1);
+                }
+            }
+            else if(args[i].equalsIgnoreCase("-minMAF")) {
+               i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')) {
+                    System.out.println("-minMAF requires a value between 0 and 1");
+                    System.exit(1);
+                }
+                try {
+                    double thresh = Double.parseDouble(args[i]);
+                    if(thresh<0 || thresh>1) {
+                        System.out.println("-minMAF argument must be a value between 0 and 1");
+                        System.exit(1);
+                    }
+                    minimumMAF = thresh;
+                }catch(NumberFormatException nfe) {
+                    System.out.println("-minMAF argument must be a value between 0 and 1");
+                    System.exit(1);
+                }
+
+
+            }
+
+
+
             else if(args[i].equals("-q") || args[i].equals("-quiet")) {
                 quietMode = true;
             }
@@ -313,6 +378,17 @@ public class HaploText implements Constants{
         }
 
         Options.setMaxDistance(maxDistance);
+
+        if(hapThresh != -1) {
+            Options.setHaplotypeDisplayThreshold((int)(hapThresh*100));
+        }
+        
+        if(minimumMAF != -1) {
+            CheckData.mafCut = minimumMAF;
+        }
+        if(spacingThresh != -1) {
+            Options.setSpacingThreshold(spacingThresh);
+        }
     }
 
 
@@ -428,6 +504,8 @@ public class HaploText implements Constants{
             HaploData textData;
             File OutputFile;
             File inputFile;
+
+
 
             if(!quietMode && fileName != null){
                 System.out.println("Using data file " + fileName);

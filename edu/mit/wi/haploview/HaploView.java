@@ -969,12 +969,19 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
             File outfile = fc.getSelectedFile();
             if (format == PNG_MODE || format == COMPRESSED_PNG_MODE){
-                BufferedImage image;
+                BufferedImage image = null;
                 if (tabNum == VIEW_D_NUM){
+                    try {
                     if (format == PNG_MODE){
                         image = dPrimeDisplay.export(start, stop, false);
                     }else{
                         image = dPrimeDisplay.export(start, stop, true);
+                    }
+                    } catch(HaploViewException hve) {
+                        JOptionPane.showMessageDialog(this,
+                            hve.getMessage(),
+                            "Export Error",
+                            JOptionPane.ERROR_MESSAGE);
                     }
                 }else if (tabNum == VIEW_HAP_NUM){
                     image = hapDisplay.export();
@@ -1100,7 +1107,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         boolean nogui = false;
         //HaploView window;
         for(int i = 0;i<args.length;i++) {
-            if(args[i].equals("-nogui") || args[i].equals("-n") || args[i].equals("-h") || args[i].equals("-help")) {
+            if(args[i].equalsIgnoreCase("-nogui") || args[i].equals("-n") || args[i].equals("-h") || args[i].equals("-help")) {
                 nogui = true;
             }
         }

@@ -96,5 +96,11 @@ public interface Constants {
                         "                                note: -dprime  and -check default to no blocks output. \n" +
                         "                                use -blockoutput to also output blocks\n" +
                         "-blockoutput <GAB,GAM,SPI,ALL>  output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
-                        "-maxdistance <distance>         maximum comparison distance in kilobases (integer). default is 500";
+                        "-maxdistance <distance>         maximum comparison distance in kilobases (integer). default is 500\n" +
+                        "-hapthresh <frequency>          Only output haps with at least this frequency\n" +
+                        "-spacing <threshold>            Proportional spacing of markers in LD display. <threshold> is a value\n" +
+                        "                                between 0 (no spacing) and 1 (max spacing).\n"  +
+                        "-minMAF <threshold>             Minimum minor allele frequency to include a marker. <threshold> is a value\n" +
+                        "                                between 0 and 1.  "
+            ;
 }
