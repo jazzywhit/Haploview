@@ -6,8 +6,6 @@ class SNP{
     private long position;
     private double MAF;
     private String extra;
-    private String gene_accession;
-    private String gene_symbol;
     private byte minor, major;
 
     SNP(String n, long p, double m, byte a1, byte a2){
@@ -18,14 +16,12 @@ class SNP{
         minor = a2;
     }
 
-    SNP(String n, long p, double m, byte a1, byte a2, String a, String s, String e){
+    SNP(String n, long p, double m, byte a1, byte a2, String e){
         name = n;
         position = p;
         MAF = m;
         major = a1;
         minor = a2;
-        gene_accession = a;
-        gene_symbol = s;
         extra = e;
     }
 
@@ -42,15 +38,7 @@ class SNP{
     }
 
     public String getExtra(){
-	return extra;
-    }
-
-    public String getGeneAccession(){
-	return gene_accession;
-    }
-
-    public String getGeneSymbol(){
-	return gene_symbol;
+        return extra;
     }
 
     public byte getMinor(){
