@@ -300,6 +300,17 @@ public class HaploText implements Constants{
                         .withDescription("use analysis track from specified file")
                         .create())
                 .withOption(
+                    obuilder
+                        .withShortName("hapthresh")
+                        .withArgument(
+                            abuilder
+                                .withName("frequency")
+                                .withMinimum(1)
+                                .withMaximum(1)
+                                .create())
+                        .withDescription("minimum haplotype frequency which is output")
+                        .create())
+                .withOption(
                         obuilder
                         .withShortName("update")
                         .withDescription("check for update")
@@ -308,13 +319,9 @@ public class HaploText implements Constants{
 
 
         Parser parser = new Parser();
-
         parser.setGroup(options);
 
         int maxDistance;
-
-        parser.setGroup(options);
-        //Parser parser = new Parser();
 
         try {
             HelpFormatter helpFormatter = new HelpFormatter();
@@ -343,7 +350,7 @@ public class HaploText implements Constants{
                         || this.hapmapFileName != null
                         || this.hapsFileName != null
                         || this.batchFileName != null) {
-                    throw new OptionException(options.findOption("-p"),"only allowed one option from: -p,-ha,-a,-b");
+                    throw new HaploViewException("only allowed one option from: -p,-ha,-a,-b");
                 }
                 this.pedFileName = (String)line.getValue("-p");
                 Options.setGenoFileType(PED);
@@ -354,7 +361,7 @@ public class HaploText implements Constants{
                         || this.hapmapFileName != null
                         || this.hapsFileName != null
                         || this.batchFileName != null) {
-                    throw new OptionException(options.findOption("-ha"),"only allowed one option from: -p,-ha,-a,-b");
+                    throw new HaploViewException("only allowed one option from: -p,-ha,-a,-b");
                 }
                 this.hapsFileName = (String)line.getValue("-ha");
                 Options.setGenoFileType(HAPS);
@@ -365,7 +372,7 @@ public class HaploText implements Constants{
                         || this.hapmapFileName != null
                         || this.hapsFileName != null
                         || this.batchFileName != null) {
-                    throw new OptionException(options.findOption("-a"),"only allowed one option from: -p,-ha,-a,-b");
+                    throw new HaploViewException("only allowed one option from: -p,-ha,-a,-b");
                 }
                 this.hapmapFileName = (String)line.getValue("-a");
                 Options.setGenoFileType(HMP);
@@ -376,7 +383,7 @@ public class HaploText implements Constants{
                         || this.hapmapFileName != null
                         || this.hapsFileName != null
                         || this.batchFileName != null) {
-                    throw new OptionException(options.findOption("-b"),"only allowed one option from: -p,-ha,-a,-b");
+                    throw new HaploViewException("only allowed one option from: -p,-ha,-a,-b");
                 }
                 this.batchFileName = (String)line.getValue("-b");
                 debugPrint("using batch mode file:\t" + this.batchFileName);
@@ -436,7 +443,7 @@ public class HaploText implements Constants{
                     this.outputType = BLOX_ALL;
                 }
                 else {
-                    throw new OptionException(options.findOption("-o"),"unknown output type specified");
+                    throw new HaploViewException("unknown output type specified");
                 }
             }
             if(line.hasOption("-d")){
@@ -452,13 +459,27 @@ public class HaploText implements Constants{
                     maxDistance = Integer.parseInt((String)line.getValue("-m"));
                 }
                 catch(NumberFormatException nfe) {
-                    throw new OptionException(options.findOption("-m"),"invalid value for maximum distance");
+                    throw new HaploViewException("invalid value for maximum distance");
                 }
                 if(maxDistance < 0 ) {
-                    throw new OptionException(options.findOption("-m"),"maximum distance cannot be negative");
+                    throw new HaploViewException("maximum distance cannot be negative");
                 }
                 Options.setMaxDistance(maxDistance);
                 debugPrint("using max distance:\t" + maxDistance);
+            }
+
+            if(line.hasOption("-hapthresh")) {
+                try {
+                    double thresh = Double.parseDouble((String)line.getValue("-hapthresh"));
+                    if(thresh<0 || thresh>1) {
+                        throw new HaploViewException("Haplotype threshold must be between 0 and 1");
+                    }
+                    Options.setHaplotypeDisplayThreshold((int)(thresh*100));
+                    debugPrint("using hapthresh " + Options.getHaplotypeDisplayThreshold());
+                }catch(NumberFormatException nfe) {
+                    throw new HaploViewException("Haplotype threshold must be a number between 0 and 1");
+                }
+
             }
 
 
@@ -480,6 +501,9 @@ public class HaploText implements Constants{
         }
         catch( OptionException exp ) {
             // oops, something went wrong
+            System.err.println( "There was a problem with at least one of the options used: " + exp.getMessage() );
+            System.exit(1);
+        }catch (HaploViewException exp){
             System.err.println( "There was a problem with at least one of the options used: " + exp.getMessage() );
             System.exit(1);
         }
@@ -662,19 +686,19 @@ public class HaploText implements Constants{
                 if(outputType == BLOX_ALL) {
                     OutputFile = new File(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
+                    haplos = textData.generateHaplotypes(textData.blocks, Options.getHaplotypeDisplayThreshold(), false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                     OutputFile = new File(fileName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1,false);
+                    haplos = textData.generateHaplotypes(textData.blocks, Options.getHaplotypeDisplayThreshold(),false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                     OutputFile = new File(fileName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1,false);
+                    haplos = textData.generateHaplotypes(textData.blocks, Options.getHaplotypeDisplayThreshold(),false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }else{
                     textData.guessBlocks(outputType, cust);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1,false);
+                    haplos = textData.generateHaplotypes(textData.blocks, Options.getHaplotypeDisplayThreshold(),false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }
             }
@@ -746,8 +770,12 @@ public class HaploText implements Constants{
             for (int z = 0; z < orderedHaps.size(); z++){
                 orderedHaplos[i][z] = (Haplotype)orderedHaps.elementAt(z);
             }
-
+            if( orderedHaplos[i].length ==0) {
+                throw new HaploViewException("Error: At least one block has too few haplotypes of frequency > "
+                        + Options.getHaplotypeDisplayThreshold());
+            }
         }
+
         return theData.generateCrossovers(orderedHaplos);
     }
 
