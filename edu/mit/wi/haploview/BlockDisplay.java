@@ -47,7 +47,7 @@ public class BlockDisplay extends JPanel implements ActionListener{
 	    markerButtons[i].addActionListener(this);
 	}
 	//scale the spacing to fit on the screen
-	spacerScale = (((SNP)markers.lastElement()).getPosition() - ((SNP)markers.firstElement()).getPosition())/(780-(20*markers.size()));
+	spacerScale = (((SNP)markers.lastElement()).getPosition() - ((SNP)markers.firstElement()).getPosition())/(779-(20*markers.size()));
 	//System.out.println(spacerScale);
 	//make sure markers are at least slightly separated (no more than 300 bp/pixel)
 	//above formula generates a negative number for large datasets, hence:
