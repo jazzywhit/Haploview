@@ -59,6 +59,7 @@ public class HaploData{
     private int totalBlocks = 0;
     private int blocksDone = 0;
     private int assocTest;
+    int numTrios, numSingletons,numPeds;
 
     HaploData(){
         assocTest = 0;
@@ -309,7 +310,9 @@ public class HaploData{
 
         Vector indList = pedFile.getOrder();
         int numMarkers = 0;
-        Vector usedParents = new Vector();
+        numSingletons = 0;
+        numTrios = 0;
+        numPeds = pedFile.getNumFamilies();
         Individual currentInd;
         Family currentFamily;
         Vector chrom = new Vector();
@@ -339,6 +342,7 @@ public class HaploData{
                     }
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1,currentInd.getAffectedStatus()==2));
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus()==2));
+                    numSingletons++;
                 }else{
                     //trio
                     //if indiv has both parents AND is affected OR no assoc test
@@ -489,10 +493,7 @@ public class HaploData{
                                 momTb,currentInd.getAffectedStatus()==2,kidMissing));
                         chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),
                                 momUb,currentInd.getAffectedStatus()==2,kidMissing));
-
-
-                        usedParents.add(currentInd.getFamilyID()+" "+currentInd.getDadID());
-                        usedParents.add(currentInd.getFamilyID()+" "+currentInd.getMomID());
+                        numTrios++;
                     }
                 }
             }
@@ -958,7 +959,7 @@ public class HaploData{
         Vector returnVec = new Vector();
         switch(method){
             case 0: returnVec = FindBlocks.doSFS(filteredDPrimeTable); break;
-            case 1: returnVec = FindBlocks.do4Gamete(filteredDPrimeTable,0.01); break;
+            case 1: returnVec = FindBlocks.do4Gamete(filteredDPrimeTable); break;
             case 2: returnVec = FindBlocks.doMJD(filteredDPrimeTable); break;
             case 3: returnVec = new Vector();break;
         }
