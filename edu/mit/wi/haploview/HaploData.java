@@ -9,12 +9,10 @@ import java.awt.*;
 import java.awt.geom.*;
 
 class HaploData{
-    final int SFS = 0;
-    final int MJD = 1;
     Vector chromosomes, blocks;
     int missingLimit = 5;
     Vector markerInfo = new Vector();
-    String[][] dPrimeTable;
+    PairwiseLinkage[][] dPrimeTable;
     public boolean finished = false;
     private int numCompleted, toBeCompleted;
     private double[] numBadGenotypes;
@@ -458,7 +456,7 @@ class HaploData{
 		    }
 		}
 	    }
-	    System.out.println(numa1 + " " + numa2);
+	    //System.out.println(numa1 + " " + numa2);
 	    double maf = numa1/(numa2+numa1);
 	    if (maf > 0.5) maf = 1.0-maf;
 	    StringTokenizer st = new StringTokenizer(currentLine);
@@ -520,11 +518,12 @@ class HaploData{
 	return chroms;
     }
 
-    Vector guessBlocks(String[][] dPrime, int method){
+    Vector guessBlocks(PairwiseLinkage[][] dPrime, int method){
 	Vector returnVec = new Vector();
 	switch(method){
 	case 0: returnVec = new FindBlocks(dPrime).doSFS(); break;
-	case 1: returnVec = new FindBlocks(dPrime).doMJD(); break;
+	case 1: returnVec = new FindBlocks(dPrime).do4Gamete(); break;
+	case 2: returnVec = new FindBlocks(dPrime).doMJD(); break;
 	}
 	return returnVec;
     }
@@ -540,7 +539,7 @@ class HaploData{
        private native String runEM(int num_haplos, int num_loci, String[] input_haplos, int num_blocks, int[] block_size); 
     **/
 
-    public String computeDPrime(int a, int b, int c, int d, int e, double f){ 
+    public PairwiseLinkage computeDPrime(int a, int b, int c, int d, int e, double f){ 
 	int i,j,k,count,itmp;
 	int low_i = 0;
 	int high_i = 0;	
@@ -641,19 +640,6 @@ class HaploData{
 	/* add computation of r^2 = (D^2)/p(1-p)q(1-q) */
 	r2 = num*num/(pA1*pB1*pA2*pB2);
 	
-	/* we've computed D', its' LOD, and r^2 - let's store them and then compute confidence intervals */
-	
-	String returnStr = new String("");
-	NumberFormat nf = NumberFormat.getInstance();
-	nf.setMinimumFractionDigits(2);
-	nf.setMaximumFractionDigits(2);
-	
-	returnStr += nf.format(dprime);
-	returnStr += "\t";
-	returnStr += nf.format(loglike1-loglike0);
-	returnStr += "\t";
-	returnStr += nf.format(r2);	
-	returnStr += "\t";
 	
 	real_dprime=dprime;
 	
@@ -704,11 +690,12 @@ class HaploData{
 		break;
 	    }
 	}
+	if (high_i > 100){ high_i = 100; }
 
-	returnStr += (double) low_i/100.0;
-	returnStr += "\t";
-	returnStr += (double) high_i/100.0;	
-	return returnStr;
+	double[] freqarray = {pAA[0], pAB[0], pBB[0], pBA[0]};
+	PairwiseLinkage linkage = new PairwiseLinkage(roundDouble(dprime), roundDouble((loglike1-loglike0)), roundDouble(r2), ((double)low_i/100.0), ((double)high_i/100.0), freqarray);
+
+	return linkage;
     }
     
     public void count_haps(double pAA, double pAB, double pBA, double pBB,
@@ -740,6 +727,10 @@ class HaploData{
 	pBB[0]=(nBB+const_prob)/total; if (pBB[0] < 1e-10) pBB[0]=1e-10;	
     }
 
+    public double roundDouble (double d){
+	return Math.rint(d*100.0)/100.0;
+    }
+
     public double log10 (double d) {
 	return Math.log(d)/LN10;
     }
@@ -752,12 +743,12 @@ class HaploData{
 	return toBeCompleted;
     }
     
-    String[][] generateDPrimeTable(final Vector chromosomes){
+    PairwiseLinkage[][] generateDPrimeTable(final Vector chromosomes){
 	numCompleted = 0;
 
 	//calculating D prime requires the number of each possible 2 marker
 	//haplotype in the dataset
-	String [][] dPrimeTable = new String[((Chromosome) chromosomes.firstElement()).size()][((Chromosome) chromosomes.firstElement()).size()];
+	PairwiseLinkage[][] dPrimeTable = new PairwiseLinkage[((Chromosome) chromosomes.firstElement()).size()][((Chromosome) chromosomes.firstElement()).size()];
 	int doublehet;
 	int[][] twoMarkerHaplos = new int[3][3];
 	
@@ -790,10 +781,11 @@ class HaploData{
 		    if (a2.equals("h")) m2H++;
 		}
 
+		double[] nullArray = new double[1];
 		//check for non-polymorphic markers
 		if (m1a2==0){
 		    if (m1H==0){
-			dPrimeTable[pos1][pos2] = "0\t0\t0\t0\t0";
+			dPrimeTable[pos1][pos2] = new PairwiseLinkage(0,0,0,0,0,nullArray);
 			continue;
 		    } else {
 			if (m1a1 == 1){ m1a2=2; }
@@ -802,7 +794,7 @@ class HaploData{
 		}
 		if (m2a2==0){
 		    if (m2H==0){
-			dPrimeTable[pos1][pos2] = "0\t0\t0\t0\t0";
+			dPrimeTable[pos1][pos2] = new PairwiseLinkage(0,0,0,0,0,nullArray);
 			continue;
 		    } else {
 			if (m2a1 == 1){ m2a2=2; }
@@ -848,7 +840,7 @@ class HaploData{
 		c1 = twoMarkerHaplos[1][1] + twoMarkerHaplos[2][1];
 		c2 = twoMarkerHaplos[1][2] + twoMarkerHaplos[2][2];
 		if ( (r1==0 || r2==0 || c1==0 || c2==0) && doublehet == 0){
-		    dPrimeTable[pos1][pos2] = "0\t0\t0\t0\t0";
+		    dPrimeTable[pos1][pos2] = new PairwiseLinkage(0,0,0,0,0,nullArray);
 		    continue;
 		}
 		
