@@ -49,7 +49,7 @@ public class HaploView extends JFrame implements ActionListener{
     HaploData theData;
     JFrame checkWindow;
     private CheckDataPanel checkPanel;
-    private String hapInputFileName;
+    //private String hapInputFileName;
     //private BlockDisplay theBlocks;
     private boolean infoKnown = false;
     private ProgressMonitor progressMonitor;
@@ -473,7 +473,7 @@ public class HaploView extends JFrame implements ActionListener{
     }    
     
 
-    public static void main(String[] args) throws IOException{
+    public static void main(String[] args) {//throws IOException{
 	try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	} catch (Exception e) { }

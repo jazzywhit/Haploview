@@ -50,7 +50,7 @@ public class CheckData {
         PedFileEntry entry;
         int indivgeno=0, missing=0, parenthet=0, mendErrNum=0;
         int allele1=0, allele2=0, hom=0, het=0;
-	Hashtable allgenos = new Hashtable();
+		//Hashtable allgenos = new Hashtable();
         Hashtable numindivs=new Hashtable();
         Hashtable parentgeno = new Hashtable();
         Hashtable kidgeno = new Hashtable();
@@ -256,49 +256,71 @@ public class CheckData {
      * Does the calculation
      */
     private double hwCalculate(double obsAA, double obsAB, double obsBB) throws CheckDataException{
-            double obs[]={0.0, obsAA, obsAB, obsBB};
-            double expect[]={0.0, 0.0, 0.0, 0.0};
-            double sum_obs;
-            double sum_expect, df, csq, prob, p, start, end;
-            double best_prob =-1.0;
-            double best_p=0;
-            sum_obs = obs [1 ]+ obs [2 ]+ obs [3 ];
-            for (p = 0.01 ; p <= .99 ; p += .01 ) {
-                expect [1 ]= sum_obs * p * p ;
-                expect [2 ]= sum_obs * 2.0 * p * (1.0 - p);
-                expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p);
-                Chsone chsone = new Chsone(obs , expect , 3 , 1);
-                chsone.caculate();
-                prob = chsone.getPvalue();
-                if (prob > best_prob ) {
-                    best_prob = prob ;
-                    best_p = p ;
-                }
-            }
-            start = (best_p - .025 > .001)? (best_p - .025): .001 ;
-            end = (best_p + .025 < .999)? (best_p + .025): .999 ;
-            for (p = start ; p <= end ; p += .001 ) {
-                expect [1 ]= sum_obs * p * p ;
-                expect [2 ]= sum_obs * 2.0 * p * (1.0 - p) ;
-                expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p) ;
-                Chsone chsone = new Chsone(obs , expect , 3 , 1);
-                chsone.caculate();
-                prob = chsone.getPvalue();
-                if (prob > best_prob ) {
-                    best_prob = prob ;
-                    best_p = p ;
-                }
-            }
-            p = best_p ;
-            expect [1 ]= sum_obs * p * p ;
-            expect [2 ]= sum_obs * 2.0 * p * (1.0 - p);
-            expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p);
-            Chsone chsone = new Chsone(obs , expect , 3 , 1);
-            chsone.caculate();
-            //this._p = chsone.getPvalue();
-	    return chsone.getPvalue();
+	    double obs[]={0.0, obsAA, obsAB, obsBB};
+	    double expect[]={0.0, 0.0, 0.0, 0.0};
+	    double sum_obs;
+	    double sum_expect, df, csq, prob, p, start, end;
+	    double best_prob =-1.0;
+	    double best_p=0;
+	    sum_obs = obs [1 ]+ obs [2 ]+ obs [3 ];
+	    for (p = 0.01 ; p <= .99 ; p += .01 ) {
+		    expect [1 ]= sum_obs * p * p ;
+		    expect [2 ]= sum_obs * 2.0 * p * (1.0 - p);
+		    expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p);
+		    //Chsone chsone = new Chsone(obs , expect , 3 , 1);
+		    //chsone.caculate();
+		    //prob = chsone.getPvalue();
+		    prob = chsoneCalculate(obs,expect,3,1);
+		    if (prob > best_prob ) {
+			    best_prob = prob ;
+			    best_p = p ;
+		    }
+	    }
+	    start = (best_p - .025 > .001)? (best_p - .025): .001 ;
+	    end = (best_p + .025 < .999)? (best_p + .025): .999 ;
+	    for (p = start ; p <= end ; p += .001 ) {
+		    expect [1 ]= sum_obs * p * p ;
+		    expect [2 ]= sum_obs * 2.0 * p * (1.0 - p) ;
+		    expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p) ;
+		    //Chsone chsone = new Chsone(obs , expect , 3 , 1);
+		    //chsone.caculate();
+		    //prob = chsone.getPvalue();
+		    prob = chsoneCalculate(obs,expect,3,1);
+		    if (prob > best_prob ) {
+			    best_prob = prob ;
+			    best_p = p ;
+		    }
+	    }
+	    p = best_p ;
+	    expect [1 ]= sum_obs * p * p ;
+	    expect [2 ]= sum_obs * 2.0 * p * (1.0 - p);
+	    expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p);
+	    //Chsone chsone = new Chsone(obs , expect , 3 , 1);
+	    //chsone.caculate();
+	    //this._p = chsone.getPvalue();
+	    //return chsone.getPvalue();
+	    return chsoneCalculate(obs,expect,3,1);
     }
 
+	/*
+	* Description: Uses it to compare binned data to a model distribution.
+    * This is converted from a numerical recipes class in c</p>
+    * @author Hui Gong
+	*/
+	public double chsoneCalculate(double[] bins, double[] ebins, int nbins, int knstrn) throws CheckDataException{
+		double prob, df, chsq, temp;
+		df = nbins - knstrn ;
+		chsq = 0.0 ;
+		for (int j = 1 ; j <= nbins ; j ++ ) {
+			if (ebins [j ]<= 0.0 )
+				throw new CheckDataException("Bad expected number in chsone" );
+			temp = bins[j]- ebins[j];
+			chsq += temp * temp / ebins [j];
+		}
+		prob = MathUtil.gammq (0.5 * df, 0.5 * chsq );
+		return prob;
+		//this._chisq = chsq;
+	}
 
     private double getGenoPercent(int het, int hom, int missing){
         double genoPct = 100.0*(het+hom)/(het+hom+missing);
