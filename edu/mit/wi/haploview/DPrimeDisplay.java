@@ -117,8 +117,8 @@ class DPrimeDisplay extends JComponent{
             //TODO: talk to kirby about locusview scaling gizmo
             int lineLeft = wide/20;
             int lineSpan = (wide/10)*9;
-            long minpos = Chromosome.getFilteredMarker(0).getPosition();
-            long maxpos = Chromosome.getFilteredMarker(Chromosome.getSize()-1).getPosition();
+            long minpos = Chromosome.getMarker(0).getPosition();
+            long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
             double spanpos = maxpos - minpos;
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
@@ -126,7 +126,7 @@ class DPrimeDisplay extends JComponent{
             g2.setColor(Color.black);
             g2.drawRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
 
-            for (int i = 0; i < Chromosome.getSize(); i++) {
+            for (int i = 0; i < Chromosome.getFilteredSize(); i++) {
                 double pos = (Chromosome.getFilteredMarker(i).getPosition() - minpos) / spanpos;
                 int xx = (int) (left + lineLeft + lineSpan*pos);
                 g2.setStroke(thickerStroke);
