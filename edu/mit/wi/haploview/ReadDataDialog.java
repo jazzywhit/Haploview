@@ -68,12 +68,12 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
             if (doTDT.isSelected()){
                 if (trioButton.isSelected()){
-                    caller.assocTest = 1;
+                    Options.setAssocTest(1);
                 } else {
-                    caller.assocTest = 2;
+                    Options.setAssocTest(2);
                 }
             }else{
-                caller.assocTest = 0;
+                Options.setAssocTest(0);
             }
 
             String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};

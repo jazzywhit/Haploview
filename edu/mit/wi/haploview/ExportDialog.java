@@ -53,7 +53,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
                 checkButton.setSelected(true);
             }
         }
-        if (hv.assocTest != 0){
+        if (Options.getAssocTest() != 0){
             assocButton = new JRadioButton("Association Tests");
             assocButton.setActionCommand("assoctab");
             assocButton.addActionListener(this);

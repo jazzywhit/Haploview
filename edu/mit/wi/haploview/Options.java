@@ -12,6 +12,7 @@ public class Options {
     private static int genoFileType;
     private static double missingThreshold;
     private static double spacingThreshold;
+    private static int assocTest;
 
     public static int getGenoFileType() {
         return genoFileType;
@@ -43,5 +44,13 @@ public class Options {
 
     public static void setSpacingThreshold(double spacingThreshold) {
         Options.spacingThreshold = spacingThreshold;
+    }
+
+    public static int getAssocTest() {
+        return assocTest;
+    }
+
+    public static void setAssocTest(int assocTest) {
+        Options.assocTest = assocTest;
     }
 }

@@ -54,7 +54,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     private int currentBlockDef = BLOX_GABRIEL;
     private TDTPanel tdtPanel;
-    int assocTest = 0;
     int currentScheme = STD_SCHEME;
     private javax.swing.Timer timer;
     long maxCompDist;
@@ -69,8 +68,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
     public HaploView(){
+        //set defaults
         Options.setMissingThreshold(1.0);
         Options.setSpacingThreshold(0.0);
+        Options.setAssocTest(0);
+
         try{
             fc = new JFileChooser(System.getProperty("user.dir"));
         }catch(NullPointerException n){
@@ -541,7 +543,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 //these are not available for non ped files
                 viewMenuItems[VIEW_CHECK_NUM].setEnabled(false);
                 viewMenuItems[VIEW_TDT_NUM].setEnabled(false);
-                assocTest = 0;
+                Options.setAssocTest(0);
             }
             theData = new HaploData();
 
@@ -668,12 +670,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }
 
                     //TDT panel
-                    if(assocTest > 0) {
+                    if(Options.getAssocTest() > 0) {
                         //optionalTabCount++;
                         //VIEW_TDT_NUM = optionalTabCount;
                         //viewItems[VIEW_TDT_NUM] = VIEW_TDT;
                         try{
-                            tdtPanel = new TDTPanel(theData.getPedFile(), assocTest);
+                            tdtPanel = new TDTPanel(theData.getPedFile());
                         } catch(PedFileException e) {
                             JOptionPane.showMessageDialog(window,
                                     e.getMessage(),
