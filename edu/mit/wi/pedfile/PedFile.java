@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.14 2004/04/28 20:16:45 jcbarret Exp $
+* $Id: PedFile.java,v 1.15 2004/04/29 22:50:10 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -361,7 +361,7 @@ public class PedFile {
                 ind.setGender(Integer.parseInt(dt.nextToken().trim()));
                 ind.setAffectedStatus(Integer.parseInt(dt.nextToken().trim()));
             }catch(NumberFormatException nfe) {
-                throw new PedFileException("Pedfile error: invalid gender or affected status for indiv " + name);
+                throw new PedFileException("File error: invalid gender or affected status for indiv " + name);
             }
             ind.setIsTyped(true);
 
@@ -383,7 +383,7 @@ public class PedFile {
         //start at k=1 to skip header which we just processed above.
         hminfo = new String[numLines-1][];
         for(int k=1;k<numLines;k++){
-            StringTokenizer tokenizer = new StringTokenizer((String)lines.get(k), "\n\t\" \"");
+            StringTokenizer tokenizer = new StringTokenizer((String)lines.get(k));
             //reading the first line
             if(colNum < 0){
                 //only check column number count for the first line
