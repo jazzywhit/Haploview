@@ -1686,12 +1686,15 @@ public class HaploData implements Constants{
                     }
                 }
                 if (source == TABLE_TYPE){
+
                     currComp = dpTable.getLDStats(i,j);
                 }else{
                     long sep = Chromosome.getMarker(i).getPosition()
                             - Chromosome.getMarker(j).getPosition();
-                    if(Options.getMaxDistance() == 0 || sep < Options.getMaxDistance() )  {
+                    if(Options.getMaxDistance() == 0 || Math.abs(sep) < Options.getMaxDistance() )  {
                         currComp = this.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
+                    } else {
+                        currComp = null;
                     }
                 }
                 if(currComp != null) {
@@ -1711,7 +1714,7 @@ public class HaploData implements Constants{
                                 }else{
                                     long sep = Chromosome.getUnfilteredMarker(Chromosome.realIndex[i-x]).getPosition()
                                             - Chromosome.getUnfilteredMarker(Chromosome.realIndex[i+y]).getPosition();
-                                    if(Options.getMaxDistance() == 0 || sep < Options.getMaxDistance() )  {
+                                    if(Options.getMaxDistance() == 0 || Math.abs(sep) < Options.getMaxDistance() )  {
 
                                         tintPair = tempArray[9-x-y+1];
                                         /*tintPair = this.computeDPrime(Chromosome.realIndex[i-x],
