@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 1.20 2005/01/27 18:00:39 jcbarret Exp $
+* $Id: CheckData.java,v 3.0 2005/01/27 18:19:02 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the

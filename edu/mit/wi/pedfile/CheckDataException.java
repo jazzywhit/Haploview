@@ -1,5 +1,5 @@
 /*
- * $Id: CheckDataException.java,v 1.1 2003/08/01 19:36:19 jmaller Exp $
+ * $Id: CheckDataException.java,v 3.0 2005/01/27 18:19:02 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2002 by the

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.38 2005/01/25 21:30:40 jcbarret Exp $
+* $Id: PedFile.java,v 3.0 2005/01/27 18:19:03 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the

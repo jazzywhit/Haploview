@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 1.7 2004/10/07 20:52:27 jcbarret Exp $
+ * $Id: MarkerResult.java,v 3.0 2005/01/27 18:19:03 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
