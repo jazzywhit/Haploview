@@ -96,6 +96,8 @@ public class HaploText implements Constants{
         boolean outputCheck=false;*/
 
         int maxDistance = -1;
+        //this means that user didn't specify any output type if it doesn't get changed below
+        outputType = -1;
 
         for(int i =0; i < args.length; i++) {
             if(args[i].equals("-help") || args[i].equals("-h")) {
@@ -388,11 +390,6 @@ public class HaploText implements Constants{
 
     private File validateOutputFile(String fn){
         File f = new File(fn);
-        if (f.canWrite()){
-            System.out.println("File " + f.getName() + " can not be written.");
-            System.exit(1);
-        }
-
         if (f.exists() && !quietMode){
             System.out.println("File " + f.getName() + " already exists and will be overwritten.");
         }
@@ -473,10 +470,8 @@ public class HaploText implements Constants{
                 result = textData.linkageToChrom(inputFile,4,skipCheck);
             }
 
-            File infoFile;
-            if(infoFileName.equals("")) {
-                infoFile = null;
-            }else{
+            File infoFile = null;
+            if (infoFileName != null){
                 infoFile = new File(infoFileName);
             }
             if (result != null){
