@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.5 2003/12/15 20:48:17 jcbarret Exp $
+ * $Id: CheckData.java,v 1.6 2003/12/17 21:29:29 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -27,8 +27,9 @@ public class CheckData {
 	private PedFile _pedFile;
 
     static public double hwCut = 0.001;
-    static public double failedGenoCut = 75;
+    static public int failedGenoCut = 75;
     static public int numMendErrCut = 1;
+    static public double mafCut = 0.00;
 	//private int _size;
 	//private Vector _pedFileEntries;
 	//private Hashtable pedFileHash;
@@ -175,7 +176,13 @@ public class CheckData {
             while(indList.hasMoreElements()){
                 currentInd = currentFamily.getMember((String)indList.nextElement());
                 if (currentInd.getIsTyped()){
-                    byte[] markers = currentInd.getMarker(loc);
+                    byte[] markers;
+                    byte[] zeroArray = {0,0};
+                    if (currentInd.getZeroed(loc)){
+                        markers = zeroArray;
+                    }else{
+                      markers = currentInd.getMarker(loc);
+                    }
                     allele1 = markers[0];
                     allele1_string = Integer.toString(allele1);
                     allele2 = markers[1];
@@ -218,7 +225,9 @@ public class CheckData {
 			}
 		}
 		double obsHET = getObsHET(het, hom);
-		double preHET = getPreHET(count);
+		double[] freqStuff = getFreqStuff(count);
+        double preHET = freqStuff[0];
+        double maf = freqStuff[1];
 
 		//HW p value
 		double pvalue = getPValue(parenthom, parenthet);
@@ -231,10 +240,11 @@ public class CheckData {
 		int famTrio = getNumOfFamTrio(numindivs, parentgeno, kidgeno);
 
 		//rating
-		int rating = this.getRating(genopct, pvalue, obsHET, mendErrNum);
+		int rating = this.getRating(genopct, pvalue, obsHET, mendErrNum,maf);
 
 		result.setObsHet(obsHET);
 		result.setPredHet(preHET);
+        result.setMAF(maf);
 		result.setHWpvalue(pvalue);
 		result.setGenoPercent(genopct);
 		result.setFamTrioNum(famTrio);
@@ -272,21 +282,26 @@ public class CheckData {
 		return obsHET;
 	}
 
-	private double getPreHET(Hashtable count){
-		int sumsq=0, sum=0, num=0;
+	private double[] getFreqStuff(Hashtable count){
+        double[] freqStuff = new double[2];
+		int sumsq=0, sum=0, num=0, mincount = -1;
 		Enumeration enu = count.elements();
 		while(enu.hasMoreElements()){
 			num = Integer.parseInt((String)enu.nextElement());
 			sumsq += num*num;
 			sum += num;
+            if (mincount < 0 || mincount > num){
+                mincount = num;
+            }
 		}
-		double preHet;
         if (sum == 0){
-            preHet = 0;
+            freqStuff[0] = 0;
+            freqStuff[1] = 0;
         }else{
-            preHet = 1.0 - (sumsq/((sum*sum)+0.0));
+            freqStuff[0] = 1.0 - (sumsq/((sum*sum)+0.0));
+            freqStuff[1] = mincount/(sum+0.0);
         }
-		return preHet;
+		return freqStuff;
 	}
 
 
@@ -415,7 +430,7 @@ public class CheckData {
 		return tdtfams;
 	}
 
-	private int getRating(double genopct, double pval, double obsHet, int menderr){
+	private int getRating(double genopct, double pval, double obsHet, int menderr, double maf){
 		int rating = 0;
 		if (obsHet < 0.01){
 			rating -= 1;
@@ -429,10 +444,12 @@ public class CheckData {
         if (menderr > numMendErrCut){
 			rating -= 8;
 		}
+        if (maf < mafCut){
+            rating -= 16;
+        }
         if (rating == 0){
 			rating = 1;
 		}
-
 		return rating;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.2 2003/09/02 14:58:39 jcbarret Exp $
+* $Id: Individual.java,v 1.3 2003/12/17 21:29:29 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -31,6 +31,7 @@ public class Individual {
     private int affectedStatus;
     private int liability; //optional
     private Vector markers;
+    private Vector zeroed;
     private boolean isTyped;
 
 	public final static int FEMALE = 2;
@@ -42,6 +43,7 @@ public class Individual {
 
     public Individual(){
         this.markers = new Vector();
+        this.zeroed = new Vector();
     }
 
     /**
@@ -163,13 +165,6 @@ public class Individual {
     public Vector getMarkers() {
         return markers;
     }
-    /**
-     * sets the markers vector
-     * @param markers
-     */
-    public void setMarkers(Vector markers) {
-        this.markers = markers;
-    }
 
     /**
      * returns the number of markers for this individual
@@ -194,11 +189,24 @@ public class Individual {
      */
     public void addMarker(byte[] marker){
         this.markers.add(marker);
+        this.zeroed.add(new Boolean(false));
     }
 
+    /**
+     * checks to see if a marker has been zeroed out
+     * @param location - which marker to check
+     * @return true if marker is zeroed, false otherwise
+     */
+    public boolean getZeroed(int location){
+        return ((Boolean)zeroed.get(location)).booleanValue();
+    }
+
+    /**
+     * sets the bit that this marker has been zeroed out for this indiv (e.g. because it has a mendel error)
+     * @param i - marker to be zeroed
+     */
     public void zeroOutMarker(int i){
-        byte zeroArray[] = {0,0};
-        this.markers.set(i, zeroArray);
+        this.zeroed.set(i, new Boolean(true));
     }
     /**
      * returns an iterator for the markers Vector
