@@ -347,7 +347,7 @@ public class HaploText implements Constants{
                 }
                 this.pedFileName = (String)line.getValue("-p");
                 Options.setGenoFileType(PED);
-                debugPrint("found pedfile:\t" + this.pedFileName);
+                debugPrint("Found Pedfile:\t" + this.pedFileName);
             }
             if(line.hasOption("-ha")) {
                 if(this.pedFileName != null
@@ -358,7 +358,7 @@ public class HaploText implements Constants{
                 }
                 this.hapsFileName = (String)line.getValue("-ha");
                 Options.setGenoFileType(HAPS);
-                debugPrint("found hapsfile:\t" + this.hapsFileName);
+                debugPrint("Found Hapsfile:\t" + this.hapsFileName);
             }
             if(line.hasOption("-a")) {
                 if(this.pedFileName != null
@@ -369,7 +369,7 @@ public class HaploText implements Constants{
                 }
                 this.hapmapFileName = (String)line.getValue("-a");
                 Options.setGenoFileType(HMP);
-                debugPrint("found pedfile:\t" + this.hapmapFileName);
+                debugPrint("Found Hapmap file:\t" + this.hapmapFileName);
             }
             if(line.hasOption("-b")){
                 if(this.pedFileName != null
@@ -383,12 +383,12 @@ public class HaploText implements Constants{
             }
             if(line.hasOption("-i")) {
                 this.infoFileName = (String)line.getValue("-i");
-                debugPrint("found infofile:\t" + this.infoFileName);
+                debugPrint("Found marker information file:\t" + this.infoFileName);
             }
 
             if(line.hasOption("-n")) {
                 HaploText.noGUI = true;
-                debugPrint("no gui mode");
+                debugPrint("No gui mode");
             }
 
             if(line.hasOption("-showcheck")) {
@@ -397,7 +397,7 @@ public class HaploText implements Constants{
             }
             if(line.hasOption("-skipcheck")) {
                 this.skipCheck = true;
-                debugPrint("skiping check");
+                debugPrint("skipping check");
             }
             //if(line.hasOption("-ignoremarkers")){
                 //String[] markers = (String)line.getValues("-ignoremarkers");
