@@ -54,13 +54,14 @@ public class HaploData{
     int[] two_n = new int[MAXLOCI];
     double[] prob;
 
+    public HaploData(){
+    }
 
 
-
-    public HaploData(File infile) throws IOException{
+    /*public HaploData(File infile) throws IOException{
         //create the data object and prepare the input
         chromosomes = prepareGenotypeInput(infile);
-    }
+    } */
 
 
     Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh){
@@ -486,7 +487,7 @@ public class HaploData{
         }
     }
 
-    Vector prepareGenotypeInput(File infile) throws IOException{
+    void prepareGenotypeInput(File infile) throws IOException{
         //this method is called to suck in data from a file (its only argument)
         //of genotypes and return a vector of Chromosome objects.
         String currentLine;
@@ -554,17 +555,18 @@ public class HaploData{
             markerInfo.add(new SNP(String.valueOf(i), (i*4000), maf));
             percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
         }
-        return chroms;
+        chromosomes = chroms;
+        //return chroms;
     }
 
-    public Vector linkageToChrom(boolean[] markerResults, PedFile pedFile, String hapFileName)throws IOException{
+    public void linkageToChrom(boolean[] markerResults, PedFile pedFile){
 
         Vector indList = pedFile.getOrder();
         int numMarkers = 0;
         Vector usedParents = new Vector();
         Individual currentInd;
         Family currentFamily;
-        Vector chromosomes = new Vector();
+        Vector chrom = new Vector();
 
         for(int x=0; x < indList.size(); x++){
 
@@ -591,8 +593,8 @@ public class HaploData{
                             }
                         }
                     }
-                    chromosomes.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1));
-                    chromosomes.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2));
                 }
                 else{
                     //skip if indiv is parent in trio or unaffected
@@ -739,10 +741,10 @@ public class HaploData{
                                 }
                             }
 
-                            chromosomes.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb));
-                            chromosomes.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb));
-                            chromosomes.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb));
-                            chromosomes.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb));
 
 
                             usedParents.add(currentInd.getFamilyID()+" "+currentInd.getDadID());
@@ -752,7 +754,7 @@ public class HaploData{
                 }
             }
         }
-        double numChroms = chromosomes.size();
+        double numChroms = chrom.size();
         numBadGenotypes = new double[numMarkers];
         percentBadGenotypes = new double[numMarkers];
 
@@ -760,9 +762,9 @@ public class HaploData{
             //to compute maf, browse chrom list and count instances of each allele
             byte a1 = 0;
             double numa1 = 0; double numa2 = 0;
-            for (int j = 0; j < chromosomes.size(); j++){
+            for (int j = 0; j < chrom.size(); j++){
                 //if there is a data point for this marker on this chromosome
-                byte thisAllele = ((Chromosome)chromosomes.elementAt(j)).elementAt(i);
+                byte thisAllele = ((Chromosome)chrom.elementAt(j)).elementAt(i);
                 if (!(thisAllele == 0)){
                     if (thisAllele == 5){
                         numa1+=0.5;
@@ -787,7 +789,8 @@ public class HaploData{
             markerInfo.add(new SNP(String.valueOf(i), (i*4000), maf));
             percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
         }
-        return chromosomes;
+        chromosomes = chrom;
+        //return chrom;
     }
 
 
