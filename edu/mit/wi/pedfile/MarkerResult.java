@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 1.5 2004/07/20 17:45:18 jcbarret Exp $
+ * $Id: MarkerResult.java,v 1.6 2004/09/29 14:20:52 jmaller Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -36,10 +36,14 @@ public class MarkerResult {
 	private int _mendErrNum;
 	private int _rating;
     NumberFormat nf = NumberFormat.getInstance(Locale.US);
+    NumberFormat pctNF = NumberFormat.getInstance(Locale.US);
 
 	public MarkerResult() {
 		nf.setMinimumFractionDigits(3);
 		nf.setMaximumFractionDigits(3);
+
+        pctNF.setMinimumFractionDigits(0);
+        pctNF.setMaximumFractionDigits(1);
     }
 
 
@@ -133,7 +137,7 @@ public class MarkerResult {
 	 * Gets percent of individuals genotyped
 	 */
 	public double getGenoPercent(){
-        return new Double(nf.format(this._genoPercent/100)).doubleValue();
+        return new Double(pctNF.format(this._genoPercent)).doubleValue();
 	}
 
 	/**
