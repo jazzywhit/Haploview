@@ -33,35 +33,25 @@ public class FindBlocks {
 
                 if (numGam > 3){ continue; }
 
-                Vector addMe = new Vector(); //a vector of x, y, separation
                 int sep = y - x - 1; //compute separation of two markers
-                addMe.add(String.valueOf(x)); addMe.add(String.valueOf(y)); addMe.add(String.valueOf(sep));
-                if (strongPairs.size() == 0){ //put first pair first
-                    strongPairs.add(addMe);
-                }else{
-                    //sort by descending separation of markers in each pair
-                    boolean unplaced = true;
-                    for (int v = 0; v < strongPairs.size(); v ++){
-                        if (sep >= Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(2))){
-                            strongPairs.insertElementAt(addMe, v);
-                            unplaced = false;
-                            break;
-                        }
-                    }
-                    if (unplaced) {strongPairs.add(addMe);}
-                }
+                strongPairs.add(new MarkerInfo(x,y,sep));
             }
         }
 
+        Collections.sort(strongPairs);
+        //sort from greatest to least
+        Collections.reverse(strongPairs);
+
         //now take this list of pairs with 3 gametes and construct blocks
         boolean[] usedInBlock = new boolean[Chromosome.getSize() + 1];
-        for (int v = 0; v < strongPairs.size(); v++){
+        for (int v= 0; v< strongPairs.size();v++) {
             boolean isABlock = true;
-            int first = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(0));
-            int last = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(1));
+            int first =((MarkerInfo)strongPairs.elementAt(v)).marker1;
+            int last =((MarkerInfo)strongPairs.elementAt(v)).marker2;
             //first see if this block overlaps with another:
             if (usedInBlock[first] || usedInBlock[last]) continue;
             //test this block.
+            OUTER:
             for (int y = first+1; y <= last; y++){
                 //loop over columns in row y
                 for (int x = first; x < y; x++){
@@ -76,7 +66,10 @@ public class FindBlocks {
                     for (int i = 0; i < freqs.length; i++){
                         if (freqs[i] > fourGameteCutoff + 1E-8) numGam++;
                     }
-                    if (numGam > 3){ isABlock = false; }
+                    if (numGam > 3){
+                        isABlock = false;
+                        break OUTER;
+                    }
                 }
             }
             if (isABlock){
@@ -136,40 +129,28 @@ public class FindBlocks {
                 if (lod < -90) continue; //missing data
                 if (highCI < cutHighCI || lowCI < cutLowCI) continue; //must pass "strong LD" test
 
-                Vector addMe = new Vector(); //a vector of x, y, separation
 
                 long sep;
                 //compute actual separation
                 sep = Math.abs(Chromosome.getMarker(y).getPosition() - Chromosome.getMarker(x).getPosition());
-
-                addMe.add(String.valueOf(x)); addMe.add(String.valueOf(y)); addMe.add(String.valueOf(sep));
-                if (strongPairs.size() == 0){ //put first pair first
-                    strongPairs.add(addMe);
-                }else{
-                    //sort by descending separation of markers in each pair
-                    boolean unplaced = true;
-                    for (int v = 0; v < strongPairs.size(); v ++){
-                        if (sep >= Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(2))){
-                            strongPairs.insertElementAt(addMe, v);
-                            unplaced = false;
-                            break;
-                        }
-                    }
-                    if (unplaced){strongPairs.add(addMe);}
-                }
+               strongPairs.add(new MarkerInfo(x,y,sep));
             }
         }
+
+        Collections.sort(strongPairs);
+        Collections.reverse(strongPairs);
 
         //now take this list of pairs with "strong LD" and construct blocks
         boolean[] usedInBlock = new boolean[Chromosome.getSize() + 1];
         Vector thisBlock;
         int[] blockArray;
-        for (int v = 0; v < strongPairs.size(); v++){
+
+        for(int v =0; v< strongPairs.size();v++) {
             numStrong = 0; numRec = 0; numInGroup = 0;
             thisBlock = new Vector();
-            int first = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(0));
-            int last = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(1));
-            int sep = Math.abs(Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(2)));
+            int first =((MarkerInfo)strongPairs.elementAt(v)).marker1;
+            int last =((MarkerInfo)strongPairs.elementAt(v)).marker2;
+            long sep = ((MarkerInfo)strongPairs.elementAt(v)).sep.longValue();
 
             //first see if this block overlaps with another:
             if (usedInBlock[first] || usedInBlock[last]) continue;
@@ -330,6 +311,25 @@ public class FindBlocks {
             outVec.add(ma);
         }
         return outVec;
+    }
+
+    static class MarkerInfo implements Comparable{
+        int marker1;
+        int marker2;
+        Long sep;
+
+        public MarkerInfo(int x, int y, long s)  {
+            marker1 = x;
+            marker2 = y;
+            sep = new Long(s);
+        }
+
+        public int compareTo(Object o) {
+            if(!(o instanceof MarkerInfo)) {
+                throw new ClassCastException();
+            }
+            return sep.compareTo(((MarkerInfo)o).sep);
+        }
     }
 }
 
