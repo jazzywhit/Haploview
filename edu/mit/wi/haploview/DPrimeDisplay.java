@@ -1,6 +1,7 @@
 package edu.mit.wi.haploview;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
 //import java.awt.font.*;
@@ -254,50 +255,46 @@ class DPrimeDisplay extends JComponent{
             if (noImage){
                 //first time through draw a worldmap if dataset is big:
                 final int WM_MAX_WIDTH = 300;
-                int scalefactor;
-                if (2*dPrimeTable.length < WM_MAX_WIDTH){
-                    scalefactor = chartSize.width/(2*(dPrimeTable.length-1));
-                } else {
-                    scalefactor = chartSize.width/WM_MAX_WIDTH;
-                }
+                double scalefactor;
+                scalefactor = (double)(chartSize.width)/WM_MAX_WIDTH;
 
                 CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
                         BorderFactory.createLoweredBevelBorder());
-                worldmap = new BufferedImage(chartSize.width/scalefactor+wmBorder.getBorderInsets(this).left*2,
-                        chartSize.height/scalefactor+wmBorder.getBorderInsets(this).top*2,
+                worldmap = new BufferedImage((int)(chartSize.width/scalefactor)+wmBorder.getBorderInsets(this).left*2,
+                        (int)(chartSize.height/scalefactor)+wmBorder.getBorderInsets(this).top*2,
                         BufferedImage.TYPE_3BYTE_BGR);
 
                 Graphics gw = worldmap.getGraphics();
-                gw.setColor(this.getBackground());
-                gw.fillRect(1,1,worldmap.getWidth()-2,worldmap.getHeight()-2);
+                Graphics2D gw2 = (Graphics2D)(gw);
+                gw2.setColor(this.getBackground());
+                gw2.fillRect(1,1,worldmap.getWidth()-2,worldmap.getHeight()-2);
                 //make a pretty border
-                gw.setColor(Color.BLACK);
+                gw2.setColor(Color.BLACK);
 
-                wmBorder.paintBorder(this,gw,0,0,worldmap.getWidth()-1,worldmap.getHeight()-1);
+                wmBorder.paintBorder(this,gw2,0,0,worldmap.getWidth()-1,worldmap.getHeight()-1);
                 ir = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth()-1, worldmap.getHeight()-1);
 
-                int prefBoxSize = ((worldmap.getWidth())/dPrimeTable.length-1);
-                if (prefBoxSize < 1){
-                    prefBoxSize=1;
-                }
+                double prefBoxSize = boxSize/scalefactor;
+                //System.out.println(prefBoxSize);
                 for (int x = 0; x < dPrimeTable.length-1; x++){
                     for (int y = x+1; y < dPrimeTable.length; y++){
                         if (dPrimeTable[x][y] == null){
                             continue;
                         }
-                        int xx = (x + y)+wmBorder.getBorderInsets(this).left;// * boxSize / 2;
-                        int yy = (y - x)+wmBorder.getBorderInsets(this).top;// * boxSize / 2;
+                        //TODO:make this a lil' less ugly
+                        double xx = (x + y)*prefBoxSize/2+wmBorder.getBorderInsets(this).left;
+                        double yy = (y - x)*prefBoxSize/2+wmBorder.getBorderInsets(this).top;
 
+                        /*
                         diamondX[0] = xx; diamondY[0] = yy - 1;
                         diamondX[1] = xx + 1; diamondY[1] = yy;
                         diamondX[2] = xx; diamondY[2] = yy + 1;
                         diamondX[3] = xx - 1; diamondY[3] = yy;
 
-                        gw.setColor(dPrimeTable[x][y].getColor());
-                        gw.fillPolygon(new Polygon(diamondX, diamondY,4));
-
-                        /*gw.fillRect(xx+wmBorder.getBorderInsets(this).left,
-                                yy+wmBorder.getBorderInsets(this).top,3,3);//prefBoxSize,prefBoxSize);*/
+                        gw2.fillPolygon(new Polygon(diamondX, diamondY,4));
+                          */
+                        gw2.setColor(dPrimeTable[x][y].getColor());
+                        gw2.fill(new Rectangle2D.Double(xx,yy,prefBoxSize,prefBoxSize));
                     }
                 }
 
@@ -369,6 +366,10 @@ class DPrimeDisplay extends JComponent{
         returnArray[0] = (30-fm.stringWidth(s))/2;
         returnArray[1] = 10+(30-fm.getAscent())/2;
         return returnArray;
+    }
+
+    public void refreshWorldmap() {
+        noImage=true;
     }
 
 

@@ -523,6 +523,7 @@ public class HaploView extends JFrame implements ActionListener{
                 JOptionPane.QUESTION_MESSAGE);
         theData.guessBlocks(methodList.getSelectedIndex());
         hapDisplay.getHaps();
+        dPrimeDisplay.refreshWorldmap();
         if (tabs.getSelectedIndex() == 0) dPrimeDisplay.repaint();
     }
 
