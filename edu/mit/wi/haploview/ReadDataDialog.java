@@ -19,6 +19,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     static final int INFO = 1;
     static final int HAPS = 2;
     static final int PED = 3;
+    static final int DCC = 4;
 
     int fileType;
     JTextField genoFileField, infoFileField;
@@ -32,8 +33,6 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         JPanel contents = new JPanel();
         JButton hapmapButton = new JButton(HAPMAP_DATA);
         hapmapButton.addActionListener(this);
-        //hapmap isn't ready yet
-        hapmapButton.setEnabled(false);
         JButton rawdataButton = new JButton(RAW_DATA);
         rawdataButton.addActionListener(this);
         JButton phaseddataButton = new JButton(PHASED_DATA);
@@ -63,6 +62,8 @@ public class ReadDataDialog extends JDialog implements ActionListener {
             load(PED);
         }else if (command == PHASED_DATA){
             load(HAPS);
+        }else if (command == HAPMAP_DATA){
+            load(DCC);
         }else if (command == BROWSE_GENO){
             browse(GENO);
         }else if (command == BROWSE_INFO){
@@ -86,7 +87,9 @@ public class ReadDataDialog extends JDialog implements ActionListener {
             if (fileType == HAPS){
                 caller.readPhasedGenotypes(returnStrings);
             }else if (fileType == PED){
-                caller.readPedGenotypes(returnStrings);
+                caller.readPedGenotypes(returnStrings, PED);
+            }else if (fileType == DCC){
+                caller.readPedGenotypes(returnStrings, DCC);
             }
 
             if (caller.dPrimeDisplay != null){
@@ -194,7 +197,9 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         botFilePanel.add(infoFileField);
         botFilePanel.add(browseInfoButton);
         filePanel.add(topFilePanel);
-        filePanel.add(botFilePanel);
+        if (ft != DCC){
+            filePanel.add(botFilePanel);
+        }
         filePanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         contents.add(filePanel);
 
