@@ -4,17 +4,28 @@ import java.util.Vector;
 //import java.util.Enumeration;
 
 public class EM {
-    int MAXLOCI = 100;
-    int MAXLN = 1000;
-    double PSEUDOCOUNT = 0.1;
+    //results fields
+    private int[][] haplotypes;
+    private double[] frequencies;
+    private Vector obsT, obsU;
+    private Vector controlFreqs, caseFreqs;
+
+    final int MISSINGLIMIT = 4;
+    final int MAXLOCI = 100;
+    final int MAXLN = 1000;
+    final double PSEUDOCOUNT = 0.1;
     OBS[] data;
     SUPER_OBS[] superdata;
     int[] two_n = new int[32];
     double[] prob;
     int[][] ambighet;
+    private Vector chromosomes;
+    private int numTrios;
 
-    EM(){
+    EM(Vector chromosomes, int numTrios){
 
+        this.chromosomes = chromosomes;
+        this.numTrios = numTrios;
         //an old-school speedup courtesy of mjdaly
         two_n[0]=1;
         for (int i=1; i<31; i++){
@@ -58,14 +69,186 @@ public class EM {
         }
     }
 
-    public EMReturn full_em_breakup( byte[][] input_haplos, int max_missing, int[] block_size, int dump_phased_haplos, int numTrios) throws HaploViewException{
+    public void doEM(int[] theBlock) throws HaploViewException{
+
+        //break up large blocks if needed
+        int[] block_size;
+        if (theBlock.length < 9){
+            block_size = new int[1];
+            block_size[0] = theBlock.length;
+        } else {
+            //some base-8 arithmetic
+            int ones = theBlock.length%8;
+            int eights = (theBlock.length - ones)/8;
+            if (ones == 0){
+                block_size = new int[eights];
+                for (int i = 0; i < eights; i++){
+                    block_size[i]=8;
+                }
+            } else {
+                block_size = new int[eights+1];
+                for (int i = 0; i < eights-1; i++){
+                    block_size[i]=8;
+                }
+                block_size[eights-1] = (8+ones)/2;
+                block_size[eights] = 8+ones-block_size[eights-1];
+            }
+        }
+
+        byte[] thisHap;
+        Vector inputHaploSingletons = new Vector();
+        Vector inputHaploTrios = new Vector();
+        Vector affSingletons = new Vector();
+        Vector affTrios = new Vector();
+        //whichVector[i] stores a value which indicates which vector chromosome i's genotype should go in
+        //1 indicates inputHaploSingletons (singletons), 2 indicates inputHaploTrios,
+        //3 indicates a person from a broken trio who is treated as a singleton
+        //0 indicates none (too much missing data)
+        int[] whichVector = new int[chromosomes.size()];
+
+
+        for(int i=0;i<numTrios*4; i+=4) {
+            Chromosome parentAFirst = (Chromosome) chromosomes.elementAt(i);
+            Chromosome parentASecond = (Chromosome) chromosomes.elementAt(i+1);
+            Chromosome parentBFirst = (Chromosome) chromosomes.elementAt(i+2);
+            Chromosome parentBSecond = (Chromosome) chromosomes.elementAt(i+3);
+            boolean tooManyMissingInASegmentA = false;
+            boolean tooManyMissingInASegmentB = false;
+            int totalMissingA = 0;
+            int totalMissingB = 0;
+            int segmentShift = 0;
+            for (int n = 0; n < block_size.length; n++){
+                int missingA = 0;
+                int missingB = 0;
+                for (int j = 0; j < block_size[n]; j++){
+                    byte AFirstGeno = parentAFirst.getGenotype(theBlock[segmentShift+j]);
+                    byte ASecondGeno = parentASecond.getGenotype(theBlock[segmentShift+j]);
+                    byte BFirstGeno = parentBFirst.getGenotype(theBlock[segmentShift+j]);
+                    byte BSecondGeno = parentBSecond.getGenotype(theBlock[segmentShift+j]);
+
+                    if(AFirstGeno == 0 || ASecondGeno == 0) missingA++;
+                    if(BFirstGeno == 0 || BSecondGeno == 0) missingB++;
+                }
+                segmentShift += block_size[n];
+                if (missingA >= MISSINGLIMIT){
+                    tooManyMissingInASegmentA = true;
+                }
+                if (missingB >= MISSINGLIMIT){
+                    tooManyMissingInASegmentB = true;
+                }
+                totalMissingA += missingA;
+                totalMissingB += missingB;
+            }
+
+            if(!tooManyMissingInASegmentA && totalMissingA <= 1+theBlock.length/3
+                    && !tooManyMissingInASegmentB && totalMissingB <= 1+theBlock.length/3) {
+                //both parents are good so all 4 chroms are added as a trio
+                whichVector[i] = 2;
+                whichVector[i+1] = 2;
+                whichVector[i+2] = 2;
+                whichVector[i+3] = 2;
+            }
+            else if(!tooManyMissingInASegmentA && totalMissingA <= 1+theBlock.length/3) {
+                //first person good, so he's added as a singleton, other parent is dropped
+                whichVector[i] = 3;
+                whichVector[i+1] =3;
+                whichVector[i+2] =0;
+                whichVector[i+3]=0;
+            }
+            else if(!tooManyMissingInASegmentB && totalMissingB <= 1+theBlock.length/3) {
+                //second person good, so he's added as a singleton, other parent is dropped
+                whichVector[i] = 0;
+                whichVector[i+1] =0;
+                whichVector[i+2] =3;
+                whichVector[i+3]=3;
+            }
+            else {
+                //both people have too much missing data so neither is used
+                whichVector[i] = 0;
+                whichVector[i+1] =0;
+                whichVector[i+2] =0;
+                whichVector[i+3]=0;
+            }
+
+        }
+
+
+        for (int i = numTrios*4; i < chromosomes.size(); i++){
+            Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
+            Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++i);
+            boolean tooManyMissingInASegment = false;
+            int totalMissing = 0;
+            int segmentShift = 0;
+            for (int n = 0; n < block_size.length; n++){
+                int missing = 0;
+                for (int j = 0; j < block_size[n]; j++){
+                    byte theGeno = thisChrom.getGenotype(theBlock[segmentShift+j]);
+                    byte nextGeno = nextChrom.getGenotype(theBlock[segmentShift+j]);
+                    if(theGeno == 0 || nextGeno == 0) missing++;
+                }
+                segmentShift += block_size[n];
+                if (missing >= MISSINGLIMIT){
+                    tooManyMissingInASegment = true;
+                }
+                totalMissing += missing;
+            }
+            //we want to use chromosomes without too many missing genotypes in a given
+            //subsegment (first term) or without too many missing genotypes in the
+            //whole block (second term)
+            if (!tooManyMissingInASegment && totalMissing <= 1+theBlock.length/3){
+                whichVector[i-1] = 1;
+                whichVector[i] = 1;
+            }
+        }
+
+        for (int i = 0; i < chromosomes.size(); i++){
+            Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
+
+            if(whichVector[i] > 0) {
+                thisHap = new byte[theBlock.length];
+                for (int j = 0; j < theBlock.length; j++){
+                    byte a1 = Chromosome.getMarker(theBlock[j]).getMajor();
+                    byte a2 = Chromosome.getMarker(theBlock[j]).getMinor();
+                    byte theGeno = thisChrom.getGenotype(theBlock[j]);
+                    if (theGeno >= 5){
+                        thisHap[j] = 'h';
+                    } else {
+                        if (theGeno == a1){
+                            thisHap[j] = '1';
+                        }else if (theGeno == a2){
+                            thisHap[j] = '2';
+                        }else{
+                            thisHap[j] = '0';
+                        }
+                    }
+                }
+                if(whichVector[i] == 1) {
+                    inputHaploSingletons.add(thisHap);
+                    affSingletons.add(new Integer(thisChrom.getAffected()));
+                }
+                else if(whichVector[i] ==2) {
+                    inputHaploTrios.add(thisHap);
+                    affTrios.add(new Integer(thisChrom.getAffected()));
+                }else if (whichVector[i] == 3){
+                    inputHaploSingletons.add(thisHap);
+                    affSingletons.add(new Integer(0));
+                }
+            }
+        }
+        int trioCount  = inputHaploTrios.size() / 4;
+        inputHaploTrios.addAll(inputHaploSingletons);
+        affTrios.addAll(affSingletons);
+        byte[][] input_haplos = (byte[][])inputHaploTrios.toArray(new byte[0][0]);
+
+        full_em_breakup(input_haplos, block_size, trioCount, affTrios);
+    }
+
+    private void full_em_breakup( byte[][] input_haplos, int[] block_size, int numTrios, Vector affStatus) throws HaploViewException{
         int num_poss, iter;//, maxk, numk;
         double total;//, maxprob;
         int block, start_locus, end_locus, biggest_block_size;
         int poss_full;//, best, h1, h2;
         int num_indivs=0;
-
-        boolean trioPhasing = true;
 
         int num_blocks = block_size.length;
         int num_haplos = input_haplos.length;
@@ -100,7 +283,7 @@ public class EM {
         prob = new double[num_poss];
 
         /* for trio option */
-        if (trioPhasing) {
+        if (Options.getAssocTest() == 2) {
             ambighet = new int[(num_haplos/4)][num_loci];
             store_dhet_status(num_haplos,num_loci,input_haplos);
         }
@@ -211,11 +394,11 @@ public class EM {
         /* LIGATE and finish this mess :) */
 
 /*        if (poss_full > 1000000) {
-            /* what we really need to do is go through and pare back
-            to using a smaller number (e.g., > .002, .005)
-            //printf("too many possibilities: %d\n",poss_full);
-            return(-5);
-        }*/
+/* what we really need to do is go through and pare back
+to using a smaller number (e.g., > .002, .005)
+//printf("too many possibilities: %d\n",poss_full);
+return(-5);
+}*/
         double[] superprob = new double[poss_full];
 
         create_super_haplos(num_indivs,num_blocks,num_hlist);
@@ -298,18 +481,57 @@ public class EM {
         String tempHap;
         while(theHaplos.hasMoreElements())
         {
-            tempHap = (String)theHaplos.nextElement();
-            System.out.println(tempHap);
+        tempHap = (String)theHaplos.nextElement();
+        System.out.println(tempHap);
         }
-                  */
+        */
+
+        Vector caseFreqs = new Vector();
+        Vector controlFreqs = new Vector(); //suffers from OCD :)
+        double[] tempCase, tempControl, totalCase, totalControl;
+        if (Options.getAssocTest() == 1){
+            tempCase = new double[poss_full];
+            tempControl = new double[poss_full];
+            totalCase = new double[poss_full];
+            totalControl = new double[poss_full];
+            double tempnorm=0;
+            for (int i = numTrios*2; i < num_indivs; i++){
+                for (int n=0; n<superdata[i].nsuper; n++) {
+                    if (((Integer)affStatus.elementAt(i)).intValue() == 1){
+                        tempControl[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
+                        tempControl[superdata[i].superposs[n].h2] += superdata[i].superposs[n].p;
+                    }else if (((Integer)affStatus.elementAt(i)).intValue() == 2){
+                        tempCase[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
+                        tempCase[superdata[i].superposs[n].h2] += superdata[i].superposs[n].p;
+                    }
+                    tempnorm += superdata[i].superposs[n].p;
+                }
+                if (tempnorm > 0.00) {
+                    for (int j=0; j<poss_full; j++) {
+                        if (tempCase[j] > 0.0000 || tempControl[j] > 0.0000) {
+                            totalCase[j] += (tempCase[j]/tempnorm);
+                            totalControl[j] += (tempControl[j]/tempnorm);
+                            tempCase[j]=tempControl[j]=0.0000;
+                        }
+                    }
+                    tempnorm=0.00;
+                }
+            }
+            for (int j = 0; j <poss_full; j++){
+                if (superprob[j] > .001) {
+                    caseFreqs.add(new Double(totalCase[j]));
+                    controlFreqs.add(new Double(totalControl[j]));
+                }
+            }
+        }
+
 
         double[] tempT,totalT,tempU,totalU;
         Vector obsT = new Vector();
         Vector obsU = new Vector();
-        if(trioPhasing)
+        if(Options.getAssocTest() == 2)
         {
-            int best1=0,best2=0,h1,h2;
-            double tempnorm=0,product,bestProduct=0;
+            double tempnorm=0,product;
             tempT = new double[poss_full];
             totalT = new double[poss_full];
             tempU = new double[poss_full];
@@ -317,45 +539,41 @@ public class EM {
 
 
             for (int i=0; i<numTrios*2; i+=2) {
-                best1=0; best2=0; bestProduct=-999.999;
-
-                tempnorm=0.00;
-                for (int n=0; n<superdata[i].nsuper; n++) {
-                    for (int m=0; m<superdata[i+1].nsuper; m++) {
-
-                        if (kid_consistent(superdata[i].superposs[n].h1,
-                                superdata[i+1].superposs[m].h1,num_blocks,
-                                block_size,hlist,num_hlist,i/2,num_loci)) {
-
-
-                            product=superdata[i].superposs[n].p*superdata[i+1].superposs[m].p;
-                            if (product > bestProduct) {
-                                best1=n; best2=m; bestProduct=product;
-                            }
-
-                            if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
-                                tempT[superdata[i].superposs[n].h1]+=product;
-                                tempU[superdata[i].superposs[n].h2]+=product;
-                            }
-                            if (superdata[i+1].superposs[m].h1 != superdata[i+1].superposs[m].h2) {
-                                tempT[superdata[i+1].superposs[m].h1]+=product;
-                                tempU[superdata[i+1].superposs[m].h2]+=product;
-                            }
-                            /* normalize by all possibilities, even double hom */
-                            tempnorm+=product;
-                        }
-                    }
-                }
-
-                if (tempnorm > 0.00) {
-                    for (int j=0; j<poss_full; j++) {
-                        if (tempT[j] > 0.0000 || tempU[j] > 0.0000) {
-                            totalT[j] += (tempT[j]/tempnorm);
-                            totalU[j] += (tempU[j]/tempnorm);
-                            tempT[j]=tempU[j]=0.0000;
-                        }
-                    }
+                if (((Integer)affStatus.elementAt(i)).intValue() == 2){
                     tempnorm=0.00;
+                    for (int n=0; n<superdata[i].nsuper; n++) {
+                        for (int m=0; m<superdata[i+1].nsuper; m++) {
+
+                            if (kid_consistent(superdata[i].superposs[n].h1,
+                                    superdata[i+1].superposs[m].h1,num_blocks,
+                                    block_size,hlist,num_hlist,i/2,num_loci)) {
+
+                                product=superdata[i].superposs[n].p*superdata[i+1].superposs[m].p;
+
+                                if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
+                                    tempT[superdata[i].superposs[n].h1]+=product;
+                                    tempU[superdata[i].superposs[n].h2]+=product;
+                                }
+                                if (superdata[i+1].superposs[m].h1 != superdata[i+1].superposs[m].h2) {
+                                    tempT[superdata[i+1].superposs[m].h1]+=product;
+                                    tempU[superdata[i+1].superposs[m].h2]+=product;
+                                }
+                                /* normalize by all possibilities, even double hom */
+                                tempnorm+=product;
+                            }
+                        }
+                    }
+
+                    if (tempnorm > 0.00) {
+                        for (int j=0; j<poss_full; j++) {
+                            if (tempT[j] > 0.0000 || tempU[j] > 0.0000) {
+                                totalT[j] += (tempT[j]/tempnorm);
+                                totalU[j] += (tempU[j]/tempnorm);
+                                tempT[j]=tempU[j]=0.0000;
+                            }
+                        }
+                        tempnorm=0.00;
+                    }
                 }
             }
             for (int j = 0; j <poss_full; j++){
@@ -366,7 +584,6 @@ public class EM {
             }
         }
 
-        EMReturn results;
         Vector haplos_present = new Vector();
         Vector haplo_freq= new Vector();
 
@@ -385,14 +602,16 @@ public class EM {
             freqs[j] = ((Double)haplo_freq.elementAt(j)).doubleValue();
         }
 
-        if (trioPhasing){
-            results = new EMReturn((int[][])haplos_present.toArray(new int[0][0]), freqs, obsT, obsU);
-        }else{
-            results = new EMReturn((int[][])haplos_present.toArray(new int[0][0]), freqs);
+
+        this.haplotypes = (int[][])haplos_present.toArray(new int[0][0]);
+        this.frequencies = freqs;
+        if (Options.getAssocTest() == 2){
+            this.obsT = obsT;
+            this.obsU = obsU;
+        } else if (Options.getAssocTest() == 1){
+            this.caseFreqs = caseFreqs;
+            this.controlFreqs = controlFreqs;
         }
-        return results;
-
-
 
         /*
         if (dump_phased_haplos) {
@@ -612,16 +831,16 @@ public class EM {
     }
 
 /*    public String haplo_str(int h, int num_loci)
-    {
-        int i;//, val;
-        StringBuffer s = new StringBuffer(num_loci);
-        for (i=0; i<num_loci; i++) {
-            if ((h&two_n[i])==two_n[i]) { s.append("2"); }
-            else { s.append("1"); }
-        }
-        return(s.toString());
-    }
-  */
+{
+int i;//, val;
+StringBuffer s = new StringBuffer(num_loci);
+for (i=0; i<num_loci; i++) {
+if ((h&two_n[i])==two_n[i]) { s.append("2"); }
+else { s.append("1"); }
+}
+return(s.toString());
+}
+*/
     public int[] decode_haplo_str(int chap, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist)
     {
         int i, val,size=0,counter=0;
@@ -742,6 +961,58 @@ public class EM {
         }
 
         return(retval);
+    }
+
+    public int[][] getHaplotypes() {
+        return haplotypes;
+    }
+
+    public void setHaplotypes(int[][] haplotypes) {
+        this.haplotypes = haplotypes;
+    }
+
+    public double[] getFrequencies() {
+        return frequencies;
+    }
+
+    public void setFrequencies(double[] frequencies) {
+        this.frequencies = frequencies;
+    }
+
+    public Vector getObsT() {
+        return obsT;
+    }
+
+    public void setObsT(Vector obsT) {
+        this.obsT = obsT;
+    }
+
+    public Vector getObsU() {
+        return obsU;
+    }
+
+    public void setObsU(Vector obsU) {
+        this.obsU = obsU;
+    }
+
+    public Vector getControlFreqs() {
+        return controlFreqs;
+    }
+
+    public void setControlFreqs(Vector controlFreqs) {
+        this.controlFreqs = controlFreqs;
+    }
+
+    public Vector getCaseFreqs() {
+        return caseFreqs;
+    }
+
+    public void setCaseFreqs(Vector caseFreqs) {
+        this.caseFreqs = caseFreqs;
+    }
+
+    public int numHaplos(){
+        return haplotypes.length;
     }
 }
 

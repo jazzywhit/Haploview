@@ -21,7 +21,6 @@ public class HaploData implements Constants{
     boolean[] isInBlock;
     boolean infoKnown = false;
     boolean blocksChanged = false;
-    int missingLimit = 4;
     //private PairwiseLinkage[][] dPrimeTable;
     DPrimeTable dpTable;
     private PedFile pedFile;
@@ -356,7 +355,7 @@ public class HaploData implements Constants{
             }
             //a Chromosome is created and added to a vector of chromosomes.
             //this is what is evetually returned.
-            chroms.add(new Chromosome(ped, indiv, genos, infile.getName()));
+            chroms.add(new Chromosome(ped, indiv, genos, infile.getName(), 0));
 
         }
         if (!even){
@@ -459,8 +458,8 @@ public class HaploData implements Constants{
                             chrom2[i] = (byte)(4+thisMarker[1]);
                         }
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus()));
                     numSingletons++;
                 }
             }else if (currentInd.hasBothParents()){
@@ -624,10 +623,10 @@ public class HaploData implements Constants{
                         }
 
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb, currentInd.getAffectedStatus()));
                     numTrios++;
                 }else if (mom.hasBothParents() && !dad.hasBothParents() && !usedParents.contains(dad)){
                     //in this case dad is a founder so we toss him in as a singleton.
@@ -652,8 +651,8 @@ public class HaploData implements Constants{
                             chrom2[i] = (byte)(4+thisMarker[1]);
                         }
                     }
-                    chrom.add(new Chromosome(dad.getFamilyID(),dad.getIndividualID(),chrom1));
-                    chrom.add(new Chromosome(dad.getFamilyID(),dad.getIndividualID(),chrom2));
+                    chrom.add(new Chromosome(dad.getFamilyID(),dad.getIndividualID(),chrom1,dad.getAffectedStatus()));
+                    chrom.add(new Chromosome(dad.getFamilyID(),dad.getIndividualID(),chrom2,dad.getAffectedStatus()));
                     numSingletons++;
                 }else if (dad.hasBothParents() && !mom.hasBothParents() && !usedParents.contains(mom)){
                     //in this case mom is a founder so we toss here in as a singleton
@@ -677,8 +676,8 @@ public class HaploData implements Constants{
                             chrom2[i] = (byte)(4+thisMarker[1]);
                         }
                     }
-                    chrom.add(new Chromosome(mom.getFamilyID(),mom.getIndividualID(),chrom1));
-                    chrom.add(new Chromosome(mom.getFamilyID(),mom.getIndividualID(),chrom2));
+                    chrom.add(new Chromosome(mom.getFamilyID(),mom.getIndividualID(),chrom1,mom.getAffectedStatus()));
+                    chrom.add(new Chromosome(mom.getFamilyID(),mom.getIndividualID(),chrom2,mom.getAffectedStatus()));
                     numSingletons++;
                 }
 
@@ -807,172 +806,15 @@ public class HaploData implements Constants{
                 theBlock = preFiltBlock;
             }
 
-            //break up large blocks if needed
-            int[] block_size;
-            if (theBlock.length < 9){
-                block_size = new int[1];
-                block_size[0] = theBlock.length;
-            } else {
-                //some base-8 arithmetic
-                int ones = theBlock.length%8;
-                int eights = (theBlock.length - ones)/8;
-                if (ones == 0){
-                    block_size = new int[eights];
-                    for (int i = 0; i < eights; i++){
-                        block_size[i]=8;
-                    }
-                } else {
-                    block_size = new int[eights+1];
-                    for (int i = 0; i < eights-1; i++){
-                        block_size[i]=8;
-                    }
-                    block_size[eights-1] = (8+ones)/2;
-                    block_size[eights] = 8+ones-block_size[eights-1];
-                }
-            }
-
-
-            byte[] thisHap;
-            Vector inputHaploVector = new Vector();
-            Vector inputHaploTrios = new Vector();
-            //whichVector[i] stores a value which indicates which vector chromosome i's genotype should go in
-            //1 indicates inputHaploVector (singletons), 2 indicates inputHaploTrios,
-            //0 indicates none (too much missing data)
-            int[] whichVector = new int[chromosomes.size()];
-
-
-            for(int i=0;i<numTrios*4; i+=4) {
-                Chromosome parentAFirst = (Chromosome) chromosomes.elementAt(i);
-                Chromosome parentASecond = (Chromosome) chromosomes.elementAt(i+1);
-                Chromosome parentBFirst = (Chromosome) chromosomes.elementAt(i+2);
-                Chromosome parentBSecond = (Chromosome) chromosomes.elementAt(i+3);
-                boolean tooManyMissingInASegmentA = false;
-                boolean tooManyMissingInASegmentB = false;
-                int totalMissingA = 0;
-                int totalMissingB = 0;
-                int segmentShift = 0;
-                for (int n = 0; n < block_size.length; n++){
-                    int missingA = 0;
-                    int missingB = 0;
-                    for (int j = 0; j < block_size[n]; j++){
-                        byte AFirstGeno = parentAFirst.getGenotype(theBlock[segmentShift+j]);
-                        byte ASecondGeno = parentASecond.getGenotype(theBlock[segmentShift+j]);
-                        byte BFirstGeno = parentBFirst.getGenotype(theBlock[segmentShift+j]);
-                        byte BSecondGeno = parentBSecond.getGenotype(theBlock[segmentShift+j]);
-
-                        if(AFirstGeno == 0 || ASecondGeno == 0) missingA++;
-                        if(BFirstGeno == 0 || BSecondGeno == 0) missingB++;
-                    }
-                    segmentShift += block_size[n];
-                    if (missingA >= missingLimit){
-                        tooManyMissingInASegmentA = true;
-                    }
-                    if (missingB >= missingLimit){
-                        tooManyMissingInASegmentB = true;
-                    }
-                    totalMissingA += missingA;
-                    totalMissingB += missingB;
-                }
-
-                if(!tooManyMissingInASegmentA && totalMissingA <= 1+theBlock.length/3
-                        && !tooManyMissingInASegmentB && totalMissingB <= 1+theBlock.length/3) {
-                    whichVector[i] = 2;
-                    whichVector[i+1] = 2;
-                    whichVector[i+2] = 2;
-                    whichVector[i+3] = 2;
-                }
-                else if(!tooManyMissingInASegmentA && totalMissingA <= 1+theBlock.length/3) {
-                    whichVector[i] = 1;
-                    whichVector[i+1] =1;
-                    whichVector[i+2] =0;
-                    whichVector[i+3]=0;
-                }
-                else if(!tooManyMissingInASegmentB && totalMissingB <= 1+theBlock.length/3) {
-                    whichVector[i] = 0;
-                    whichVector[i+1] =0;
-                    whichVector[i+2] =1;
-                    whichVector[i+3]=1;
-                }
-                else {
-                    whichVector[i] = 0;
-                    whichVector[i+1] =0;
-                    whichVector[i+2] =0;
-                    whichVector[i+3]=0;
-                }
-
-            }
-
-
-            for (int i = numTrios*4; i < chromosomes.size(); i++){
-                Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
-                Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++i);
-                boolean tooManyMissingInASegment = false;
-                int totalMissing = 0;
-                int segmentShift = 0;
-                for (int n = 0; n < block_size.length; n++){
-                    int missing = 0;
-                    for (int j = 0; j < block_size[n]; j++){
-                        byte theGeno = thisChrom.getGenotype(theBlock[segmentShift+j]);
-                        byte nextGeno = nextChrom.getGenotype(theBlock[segmentShift+j]);
-                        if(theGeno == 0 || nextGeno == 0) missing++;
-                    }
-                    segmentShift += block_size[n];
-                    if (missing >= missingLimit){
-                        tooManyMissingInASegment = true;
-                    }
-                    totalMissing += missing;
-                }
-                //we want to use chromosomes without too many missing genotypes in a given
-                //subsegment (first term) or without too many missing genotypes in the
-                //whole block (second term)
-                if (!tooManyMissingInASegment && totalMissing <= 1+theBlock.length/3){
-                    whichVector[i-1] = 1;
-                    whichVector[i] = 1;
-                }
-            }
-
-            for (int i = 0; i < chromosomes.size(); i++){
-                Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
-
-                if(whichVector[i] == 1 || whichVector[i] == 2) {
-                    thisHap = new byte[theBlock.length];
-                    for (int j = 0; j < theBlock.length; j++){
-                        byte a1 = Chromosome.getMarker(theBlock[j]).getMajor();
-                        byte a2 = Chromosome.getMarker(theBlock[j]).getMinor();
-                        byte theGeno = thisChrom.getGenotype(theBlock[j]);
-                        if (theGeno >= 5){
-                            thisHap[j] = 'h';
-                        } else {
-                            if (theGeno == a1){
-                                thisHap[j] = '1';
-                            }else if (theGeno == a2){
-                                thisHap[j] = '2';
-                            }else{
-                                thisHap[j] = '0';
-                            }
-                        }
-                    }
-                    if(whichVector[i] == 1) {
-                        inputHaploVector.add(thisHap);
-                    }
-                    else if(whichVector[i] ==2) {
-                        inputHaploTrios.add(thisHap);
-                    }
-                }
-            }
-            int trioCount  = inputHaploTrios.size() / 4;
-            inputHaploTrios.addAll(inputHaploVector);
-            byte[][] input_haplos = (byte[][])inputHaploTrios.toArray(new byte[0][0]);
-
             //kirby patch
-            EM theEM = new EM();
-            EMReturn EMresults = theEM.full_em_breakup(input_haplos, 4, block_size, 0,trioCount);
-
+            EM theEM = new EM(chromosomes,numTrios);
+            theEM.doEM(theBlock);
+                                    
             int p = 0;
-            Haplotype[] tempArray = new Haplotype[EMresults.numHaplos()];
-            int[][] returnedHaplos = EMresults.getHaplotypes();
-            double[] returnedFreqs = EMresults.getFrequencies();
-            for (int i = 0; i < EMresults.numHaplos(); i++){
+            Haplotype[] tempArray = new Haplotype[theEM.numHaplos()];
+            int[][] returnedHaplos = theEM.getHaplotypes();
+            double[] returnedFreqs = theEM.getFrequencies();
+            for (int i = 0; i < theEM.numHaplos(); i++){
                 int[] genos = new int[returnedHaplos[i].length];
                 for (int j = 0; j < genos.length; j++){
                     if (returnedHaplos[i][j] == 1){
