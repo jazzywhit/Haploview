@@ -471,7 +471,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 readMarkers(markerFile, null);
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
-                checkPanel = new CheckDataPanel(theData);
+                checkPanel = new CheckDataPanel(theData, true);
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
             }
 
@@ -661,7 +661,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (checkPanel != null){
                 //this is triggered when loading markers after already loading genotypes
                 //it is dumb and sucks, but at least it works. bah.
-                checkPanel = new CheckDataPanel(theData);
+                checkPanel = new CheckDataPanel(theData, true);
                 Container checkTab = (Container)tabs.getComponentAt(VIEW_CHECK_NUM);
                 checkTab.removeAll();
 

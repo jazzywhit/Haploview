@@ -479,15 +479,14 @@ public class HaploText implements Constants{
 
 
             if(this.arg_showCheck && result != null) {
-                CheckDataPanel cp = new CheckDataPanel(textData);
+                CheckDataPanel cp = new CheckDataPanel(textData, false);
                 cp.printTable(null);
             }
 
             if(this.arg_check && result != null){
-                CheckDataPanel cp = new CheckDataPanel(textData);
+                CheckDataPanel cp = new CheckDataPanel(textData, false);
                 cp.printTable(new File (fileName + ".CHECK"));
             }
-
             Vector cust = new Vector();
             if(outputType != -1){
                 textData.generateDPrimeTable();

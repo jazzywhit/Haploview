@@ -14,13 +14,14 @@ import edu.mit.wi.pedfile.PedFileException;
 
 public class CheckDataPanel extends JPanel implements TableModelListener{
 	private JTable table;
+    private CheckDataTableModel tableModel;
 	private PedFile pedfile;
     private HaploData theData;
 
     boolean changed;
     static int STATUS_COL = 8;
 
-    public CheckDataPanel(HaploData hd) throws IOException, PedFileException{
+    public CheckDataPanel(HaploData hd, boolean disp) throws IOException, PedFileException{
         STATUS_COL = 8;
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         pedfile = hd.getPedFile();
@@ -74,23 +75,26 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             tableData.add(tempVect.clone());
         }
 
-        final CheckDataTableModel tableModel = new CheckDataTableModel(tableColumnNames, tableData, markerRatings);
+        tableModel = new CheckDataTableModel(tableColumnNames, tableData, markerRatings);
         tableModel.addTableModelListener(this);
-        table = new JTable(tableModel);
-        final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
-        try{
-            table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
-            table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
-            table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
-        }catch (Exception e){
+
+        if (disp){
+            table = new JTable(tableModel);
+            final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
+            try{
+                table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
+                table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
+                table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
+            }catch (Exception e){
+            }
+            table.getColumnModel().getColumn(0).setPreferredWidth(30);
+            if (theData.infoKnown){
+                table.getColumnModel().getColumn(1).setPreferredWidth(100);
+            }
+            JScrollPane tableScroller = new JScrollPane(table);
+            add(tableScroller);
         }
-        table.getColumnModel().getColumn(0).setPreferredWidth(30);
-        if (theData.infoKnown){
-            table.getColumnModel().getColumn(1).setPreferredWidth(100);
-        }
-        JScrollPane tableScroller = new JScrollPane(table);
-        add(tableScroller);
-	}
+    }
 
 	public PedFile getPedFile(){
 		return pedfile;
@@ -112,10 +116,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             checkWriter = new FileWriter(outfile);
         }
 
-        int numCols = table.getColumnCount();
+        int numCols = tableModel.getColumnCount();
         StringBuffer header = new StringBuffer();
         for (int i = 0; i < numCols; i++){
-            header.append(table.getColumnName(i)).append("\t");
+            header.append(tableModel.getColumnName(i)).append("\t");
         }
         header.append("\n");
 
@@ -124,14 +128,14 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         }else{
             System.out.print(header.toString());
         }
-        for (int i = 0; i < table.getRowCount(); i++){
+        for (int i = 0; i < tableModel.getRowCount(); i++){
             StringBuffer sb = new StringBuffer();
             //don't print the true/false vals in last column
             for (int j = 0; j < numCols-1; j++){
-                sb.append(table.getValueAt(i,j)).append("\t");
+                sb.append(tableModel.getValueAt(i,j)).append("\t");
             }
             //print BAD if last column is false
-            if (((Boolean)table.getValueAt(i, numCols-1)).booleanValue()){
+            if (((Boolean)tableModel.getValueAt(i, numCols-1)).booleanValue()){
                 sb.append("\n");
             }else{
                 sb.append("BAD\n");
