@@ -9,7 +9,7 @@ import java.util.*;
 
 public class ReadDataDialog extends JDialog implements ActionListener, Constants {
 
-    static final String HAPMAP_DATA = "Browse HapMap data from DCC";
+    static final String HAPMAP_DATA = "Browse HapMap data from HMP";
     static final String RAW_DATA = "Load genotypes (linkage format)";
     static final String PHASED_DATA = "Load phased haplotypes";
     static final String MARKER_DATA_EXT = ".info";
@@ -58,7 +58,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         }else if (command == PHASED_DATA){
             load(HAPS);
         }else if (command == HAPMAP_DATA){
-            load(DCC);
+            load(HMP);
         }else if (command == BROWSE_GENO){
             browse(GENO);
         }else if (command == BROWSE_INFO){
@@ -185,7 +185,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         botFilePanel.add(infoFileField);
         botFilePanel.add(browseInfoButton);
         filePanel.add(topFilePanel);
-        if (ft != DCC){
+        if (ft != HMP){
             filePanel.add(botFilePanel);
         }
         filePanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));

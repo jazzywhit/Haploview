@@ -49,7 +49,7 @@ public interface Constants {
     static final int INFO = 1;
     static final int HAPS = 2;
     static final int PED = 3;
-    static final int DCC = 4;
+    static final int HMP = 4;
 
     //color modes
     static final int STD_SCHEME = 1;

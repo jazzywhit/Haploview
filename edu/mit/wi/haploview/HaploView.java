@@ -1056,7 +1056,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[0] = argParser.getHapmapFileName();
                 inputArray[1] = "";
                 inputArray[2] = String.valueOf(argParser.getMaxDistance());
-                window.readGenotypes(inputArray, DCC);
+                window.readGenotypes(inputArray, HMP);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
                 readDialog.pack();
