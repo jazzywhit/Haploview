@@ -28,7 +28,7 @@ public class FindBlocks {
                 double[] freqs = thisPair.getFreqs();
                 int numGam = 0;
                 for (int i = 0; i < freqs.length; i++){
-                    if (freqs[i] > fourGameteCutoff) numGam++;
+                    if (freqs[i] > fourGameteCutoff + 1E-8) numGam++;
                 }
 
                 if (numGam > 3){ continue; }
@@ -74,7 +74,7 @@ public class FindBlocks {
                     double[] freqs = thisPair.getFreqs();
                     int numGam = 0;
                     for (int i = 0; i < freqs.length; i++){
-                        if (freqs[i] > fourGameteCutoff) numGam++;
+                        if (freqs[i] > fourGameteCutoff + 1E-8) numGam++;
                     }
                     if (numGam > 3){ isABlock = false; }
                 }

@@ -79,10 +79,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         addMouseMotionListener(this);
     }
 
-    public void refresh(int scheme){
-        if (scheme != 0){
-            colorDPrime(scheme);
-        }
+    public void refresh(){
         noImage = true;
         repaint();
     }
@@ -154,7 +151,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     double[] freqs = thisPair.getFreqs();
                     int numGam = 0;
                     for (int i = 0; i < freqs.length; i++){
-                        if (freqs[i] > FindBlocks.fourGameteCutoff) numGam++;
+                        //add a little bump for EM probs which should be zero but are really like 10^-10
+                        if (freqs[i] > FindBlocks.fourGameteCutoff + 1E-8) numGam++;
                     }
 
                     //color in squares
@@ -766,7 +764,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     int whichMarker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
                     if (theData.isInBlock[whichMarker]){
                         theData.removeFromBlock(whichMarker);
-                        refresh(0);
+                        refresh();
                     } else if (whichMarker > 0 && whichMarker < Chromosome.realIndex.length){
                         theData.addMarkerIntoSurroundingBlock(whichMarker);
                     }
@@ -900,7 +898,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     lastMarker = temp;
                 }
                 theData.addBlock(firstMarker, lastMarker);
-                refresh(0);
+                refresh();
             }
         }
     }

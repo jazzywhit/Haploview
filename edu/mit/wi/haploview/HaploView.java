@@ -49,6 +49,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private int currentBlockDef = BLOX_GABRIEL;
     private TDTPanel tdtPanel;
     int assocTest = 0;
+    int currentScheme = 1;
     private javax.swing.Timer timer;
     long maxCompDist;
 
@@ -203,7 +204,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
         //color key
         keyMenu = new JMenu("Key");
-        changeKey(1);
         menuBar.add(Box.createHorizontalGlue());
         menuBar.add(keyMenu);
 
@@ -281,9 +281,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
         //coloring clauses
         }else if (command.startsWith("color")){
-            dPrimeDisplay.refresh(Integer.valueOf(command.substring(5)).intValue()+1);
-            changeKey(Integer.valueOf(command.substring(5)).intValue()+1);
-
+            currentScheme = Integer.valueOf(command.substring(5)).intValue()+1;
+            dPrimeDisplay.colorDPrime(currentScheme);
+            dPrimeDisplay.refresh();
+            changeKey(currentScheme);
         //exporting clauses
         }else if (command == EXPORT_PNG){
             export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getSize());
@@ -467,6 +468,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }
                 readMarkers(markerFile, hminfo);
 
+                changeKey(1);
                 theData.generateDPrimeTable();
                 //theData.guessBlocks(BLOX_GABRIEL);
                 theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
@@ -616,7 +618,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     JOptionPane.ERROR_MESSAGE);
         }
         if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
-            dPrimeDisplay.refresh(0);
+            dPrimeDisplay.refresh();
         }
     }
 
@@ -626,7 +628,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     public void changeBlocks(int method){
         theData.guessBlocks(method);
-        dPrimeDisplay.refresh(0);
+        dPrimeDisplay.refresh();
         currentBlockDef = method;
 
         try{
@@ -727,7 +729,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     class ResizeListener implements ComponentListener{
         public void componentResized(ComponentEvent e) {
             if (dPrimeDisplay != null){
-                dPrimeDisplay.refresh(0);
+                dPrimeDisplay.refresh();
             }
         }
 

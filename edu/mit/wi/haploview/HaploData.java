@@ -610,6 +610,8 @@ public class HaploData implements Constants{
         for (int k = 0; k < blocks.size(); k++){
             this.blocksDone++;
             int[] theBlock = (int[])blocks.elementAt(k);
+
+
             int[] hetcount = new int[theBlock.length];
             int[][] loc = new int[theBlock.length][5];
             int[][] convert = new int[theBlock.length][5];
