@@ -434,6 +434,7 @@ public class HaploView extends JFrame implements ActionListener{
     public void actionPerformed(ActionEvent e) {
 	String command = e.getActionCommand();
 	if (command == "Open"){
+	    fc.setSelectedFile(null);
 	    int returnVal = fc.showOpenDialog(this);
 	    if (returnVal == JFileChooser.APPROVE_OPTION) {
 		try{
@@ -487,6 +488,7 @@ public class HaploView extends JFrame implements ActionListener{
 		}
 	    }
 	} else if (command == loadInfoStr){
+	    fc.setSelectedFile(null);
 	    int returnVal = fc.showOpenDialog(this);
 	    if (returnVal == JFileChooser.APPROVE_OPTION) {
 		try{
