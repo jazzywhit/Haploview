@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.16 2004/05/10 19:20:24 jcbarret Exp $
+* $Id: PedFile.java,v 1.17 2004/08/05 21:30:47 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -177,10 +177,10 @@ public class PedFile {
      * @return the total number of individuals in all the family objects in the families hashtable
      */
     public int getNumIndividuals(){
-        Enumeration enum = this.families.elements();
+        Enumeration famEnum = this.families.elements();
         int total =0;
-        while (enum.hasMoreElements()) {
-            Family fam = (Family) enum.nextElement();
+        while (famEnum.hasMoreElements()) {
+            Family fam = (Family) famEnum.nextElement();
             total += fam.getNumMembers();
         }
         return total;
