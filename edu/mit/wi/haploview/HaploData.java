@@ -98,6 +98,8 @@ public class HaploData implements Constants{
         Vector positions = new Vector();
         Vector extras = new Vector();
 
+
+
         try{
             if (infile != null){
                 if (infile.length() < 1){
@@ -1361,9 +1363,11 @@ public class HaploData implements Constants{
         }
     }
 
+    //this method computes the dPrime value for the pair of markers pos1,pos2.
+    //the method assumes that the given pair are not too far apart (ie the distance
+    //between them is less than maximum distance).
+    //NOTE: the values of pos1,pos2 should be unfiltered marker numbers.
     public PairwiseLinkage computeDPrime(int pos1, int pos2){
-
-
         compsDone++;
         int doublehet = 0;
         int[][] twoMarkerHaplos = new int[3][3];
@@ -1669,6 +1673,14 @@ public class HaploData implements Constants{
 
     public void saveDprimeToText(File dumpDprimeFile, int source, int start, int stop) throws IOException{
         FileWriter saveDprimeWriter = new FileWriter(dumpDprimeFile);
+
+        System.out.println("save dprime to text!");
+        //we use this LinkedList to store the dprime computations for a window of 5 markers
+        //in either direction in the for loop farther down.
+        //a tInt value is calculated for each marker which requires the dprime calculations
+        //for the 5 markers before and 5 after the current marker, so we store these values while we need
+        //them to avoid unnecesary recomputation.
+        LinkedList savedDPrimes = new LinkedList();
         long dist;
         if (infoKnown){
             saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tDist\tT-int\n");
@@ -1691,7 +1703,74 @@ public class HaploData implements Constants{
         }
 
         PairwiseLinkage currComp = null;
+
+        //initialize the savedDPrimes linkedlist with 10 empty arrays of size 10
+        PairwiseLinkage[] pwlArray = new PairwiseLinkage[10];
+        savedDPrimes.add(pwlArray);
+        for(int k=0;k<4;k++) {
+            savedDPrimes.add(pwlArray.clone());
+        }
+
+        PairwiseLinkage[] tempArray;
+        if(source != TABLE_TYPE) {
+            //savedDPrimes is a linkedlist which stores 5 arrays at all times.
+            //it temporarily stores a set of computeDPrime() results so that we do not
+            //do them over and over
+            //each array contains 10 PairwiseLinkage objects.
+            //each array contains the PairwiseLinkage objects for a marker being compared to the 10 previous markers.
+            //if marker1 is some marker number, and tempArray is one of the arrays in savedDPrimes, then:
+            //      tempArray[0] = computeDPrime(marker1 - 10, marker1)
+            //      tempArray[9] = computeDPrime(marker1 - 1, marker1)
+            //if the value of marker1 is less than 10, then the array is filled with nulls up the first valid comparison
+            //that is, if marker1 = 5, then:
+            //      tempArray[0] through tempArray[4] are null
+            //      tempArray[5] = computeDPrime(marker1-5,marker1)
+            for(int m=1;m<6;m++) {
+                tempArray = (PairwiseLinkage[]) savedDPrimes.get(m-1);
+
+                for(int n=1;n<11;n++){
+                    if( (start+m) >= Chromosome.getSize() || (start+m-n)<0) {
+                        tempArray[10-n] = null;
+                    }
+                    else {
+                        //the next line used to have Chromosome.getUnfilteredMarker(Chromosome.realIndex[])
+                        //but it seems like this should do the same thing
+                        long sep = Chromosome.getMarker(start+m).getPosition()
+                                - Chromosome.getMarker(start+m-n).getPosition();
+                        if(Options.getMaxDistance() == 0 || sep < Options.getMaxDistance() )  {
+                            tempArray[10-n] = this.computeDPrime(Chromosome.realIndex[start+m-n],Chromosome.realIndex[start+m]);
+                            //tempArray[10-n] = "" + (start+m-n) + "," + (start+m) ;
+                        }
+                    }
+                }
+            }
+        }
+
+
         for (int i = start; i < stop; i++){
+
+            if(source != TABLE_TYPE && i != start) {
+                //here the first element of savedDPrimes is discarded.
+                //the array of results for the marker (i+5) is then computed and added to the end of savedDPrimes
+
+                tempArray = (PairwiseLinkage[]) savedDPrimes.removeFirst();
+
+                for(int m=0;m<10;m++) {
+                    tempArray[m] = null;
+                }
+                for(int n=1;n<11;n++){
+                    if(i+5 < Chromosome.getSize() && (i+5-n) >=0) {
+                        long sep = Chromosome.getMarker(i+5).getPosition()
+                                - Chromosome.getMarker(i+5-n).getPosition();
+                        if(Options.getMaxDistance() == 0 || sep < Options.getMaxDistance() )  {
+                            tempArray[10-n] = this.computeDPrime(Chromosome.realIndex[i+5-n],Chromosome.realIndex[i+5]);
+                        }
+                    }
+                }
+                savedDPrimes.addLast(tempArray);
+            }
+
+
             for (int j = i+1; j < stop; j++){
                 if (adj){
                     if (!(i == j-1)){
@@ -1701,7 +1780,11 @@ public class HaploData implements Constants{
                 if (source == TABLE_TYPE){
                     currComp = dpTable.getLDStats(i,j);
                 }else{
-                    currComp = this.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
+                    long sep = Chromosome.getMarker(i).getPosition()
+                            - Chromosome.getMarker(j).getPosition();
+                    if(Options.getMaxDistance() == 0 || sep < Options.getMaxDistance() )  {
+                        currComp = this.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
+                    }
                 }
                 if(currComp != null) {
                     double LODSum = 0;
@@ -1713,12 +1796,32 @@ public class HaploData implements Constants{
                                 if (i-x < 0 || i+y >= Chromosome.getSize()){
                                     continue;
                                 }
+                                tempArray = (PairwiseLinkage[]) savedDPrimes.get(y-1);
                                 PairwiseLinkage tintPair = null;
                                 if (source == TABLE_TYPE){
                                     tintPair = dpTable.getLDStats(i-x,i+y);
                                 }else{
-                                    tintPair = this.computeDPrime(Chromosome.realIndex[i-x],
-                                            Chromosome.realIndex[i+y]);
+                                    long sep = Chromosome.getUnfilteredMarker(Chromosome.realIndex[i-x]).getPosition()
+                                            - Chromosome.getUnfilteredMarker(Chromosome.realIndex[i+y]).getPosition();
+                                    if(Options.getMaxDistance() == 0 || sep < Options.getMaxDistance() )  {
+
+                                        tintPair = tempArray[9-x-y+1];
+                                        /*tintPair = this.computeDPrime(Chromosome.realIndex[i-x],
+                                                Chromosome.realIndex[i+y]);
+                                        if(tempArray[9-x-y+1] == null) {
+                                            System.out.println("storage is null ");
+                                        }
+                                        if(tintPair == null) {
+                                            System.out.println("tintPair is null");
+                                        }
+                                        if(tempArray[9-x-y+1] == tintPair ||
+                                                (tintPair != null && tempArray[9-x-y+1] != null && tintPair.getLOD() == tempArray[9-x-y+1].getLOD())) {
+                                                System.out.println("match");
+                                        }
+                                        else {
+                                            System.out.println("dont match");
+                                        }*/
+                                    }
                                 }
                                 if (tintPair != null){
                                     LODSum += tintPair.getLOD();
