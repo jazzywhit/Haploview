@@ -124,7 +124,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                             //high LOD, high D' shades of red
                             double blgr = (255-32)*2*(1-d);
                             boxColor = new Color(255, (int) blgr, (int) blgr);
-                            //boxColor = new Color(224, (int) blgr, (int) blgr);
                         }
                     } else if (d > 0.99) {
                         //high D', low LOD blueish color
@@ -279,6 +278,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
             }
         }
+        repaint();
     }
 
     public BufferedImage export(int start, int stop, boolean compress){
