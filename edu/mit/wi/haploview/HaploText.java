@@ -547,7 +547,7 @@ public class HaploText implements Constants{
             }
             if(this.arg_dprime) {
                 OutputFile = new File(fileName + ".DPRIME");
-                if (textData.filteredDPrimeTable != null){
+                if (textData.dpTable != null){
                     textData.saveDprimeToText(OutputFile, TABLE_TYPE, 0, Chromosome.getFilteredSize());
                 }else{
                     textData.saveDprimeToText(OutputFile, LIVE_TYPE, 0, Chromosome.getFilteredSize());
@@ -555,7 +555,7 @@ public class HaploText implements Constants{
             }
             if (this.arg_png || this.arg_smallpng){
                 OutputFile = new File(fileName + ".LD.PNG");
-                if (textData.filteredDPrimeTable == null){
+                if (textData.dpTable == null){
                     textData.generateDPrimeTable();
                     textData.guessBlocks(BLOX_CUSTOM, new Vector());
                 }

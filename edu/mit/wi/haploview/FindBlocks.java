@@ -13,14 +13,14 @@ public class FindBlocks {
     static double fourGameteCutoff = 0.01;
     static double spineDP = 0.80;
 
-    static Vector do4Gamete(PairwiseLinkage[][] dPrime){
+    static Vector do4Gamete(DPrimeTable dPrime){
         Vector blocks = new Vector();
         Vector strongPairs = new Vector();
 
         //first make a list of marker pairs with < 4 gametes, sorted by distance apart
-        for (int x = 0; x < dPrime.length-1; x++){
-            for (int y = x+1; y < dPrime.length; y++){
-                PairwiseLinkage thisPair = dPrime[x][y];
+        for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
+            for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+                PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                 if (thisPair == null) {
                     continue;
                 }
@@ -54,7 +54,7 @@ public class FindBlocks {
         }
 
         //now take this list of pairs with 3 gametes and construct blocks
-        boolean[] usedInBlock = new boolean[dPrime.length + 1];
+        boolean[] usedInBlock = new boolean[Chromosome.getFilteredSize() + 1];
         for (int v = 0; v < strongPairs.size(); v++){
             boolean isABlock = true;
             int first = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(0));
@@ -66,7 +66,7 @@ public class FindBlocks {
                 //loop over columns in row y
                 for (int x = first; x < y; x++){
 
-                    PairwiseLinkage thisPair = dPrime[x][y];
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                     if(thisPair == null){
                         continue;
                     }
@@ -105,14 +105,14 @@ public class FindBlocks {
         return stringVec2intVec(blocks);
     }
 
-    static Vector doGabriel(PairwiseLinkage[][] dPrime){
+    static Vector doGabriel(DPrimeTable dPrime){
         int numStrong = 0; int numRec = 0; int numInGroup = 0;
         Vector blocks = new Vector();
         Vector strongPairs = new Vector();
 
         //first set up a filter of markers which fail the MAF threshhold
-        boolean[] skipMarker = new boolean[dPrime.length];
-        for (int x = 0; x < dPrime.length; x++){
+        boolean[] skipMarker = new boolean[Chromosome.getFilteredSize()];
+        for (int x = 0; x < Chromosome.getFilteredSize(); x++){
             if (Chromosome.getFilteredMarker(x).getMAF() < mafThresh){
                 skipMarker[x]=true;
             }else{
@@ -121,9 +121,9 @@ public class FindBlocks {
         }
 
         //next make a list of marker pairs in "strong LD", sorted by distance apart
-        for (int x = 0; x < dPrime.length-1; x++){
-            for (int y = x+1; y < dPrime.length; y++){
-                PairwiseLinkage thisPair = dPrime[x][y];
+        for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
+            for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+                PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                 if (thisPair == null){
                         continue;
                 }
@@ -161,7 +161,7 @@ public class FindBlocks {
         }
 
         //now take this list of pairs with "strong LD" and construct blocks
-        boolean[] usedInBlock = new boolean[dPrime.length + 1];
+        boolean[] usedInBlock = new boolean[Chromosome.getFilteredSize() + 1];
         Vector thisBlock;
         int[] blockArray;
         for (int v = 0; v < strongPairs.size(); v++){
@@ -191,7 +191,7 @@ public class FindBlocks {
                 for (int x = first; x < y; x++){
                     if (skipMarker[x]) continue;
 
-                    PairwiseLinkage thisPair = dPrime[x][y];
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                     if (thisPair == null){
                         continue;
                     }
@@ -251,7 +251,7 @@ public class FindBlocks {
         return blocks;
     }
 
-    static Vector  doSpine(PairwiseLinkage[][] dPrime){
+    static Vector  doSpine(DPrimeTable dPrime){
         // find blocks by searching for stretches between two markers A,B where
         // D prime is > a threshold for all informative combinations of A, (A+1...B)
 
@@ -259,11 +259,11 @@ public class FindBlocks {
         int verticalExtent=0;
         int horizontalExtent=0;
         Vector blocks = new Vector();
-        for (int i = 0; i < dPrime.length; i++){
+        for (int i = 0; i < Chromosome.getFilteredSize(); i++){
             baddies=0;
             //find how far LD from marker i extends
-            for (int j = i+1; j < dPrime[i].length; j++){
-                PairwiseLinkage thisPair = dPrime[i][j];
+            for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
+                PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                 if (thisPair == null){
                     continue;
                 }
@@ -286,7 +286,7 @@ public class FindBlocks {
             for (int m = verticalExtent; m > i; m--){
                 for (int k = i; k < m; k++){
 
-                    PairwiseLinkage thisPair = dPrime[k][m];
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(k,m);
                     if (thisPair == null){
                         continue;
                     }

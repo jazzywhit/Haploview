@@ -99,14 +99,14 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     public void colorDPrime(int scheme){
         currentScheme = scheme;
-        PairwiseLinkage dPrime[][] = theData.filteredDPrimeTable;
+        DPrimeTable dPrime = theData.dpTable;
         noImage = true;
 
         if (scheme == STD_SCHEME){
             // set coloring based on LOD and D'
-            for (int i = 0; i < dPrime.length; i++){
-                for (int j = i+1; j < dPrime[i].length; j++){
-                    PairwiseLinkage thisPair = dPrime[i][j];
+            for (int i = 0; i < Chromosome.getFilteredSize()-1; i++){
+                for (int j = i+1; j < dPrime.getFilteredLength(i)+i; j++){
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                     if (thisPair == null){
                         continue;
                     }
@@ -135,9 +135,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
             }
         }else if (scheme == SFS_SCHEME){
-            for (int x = 0; x < dPrime.length-1; x++){
-                for (int y = x+1; y < dPrime.length; y++){
-                    PairwiseLinkage thisPair = dPrime[x][y];
+            for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
+                for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                     if (thisPair == null){
                         continue;
                     }
@@ -156,9 +156,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
             }
         }else if (scheme == GAM_SCHEME){
-            for (int x = 0; x < dPrime.length-1; x++){
-                for (int y = x+1; y < dPrime.length; y++){
-                    PairwiseLinkage thisPair = dPrime[x][y];
+            for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
+                for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                     if (thisPair == null) {
                         continue;
                     }
@@ -186,9 +186,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
             double max_l = 0.0;
 
-            for (int i = 0; i < dPrime.length; i++){
-                for (int j = i+1; j < dPrime[i].length; j++){
-                    PairwiseLinkage thisPair = dPrime[i][j];
+            for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+                for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                     if (thisPair == null){
                         continue;
                     }
@@ -200,9 +200,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             // cap the max LOD score
             if (max_l > 5.0) max_l = 5.0;
 
-            for (int i = 0; i < dPrime.length; i++){
-                for (int j = i+1; j < dPrime[i].length; j++){
-                    PairwiseLinkage thisPair = dPrime[i][j];
+            for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+                for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                     if (thisPair == null){
                         continue;
                     }
@@ -257,9 +257,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }else if (scheme == RSQ_SCHEME){
             // set coloring based on R-squared values
 
-            for (int i = 0; i < dPrime.length; i++){
-                for (int j = i+1; j < dPrime[i].length; j++){
-                    PairwiseLinkage thisPair = dPrime[i][j];
+            for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+                for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
+                    PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                     if (thisPair == null){
                         continue;
                     }
@@ -286,8 +286,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             exportStart = 0;
         }
         exportStop = stop;
-        if (exportStop > theData.filteredDPrimeTable.length){
-            exportStop = theData.filteredDPrimeTable.length;
+        if (exportStop > Chromosome.getFilteredSize()){
+            exportStop = Chromosome.getFilteredSize();
         }
 
         int startBS = boxSize;
@@ -366,8 +366,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     }
 
     public void paintComponent(Graphics g){
-        PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
-        if (dPrimeTable.length == 0){
+        DPrimeTable dPrimeTable = theData.dpTable;
+        if (Chromosome.getFilteredSize() == 0){
             //if there are no valid markers, but info is known we don't want
             //to paint any of that stuff.
             printDPrimeValues = false;
@@ -534,8 +534,8 @@ END OF HIS HACKS
             lowX = 0;
         }
         highX = ((visRect.x + visRect.width)/boxSize)+1;
-        if (highX > dPrimeTable.length-1){
-            highX = dPrimeTable.length-1;
+        if (highX > Chromosome.getFilteredSize()-1){
+            highX = Chromosome.getFilteredSize()-1;
         }
         lowY = ((visRect.x-clickXShift)+(visRect.y-clickYShift))/boxSize;
         if (lowY < lowX+1){
@@ -543,8 +543,8 @@ END OF HIS HACKS
         }
         highY = (((visRect.x-clickXShift+visRect.width) +
                 (visRect.y-clickYShift+visRect.height))/boxSize)+1;
-        if (highY > dPrimeTable.length){
-            highY = dPrimeTable.length;
+        if (highY > Chromosome.getFilteredSize()){
+            highY = Chromosome.getFilteredSize();
         }
         if (forExport){
             lowX = exportStart;
@@ -553,9 +553,10 @@ END OF HIS HACKS
             highY = exportStop;
         }
 
-        int lineSpan = (dPrimeTable.length-1) * boxSize;
+        int lineSpan = (Chromosome.getFilteredSize()-1) * boxSize;
         long minpos = Chromosome.getFilteredMarker(0).getPosition();
         long maxpos = Chromosome.getFilteredMarker(Chromosome.getFilteredSize()-1).getPosition();
+
         double spanpos = maxpos - minpos;
 
         if (theData.trackExists){
@@ -637,14 +638,14 @@ END OF HIS HACKS
             //// draw the marker names
             if (printMarkerNames){
                 widestMarkerName = metrics.stringWidth(Chromosome.getFilteredMarker(0).getName());
-                for (int x = 1; x < dPrimeTable.length; x++) {
+                for (int x = 1; x < Chromosome.getFilteredSize(); x++) {
                     int thiswide = metrics.stringWidth(Chromosome.getFilteredMarker(x).getName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }
 
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
-                for (int x = 0; x < dPrimeTable.length; x++) {
+                for (int x = 0; x < Chromosome.getFilteredSize(); x++) {
                     if (theData.isInBlock[x]){
                         g2.setFont(boldMarkerNameFont);
                     }else{
@@ -674,7 +675,7 @@ END OF HIS HACKS
             metrics = g2.getFontMetrics();
             ascent = metrics.getAscent();
 
-            for (int x = 0; x < dPrimeTable.length; x++) {
+            for (int x = 0; x < Chromosome.getFilteredSize(); x++) {
                 String mark = String.valueOf(Chromosome.realIndex[x] + 1);
                 g2.drawString(mark,
                         left + x*boxSize - metrics.stringWidth(mark)/2,
@@ -704,12 +705,12 @@ END OF HIS HACKS
             }
 
             for (int y = lowY; y < highY; y++) {
-                if (dPrimeTable[x][y] == null){
+                if (dPrimeTable.getFilteredDPrime(x,y) == null){
                     continue;
                 }
-                double d = dPrimeTable[x][y].getDPrime();
-                //double l = dPrimeTable[x][y].getLOD();
-                Color boxColor = dPrimeTable[x][y].getColor();
+                double d = dPrimeTable.getFilteredDPrime(x,y).getDPrime();
+                //double l = dPrimeTable.getFilteredDPrime(x,y).getLOD();
+                Color boxColor = dPrimeTable.getFilteredDPrime(x,y).getColor();
 
                 // draw markers above
                 int xx = left + (x + y) * boxSize / 2;
@@ -859,9 +860,9 @@ END OF HIS HACKS
                 float[] smallDiamondX = new float[4];
                 float[] smallDiamondY = new float[4];
                 GeneralPath gp;
-                for (int x = 0; x < dPrimeTable.length-1; x++){
-                    for (int y = x+1; y < dPrimeTable.length; y++){
-                        if (dPrimeTable[x][y] == null){
+                for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
+                    for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+                        if (dPrimeTable.getFilteredDPrime(x,y) == null){
                             continue;
                         }
                         double xx = (x + y)*prefBoxSize/2+wmBorder.getBorderInsets(this).left;
@@ -880,7 +881,7 @@ END OF HIS HACKS
                         }
                         gp.closePath();
 
-                        gw2.setColor(dPrimeTable[x][y].getColor());
+                        gw2.setColor(dPrimeTable.getFilteredDPrime(x,y).getColor());
                         gw2.fill(gp);
 
                     }
@@ -959,19 +960,19 @@ END OF HIS HACKS
 
     public Dimension getPreferredSize() {
         //loop through table to find deepest non-null comparison
-        PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
+        DPrimeTable dPrimeTable = theData.dpTable;
         int upLim, loLim;
         if (forExport){
             loLim = exportStart;
             upLim = exportStop;
         }else{
             loLim = 0;
-            upLim = dPrimeTable.length;
+            upLim = Chromosome.getFilteredSize();
         }
         int count = 0;
         for (int x = loLim; x < upLim-1; x++){
             for (int y = x+1; y < upLim; y++){
-                if (dPrimeTable[x][y] != null){
+                if (dPrimeTable.getFilteredDPrime(x,y) != null){
                     if (count < y-x){
                         count = y-x;
                     }
@@ -1079,7 +1080,7 @@ END OF HIS HACKS
             Graphics g = getGraphics();
             g.setFont(boxFont);
             FontMetrics metrics = g.getFontMetrics();
-            PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
+            DPrimeTable dPrimeTable = theData.dpTable;
             final int clickX = e.getX();
             final int clickY = e.getY();
             double dboxX = (double)(clickX - clickXShift - (clickY-clickYShift))/boxSize;
@@ -1098,8 +1099,8 @@ END OF HIS HACKS
             if ((boxX >= lowX && boxX <= highX) &&
                     (boxY > boxX && boxY < highY) &&
                     !(wmInteriorRect.contains(clickX,clickY))){
-                if (dPrimeTable[boxX][boxY] != null){
-                    double[] freqs = dPrimeTable[boxX][boxY].getFreqs();
+                if (dPrimeTable.getFilteredDPrime(boxX,boxY) != null){
+                    double[] freqs = dPrimeTable.getFilteredDPrime(boxX,boxY).getFreqs();
 
                     displayStrings = new String[10];
 
@@ -1113,12 +1114,12 @@ END OF HIS HACKS
                         displayStrings[0] = new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
                                 (Chromosome.realIndex[boxY]+1) + ")");
                     }
-                    displayStrings[1] = new String ("D': " + dPrimeTable[boxX][boxY].getDPrime());
-                    displayStrings[2] = new String ("LOD: " + dPrimeTable[boxX][boxY].getLOD());
-                    displayStrings[3] = new String ("r-squared: " + dPrimeTable[boxX][boxY].getRSquared());
+                    displayStrings[1] = new String ("D': " + dPrimeTable.getFilteredDPrime(boxX,boxY).getDPrime());
+                    displayStrings[2] = new String ("LOD: " + dPrimeTable.getFilteredDPrime(boxX,boxY).getLOD());
+                    displayStrings[3] = new String ("r-squared: " + dPrimeTable.getFilteredDPrime(boxX,boxY).getRSquared());
                     displayStrings[4] = new String ("D' conf. bounds: " +
-                            dPrimeTable[boxX][boxY].getConfidenceLow() + "-" +
-                            dPrimeTable[boxX][boxY].getConfidenceHigh());
+                            dPrimeTable.getFilteredDPrime(boxX,boxY).getConfidenceLow() + "-" +
+                            dPrimeTable.getFilteredDPrime(boxX,boxY).getConfidenceHigh());
 
                     //get the alleles for the 4 two-marker haplotypes
                     String[] alleleStrings = new String[4];

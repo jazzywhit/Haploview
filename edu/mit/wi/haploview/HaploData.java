@@ -21,13 +21,14 @@ public class HaploData implements Constants{
     boolean infoKnown = false;
     boolean blocksChanged = false;
     int missingLimit = 4;
-    private PairwiseLinkage[][] dPrimeTable;
+    //private PairwiseLinkage[][] dPrimeTable;
+    DPrimeTable dpTable;
     private PedFile pedFile;
-    PairwiseLinkage[][] filteredDPrimeTable;
+    //PairwiseLinkage[][] filteredDPrimeTable;
     public boolean finished = false;
     private double[] percentBadGenotypes;
     private double[] multidprimeArray;
-    private long maxdist, negMaxdist;
+    private long maxdist;
     Vector analysisPositions = new Vector();
     Vector analysisValues = new Vector();
     boolean trackExists = false;
@@ -103,7 +104,6 @@ public class HaploData implements Constants{
         Vector extras = new Vector();
 
         maxdist = md;
-        negMaxdist = -1 * maxdist;
 
         try{
             if (infile != null){
@@ -372,10 +372,7 @@ public class HaploData implements Constants{
         chromosomes = chroms;
 
         //initialize realIndex
-        Chromosome.realIndex = new int[genos.length];
-        for (int i = 0; i < genos.length; i++){
-            Chromosome.realIndex[i] = i;
-        }
+        Chromosome.doFilter(genos.length);
 
         //wipe clean any existing marker info so we know we're starting clean with a new file
         Chromosome.markers = null;
@@ -644,20 +641,7 @@ public class HaploData implements Constants{
         //set up the indexing to take into account skipped markers. Need
         //to loop through twice because first time we just count number of
         //unskipped markers
-        int count = 0;
-        for (int i = 0; i < numMarkers; i++){
-            if (markerResults[i]){
-                count++;
-            }
-        }
-        Chromosome.realIndex = new int[count];
-        int k = 0;
-        for (int i =0; i < numMarkers; i++){
-            if (markerResults[i]){
-                Chromosome.realIndex[k] = i;
-                k++;
-            }
-        }
+        Chromosome.doFilter(markerResults);
         chromosomes = chrom;
         //wipe clean any existing marker info so we know we're starting with a new file
         Chromosome.markers = null;
@@ -667,21 +651,29 @@ public class HaploData implements Constants{
     void generateDPrimeTable(){
         //calculating D prime requires the number of each possible 2 marker
         //haplotype in the dataset
-        dPrimeTable = new PairwiseLinkage[Chromosome.getSize()][Chromosome.getSize()];
+
+        dpTable = new DPrimeTable(Chromosome.getSize());
 
         totalComps = (Chromosome.getSize()*(Chromosome.getSize()-1))/2;
         compsDone =0;
 
         //loop through all marker pairs
-        for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
-            for (int pos1 = 0; pos1 < pos2; pos1++){
-                dPrimeTable[pos1][pos2] = computeDPrime(pos1, pos2);
+        for (int pos1 = 0; pos1 < Chromosome.getSize()-1; pos1++){
+            Vector dpTemp= new Vector();
+            for (int pos2 = pos1 + 1; pos2 < Chromosome.getSize(); pos2++){
+                //if the markers are too far apart don't try to compare them
+                long sep = Chromosome.getMarker(pos2).getPosition() - Chromosome.getMarker(pos1).getPosition();
+                if (maxdist > 0){
+                    if (sep <= maxdist){
+                        dpTemp.add(computeDPrime(pos1,pos2));
+                    }
+                }
             }
+            dpTable.addMarker(dpTemp,pos1);
         }
-        filteredDPrimeTable = getFilteredTable();
     }
 
-    PairwiseLinkage[][] getFilteredTable(){
+ /*   PairwiseLinkage[][] getFilteredTable(){
         //make a filtered version which doesn't include unchecked markers
         //from ped files. this is the version which needs to be handed off to all
         //display methods etc.
@@ -692,7 +684,7 @@ public class HaploData implements Constants{
             }
         }
         return filt;
-    }
+    }*/
 
     Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh) throws HaploViewException{
         //TODO: output indiv hap estimates
@@ -729,7 +721,7 @@ public class HaploData implements Constants{
                         if (marker1 > marker2){
                             int tmp = marker1; marker1 = marker2; marker2 = tmp;
                         }
-                        if (filteredDPrimeTable[marker1][marker2].getRSquared() == 1.0){
+                        if ( dpTable.getFilteredDPrime(marker1,marker2).getRSquared() == 1.0){
                             //these two SNPs are redundant
                             equivClass[y] = classCounter;
                         }
@@ -1197,9 +1189,9 @@ public class HaploData implements Constants{
     void guessBlocks(int method, Vector custVec){
         Vector returnVec = new Vector();
         switch(method){
-            case BLOX_GABRIEL: returnVec = FindBlocks.doGabriel(filteredDPrimeTable); break;
-            case BLOX_4GAM: returnVec = FindBlocks.do4Gamete(filteredDPrimeTable); break;
-            case BLOX_SPINE: returnVec = FindBlocks.doSpine(filteredDPrimeTable); break;
+            case BLOX_GABRIEL: returnVec = FindBlocks.doGabriel(dpTable); break;
+            case BLOX_4GAM: returnVec = FindBlocks.do4Gamete(dpTable); break;
+            case BLOX_SPINE: returnVec = FindBlocks.doSpine(dpTable); break;
             case BLOX_CUSTOM: returnVec = custVec; break;
                 //todo: bad! doesn't check if vector is out of bounds and stuff or blocks out of order
             default: returnVec = new Vector(); break;
@@ -1324,7 +1316,7 @@ public class HaploData implements Constants{
     public PairwiseLinkage computeDPrime(int pos1, int pos2){
         long sep = Chromosome.getMarker(pos2).getPosition() - Chromosome.getMarker(pos1).getPosition();
         if (maxdist > 0){
-            if ((sep > maxdist || sep < negMaxdist)){
+            if (sep > maxdist){
                 return null;
             }
         }
@@ -1342,7 +1334,6 @@ public class HaploData implements Constants{
         //check for non-polymorphic markers
         if (Chromosome.getMarker(pos1).getMAF() == 0 || Chromosome.getMarker(pos2).getMAF() == 0){
             return null;
-            //System.out.println("Marker " + (pos1+1) + " is monomorphic.");//TODO Make this happier
         }
 
         int[] marker1num = new int[5]; int[] marker2num = new int[5];
@@ -1353,15 +1344,17 @@ public class HaploData implements Constants{
         marker2num[0]=0;
         marker2num[Chromosome.getMarker(pos2).getMajor()]=1;
         marker2num[Chromosome.getMarker(pos2).getMinor()]=2;
+
+        byte a1,a2,b1,b2;
         //iterate through all chromosomes in dataset
         for (int i = 0; i < chromosomes.size(); i++){
             //System.out.println(i + " " + pos1 + " " + pos2);
             //assign alleles for each of a pair of chromosomes at a marker to four variables
 
-            byte a1 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos1];
-            byte a2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
-            byte b1 = ((Chromosome) chromosomes.elementAt(++i)).genotypes[pos1];
-            byte b2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
+            a1 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos1];
+            a2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
+            b1 = ((Chromosome) chromosomes.elementAt(++i)).genotypes[pos1];
+            b2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
 
             if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
                 //skip missing data
@@ -1663,7 +1656,7 @@ public class HaploData implements Constants{
                     }
                 }
                 if (source == TABLE_TYPE){
-                    currComp = filteredDPrimeTable[i][j];
+                    currComp = dpTable.getFilteredDPrime(i,j);
                 }else{
                     currComp = this.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
                 }
@@ -1679,7 +1672,7 @@ public class HaploData implements Constants{
                                 }
                                 PairwiseLinkage tintPair = null;
                                 if (source == TABLE_TYPE){
-                                    tintPair = filteredDPrimeTable[i-x][i+y];
+                                    tintPair = dpTable.getFilteredDPrime(i-x,i+y);
                                 }else{
                                     tintPair = this.computeDPrime(Chromosome.realIndex[i-x],
                                             Chromosome.realIndex[i+y]);

@@ -810,21 +810,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 for (int i = 0; i < table.getRowCount(); i++){
                     markerResults[i] = ((Boolean)table.getValueAt(i,CheckDataPanel.STATUS_COL)).booleanValue();
                 }
-                int count = 0;
-                for (int i = 0; i < Chromosome.getSize(); i++){
-                    if (markerResults[i]){
-                        count++;
-                    }
-                }
-                Chromosome.realIndex = new int[count];
-                int k = 0;
-                for (int i =0; i < Chromosome.getSize(); i++){
-                    if (markerResults[i]){
-                        Chromosome.realIndex[k] = i;
-                        k++;
-                    }
-                }
-                theData.filteredDPrimeTable = theData.getFilteredTable();
+
+                Chromosome.doFilter(markerResults);
+
 
                 //after editing the filtered marker list, needs to be prodded into
                 //resizing correctly
