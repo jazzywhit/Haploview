@@ -28,6 +28,7 @@ class DPrimeDisplay extends JComponent{
     private Font boxFont = new Font("SansSerif", Font.PLAIN, 12);
     private Font markerNumFont = new Font("SansSerif", Font.BOLD, 12);
     private Font markerNameFont = new Font("Default", Font.PLAIN, 12);
+    private Font boldMarkerNameFont = new Font("Default", Font.BOLD, 12);
 
     private boolean markersLoaded;
     private boolean printDetails = true;
@@ -88,7 +89,7 @@ class DPrimeDisplay extends JComponent{
             clickYShift = top;
         }
 
-        FontMetrics boxFontMetrics = g.getFontMetrics(boxFont);
+        FontMetrics boxFontMetrics = g2.getFontMetrics(boxFont);
 
         int diamondX[] = new int[4];
         int diamondY[] = new int[4];
@@ -105,11 +106,17 @@ class DPrimeDisplay extends JComponent{
         g2.setColor(Color.BLACK);
 
         BasicStroke thickerStroke = new BasicStroke(1);
-        BasicStroke thinnerStroke = new BasicStroke(0.25f);
-        BasicStroke fatStroke = new BasicStroke(2.0f);
+        BasicStroke thinnerStroke = new BasicStroke(0.35f);
+        BasicStroke fatStroke = new BasicStroke(2.5f);
 
-        g.setFont(markerNameFont);
-        metrics = g.getFontMetrics();
+        float dash1[] = {5.0f};
+        BasicStroke dashedFatStroke = new BasicStroke(2.5f,
+                                                      BasicStroke.CAP_BUTT,
+                                                      BasicStroke.JOIN_MITER,
+                                                      5.0f, dash1, 0.0f);
+
+        g2.setFont(markerNameFont);
+        metrics = g2.getFontMetrics();
         ascent = metrics.getAscent();
 
         if (markersLoaded) {
@@ -135,9 +142,9 @@ class DPrimeDisplay extends JComponent{
                 double pos = (Chromosome.getFilteredMarker(i).getPosition() - minpos) / spanpos;
                 int xx = (int) (left + lineLeft + lineSpan*pos);
                 g2.setStroke(thickerStroke);
-                g.drawLine(xx, 5, xx, 5 + TICK_HEIGHT);
+                g2.drawLine(xx, 5, xx, 5 + TICK_HEIGHT);
                 g2.setStroke(thinnerStroke);
-                g.drawLine(xx, 5 + TICK_HEIGHT,
+                g2.drawLine(xx, 5 + TICK_HEIGHT,
                         left + i*boxSize, TICK_BOTTOM);
             }
             top += TICK_BOTTOM;
@@ -153,6 +160,11 @@ class DPrimeDisplay extends JComponent{
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
                 for (int x = 0; x < dPrimeTable.length; x++) {
+                    if (theData.isInBlock[Chromosome.realIndex[x]]){
+                        g2.setFont(boldMarkerNameFont);
+                    }else{
+                        g2.setFont(markerNameFont);
+                    }
                     g2.drawString(Chromosome.getFilteredMarker(x).getName(),TEXT_GAP, x*boxSize + ascent/3);
                 }
 
@@ -171,13 +183,13 @@ class DPrimeDisplay extends JComponent{
 
         //// draw the marker numbers
         if (printDetails){
-            g.setFont(markerNumFont);
-            metrics = g.getFontMetrics();
+            g2.setFont(markerNumFont);
+            metrics = g2.getFontMetrics();
             ascent = metrics.getAscent();
 
             for (int x = 0; x < dPrimeTable.length; x++) {
                 String mark = String.valueOf(Chromosome.realIndex[x] + 1);
-                g.drawString(mark,
+                g2.drawString(mark,
                         left + x*boxSize - metrics.stringWidth(mark)/2,
                         top + ascent);
             }
@@ -232,21 +244,21 @@ class DPrimeDisplay extends JComponent{
                 diamondX[3] = xx - boxRadius; diamondY[3] = yy;
 
                 diamond = new Polygon(diamondX, diamondY, 4);
-                g.setColor(boxColor);
-                g.fillPolygon(diamond);
+                g2.setColor(boxColor);
+                g2.fillPolygon(diamond);
                 if (boxColor == Color.white) {
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                             RenderingHints.VALUE_ANTIALIAS_ON);
-                    g.setColor(Color.lightGray);
+                    g2.setColor(Color.lightGray);
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                             RenderingHints.VALUE_ANTIALIAS_OFF);
                 }
 
                 if(printDetails){
-                    g.setFont(boxFont);
+                    g2.setFont(boxFont);
                     ascent = boxFontMetrics.getAscent();
                     int val = (int) (d * 100);
-                    g.setColor((val < 50) ? Color.gray : Color.black);
+                    g2.setColor((val < 50) ? Color.gray : Color.black);
                     if (val != 100) {
                         String valu = String.valueOf(val);
                         int widf = boxFontMetrics.stringWidth(valu);
@@ -263,13 +275,13 @@ class DPrimeDisplay extends JComponent{
         //g.setColor(new Color(153,255,153));
         g2.setColor(Color.black);
         //g.setColor(new Color(51,153,51));
-        g2.setStroke(fatStroke);
         for (int i = 0; i < blocks.size(); i++){
             int[] theBlock = (int[])blocks.elementAt(i);
             int first = theBlock[0];
             int last = theBlock[theBlock.length-1];
 
             //big vee around whole thing
+            g2.setStroke(fatStroke);
             g2.drawLine(left + (2*first) * boxSize/2 - boxRadius,
                     top,
                     left + (first + last) * boxSize/2,
@@ -279,8 +291,19 @@ class DPrimeDisplay extends JComponent{
                     left + (2*last) * boxSize/2+boxRadius,
                     top);
 
-            //little vees on top of each marker
-            for (int j = 0; j < theBlock.length-2; j++){
+            for (int j = first; j <= last; j++){
+                if (theData.isInBlock[j]){
+                    g2.setStroke(fatStroke);
+                }else{
+                    g2.setStroke(dashedFatStroke);
+                }
+                g2.drawLine(left+j*boxSize-boxSize/2,
+                        top-blockDispHeight,
+                        left+j*boxSize+boxSize/2,
+                        top-blockDispHeight);
+
+                /*
+                            //little vees on top of each marker
                 g2.drawLine(left + (2*theBlock[j+1]) * boxSize/2,
                         top + boxSize/2,
                         left + (2*theBlock[j+1]) * boxSize/2 + boxRadius,
@@ -289,19 +312,21 @@ class DPrimeDisplay extends JComponent{
                         top + boxSize/2,
                         left + (2*theBlock[j+1]-1) * boxSize/2,
                         top);
+                        */
             }
 
             //special lines for fencepost markers
-            g2.drawLine(left+first*boxSize+1,
+            /*g2.drawLine(left+first*boxSize+1,
                     top+boxRadius,
                     left+first*boxSize+boxRadius,
                     top+1);
             g2.drawLine(left+last*boxSize-1,
                     top+boxRadius,
                     left+last*boxSize-boxRadius,
-                    top+1);
+                    top+1);  */
 
             //lines to connect to block display
+            g2.setStroke(fatStroke);
             g2.drawLine(left + first*boxSize-boxSize/2,
                     top-1,
                     left+first*boxSize-boxSize/2,
@@ -310,10 +335,7 @@ class DPrimeDisplay extends JComponent{
                     top-1,
                     left+last*boxSize+boxSize/2,
                     top-blockDispHeight);
-            g2.drawLine(left+first*boxSize-boxSize/2,
-                    top-blockDispHeight,
-                    left+last*boxSize+boxSize/2,
-                    top-blockDispHeight);
+
             String labelString = new String ("Block " + (i+1));
             g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/2);
         }
@@ -323,14 +345,17 @@ class DPrimeDisplay extends JComponent{
             //dataset is big enough to require worldmap
             if (noImage){
                 //first time through draw a worldmap if dataset is big:
+                final int WM_BD_HEIGHT = 4;
                 final int WM_MAX_WIDTH = visRect.width/3;
+                double sizingScalefactor;
+                sizingScalefactor = (double) (chartSize.width)/WM_MAX_WIDTH;
                 double scalefactor;
-                scalefactor = (double)(chartSize.width)/WM_MAX_WIDTH;
+                scalefactor = (double)(chartSize.width)/(WM_MAX_WIDTH-WM_BD_HEIGHT*4);
 
                 CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
                         BorderFactory.createLoweredBevelBorder());
                 worldmap = new BufferedImage((int)(chartSize.width/scalefactor)+wmBorder.getBorderInsets(this).left*2,
-                        (int)(chartSize.height/scalefactor)+wmBorder.getBorderInsets(this).top*2,
+                        (int)(chartSize.height/sizingScalefactor)+wmBorder.getBorderInsets(this).top*2,
                         BufferedImage.TYPE_3BYTE_BGR);
 
                 Graphics gw = worldmap.getGraphics();
@@ -342,6 +367,7 @@ class DPrimeDisplay extends JComponent{
 
                 wmBorder.paintBorder(this,gw2,0,0,worldmap.getWidth()-1,worldmap.getHeight()-1);
                 ir = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth()-1, worldmap.getHeight()-1);
+                ir.height -= WM_BD_HEIGHT;
 
                 double prefBoxSize = boxSize/scalefactor;
                 float[] smallDiamondX = new float[4];
@@ -353,7 +379,7 @@ class DPrimeDisplay extends JComponent{
                             continue;
                         }
                         double xx = (x + y)*prefBoxSize/2+wmBorder.getBorderInsets(this).left;
-                        double yy = (y - x)*prefBoxSize/2+wmBorder.getBorderInsets(this).top;
+                        double yy = (y - x)*prefBoxSize/2+wmBorder.getBorderInsets(this).top+WM_BD_HEIGHT;
 
 
                         smallDiamondX[0] = (float)xx; smallDiamondY[0] = (float)(yy - prefBoxSize/2);
@@ -372,6 +398,29 @@ class DPrimeDisplay extends JComponent{
                         gw2.fill(gp);
 
                     }
+                }
+                //draw block display in worldmap
+                gw2.setColor(Color.white);
+                gw2.fillRect(wmBorder.getBorderInsets(this).left,
+                        wmBorder.getBorderInsets(this).top,
+                        ir.width,
+                        WM_BD_HEIGHT);
+                gw2.setColor(Color.black);
+                even = true;
+                for (int i = 0; i < blocks.size(); i++){
+                    int first = ((int[])blocks.elementAt(i))[0];
+                    int last = ((int[])blocks.elementAt(i))[((int[])blocks.elementAt(i)).length-1];
+                    int voffset;
+                    if (even){
+                        voffset = 0;
+                    }else{
+                        voffset = WM_BD_HEIGHT/2;
+                    }
+                    gw2.fillRect(wmBorder.getBorderInsets(this).left+(int)(prefBoxSize*first),
+                            wmBorder.getBorderInsets(this).top+voffset,
+                            (int)((last-first)*prefBoxSize),
+                            WM_BD_HEIGHT/2);
+                    even = !even;
                 }
                 noImage = false;
             }
@@ -396,7 +445,6 @@ class DPrimeDisplay extends JComponent{
                     (int)(visRect.height*vRatio));
         }
     }
-
 
     public Dimension getPreferredSize() {
         //loop through table to find deepest non-null comparison
@@ -427,21 +475,6 @@ class DPrimeDisplay extends JComponent{
         }
         return new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1), high);
     }
-
-
-    int[] centerString(String s, FontMetrics fm) {
-        int[] returnArray = new int[2];
-        returnArray[0] = (30-fm.stringWidth(s))/2;
-        returnArray[1] = 10+(30-fm.getAscent())/2;
-        return returnArray;
-    }
-
-  /*  public void refreshBlocks(Vector v) {
-        //recolor the worldmap and change the blocklist
-        noImage=true;
-        blocks = v;
-    }*/
-
 
     class PopMouseListener implements MouseListener{
         JComponent caller;

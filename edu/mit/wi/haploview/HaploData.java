@@ -24,11 +24,11 @@ import java.text.NumberFormat;
 
 public class HaploData{
     Vector chromosomes, blocks;
+    boolean[] isInBlock;
     int missingLimit = 5;
     private PairwiseLinkage[][] dPrimeTable;
     PairwiseLinkage[][] filteredDPrimeTable;
     public boolean finished = false;
-    private boolean markersLoaded = false;
     private double[] numBadGenotypes;
     private double[] percentBadGenotypes;
     private double[] multidprimeArray;
@@ -122,7 +122,6 @@ public class HaploData{
 
             if (Chromosome.markers.length == markers.size()){
                 Chromosome.markers = markers.toArray();
-                markersLoaded = true;
                 if (dPrimeTable != null){
                     //loop through the dprime table to null-out distant markers
                     for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
@@ -963,7 +962,6 @@ public class HaploData{
         return bestSubset;
     }
 
-
     void guessBlocks(int method){
         Vector returnVec = new Vector();
         switch(method){
@@ -972,8 +970,19 @@ public class HaploData{
             case 2: returnVec = FindBlocks.doMJD(filteredDPrimeTable); break;
         }
         blocks = returnVec;
-    }
 
+        //keep track of which markers are in a block
+        isInBlock = new boolean[Chromosome.getSize()];
+        for (int i = 0; i < isInBlock.length; i++){
+            isInBlock[i] = false;
+        }
+        for (int i = 0; i < blocks.size(); i++){
+            int[] markers = (int[])blocks.elementAt(i);
+            for (int j = 0; j < markers.length; j++){
+                isInBlock[markers[j]] = true;
+            }
+        }
+    }
 
     public PairwiseLinkage computeDPrime(int a, int b, int c, int d, int e, double f){
         int i,count;
