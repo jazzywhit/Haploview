@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.5 2004/08/26 21:02:49 jcbarret Exp $
+* $Id: Individual.java,v 1.6 2004/08/31 19:28:25 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -29,13 +29,14 @@ public class Individual {
     private String dadID;
     private int gender;
     private int affectedStatus;
+
+    private boolean haskids;
     private int liability; //optional
     private Vector markers;
     //private Vector zeroed;
     private boolean[] zeroed;
     //this is used to keep track of the index of the last marker added
     private int currMarker;
-    private boolean isTyped;
 
 	public final static int FEMALE = 2;
 	public final static int MALE = 1;
@@ -62,6 +63,22 @@ public class Individual {
         }else{
             return true;
         }
+    }
+
+    public boolean hasEitherParent(){
+        if (momID.equals("0") && dadID.equals("0")){
+            return false;
+        }else{
+            return true;
+        }
+    }
+
+    public void setHasKids(boolean b){
+        haskids = b;
+    }
+
+    public boolean hasKids(){
+        return haskids;
     }
 
     /**
@@ -162,20 +179,7 @@ public class Individual {
     public void setLiability(int liability) {
         this.liability = liability;
     }
-    /**
-     * returns if the individual has been genotyped
-     * @return isTyped true if individual is typed false otherwise
-     */
-    public boolean getIsTyped() {
-        return this.isTyped;
-    }
-    /**
-     * sets whether the individual has been genotyped
-     * @param isTyped
-     */
-    public void setIsTyped(boolean isTyped) {
-        this.isTyped = isTyped;
-    }
+
     /**
      * gets the markers vector for this individual
      * @return Vector markers

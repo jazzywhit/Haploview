@@ -66,7 +66,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
     public HaploView(){
-        Options.setMissingThreshold(0.4);
+        Options.setMissingThreshold(1.0);
         try{
             fc = new JFileChooser(System.getProperty("user.dir"));
         }catch(NullPointerException n){
@@ -496,7 +496,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 viewMenuItems[VIEW_TDT_NUM].setEnabled(false);
                 assocTest = 0;
             }
-            theData = new HaploData(assocTest);
+            theData = new HaploData();
 
             if (type == HAPS){
                 theData.prepareHapsInput(new File(inputOptions[0]));
@@ -623,7 +623,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         //optionalTabCount++;
                         //VIEW_TDT_NUM = optionalTabCount;
                         //viewItems[VIEW_TDT_NUM] = VIEW_TDT;
-                        tdtPanel = new TDTPanel(theData.chromosomes, assocTest);
+                        tdtPanel = new TDTPanel(theData.getPedFile(), assocTest);
                         tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
                         viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
                     }

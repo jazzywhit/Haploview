@@ -1,5 +1,7 @@
 package edu.mit.wi.haploview;
 
+import edu.mit.wi.pedfile.PedFile;
+
 import javax.swing.*;
 import java.util.Vector;
 
@@ -10,12 +12,12 @@ public class TDTPanel extends JPanel {
     Vector tableColumnNames = new Vector();
     private int type;
 
-    public TDTPanel(Vector chromosomes, int t) {
+    public TDTPanel(PedFile pf, int t) {
         type = t;
         if (type == 1){
-            result = TDT.calcTrioTDT(chromosomes);
+            result = TDT.calcTrioTDT(pf);
         }else{
-            result = TDT.calcCCTDT(chromosomes);
+            result = TDT.calcCCTDT(pf);
         }
 
         tableColumnNames.add("#");

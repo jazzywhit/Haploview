@@ -443,7 +443,7 @@ public class HaploText implements Constants{
 
 
 
-            textData = new HaploData(0);
+            textData = new HaploData();
             Vector result = null;
 
 

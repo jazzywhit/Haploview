@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 1.15 2004/08/26 21:02:49 jcbarret Exp $
+* $Id: CheckData.java,v 1.16 2004/08/31 19:28:25 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -84,164 +84,162 @@ public class CheckData {
             //loop through each individual in the current Family
             while(indList.hasMoreElements()){
                 currentInd = currentFamily.getMember((String)indList.nextElement());
-                if (currentInd.getIsTyped()){
-                    byte[] markers = currentInd.getMarker(loc);
-                    allele1 = markers[0];
-                    //allele1_string = Integer.toString(allele1);
-                    allele2 = markers[1];
-                    //allele2_string = Integer.toString(allele2);
+                byte[] markers = currentInd.getMarker(loc);
+                allele1 = markers[0];
+                //allele1_string = Integer.toString(allele1);
+                allele2 = markers[1];
+                //allele2_string = Integer.toString(allele2);
 
-                    String familyID = currentInd.getFamilyID();
+                String familyID = currentInd.getFamilyID();
 
-                    if(numindivs.containsKey(familyID)){
-                        int value = ((Integer)numindivs.get(familyID)).intValue() +1;
-                        numindivs.put(familyID, new Integer(value));
-                    }
-                    else{
-                        numindivs.put(familyID, new Integer(1));
-                    }
+                if(numindivs.containsKey(familyID)){
+                    int value = ((Integer)numindivs.get(familyID)).intValue() +1;
+                    numindivs.put(familyID, new Integer(value));
+                }
+                else{
+                    numindivs.put(familyID, new Integer(1));
+                }
 
-                    //no allele data missing
-                    if(allele1 > 0 && allele2 >0){
-                        //make sure entry has parents
-                        if(!(currentInd.getMomID().equals("0") || currentInd.getDadID().equals("0"))){
-                            //do mendel check
-                            //byte[] marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getMomID())).getUnfilteredMarker(loc);
-                            byte[] marker = (currentFamily.getMember(currentInd.getMomID())).getMarker(loc);
-                            int momAllele1 = marker[0];
-                            int momAllele2 = marker[1];
-                            //marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getDadID())).getUnfilteredMarker(loc);
-                            marker = (currentFamily.getMember(currentInd.getDadID())).getMarker(loc);
-                            int dadAllele1 = marker[0];
-                            int dadAllele2 = marker[1];
+                //no allele data missing
+                if(allele1 > 0 && allele2 >0){
+                    //make sure entry has parents
+                    if(!(currentInd.getMomID().equals("0") || currentInd.getDadID().equals("0"))){
+                        //do mendel check
+                        //byte[] marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getMomID())).getUnfilteredMarker(loc);
+                        byte[] marker = (currentFamily.getMember(currentInd.getMomID())).getMarker(loc);
+                        int momAllele1 = marker[0];
+                        int momAllele2 = marker[1];
+                        //marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getDadID())).getUnfilteredMarker(loc);
+                        marker = (currentFamily.getMember(currentInd.getDadID())).getMarker(loc);
+                        int dadAllele1 = marker[0];
+                        int dadAllele2 = marker[1];
 
-                            //don't check if parents are missing any data
-                            if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0 || dadAllele2 ==0)){
-                                //mom hom
-                                if(momAllele1 == momAllele2){
-                                    //both parents hom
-                                    if (dadAllele1 == dadAllele2){
-                                        //both parents hom same allele
-                                        if (momAllele1 == dadAllele1){
-                                            //kid must be hom same allele
-                                            if (allele1 != momAllele1 || allele2 != momAllele1) {
-                                                mendErrNum ++;
-                                                currentInd.zeroOutMarker(loc);
-                                                currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
-                                                currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
-                                            }
-                                            //parents hom diff allele
-                                        }else{
-                                            //kid must be het
-                                            if (allele1 == allele2) {
-                                                mendErrNum++;
-                                                currentInd.zeroOutMarker(loc);
-                                                currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
-                                                currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
-                                            }
+                        //don't check if parents are missing any data
+                        if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0 || dadAllele2 ==0)){
+                            //mom hom
+                            if(momAllele1 == momAllele2){
+                                //both parents hom
+                                if (dadAllele1 == dadAllele2){
+                                    //both parents hom same allele
+                                    if (momAllele1 == dadAllele1){
+                                        //kid must be hom same allele
+                                        if (allele1 != momAllele1 || allele2 != momAllele1) {
+                                            mendErrNum ++;
+                                            currentInd.zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
                                         }
-                                        //mom hom dad het
+                                        //parents hom diff allele
                                     }else{
-                                        //kid can't be hom for non-momallele
-                                        if (allele1 != momAllele1 && allele2 != momAllele1){
+                                        //kid must be het
+                                        if (allele1 == allele2) {
                                             mendErrNum++;
                                             currentInd.zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
                                         }
                                     }
-                                    //mom het
+                                    //mom hom dad het
                                 }else{
-                                    //dad hom
-                                    if (dadAllele1 == dadAllele2){
-                                        //kid can't be hom for non-dadallele
-                                        if(allele1 != dadAllele1 && allele2 != dadAllele1){
-                                            mendErrNum++;
-                                            currentInd.zeroOutMarker(loc);
-                                            currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
-                                            currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
-                                        }
+                                    //kid can't be hom for non-momallele
+                                    if (allele1 != momAllele1 && allele2 != momAllele1){
+                                        mendErrNum++;
+                                        currentInd.zeroOutMarker(loc);
+                                        currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                        currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
                                     }
-                                    //both parents het no mend err poss
                                 }
+                                //mom het
+                            }else{
+                                //dad hom
+                                if (dadAllele1 == dadAllele2){
+                                    //kid can't be hom for non-dadallele
+                                    if(allele1 != dadAllele1 && allele2 != dadAllele1){
+                                        mendErrNum++;
+                                        currentInd.zeroOutMarker(loc);
+                                        currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                        currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                    }
+                                }
+                                //both parents het no mend err poss
                             }
                         }
-                        //end mendel check
                     }
+                    //end mendel check
                 }
             }
+
             indList = currentFamily.getMemberList();
             //loop through each individual in the current Family
             while(indList.hasMoreElements()){
                 currentInd = currentFamily.getMember((String)indList.nextElement());
-                if (currentInd.getIsTyped()){
-                    byte[] markers;
-                    byte[] zeroArray = {0,0};
-                    if (currentInd.getZeroed(loc)){
-                        markers = zeroArray;
-                    }else{
-                        markers = currentInd.getMarker(loc);
-                    }
-                    allele1 = markers[0];
-                    //allele1_string = Integer.toString(allele1);
-                    allele2 = markers[1];
-                    //allele2_string = Integer.toString(allele2);
-
-                    String familyID = currentInd.getFamilyID();
-
-                    if(numindivs.containsKey(familyID)){
-                        int value = ((Integer)numindivs.get(familyID)).intValue() +1;
-                        numindivs.put(familyID, new Integer(value));
-                    }
-                    else{
-                        numindivs.put(familyID, new Integer(1));
-                    }
-
-                    //no allele data missing
-                    if(allele1 > 0 && allele2 >0){
-                        //indiv has no parents -- i.e. is a founder
-                        if(currentInd.getMomID().compareTo(Individual.DATA_MISSING)==0 && currentInd.getDadID().compareTo(Individual.DATA_MISSING)==0){
-                            //$parentgeno{$ped}++
-                            //set parentgeno
-
-                            if(parentgeno.containsKey(familyID)){
-                                int value = ((Integer)parentgeno.get(familyID)).intValue() +1;
-                                parentgeno.put(familyID, new Integer(value));
-                            }
-                            else{
-                                parentgeno.put(familyID, new Integer(1));
-                            }
-
-                            if(allele1 != allele2) {
-                                parenthet++;
-                            }
-                            else{
-                                //incOrSetOne(parenthom,allele1_string);
-                                parentHom[allele1]++;
-                            }
-
-                            count[allele1]++;
-                            count[allele2]++;
-                        }
-                        else{//$kidgeno{$ped}++
-                            if(kidgeno.containsKey(familyID)){
-                                int value = ((Integer)kidgeno.get(familyID)).intValue() +1;
-                                kidgeno.put(familyID, new Integer(value));
-                            }
-                            else{
-                                kidgeno.put(familyID, new Integer(1));
-                            }
-                        }
-                        if(allele1 == allele2) {
-                            hom++;
-                        }
-                        else {
-                            het++;
-                        }
-                    }
-                    //missing data
-                    else missing++;
+                byte[] markers;
+                byte[] zeroArray = {0,0};
+                if (currentInd.getZeroed(loc)){
+                    markers = zeroArray;
+                }else{
+                    markers = currentInd.getMarker(loc);
                 }
+                allele1 = markers[0];
+                //allele1_string = Integer.toString(allele1);
+                allele2 = markers[1];
+                //allele2_string = Integer.toString(allele2);
+
+                String familyID = currentInd.getFamilyID();
+
+                if(numindivs.containsKey(familyID)){
+                    int value = ((Integer)numindivs.get(familyID)).intValue() +1;
+                    numindivs.put(familyID, new Integer(value));
+                }
+                else{
+                    numindivs.put(familyID, new Integer(1));
+                }
+
+                //no allele data missing
+                if(allele1 > 0 && allele2 >0){
+                    //indiv has no parents -- i.e. is a founder
+                    if(currentInd.getMomID().compareTo(Individual.DATA_MISSING)==0 && currentInd.getDadID().compareTo(Individual.DATA_MISSING)==0){
+                        //$parentgeno{$ped}++
+                        //set parentgeno
+
+                        if(parentgeno.containsKey(familyID)){
+                            int value = ((Integer)parentgeno.get(familyID)).intValue() +1;
+                            parentgeno.put(familyID, new Integer(value));
+                        }
+                        else{
+                            parentgeno.put(familyID, new Integer(1));
+                        }
+
+                        if(allele1 != allele2) {
+                            parenthet++;
+                        }
+                        else{
+                            //incOrSetOne(parenthom,allele1_string);
+                            parentHom[allele1]++;
+                        }
+
+                        count[allele1]++;
+                        count[allele2]++;
+                    }
+                    else{//$kidgeno{$ped}++
+                        if(kidgeno.containsKey(familyID)){
+                            int value = ((Integer)kidgeno.get(familyID)).intValue() +1;
+                            kidgeno.put(familyID, new Integer(value));
+                        }
+                        else{
+                            kidgeno.put(familyID, new Integer(1));
+                        }
+                    }
+                    if(allele1 == allele2) {
+                        hom++;
+                    }
+                    else {
+                        het++;
+                    }
+                }
+                //missing data
+                else missing++;
+
             }
         }
         double obsHET = getObsHET(het, hom);

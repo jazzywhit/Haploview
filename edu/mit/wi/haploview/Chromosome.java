@@ -10,8 +10,6 @@ public class Chromosome{
     //in the interest of speed
     byte[] genotypes;
     private String origin;
-    boolean[] kidMissing;
-    private boolean affected = false;
 
     public static String dataChrom = null;
     static int[] realIndex;
@@ -19,32 +17,20 @@ public class Chromosome{
     static Object[] markers;
     static int trueSize;
 
-    Chromosome(String p, String i, byte[] g, boolean a, String o){
+    Chromosome(String p, String i, byte[] g, String o){
         ped = p;
         individual = i;
         genotypes = g;
-        affected = a;
         origin = o;
         trueSize = genotypes.length;
     }
 
-    Chromosome(String p, String i, byte[] g, boolean a){
+    Chromosome(String p, String i, byte[] g){
         ped = p;
         individual = i;
         genotypes = g;
-        affected = a;
         origin = "unknown";
         trueSize = genotypes.length;
-    }
-
-    Chromosome(String p, String i, byte[] g, boolean a, boolean[] isKidMissing){
-        ped = p;
-        individual = i;
-        genotypes = g;
-        affected = a;
-        origin = "unknown";
-        trueSize = genotypes.length;
-        kidMissing = isKidMissing;
     }
 
 
@@ -126,10 +112,6 @@ public class Chromosome{
 
     public String getOrigin(){
         return origin;
-    }
-
-    public boolean getAffected(){
-        return affected;
     }
 
     public void setGenotype(byte gen,int pos){

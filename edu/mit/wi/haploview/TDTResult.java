@@ -23,8 +23,14 @@ public class TDTResult {
         this.theSNP = tempSNP;
     }
 
-    public void tallyCCInd(byte a1, byte a2, int cc){
-        //case = 0, control = 1 for int cc
+    public void tallyCCInd(byte[] a, int cc){
+        //case = 2, control = 1 for int cc
+        //but to make the array indexes easier to use, we set cc to zero if it
+        //is passed in as 2.
+        if (cc == 2) cc = 0;
+        byte a1 = a[0];
+        byte a2 = a[1];
+
         if (a1 >= 5 && a2 >= 5){
             counts[cc][0]++;
             counts[cc][1]++;
@@ -97,8 +103,6 @@ public class TDTResult {
             }
 
         }
-        //System.out.println( counts[0][0] + "\t" + counts[1][1] + "\t" + counts[0][1] + "\t" + counts[1][0]);
-
     }
 
     public String getName() {

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.21 2004/08/27 15:27:04 jcbarret Exp $
+* $Id: PedFile.java,v 1.22 2004/08/31 19:28:25 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -267,12 +267,10 @@ public class PedFile {
                     throw new PedFileException("Pedfile error: invalid gender or affected status on line " + (k+1));
                 }
 
-                boolean isTyped = false;
                 while(tokenizer.hasMoreTokens()){
                     try {
                         int allele1 = Integer.parseInt(tokenizer.nextToken().trim());
                         int allele2 = Integer.parseInt(tokenizer.nextToken().trim());
-                        if ( !( (allele1==0) && (allele2 == 0) ) ) isTyped = true;
                         if(allele1 <0 || allele1 > 4 || allele2 <0 || allele2 >4) {
                             throw new PedFileException("Pedigree file input error: invalid genotype on line " + (k+1)
                                     + ".\n all genotypes must be 0-4.");
@@ -285,9 +283,6 @@ public class PedFile {
                         throw new PedFileException("Pedigree file input error: invalid genotype on line " + (k+1) );
                     }
                 }
-
-                //note whether this is a real indiv (true) or a "dummy" (false)
-                ind.setIsTyped(isTyped);
 
                 //check if the family exists already in the Hashtable
                 Family fam = (Family)this.families.get(ind.getFamilyID());
@@ -370,7 +365,6 @@ public class PedFile {
             }catch(NumberFormatException nfe) {
                 throw new PedFileException("File error: invalid gender or affected status for indiv " + name);
             }
-            ind.setIsTyped(true);
 
             //check if the family exists already in the Hashtable
             Family fam = (Family)this.families.get(ind.getFamilyID());
@@ -466,85 +460,105 @@ public class PedFile {
         Vector indList = getOrder();
         Individual currentInd;
         Family currentFamily;
-        //the killMe array has a boolean for each person which specifies which people should be removed.
-        //the parents or children of such a person are also removed.
-        boolean[] killMe = new boolean[indList.size()];
-        Arrays.fill(killMe, false);
 
+        //deal with individuals who are missing too much data
         for(int x=0; x < indList.size(); x++){
             currentInd = (Individual)indList.elementAt(x);
             currentFamily = getFamily(currentInd.getFamilyID());
-            if(currentInd.getIsTyped()){
-                //this person is a singleton
-                if(currentFamily.getNumMembers() == 1){
-                    double numMissing = 0;
-                    int numMarkers = currentInd.getNumMarkers();
-                    for (int i = 0; i < numMarkers; i++){
-                        byte[] thisMarker = currentInd.getMarker(i);
-                        if (thisMarker[0] == 0 || thisMarker[1] == 0){
-                            numMissing++;
-                        }
-                    }
-                    if (numMissing/numMarkers > Options.getMissingThreshold()){
-                        killMe[x] = true;
-                    }
-                }else if (currentInd.hasBothParents()){
-                    //this person has parents
-                    Individual mom = currentFamily.getMember(currentInd.getMomID());
-                    double momMissing = 0;
-                    double dadMissing = 0;
-                    Individual dad = currentFamily.getMember(currentInd.getDadID());
-                    if (!(mom.hasBothParents() || dad.hasBothParents())){
-                        //if my parents have parents, skip me because i don't add any information
-                        //i.e. i'm a 3rd+ generation member of this family
-                        int numMarkers = currentInd.getNumMarkers();
-                        for (int i = 0; i < numMarkers; i++){
-                            byte[] dadMarker = dad.getMarker(i);
-                            byte[] momMarker = mom.getMarker(i);
-                            if (momMarker[0] == 0 || momMarker[1] == 0){
-                                momMissing++;
-                            }
-                            if (dadMarker[0] == 0 || dadMarker[1] == 0){
-                                dadMissing++;
-                            }
-                        }
-                        if (momMissing/numMarkers > Options.getMissingThreshold() ||
-                                dadMissing/numMarkers > Options.getMissingThreshold()){
-                            killMe[x] = true;
-                        }
-                    }
+            double numMissing = 0;
+            int numMarkers = currentInd.getNumMarkers();
+            for (int i = 0; i < numMarkers; i++){
+                byte[] thisMarker = currentInd.getMarker(i);
+                if (thisMarker[0] == 0 || thisMarker[1] == 0){
+                    numMissing++;
                 }
             }
-        }
-
-        for (int x = 0; x < killMe.length; x++){
-            //now loop through the list of people to be killed
-            //making sure to get their parents and kids if they exist
-            if (killMe[x]){
-                currentInd = (Individual)indList.elementAt(x);
-                currentFamily = getFamily(currentInd.getFamilyID());
+            if (numMissing/numMarkers > Options.getMissingThreshold()){
+                //this person is missing too much data so remove him and then deal
+                //with his family connections
                 order.removeElement(currentInd);
                 axedPeople.add(currentInd.getIndividualID());
-                currentFamily.removeMember(currentInd.getIndividualID());
-                Enumeration peopleinFam = currentFamily.getMemberList();
-                while (peopleinFam.hasMoreElements()){
-                    //this looks at the whole family and if any of the members are
-                    //parents or kids of the current ind, we kill them too
-                    String p = (String)peopleinFam.nextElement();
-                    Individual thisPerson = currentFamily.getMember(p);
-                    if (thisPerson.getMomID().equals(currentInd.getIndividualID()) ||
-                            thisPerson.getDadID().equals(currentInd.getIndividualID()) ||
-                            currentInd.getMomID().equals(thisPerson.getIndividualID()) ||
-                            currentInd.getDadID().equals(thisPerson.getIndividualID())){
-                        order.removeElement(thisPerson);
-                        axedPeople.add(currentInd.getIndividualID());
-                        currentFamily.removeMember(thisPerson.getIndividualID());
+                if (currentFamily.getNumMembers() > 1){
+                    //there are more people in this family so deal with relatives appropriately
+                    if (currentInd.hasEitherParent()){
+                        //I have parents, so kick out any of my kids.
+                        Enumeration peopleinFam = currentFamily.getMemberList();
+                        while (peopleinFam.hasMoreElements()){
+                            Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
+                            if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
+                                    nextMember.getMomID().equals(currentInd.getIndividualID())){
+                                order.removeElement(nextMember);
+                                currentFamily.removeMember(nextMember.getIndividualID());
+                            }
+                        }
+                    }else{
+                        //I have no parents but need to check if my spouse does
+                        String spouseID = "";
+                        Enumeration peopleinFam = currentFamily.getMemberList();
+                        while (peopleinFam.hasMoreElements()){
+                            Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
+                            if (nextMember.getDadID().equals(currentInd.getIndividualID()))
+                                spouseID = nextMember.getMomID();
+                            if (nextMember.getMomID().equals(currentInd.getIndividualID()))
+                                spouseID = nextMember.getDadID();
+                        }
+                        if (!spouseID.equals("")){
+                            if (currentFamily.getMember(spouseID).hasEitherParent()){
+                                //remove my kids and leave my spouse alone
+                               peopleinFam = currentFamily.getMemberList();
+                                while (peopleinFam.hasMoreElements()){
+                                    Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
+                                    if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
+                                            nextMember.getMomID().equals(currentInd.getIndividualID())){
+                                        order.removeElement(nextMember);
+                                        currentFamily.removeMember(nextMember.getIndividualID());
+                                    }
+                                }
+                            }else{
+                                //knock off my spouse and make my first kid a founder (i.e. "0" for parents)
+                                //and remove any other kids
+                                order.removeElement(currentFamily.getMember(spouseID));
+                                currentFamily.removeMember(spouseID);
+                                peopleinFam = currentFamily.getMemberList();
+                                boolean oneFound = false;
+                                while (peopleinFam.hasMoreElements()){
+                                    Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
+                                    if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
+                                            nextMember.getMomID().equals(currentInd.getIndividualID())){
+                                        if (oneFound){
+                                            order.removeElement(nextMember);
+                                            currentFamily.removeMember(nextMember.getIndividualID());
+                                        }else{
+                                            nextMember.setDadID("0");
+                                            nextMember.setMomID("0");
+                                            oneFound = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
+                currentFamily.removeMember(currentInd.getIndividualID());
                 if (currentFamily.getNumMembers() == 0){
                     //if everyone in a family is gone, we remove it from the list
                     families.remove(currentInd.getFamilyID());
                     axedFamilies.add(currentInd.getFamilyID());
+                }
+            }
+        }
+        indList = getOrder();
+        for (int x = 0; x < indList.size(); x++){
+            //after we've done all that go through and set the boolean for each person who has any kids
+            currentInd = (Individual)indList.elementAt(x);
+            currentFamily = getFamily(currentInd.getFamilyID());
+            Enumeration peopleinFam = currentFamily.getMemberList();
+            while (peopleinFam.hasMoreElements()){
+                Individual nextMember = currentFamily.getMember((String)peopleinFam.nextElement());
+                if (nextMember.getMomID().equals(currentInd.getIndividualID()) ||
+                        nextMember.getDadID().equals(currentInd.getIndividualID())){
+                    currentInd.setHasKids(true);
+                    break;
                 }
             }
         }
