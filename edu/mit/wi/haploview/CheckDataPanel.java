@@ -18,7 +18,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 	PedFile pedfile;
 
     boolean changed;
-    private static int STATUS_COL = 8;
+    private static int STATUS_COL = 9;
 
     public CheckDataPanel(PedFile pf) throws IOException, PedFileException{
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
@@ -28,6 +28,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         int numResults = result.size();
 
         Vector tableColumnNames = new Vector();
+        tableColumnNames.add("#");
         tableColumnNames.add("Name");
         tableColumnNames.add("ObsHET");
         tableColumnNames.add("PredHET");
@@ -43,6 +44,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         for (int i = 0; i < numResults; i++){
             Vector tempVect = new Vector();
             MarkerResult currentResult = (MarkerResult)result.get(i);
+            tempVect.add(new Integer(i+1));
             tempVect.add(currentResult.getName());
             tempVect.add(new Double(currentResult.getObsHet()));
             tempVect.add(new Double(currentResult.getPredHet()));
@@ -73,7 +75,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
         }catch (Exception e){
         }
-        table.getColumnModel().getColumn(0).setPreferredWidth(100);
+        table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        table.getColumnModel().getColumn(1).setPreferredWidth(100);
 
         JScrollPane tableScroller = new JScrollPane(table);
         add(tableScroller);
@@ -95,7 +98,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 
     public void refreshNames() {
         for (int i = 0; i < table.getRowCount(); i++){
-              table.setValueAt(Chromosome.getMarker(i).getName(),i,0);
+              table.setValueAt(Chromosome.getMarker(i).getName(),i,1);
         }
     }
 

@@ -18,6 +18,7 @@ public class TDTPanel extends JPanel {
             result = TDT.calcCCTDT(chromosomes);
         }
 
+        tableColumnNames.add("#");
         tableColumnNames.add("Name");
         if (type == 1){
             tableColumnNames.add("T:U");
@@ -32,7 +33,7 @@ public class TDTPanel extends JPanel {
 
     public void refreshNames() {
         for (int i = 0; i < table.getRowCount(); i++){
-            table.setValueAt(Chromosome.getMarker(i).getName(),i,0);
+            table.setValueAt(Chromosome.getMarker(i).getName(),i,1);
         }
     }
 
@@ -48,6 +49,7 @@ public class TDTPanel extends JPanel {
         for (int i = 0; i < numRes; i++){
             Vector tempVect = new Vector();
             TDTResult currentResult = (TDTResult)result.get(Chromosome.realIndex[i]);
+            tempVect.add(new Integer(i+1));
             tempVect.add(currentResult.getName());
             tempVect.add(currentResult.getTURatio(type));
             tempVect.add(new Double(currentResult.getChiSq(type)));
@@ -57,6 +59,9 @@ public class TDTPanel extends JPanel {
         }
 
         table = new JTable(tableData,tableColumnNames);
+        table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        table.getColumnModel().getColumn(1).setPreferredWidth(100);
+
         JScrollPane tableScroller = new JScrollPane(table);
         add(tableScroller);
 
