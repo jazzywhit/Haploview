@@ -58,6 +58,26 @@ public class HaploText implements Constants{
         return outputType;
     }
 
+    private double getDoubleArg(String[] args, int valueIndex, String argName, double min, double max) {
+        double argument = 0;
+        if(valueIndex>=args.length || ((args[valueIndex].charAt(0)) == '-')) {
+            System.out.println( argName + " requires a value between " + min + " and " + max);
+            System.exit(1);
+        }
+        try {
+            argument = Double.parseDouble(args[valueIndex]);
+            if(argument<min || argument>max) {
+                System.out.println(argName + " requires a value between " + min + " and " + max);
+                System.exit(1);
+            }
+        }catch(NumberFormatException nfe) {
+            System.out.println(argName + " requires a value between " + min + " and " + max);
+            System.exit(1);
+        }
+        return argument;
+    }
+
+
     public HaploText(String[] args) {
         this.argHandler(args);
 
@@ -103,6 +123,9 @@ public class HaploText implements Constants{
         double hapThresh = -1;
         double minimumMAF=-1;
         double spacingThresh = -1;
+        double minimumGenoPercent = -1;
+        double hwCutoff = -1;
+        int maxMendel = -1;
 
 
         for(int i =0; i < args.length; i++) {
@@ -249,12 +272,16 @@ public class HaploText implements Constants{
                         System.out.println("only one "+args[i-1] + " argument allowed");
                         System.exit(1);
                     }
-                    maxDistance = Integer.parseInt(args[i]);
-                    if(maxDistance<0){
+                    try {
+                        maxDistance = Integer.parseInt(args[i]);
+                        if(maxDistance<0){
+                            System.out.println(args[i-1] + " argument must be a positive integer");
+                            System.exit(1);
+                        }
+                    } catch(NumberFormatException nfe) {
                         System.out.println(args[i-1] + " argument must be a positive integer");
                         System.exit(1);
                     }
-
                 }
             }
             else if(args[i].equals("-b") || args[i].equals("-batch")) {
@@ -272,62 +299,44 @@ public class HaploText implements Constants{
                 }
             }
             else if(args[i].equals("-hapthresh")) {
-                try {
-                    i++;
-                    if(i>=args.length || ((args[i].charAt(0)) == '-'))   {
-                        System.out.println("-hapthresh requires a value between 0 and 1");
-                        System.exit(1);
-                    }
-                    hapThresh = Double.parseDouble(args[i]);
-                    if(hapThresh<0 || hapThresh>1) {
-                        System.out.println("Haplotype threshold must be between 0 and 1");
-                        System.exit(1);
-                    }
-
-                }catch(NumberFormatException nfe) {
-                    System.out.println("Haplotype threshold must be a number between 0 and 1");
-                    System.exit(1);
-                }
-
+                i++;
+                hapThresh = getDoubleArg(args,i,"-hapthresh",0,1);
             }
             else if(args[i].equals("-spacing")) {
                 i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')) {
-                    System.out.println("-spacing requires a value between 0 and 1");
-                    System.exit(1);
-                }
-                try {
-                    spacingThresh = Double.parseDouble(args[i]);
-                    if(spacingThresh<0 || spacingThresh>1) {
-                        System.out.println("-spacing argument must be between 0 and 1");
-                        System.exit(1);
-                    }
-                }catch(NumberFormatException nfe) {
-                    System.out.println("-spacing argument must be a number between 0 and 1");
-                    System.exit(1);
-                }
+                spacingThresh = getDoubleArg(args,i,"-spacing",0,1);
             }
             else if(args[i].equalsIgnoreCase("-minMAF")) {
+                i++;
+                minimumMAF = getDoubleArg(args,i,"-minMAF",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-minGenoPercent")) {
+                i++;
+                minimumGenoPercent = getDoubleArg(args,i,"-minGenoPercent",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-hwcutoff")) {
                i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')) {
-                    System.out.println("-minMAF requires a value between 0 and 1");
+                hwCutoff = getDoubleArg(args,i,"-hwcutoff",0,1);
+            }
+            else if(args[i].equals("-maxMendel") ) {
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println("-maxMendel requires an integer argument");
                     System.exit(1);
                 }
-                try {
-                    double thresh = Double.parseDouble(args[i]);
-                    if(thresh<0 || thresh>1) {
-                        System.out.println("-minMAF argument must be a value between 0 and 1");
+                else {
+                    try {
+                        maxMendel = Integer.parseInt(args[i]);
+                        if(maxMendel<0){
+                            System.out.println("-maxMendel argument must be a positive integer");
+                            System.exit(1);
+                        }
+                    } catch(NumberFormatException nfe) {
+                        System.out.println("-maxMendel argument must be a positive integer");
                         System.exit(1);
                     }
-                    minimumMAF = thresh;
-                }catch(NumberFormatException nfe) {
-                    System.out.println("-minMAF argument must be a value between 0 and 1");
-                    System.exit(1);
                 }
-
-
             }
-
 
 
             else if(args[i].equals("-q") || args[i].equals("-quiet")) {
@@ -386,9 +395,24 @@ public class HaploText implements Constants{
         if(minimumMAF != -1) {
             CheckData.mafCut = minimumMAF;
         }
+
+        if(minimumGenoPercent != -1) {
+            CheckData.failedGenoCut = (int)(minimumGenoPercent*100);
+        }
+
+        if(hwCutoff != -1) {
+            CheckData.hwCut = hwCutoff;
+        }
+
+        if(maxMendel != -1) {
+            CheckData.numMendErrCut = maxMendel;
+        }
+
         if(spacingThresh != -1) {
             Options.setSpacingThreshold(spacingThresh);
         }
+
+
     }
 
 
