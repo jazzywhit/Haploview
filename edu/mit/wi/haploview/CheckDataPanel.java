@@ -23,6 +23,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         while((line = reader.readLine())!=null){
+            if (line.length() == 0){
+                //skip blank lines
+                continue;
+            }
             pedFileStrings.add(line);
         }
         pedfile = new PedFile();

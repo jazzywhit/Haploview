@@ -170,7 +170,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         contents.add(filePanel);
 
         JPanel prefsPanel = new JPanel();
-        maxComparisonDistField = new NumberTextField("200",4);
+        maxComparisonDistField = new NumberTextField("500",4);
         prefsPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
         prefsPanel.add(maxComparisonDistField);
         prefsPanel.add(new JLabel("kb apart."));

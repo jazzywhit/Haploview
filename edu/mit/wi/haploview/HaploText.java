@@ -103,7 +103,7 @@ public class HaploText {
                         "--dprime                      outputs dprime to <inputfile>.DPRIME\n" +
                         "             note: --dprime defaults to no blocks output. use -o to also output blocks\n" +
                         "-o <SFS,GAM,MJD,ALL>          output type. SFS, 4 gamete, MJD output or all 3. default is SFS.\n" +
-                        "-m <distance>                 maximum comparison distance in kilobases (integer). default is 200");
+                        "-m <distance>                 maximum comparison distance in kilobases (integer). default is 500");
 
                 System.exit(0);
 
@@ -254,7 +254,7 @@ public class HaploText {
             System.out.println("Skipping pedigree file check");
         }
         if(maxDistance == -1){
-            maxDistance = 200;
+            maxDistance = 500;
         }
 
         //set the global variables
