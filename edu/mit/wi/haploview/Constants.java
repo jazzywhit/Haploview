@@ -51,6 +51,13 @@ public interface Constants {
     static final int PED = 3;
     static final int DCC = 4;
 
+    //color modes
+    static final int STD_SCHEME = 1;
+    static final int RSQ_SCHEME = 2;
+    static final int WMF_SCHEME = 3;
+    static final int SFS_SCHEME = 4;
+    static final int GAM_SCHEME = 5;
+
     static final String HELP_OUTPUT = TITLE_STRING + " command line options\n" +
                         "-h, -help                     print this message\n" +
                         "-n                            command line output only\n" +
