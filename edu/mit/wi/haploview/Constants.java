@@ -32,6 +32,10 @@ public interface Constants {
     public static final int VIEW_CHECK_NUM = 2;
     public static final int VIEW_TDT_NUM = 3;
 
+    //association tab subtab indices
+    public static final int VIEW_SINGLE_ASSOC = 0;
+    public static final int VIEW_HAPLO_ASSOC = 1;
+
     //export modes
     public static final int PNG_MODE = 0;
     public static final int TXT_MODE = 1;

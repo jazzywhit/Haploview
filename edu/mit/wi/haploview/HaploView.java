@@ -1062,49 +1062,52 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }else if (tabNum == VIEW_CHECK_NUM){
                         checkPanel.printTable(outfile);
                     }else if (tabNum == VIEW_TDT_NUM){
-                        JTable table = tdtPanel.getTable();
-                        JTreeTable jtt = ((HaploAssocPanel)((JTabbedPane)tabs.getComponent(tabNum)).
-                                getComponent(1)).jtt;
                         FileWriter assocWriter = new FileWriter(outfile);
-                        int numCols = table.getColumnCount();
-                        StringBuffer header = new StringBuffer("Single Marker Association\n");
-                        for (int i = 0; i < numCols; i++){
-                            header.append(table.getColumnName(i)).append("\t");
-                        }
-                        header.append("\n");
-                        assocWriter.write(header.toString());
-                        for (int i = 0; i < table.getRowCount(); i++){
-                            StringBuffer sb = new StringBuffer();
-                            for (int j = 0; j < numCols; j++){
-                                sb.append(table.getValueAt(i,j)).append("\t");
-                            }
-                            sb.append("\n");
-                            assocWriter.write(sb.toString());
-                        }
 
-                        //now we write the haplotype association
-                        numCols = jtt.getColumnCount();
-                        header = new StringBuffer("\nHaplotype Association\n\t");
-                        for (int i = 0; i < numCols; i++){
-                            header.append(jtt.getColumnName(i)).append("\t");
-                        }
-                        header.append("\n");
-                        assocWriter.write(header.toString());
-                        HaplotypeAssociationModel ham = (HaplotypeAssociationModel) jtt.getTree().getModel();
-                        HaplotypeAssociationNode root = (HaplotypeAssociationNode) ham.getRoot();
-                        for(int i=0;i<ham.getChildCount(root);i++) {
-                            HaplotypeAssociationNode curBlock = (HaplotypeAssociationNode) ham.getChild(root,i);
-                            assocWriter.write(curBlock.getName() + "\n");
-                            StringBuffer sb = new StringBuffer();
-                            for(int j=0;j<ham.getChildCount(curBlock);j++){
-                                HaplotypeAssociationNode curHap = (HaplotypeAssociationNode) ham.getChild(curBlock,j);
-                                sb.append("\t").append(curHap.getName()).append("\t");
-                                sb.append(curHap.getFreq()).append("\t");
-                                sb.append(curHap.getCounts()).append("\t");
-                                sb.append(curHap.getChiSq()).append("\t");
-                                sb.append(curHap.getPVal()).append("\n");
+                        if(((JTabbedPane)tabs.getComponent(tabNum)).getSelectedIndex() == VIEW_SINGLE_ASSOC){
+                            JTable table = tdtPanel.getTable();
+                            int numCols = table.getColumnCount();
+                            StringBuffer header = new StringBuffer("Single Marker Association\n");
+                            for (int i = 0; i < numCols; i++){
+                                header.append(table.getColumnName(i)).append("\t");
                             }
-                            assocWriter.write(sb.toString());
+                            header.append("\n");
+                            assocWriter.write(header.toString());
+                            for (int i = 0; i < table.getRowCount(); i++){
+                                StringBuffer sb = new StringBuffer();
+                                for (int j = 0; j < numCols; j++){
+                                    sb.append(table.getValueAt(i,j)).append("\t");
+                                }
+                                sb.append("\n");
+                                assocWriter.write(sb.toString());
+                            }
+                        } else{
+                            //now we write the haplotype association
+                            JTreeTable jtt = ((HaploAssocPanel)((JTabbedPane)tabs.getComponent(tabNum)).
+                                    getComponent(1)).jtt;
+                            int numCols = jtt.getColumnCount();
+                            StringBuffer header = new StringBuffer("Haplotype Association\n\t");
+                            for (int i = 0; i < numCols; i++){
+                                header.append(jtt.getColumnName(i)).append("\t");
+                            }
+                            header.append("\n");
+                            assocWriter.write(header.toString());
+                            HaplotypeAssociationModel ham = (HaplotypeAssociationModel) jtt.getTree().getModel();
+                            HaplotypeAssociationNode root = (HaplotypeAssociationNode) ham.getRoot();
+                            for(int i=0;i<ham.getChildCount(root);i++) {
+                                HaplotypeAssociationNode curBlock = (HaplotypeAssociationNode) ham.getChild(root,i);
+                                assocWriter.write(curBlock.getName() + "\n");
+                                StringBuffer sb = new StringBuffer();
+                                for(int j=0;j<ham.getChildCount(curBlock);j++){
+                                    HaplotypeAssociationNode curHap = (HaplotypeAssociationNode) ham.getChild(curBlock,j);
+                                    sb.append("\t").append(curHap.getName()).append("\t");
+                                    sb.append(curHap.getFreq()).append("\t");
+                                    sb.append(curHap.getCounts()).append("\t");
+                                    sb.append(curHap.getChiSq()).append("\t");
+                                    sb.append(curHap.getPVal()).append("\n");
+                                }
+                                assocWriter.write(sb.toString());
+                            }
                         }
                         assocWriter.close();
                     }
