@@ -20,6 +20,7 @@ public class HaplotypeDisplay extends JComponent {
     int thinThresh = 1;
     int thickThresh = 10;
     private boolean forExport = false;
+    public boolean numAlls;
 
 
     public HaplotypeDisplay(HaploData h) throws HaploViewException {
@@ -378,8 +379,13 @@ public class HaplotypeDisplay extends JComponent {
                 // j is the row of haplotype
                 for (int k = 0; k < theGeno.length; k++) {
                     // theGeno[k] will be 1,2,3,4 (acgt) or 8 (for bad)
-                    g.drawImage(charImages[theGeno[k] - 1],
-                            left + k*CHAR_WIDTH, above + j*ROW_HEIGHT, null);
+                    if (!numAlls){
+                        g.drawImage(charImages[theGeno[k] - 1],
+                                left + k*CHAR_WIDTH, above + j*ROW_HEIGHT, null);
+                    }else{
+                        g.drawImage(blackNumImages[theGeno[k]],
+                                left + k*CHAR_WIDTH, above + j*ROW_HEIGHT, null);
+                    }
                 }
 
 
