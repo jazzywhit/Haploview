@@ -64,7 +64,7 @@ public class BlockDisplay extends JComponent{
         g2.translate(5, 5 + widestMarkerName);
         g2.rotate(-Math.PI / 2.0);
         for (int x = 0; x < dPrimeTable.length; x++) {
-            if (theData.isInBlock[Chromosome.realIndex[x]]){
+            if (theData.isInBlock[x]){
                 g2.setFont(boldMarkerNameFont);
             }else{
                 g2.setFont(markerNameFont);

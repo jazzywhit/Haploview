@@ -65,7 +65,6 @@ public class HaploView extends JFrame implements ActionListener{
     //JMenuItem displayOptionsItem;
 
     //start filechooser in current directory
-    JFileChooser fc;
     HaploData theData;
     //JFrame checkWindow;
     private CheckDataPanel checkPanel;
@@ -88,10 +87,6 @@ public class HaploView extends JFrame implements ActionListener{
     private HaploText argParser;
 
     public HaploView(){
-        //TODO: initialize this where its actually used
-        //sometimes has bug: http://developer.java.sun.com/developer/bugParade/bugs/4711700.html
-        fc = new JFileChooser(System.getProperty("user.dir"));
-
         //menu setup
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -237,6 +232,7 @@ public class HaploView extends JFrame implements ActionListener{
             readDialog.pack();
             readDialog.setVisible(true);
         } else if (command == READ_MARKERS){
+            JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
             fc.setSelectedFile(null);
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -560,6 +556,22 @@ public class HaploView extends JFrame implements ActionListener{
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 checkPanel.changed=false;
             }
+
+            if (hapDisplay != null && theData.blocksChanged){
+                setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                try{
+                    hapDisplay.getHaps();
+                }catch(HaploViewException hv){
+                    JOptionPane.showMessageDialog(window,
+                            hv.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+                hapScroller.setViewportView(hapDisplay);
+
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                theData.blocksChanged = false;
+            }
         }
     }
 
@@ -633,6 +645,7 @@ public class HaploView extends JFrame implements ActionListener{
 
 
     void saveDprimeToText(){
+        JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
         fc.setSelectedFile(null);
         try{
             fc.setSelectedFile(null);
@@ -659,8 +672,11 @@ public class HaploView extends JFrame implements ActionListener{
                 "Select a block-finding algorithm",
                 JOptionPane.QUESTION_MESSAGE);
         theData.guessBlocks(methodList.getSelectedIndex());
-        hapDisplay.getHaps();
-        hapScroller.setViewportView(hapDisplay);
+        dPrimeDisplay.refresh();
+        if (tabs.getSelectedIndex() == VIEW_HAP_NUM){
+            hapDisplay.getHaps();
+            hapScroller.setViewportView(hapDisplay);
+        }
         dPrimeDisplay.refresh();
     }
 

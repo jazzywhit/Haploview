@@ -23,7 +23,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private int boxSize = BOX_SIZES[0];
     private int boxRadius = BOX_RADII[0];
     private int lowX, highX, lowY, highY;
-    private int left, top, clickXShift, clickYShift;
+    private int left = H_BORDER;
+    private int top = V_BORDER;
+    private int clickXShift, clickYShift;
     private String[] displayStrings = new String[5];
     private final int popupLeftMargin = 12;
 
@@ -131,18 +133,12 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         //okay so this dumb if block is to prevent the ugly repainting
         //bug when loading markers after the data are already being displayed,
         //results in a little off-centering for small datasets, but not too bad.
-        //clickxshift and clickyshift are used later to translate from x,y coords
-        //to the pair of markers comparison at those coords
         if (!(theData.infoKnown)){
             g2.translate((size.width - pref.width) / 2,
                     (size.height - pref.height) / 2);
-            clickXShift = left + (size.width-pref.width)/2;
-            clickYShift = top + (size.height - pref.height)/2;
         } else {
             g2.translate((size.width - pref.width) / 2,
                     0);
-            clickXShift = left + (size.width-pref.width)/2;
-            clickYShift = top;
         }
         //System.out.println(size + " " + pref);
 
@@ -227,7 +223,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
                 for (int x = 0; x < dPrimeTable.length; x++) {
-                    if (theData.isInBlock[Chromosome.realIndex[x]]){
+                    if (theData.isInBlock[x]){
                         g2.setFont(boldMarkerNameFont);
                     }else{
                         g2.setFont(markerNameFont);
@@ -246,6 +242,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
         top  += blockDispHeight;
 
+
         //// draw the marker numbers
         if (printDetails){
             g2.setFont(markerNumFont);
@@ -259,6 +256,16 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         top + ascent);
             }
             top += boxRadius/2; // give a little space between numbers and boxes
+        }
+
+        //clickxshift and clickyshift are used later to translate from x,y coords
+        //to the pair of markers comparison at those coords
+        if (!(theData.infoKnown)){
+            clickXShift = left + (size.width-pref.width)/2;
+            clickYShift = top + (size.height - pref.height)/2;
+        } else {
+            clickXShift = left + (size.width-pref.width)/2;
+            clickYShift = top;
         }
 
         //the following values are the bounds on the boxes we want to
@@ -283,7 +290,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         // draw table column by column
-
         for (int x = lowX; x < highX; x++) {
 
             //always draw the fewest possible boxes
@@ -357,7 +363,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     top);
 
             for (int j = first; j <= last; j++){
-                if (theData.isInBlock[Chromosome.realIndex[j]]){
+                if (theData.isInBlock[j]){
                     g2.setStroke(fatStroke);
                 }else{
                     g2.setStroke(dashedFatStroke);
@@ -563,7 +569,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         //this dimension is just the area taken up by the dprime chart
         //it is used in drawing the worldmap
 
-
         if (theData.infoKnown){
             infoHeight = TICK_BOTTOM + widestMarkerName + TEXT_GAP;
             high += infoHeight;
@@ -586,31 +591,39 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 InputEvent.BUTTON1_MASK) {
             int clickX = e.getX();
             int clickY = e.getY();
-            if (showWM){
-                if (worldmapRect.contains(clickX,clickY)){
-                    //convert a click on the worldmap to a point on the big picture
-                    int bigClickX = (((clickX - getVisibleRect().x) * chartSize.width) /
-                            worldmap.getWidth())-getVisibleRect().width/2;
-                    int bigClickY = (((clickY - getVisibleRect().y -
-                            (getVisibleRect().height-worldmap.getHeight())) *
-                            chartSize.height) / worldmap.getHeight()) -
-                            getVisibleRect().height/2 + infoHeight;
+            if (showWM && worldmapRect.contains(clickX,clickY)){
+                //convert a click on the worldmap to a point on the big picture
+                int bigClickX = (((clickX - getVisibleRect().x) * chartSize.width) /
+                        worldmap.getWidth())-getVisibleRect().width/2;
+                int bigClickY = (((clickY - getVisibleRect().y -
+                        (getVisibleRect().height-worldmap.getHeight())) *
+                        chartSize.height) / worldmap.getHeight()) -
+                        getVisibleRect().height/2 + infoHeight;
 
-                    //if the clicks are near the edges, correct values
-                    if (bigClickX > chartSize.width - getVisibleRect().width){
-                        bigClickX = chartSize.width - getVisibleRect().width;
-                    }
-                    if (bigClickX < 0){
-                        bigClickX = 0;
-                    }
-                    if (bigClickY > chartSize.height - getVisibleRect().height + infoHeight){
-                        bigClickY = chartSize.height - getVisibleRect().height + infoHeight;
-                    }
-                    if (bigClickY < 0){
-                        bigClickY = 0;
-                    }
+                //if the clicks are near the edges, correct values
+                if (bigClickX > chartSize.width - getVisibleRect().width){
+                    bigClickX = chartSize.width - getVisibleRect().width;
+                }
+                if (bigClickX < 0){
+                    bigClickX = 0;
+                }
+                if (bigClickY > chartSize.height - getVisibleRect().height + infoHeight){
+                    bigClickY = chartSize.height - getVisibleRect().height + infoHeight;
+                }
+                if (bigClickY < 0){
+                    bigClickY = 0;
+                }
 
-                    ((JViewport)getParent()).setViewPosition(new Point(bigClickX,bigClickY));
+                ((JViewport)getParent()).setViewPosition(new Point(bigClickX,bigClickY));
+            }else{
+                Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
+                        (Chromosome.getFilteredSize()*boxSize), boxSize);
+                if(blockselector.contains(clickX,clickY)){
+                    int whichMarker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
+                    if (theData.isInBlock[whichMarker]){
+                        theData.removeFromBlock(whichMarker);
+                        refresh();
+                    }
                 }
             }
         }

@@ -27,8 +27,6 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     int fileType;
     JTextField genoFileField, infoFileField;
     NumberTextField maxComparisonDistField;
-    JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-
 
     public ReadDataDialog(String title, HaploView h){
         caller = h;
@@ -94,6 +92,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     void browse(int browseType){
         String name;
         String markerInfoName = "";
+        JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
         fc.setSelectedFile(null);
         int returned = fc.showOpenDialog(this);
         if (returned != JFileChooser.APPROVE_OPTION) return;

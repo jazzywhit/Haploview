@@ -26,6 +26,7 @@ public class HaploData{
     Vector chromosomes, blocks;
     boolean[] isInBlock;
     boolean infoKnown = false;
+    boolean blocksChanged = false;
     int missingLimit = 5;
     private PairwiseLinkage[][] dPrimeTable;
     PairwiseLinkage[][] filteredDPrimeTable;
@@ -35,12 +36,12 @@ public class HaploData{
     private double[] multidprimeArray;
 
     //stuff for computing d prime
-    int AA = 0;
-    int AB = 1;
-    int BA = 2;
-    int BB = 3;
-    double TOLERANCE = 0.00000001;
-    double LN10 = Math.log(10.0);
+    private int AA = 0;
+    private int AB = 1;
+    private int BA = 2;
+    private int BB = 3;
+    private double TOLERANCE = 0.00000001;
+    private double LN10 = Math.log(10.0);
     int unknownDH=-1;
     int total_chroms=-1;
     double const_prob=-1.0;
@@ -952,6 +953,7 @@ public class HaploData{
             case 3: returnVec = new Vector();break;
         }
         blocks = returnVec;
+        blocksChanged = true;
 
         //keep track of which markers are in a block
         isInBlock = new boolean[Chromosome.getSize()];
@@ -961,9 +963,40 @@ public class HaploData{
         for (int i = 0; i < blocks.size(); i++){
             int[] markers = (int[])blocks.elementAt(i);
             for (int j = 0; j < markers.length; j++){
-                isInBlock[Chromosome.realIndex[markers[j]]] = true;
+                isInBlock[markers[j]] = true;
             }
         }
+    }
+
+    public void removeFromBlock(int markerNum) {
+      if (blocks != null){
+          OUTER: for (int i = 0; i < blocks.size(); i ++){
+              int thisBlock[] = (int[])blocks.elementAt(i);
+              int newBlock[] = new int[thisBlock.length-1];
+              int count = 0;
+              for (int j = 0; j < thisBlock.length; j++){
+                  if(markerNum == thisBlock[j]){
+                      blocksChanged = true;
+                      if (newBlock.length < 2){
+                          blocks.removeElementAt(i);
+                          for (int k = 0; k < thisBlock.length; k++){
+                              this.isInBlock[thisBlock[k]] = false;
+                          }
+                          break OUTER;
+                      }
+                      this.isInBlock[markerNum] = false;
+                      for (int k = 0; k < thisBlock.length; k++){
+                          if (!(k==j)){
+                              newBlock[count] = thisBlock[k];
+                              count++;
+                          }
+                      }
+                      blocks.setElementAt(newBlock, i);
+                      break OUTER;
+                  }
+              }
+          }
+      }
     }
 
     public PairwiseLinkage computeDPrime(int pos1, int pos2){
@@ -1213,8 +1246,7 @@ public class HaploData{
         return new PairwiseLinkage(roundDouble(dprime), roundDouble((loglike1-loglike0)), roundDouble(rsq), ((double)low_i/100.0), ((double)high_i/100.0), freqarray);
     }
 
-    public void count_haps(int em_round)
-    {
+    public void count_haps(int em_round){
         /* only the double heterozygote [AB][AB] results in
         ambiguous reconstruction, so we'll count the obligates
         then tack on the [AB][AB] for clarity */
@@ -1481,5 +1513,6 @@ public class HaploData{
         linkageToHapsWriter.close();
 
     }
+
 
 }
