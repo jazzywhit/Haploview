@@ -106,7 +106,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     if (l > 2) {
                         if (d < 0.5) {
                             //high LOD, low D'
-                            boxColor = new Color(224, 224, 224);
+                            boxColor = new Color(255, 224, 224);
                         } else {
                             //high LOD, high D' shades of red
                             double blgr = (255-32)*2*(1-d);
