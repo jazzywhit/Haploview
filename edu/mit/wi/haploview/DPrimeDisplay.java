@@ -8,7 +8,7 @@ import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
-class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionListener{
+class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionListener, Constants{
     private static final int H_BORDER = 30;
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;
@@ -65,14 +65,16 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private Rectangle popupDrawRect = new Rectangle(0,0,-1,-1);
     private BufferedImage worldmap;
     private HaploData theData;
+    private HaploView theHV;
     private Dimension chartSize=null;
     private int wmMaxWidth=0;
     private Rectangle blockRect = new Rectangle(0,0,-1,-1);
     private int blockStartX = 0;
 
 
-    DPrimeDisplay(HaploData h){
-        theData=h;
+    DPrimeDisplay(HaploView h){
+        theData=h.theData;
+        theHV = h;
         this.colorDPrime(STD_SCHEME);
         this.setDoubleBuffered(true);
         addMouseListener(this);
@@ -758,6 +760,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
                 ((JViewport)getParent()).setViewPosition(new Point(bigClickX,bigClickY));
             }else{
+                theHV.blockMenuItems[BLOX_CUSTOM].setSelected(true);
                 Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
                         (Chromosome.getFilteredSize()*boxSize), boxSize);
                 if(blockselector.contains(clickX,clickY)){
@@ -920,6 +923,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 resizeRectExists = true;
                 repaint();
             }else if (getCursor() == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)){
+                theHV.blockMenuItems[BLOX_CUSTOM].setSelected(true);
                 int xcorner,width;
                 if (e.getX() < blockStartX){
                     //we're dragging right to left, so flip it.

@@ -40,8 +40,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     JRadioButtonMenuItem colorMenuItems[];
     JRadioButtonMenuItem blockMenuItems[];
     String blockItems[] = {"Confidence intervals (Gabriel et al)",
-                                  "Four Gamete Rule",
-                                  "Solid spine of LD"};
+                           "Four Gamete Rule",
+                           "Solid spine of LD",
+                           "Custom"};
 
     HaploData theData;
     CheckDataPanel checkPanel;
@@ -185,13 +186,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         for (int i = 0; i < blockItems.length; i++){
             blockMenuItems[i] = new JRadioButtonMenuItem(blockItems[i], i==0);
             blockMenuItems[i].addActionListener(this);
-            blockMenuItems[i].setActionCommand("block" + (i+1));
+            blockMenuItems[i].setActionCommand("block" + i);
             blockMenu.add(blockMenuItems[i]);
             bg.add(blockMenuItems[i]);
-            if (i != 0){
-                blockMenuItems[i].setEnabled(false);
-            }
         }
+        blockMenuItems[3].setEnabled(false);
         analysisMenu.add(blockMenu);
         clearBlocksItem = new JMenuItem(CLEAR_BLOCKS);
         setAccelerator(clearBlocksItem, 'C', false);
@@ -233,8 +232,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         addComponentListener(new ResizeListener());
 
     }
-
-
 
 
     // function workaround for overdesigned, underthought swing api -fry
@@ -490,7 +487,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 //first, draw the D' picture
                 JPanel panel = new JPanel();
                 panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                dPrimeDisplay = new DPrimeDisplay(theData);
+                dPrimeDisplay = new DPrimeDisplay(window);
                 JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
                 dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
                 dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
@@ -627,6 +624,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     }
 
     public void changeBlocks(int method){
+        if (method == BLOX_NONE){
+            blockMenuItems[BLOX_CUSTOM].setSelected(true);
+        }
         theData.guessBlocks(method);
         dPrimeDisplay.refresh();
         currentBlockDef = method;

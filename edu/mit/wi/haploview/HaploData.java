@@ -1000,7 +1000,7 @@ public class HaploData implements Constants{
             case BLOX_GABRIEL: returnVec = FindBlocks.doGabriel(filteredDPrimeTable); break;
             case BLOX_4GAM: returnVec = FindBlocks.do4Gamete(filteredDPrimeTable); break;
             case BLOX_SPINE: returnVec = FindBlocks.doSpine(filteredDPrimeTable); break;
-            case BLOX_NONE: returnVec = new Vector(); break;
+            default: returnVec = new Vector(); break;
         }
         blocks = returnVec;
         blocksChanged = true;
