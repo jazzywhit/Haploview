@@ -809,7 +809,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
             //stick WM_BD in the middle of the blank space at the top of the worldmap
             final int WM_BD_GAP = (int)(infoHeight/(scalefactor*2));
-            final int WM_BD_HEIGHT = 4;
+            final int WM_BD_HEIGHT = 2;
             CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
                     BorderFactory.createLoweredBevelBorder());
 
