@@ -278,6 +278,7 @@ public class HaplotypeDisplay extends JComponent {
         g.setColor(this.getBackground());
         g.fillRect(0,0,pref.width, pref.height);
 
+
         if (!forExport){
             g.translate((size.width - pref.width) / 2,
                     (size.height - pref.height) / 2);
@@ -340,6 +341,12 @@ public class HaplotypeDisplay extends JComponent {
             boolean[] tags = filteredHaplos[i][0].getTags();
             //int headerX = x;
 
+            //block labels
+            g.setColor(Color.black);
+            g.drawString("Block " + (i+1),
+                    left,
+                    top - CHAR_HEIGHT);
+
             for (int z = 0; z < markerNums.length; z++) {
                 //int tagMiddle = tagMetrics.getAscent() / 2;
                 //int tagLeft = x + z*letterWidth + tagMiddle;
@@ -348,7 +355,7 @@ public class HaplotypeDisplay extends JComponent {
                 // if tag snp, draw little triangle pooper
                 if (tags[z]) {
                     g.drawImage(tagImage, left + z*CHAR_WIDTH,
-                            top + markerDigits*MARKER_CHAR_WIDTH +
+                            top + markerDigits*MARKER_CHAR_WIDTH
                             -(CHAR_HEIGHT - TAG_SPAN), null);
                 }
 
@@ -429,7 +436,6 @@ public class HaplotypeDisplay extends JComponent {
                                 CHAR_WIDTH, CHAR_WIDTH);
                     }
                 }
-
 
                 //draw the percentage value in non mono font
                 double percent = filteredHaplos[i][curHapNum].getPercentage();
