@@ -132,7 +132,7 @@ public class Chromosome{
     }
 
     public static void setDataChrom(String chrom) {
-        dataChrom = chrom;
+        dataChrom = chrom.toLowerCase();
     }
 
     public static String getDataChrom(){
