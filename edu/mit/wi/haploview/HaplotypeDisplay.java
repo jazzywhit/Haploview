@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.text.*;
 import java.util.*;
 
-
 public class HaplotypeDisplay extends JComponent {
 
     Haplotype[][] orderedHaplos;
@@ -329,7 +328,7 @@ public class HaplotypeDisplay extends JComponent {
 
                 //g.setColor(Color.black);
                 //g.drawString(nfMarker.format(markerNums[z]), 0, tagMiddle);
-                char markerChars[] = nfMarker.format(markerNums[z]+1).toCharArray();
+                char markerChars[] = nfMarker.format(Chromosome.realIndex[markerNums[z]]+1).toCharArray();
                 for (int m = 0; m < markerDigits; m++) {
                     g.drawImage(markerNumImages[markerChars[m] - '0'],
                             left + z*CHAR_WIDTH +
