@@ -1046,10 +1046,6 @@ public class HaploData{
         }
 
         int inArray[] = new int[lastMarker-firstMarker+1];
-        for (int i = 0; i < inArray.length; i++){
-            inArray[i] = firstMarker+i;
-            this.isInBlock[firstMarker+i] = true;
-        }
         blocksChanged = true;
         if (blocks.size() != 0){
             boolean placed = false;
@@ -1058,6 +1054,9 @@ public class HaploData{
                 //trim out any blocks that are overlapped
                 if ((lastMarker >= currentBlock[0] && firstMarker <= currentBlock[currentBlock.length-1]) ||
                         firstMarker <= currentBlock[currentBlock.length-1] && firstMarker >= currentBlock[0]){
+                    for (int j = 0; j < currentBlock.length; j++){
+                        isInBlock[currentBlock[j]] = false;
+                    }
                     blocks.removeElementAt(i);
                     i--;
                 }
@@ -1074,6 +1073,10 @@ public class HaploData{
             }
         }else{
             blocks.add(inArray);
+        }
+        for (int i = 0; i < inArray.length; i++){
+            inArray[i] = firstMarker+i;
+            this.isInBlock[firstMarker+i] = true;
         }
     }
 

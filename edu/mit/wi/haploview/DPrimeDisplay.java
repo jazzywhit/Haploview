@@ -825,7 +825,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     botEdgeShift = clickY + 5*metrics.getHeight()+15 - visBotBound;
                 }
                 int smallDataVertSlop = 0;
-                if (getPreferredSize().getWidth() < getVisibleRect().width){
+                if (getPreferredSize().getWidth() < getVisibleRect().width && theData.infoKnown){
                     smallDataVertSlop = (int)(getVisibleRect().height - getPreferredSize().getHeight())/2;
                 }
                 popupDrawRect = new Rectangle(clickX-rightEdgeShift,
