@@ -146,12 +146,12 @@ public class HaploData implements Constants{
                     positions.add(l);
                 }
 
-                /*if (lineCount > Chromosome.markers.length){
+                if (lineCount > Chromosome.getSize()){
                     throw(new HaploViewException("Info file error:\nMarker number mismatch: too many\nmarkers in info file."));
                 }
-                if (lineCount < Chromosome.markers.length){
+                if (lineCount < Chromosome.getSize()){
                     throw(new HaploViewException("Info file error:\nMarker number mismatch: too few\nmarkers in info file."));
-                }*/
+                }
                 infoKnown=true;
             }
 
