@@ -229,6 +229,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         } else{
             printDetails = false;
         }
+
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
@@ -695,7 +696,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
         int wide = 2*H_BORDER + boxSize*(dPrimeTable.length-1);
         Rectangle visRect = getVisibleRect();
-
         //big datasets often scroll way offscreen in zoom-out mode
         //but aren't the full height of the viewport
         if (high < visRect.height && showWM){
@@ -824,8 +824,12 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 if (clickY + 5*metrics.getHeight()+10 > visBotBound){
                     botEdgeShift = clickY + 5*metrics.getHeight()+15 - visBotBound;
                 }
+                int smallDataVertSlop = 0;
+                if (getPreferredSize().getWidth() < getVisibleRect().width){
+                    smallDataVertSlop = (int)(getVisibleRect().height - getPreferredSize().getHeight())/2;
+                }
                 popupDrawRect = new Rectangle(clickX-rightEdgeShift,
-                        clickY-botEdgeShift,
+                        clickY-botEdgeShift+smallDataVertSlop,
                         strlen+popupLeftMargin+5,
                         displayStrings.length*metrics.getHeight()+10);
                 repaint();
