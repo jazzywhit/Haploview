@@ -1086,7 +1086,7 @@ public class HaploData implements Constants{
     }
 
     void guessBlocks(int method){
-        guessBlocks(method, new Vector());
+        guessBlocks(method, blocks);
     }
     void guessBlocks(int method, Vector custVec){
         Vector returnVec = new Vector();
@@ -1681,7 +1681,9 @@ public class HaploData implements Constants{
                     }
                     highestYet = thisBlock[x];
                 }
-                cust.add(thisBlock);
+                if (thisBlock.length > 1){
+                    cust.add(thisBlock);
+                }
             }catch (NumberFormatException nfe) {
                 throw new HaploViewException("Format error on line " + lineCount + " in " + infile.getName());
             }

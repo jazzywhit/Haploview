@@ -808,7 +808,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         for (int marker = 0; marker < thisBlock.length; marker++){
                             thisBlock[marker] = ((Integer)goodies.elementAt(marker)).intValue();
                         }
-                        theBlocks.add(thisBlock);
+                        if (thisBlock.length > 1){
+                            theBlocks.add(thisBlock);
+                        }
                     }
                     theData.guessBlocks(BLOX_CUSTOM, theBlocks);
                 }
