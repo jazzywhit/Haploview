@@ -92,7 +92,6 @@ public class HVWrap {
                         }
                         //if the user closed the contentFrame, then we want to reopen it when theres error text
                         if(!contentFrame.isVisible()) {
-                            System.err.println("contentframe not visible");
                             contentFrame.setVisible(true);
                         }
 
@@ -106,7 +105,7 @@ public class HVWrap {
             //if the child died painfully throw up R.I.P. dialog
             if (dead){
                 if (headless){
-                    System.out.println(errorMsg);
+                    System.err.println(errorMsg);
                 }else{
                     Runnable showRip = new Runnable() {
                         public void run() {
@@ -119,7 +118,7 @@ public class HVWrap {
             }
         } catch (Exception e) {
             if (headless){
-                System.out.println("Error:\nUnable to launch Haploview.\n"+e.getMessage());
+                System.err.println("Error:\nUnable to launch Haploview.\n"+e.getMessage());
             }else{
                 JFrame jf = new JFrame();
                 JOptionPane.showMessageDialog(jf, "Error:\nUnable to launch Haploview.\n"+e.getMessage(), null, JOptionPane.ERROR_MESSAGE);
@@ -131,7 +130,7 @@ public class HVWrap {
 
     private static void createAndShowGUI() {
 
-        contentFrame = new JFrame("Error Output");
+        contentFrame = new JFrame("Haploview Error Log");
         contentFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
         JComponent newContentPane = new JPanel();
@@ -144,7 +143,9 @@ public class HVWrap {
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-        errorTextArea.append("Haploview error log. \nIf you are reporting a problem please include the contents of this log.\njcbarret@broad.mit.edu\n");
+        errorTextArea.append("*************************\n"+
+                "If you are reporting a problem please include the contents of this log.\njcbarret@broad.mit.edu\n"+
+                "*************************\n");
 
         newContentPane.add(scrollPane);
         contentFrame.setContentPane(newContentPane);
