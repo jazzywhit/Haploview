@@ -95,7 +95,16 @@ public class HaploView extends JFrame implements ActionListener{
 
 
     public HaploView(){
-        fc = new JFileChooser(System.getProperty("user.dir"));
+        try{
+            fc = new JFileChooser(System.getProperty("user.dir"));
+        }catch(NullPointerException n){
+            try{
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                fc = new JFileChooser(System.getProperty("user.dir"));
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }catch(Exception e){
+            }
+        }
         //menu setup
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -318,12 +327,12 @@ public class HaploView extends JFrame implements ActionListener{
 
         //exporting clauses
         }else if (command == EXPORT_PNG){
-            JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+            //JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                 export(tabs.getSelectedIndex(), PNG_MODE, fc.getSelectedFile());
             }
         }else if (command == EXPORT_TEXT){
-            JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+            //JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                 export(tabs.getSelectedIndex(), TXT_MODE, fc.getSelectedFile());
             }

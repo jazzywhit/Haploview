@@ -110,11 +110,11 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     void browse(int browseType){
         String name;
         String markerInfoName = "";
-        JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-        fc.setSelectedFile(null);
-        int returned = fc.showOpenDialog(this);
+        HaploView h = (HaploView) this.getParent();
+        h.fc.setSelectedFile(null);
+        int returned = h.fc.showOpenDialog(this);
         if (returned != JFileChooser.APPROVE_OPTION) return;
-        File file = fc.getSelectedFile();
+        File file = h.fc.getSelectedFile();
 
         if (browseType == GENO){
             name = file.getName();
