@@ -13,7 +13,7 @@ public class Chromosome{
     byte[] genotypes;
     private String origin;
 
-    public static String dataChrom = null;
+    private static String dataChrom = null;
     static int[] realIndex;
     static int[] filterIndex;
     static Object[] markers;
@@ -129,6 +129,14 @@ public class Chromosome{
 
     public void setGenotype(byte gen,int pos){
         this.genotypes[pos] = gen;
+    }
+
+    public static void setDataChrom(String chrom) {
+        dataChrom = chrom;
+    }
+
+    public static String getDataChrom(){
+        return dataChrom;
     }
 }
 
