@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.4 2005/02/03 17:13:32 jcbarret Exp $
+* $Id: PedFile.java,v 3.5 2005/02/03 19:50:16 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -695,34 +695,26 @@ public class PedFile {
             while (indIDEnum.hasMoreElements()){
                 victor.add(curFam.getMember((String) indIDEnum.nextElement()));
             }
-            if (victor.size() > 1){
-                PedParser pp = new PedParser();
-                try {
-                    SimpleGraph sg = pp.buildGraph(victor, Options.getMissingThreshold());
-                    Vector indStrings = pp.parsePed(sg);
-                    if (indStrings != null){
-                        Iterator sitr = indStrings.iterator();
-                        while (sitr.hasNext()){
-                            useable.add(curFam.getMember((String)sitr.next()));
-                        }
-                    }
-                }catch (PedigreeException pe){
-                    String pem = pe.getMessage();
-                    if (pem.indexOf("one parent") != -1 ||
-                            pem.indexOf("Unrelated individuals in the same family.") != -1){
-                        indIDEnum = curFam.getMemberList();
-                        while (indIDEnum.hasMoreElements()){
-                            curFam.getMember((String) indIDEnum.nextElement()).setReasonImAxed(pem);
-                        }
-                    }else{
-                        throw new PedFileException(pem + "\nin family " + curFam.getFamilyName());
+
+            PedParser pp = new PedParser();
+            try {
+                SimpleGraph sg = pp.buildGraph(victor, Options.getMissingThreshold());
+                Vector indStrings = pp.parsePed(sg);
+                if (indStrings != null){
+                    Iterator sitr = indStrings.iterator();
+                    while (sitr.hasNext()){
+                        useable.add(curFam.getMember((String)sitr.next()));
                     }
                 }
-            }else if (victor.size() == 1){
-                Individual singleton = (Individual) victor.elementAt(0);
-                //only add this singleton if he has more than the minimum allowable amount of data
-                if (!(singleton.getGenoPC() < 1 - Options.getMissingThreshold())){
-                    useable.addAll(victor);
+            }catch (PedigreeException pe){
+                String pem = pe.getMessage();
+                if (pem.indexOf("one parent") != -1){
+                    indIDEnum = curFam.getMemberList();
+                    while (indIDEnum.hasMoreElements()){
+                        curFam.getMember((String) indIDEnum.nextElement()).setReasonImAxed(pem);
+                    }
+                }else{
+                    throw new PedFileException(pem + "\nin family " + curFam.getFamilyName());
                 }
             }
         }

@@ -2,6 +2,7 @@ package edu.mit.wi.pedparser;
 
 import org._3pq.jgrapht.graph.SimpleGraph;
 import org._3pq.jgrapht.Graph;
+import org._3pq.jgrapht.UndirectedGraph;
 import org._3pq.jgrapht.alg.ConnectivityInspector;
 
 import java.util.*;
@@ -110,22 +111,64 @@ public class PedParser {
             }
         }
 
-        ConnectivityInspector inspectorGadget = new ConnectivityInspector(theGraph);
-        if (!inspectorGadget.isGraphConnected()){
-             throw new PedigreeException("Unrelated individuals in the same family.");
+        //now add any floating singletons
+        itr = indsByID.values().iterator();
+        while (itr.hasNext()){
+            Individual ind = (Individual) itr.next();
+            if (!usedPeople.contains(ind)){
+                theGraph.addVertex(ind);
+            }
         }
 
-        if (usedPeople.size() != indsByID.size()){
-            throw new PedigreeException("Unrelated individuals in the same family.");
-        }
+
+
         return theGraph;
     }
 
-    public Vector parsePed(Graph g) throws PedigreeException{
-        Iterator itr = g.vertexSet().iterator();
-        boolean first = true;
-        ScoreData firstSD = null;
+    public Vector parsePed(UndirectedGraph g) throws PedigreeException{
+        //takes any graph and submits all connected subgraphs to parseConnectedGraph
+        //returns the sum of those results
+        Vector retVec = new Vector();
+        ConnectivityInspector inspectorGadget = new ConnectivityInspector(g);
+        Iterator itr = inspectorGadget.connectedSets().iterator();
+        while (itr.hasNext()){
+            SimpleGraph subGraph = new SimpleGraph();
+            Iterator vitr = ((Set)itr.next()).iterator();
+            HashSet edgeSet = new HashSet();
+            while (vitr.hasNext()){
+                Object o = vitr.next();
+                subGraph.addVertex(o);
+                edgeSet.addAll(g.edgesOf(o));
+            }
+            subGraph.addAllEdges(edgeSet);
+            retVec.addAll(parseConnectedGraph(subGraph));
+        }
 
+        return retVec;
+    }
+
+    private Vector parseConnectedGraph(UndirectedGraph g) throws PedigreeException{
+        Iterator itr;
+
+        ConnectivityInspector inspectorGadget = new ConnectivityInspector(g);
+        if (!inspectorGadget.isGraphConnected()){
+            throw new PedigreeException("Graph not connected.");
+        }
+
+        //this deals with floating singletons
+        if (g.vertexSet().size() == 1){
+            itr = g.vertexSet().iterator();
+            Object o = itr.next();
+            if (o instanceof Individual){
+                Vector v = new Vector();
+                if (!((Individual)o).missing){
+                    v.add(((Individual)o).id);
+                }
+                return v;
+            }
+        }
+
+        itr = g.vertexSet().iterator();
         while (itr.hasNext()){
             PedTreeNode starter = (PedTreeNode) itr.next();
             List edges = g.edgesOf(starter);
@@ -205,8 +248,6 @@ public class PedParser {
 
         //start scoring
         //first, build the zeroscore by parsing the node with only people unrelated to edgeInd
-        HashSet availablePeople = new HashSet();
-        availablePeople = thisVertex.getUnrelatedMembers(edgeInd);
 
         ScoreData sd0 = new ScoreData();
         if (thisVertex.parents.contains(edgeInd)){
@@ -243,7 +284,6 @@ public class PedParser {
         }
 
         //now, parse the node allowing all members
-        availablePeople = thisVertex.getNodeMembers();
         Individual starter = null;
 
 
@@ -273,7 +313,6 @@ public class PedParser {
 
         return sd2;
     }
-
 
     ScoreData scoreNodeRemainder (Individual seed, HashSet kids, HashSet parents,
                                   Hashtable scoresByEdges, Hashtable edgesByInds, Individual edgeInd){
@@ -606,7 +645,6 @@ public class PedParser {
 
         return new ScoreData(zeroScore,twoScore);
     }
-
 
     class Trio{
         Individual kid, mom, dad;
