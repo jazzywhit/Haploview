@@ -78,6 +78,9 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
             String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};
             caller.readGenotypes(returnStrings, fileType);
+            if (caller.hapDisplay != null){
+                caller.hapDisplay.setVisible(false);
+            }
 
             if (caller.dPrimeDisplay != null){
                 caller.dPrimeDisplay.setVisible(false);

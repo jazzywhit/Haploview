@@ -60,7 +60,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     JFileChooser fc;
     DPrimeDisplay dPrimeDisplay;
     private JScrollPane hapScroller;
-    private HaplotypeDisplay hapDisplay;
+    HaplotypeDisplay hapDisplay;
     JTabbedPane tabs;
     CheckDataController cdc;
 
