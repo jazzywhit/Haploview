@@ -174,34 +174,49 @@ public class HaploData implements Constants{
             percentBadGenotypes = new double[Chromosome.getSize()];
             for (int i = 0; i < Chromosome.getSize(); i++){
                 //to compute maf, browse chrom list and count instances of each allele
-                byte a1 = 0;
+                byte a1 = 0; byte a2 = 0;
                 double numa1 = 0; double numa2 = 0;
                 for (int j = 0; j < chromosomes.size(); j++){
                     //if there is a data point for this marker on this chromosome
                     byte thisAllele = ((Chromosome)chromosomes.elementAt(j)).getGenotype(i);
                     if (!(thisAllele == 0)){
-                        if (thisAllele == 5){
+                        if (thisAllele >= 5){
                             numa1+=0.5; numa2+=0.5;
+                            if (thisAllele < 9){
+                                if (a1==0){
+                                    a1 = (byte)(thisAllele-4);
+                                }else if (a2 == 0){
+                                    if (!(thisAllele-5 == a1)){
+                                        a2 = (byte)(thisAllele-4);
+                                    }
+                                }
+                            }
                         }else if (a1 == 0){
                             a1 = thisAllele; numa1++;
                         }else if (thisAllele == a1){
                             numa1++;
                         }else{
                             numa2++;
+                            a2 = thisAllele;
                         }
                     }
                     else {
                        numBadGenotypes[i]++;
                     }
                 }
+                if (numa2 > numa1){
+                    byte temp = a1;
+                    a1 = a2;
+                    a2 = temp;
+                }
                 double maf = numa1/(numa2+numa1);
                 if (maf > 0.5) maf = 1.0-maf;
                 if (infoKnown){
                     markerInfo.add(new SNP((String)names.elementAt(i),
                             Long.parseLong((String)positions.elementAt(i)),
-                            Math.rint(maf*100.0)/100.0));
+                            Math.rint(maf*100.0)/100.0, a1, a2));
                 }else{
-                    markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), Math.rint(maf*100.0)/100.0));
+                    markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), Math.rint(maf*100.0)/100.0,a1,a2));
                 }
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
@@ -254,7 +269,7 @@ public class HaploData implements Constants{
             while (st.hasMoreTokens()){
                 String thisGenotype = (String)st.nextElement();
                 if (thisGenotype.equals("h")) {
-                    genos[q] = 5;
+                    genos[q] = 9;
                 }else{
                     try{
                         genos[q] = Byte.parseByte(thisGenotype);
@@ -263,7 +278,7 @@ public class HaploData implements Constants{
                                     + thisGenotype + "\" on line " + lineCount + " not allowed.");
                     }
                 }
-                if (genos[q] < 0 || genos[q] > 5){
+                if (genos[q] < 0 || genos[q] > 9){
                     throw new HaploViewException("Genotype file input error:\ngenotype value \"" + genos[q] +
                             "\" on line " + lineCount + " not allowed.");
                 }
@@ -370,8 +385,8 @@ public class HaploData implements Constants{
                             chrom1[i] = thisMarker[0];
                             chrom2[i] = thisMarker[1];
                         }else{
-                            chrom1[i] = 5;
-                            chrom2[i] = 5;
+                            chrom1[i] = (byte)(4+thisMarker[0]);
+                            chrom2[i] = (byte)(4+thisMarker[1]);
                         }
                     }
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1,currentInd.getAffectedStatus()==2));
@@ -423,15 +438,15 @@ public class HaploData implements Constants{
                                     dadTb[i] = dad1;
                                     dadUb[i] = dad1;
                                 } else {
-                                    dadTb[i] = 5;
-                                    dadUb[i] = 5;
+                                    dadTb[i] = (byte)(4+dad1);
+                                    dadUb[i] = (byte)(4+dad2);
                                 }
                                 if (mom1 == mom2) {
                                     momTb[i] = mom1;
                                     momUb[i] = mom1;
                                 } else {
-                                    momTb[i] = 5;
-                                    momUb[i] = 5;
+                                    momTb[i] = (byte)(4+mom1);
+                                    momUb[i] = (byte)(4+mom2);
                                 }
                             } else if (kid1 == kid2) {
                                 //kid homozygous
@@ -468,12 +483,12 @@ public class HaploData implements Constants{
                                     //dad missing mom het
                                     dadTb[i] = 0;
                                     dadUb[i] = 0;
-                                    momTb[i] = 5;
-                                    momUb[i] = 5;
+                                    momTb[i] = (byte)(4+mom1);
+                                    momUb[i] = (byte)(4+mom2);
                                 } else if (mom1 == 0 && dad1 != dad2) {
                                     //dad het mom missing
-                                    dadTb[i] = 5;
-                                    dadUb[i] = 5;
+                                    dadTb[i] = (byte)(4+dad1);
+                                    dadUb[i] = (byte)(4+dad2);
                                     momTb[i] = 0;
                                     momUb[i] = 0;
                                 } else if (dad1 == 0 && mom1 == mom2) {
@@ -526,10 +541,10 @@ public class HaploData implements Constants{
                                     momUb[i] = mom1;
                                 } else {
                                     //everybody het
-                                    dadTb[i] = 5;
-                                    dadUb[i] = 5;
-                                    momTb[i] = 5;
-                                    momUb[i] = 5;
+                                    dadTb[i] = (byte)(4+dad1);
+                                    dadUb[i] = (byte)(4+dad2);
+                                    momTb[i] = (byte)(4+mom1);
+                                    momUb[i] = (byte)(4+mom2);
                                 }
                             }
                         }
@@ -611,47 +626,14 @@ public class HaploData implements Constants{
             this.blocksDone++;
             int[] theBlock = (int[])blocks.elementAt(k);
 
+            /*for (int quux = 0; quux < theBlock.length; quux++){
 
-            int[] hetcount = new int[theBlock.length];
-            int[][] loc = new int[theBlock.length][5];
-            int[][] convert = new int[theBlock.length][5];
-            int[][] unconvert = new int[theBlock.length][5];
-            //int totalHaps = 0;
+            } */
 
-            //parse genotypes for unresolved heterozygotes
-            for (int i = 0; i < chromosomes.size(); i++){
-                Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
-                for (int j = 0; j < theBlock.length; j++){
-                    byte theGeno = thisChrom.getFilteredGenotype(theBlock[j]);
-                    if (theGeno == 5){
-                        hetcount[j]++;
-                    } else {
-                        loc[j][theGeno]++;
-                    }
-                }
-                //totalHaps ++;
-            }
-
-            for (int j = 0; j < theBlock.length; j++){
-                int a = 1;
-                for (int m = 1; m <= 4; m++){
-                    if (loc[j][m] > 0){
-                        convert[j][m]=a;
-                        unconvert[j][a]=m;
-                        loc[j][m]+=(hetcount[j]/2);
-                        a++;
-                    } else {
-                        convert[j][m] = 0;
-                        unconvert[j][a] = 8;
-                    }
-                }
-                if (unconvert[j][2] == 0) unconvert[j][2] = 8;
-            }
-
-
-            StringBuffer hapstr = new StringBuffer(theBlock.length);
+            byte[] thisHap;
             Vector inputHaploVector = new Vector();
             for (int i = 0; i < chromosomes.size(); i++){
+                thisHap = new byte[theBlock.length];
                 Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
                 Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++i);
                 int missing=0;
@@ -664,28 +646,43 @@ public class HaploData implements Constants{
 
                 if (! (missing > theBlock.length/2 || missing > missingLimit)){
                     for (int j = 0; j < theBlock.length; j++){
+                        byte a1 = Chromosome.getFilteredMarker(theBlock[j]).getMajor();
+                        byte a2 = Chromosome.getFilteredMarker(theBlock[j]).getMinor();
                         byte theGeno = thisChrom.getFilteredGenotype(theBlock[j]);
-                        if (theGeno == 5){
-                            hapstr.append("h");
+                        if (theGeno >= 5){
+                            thisHap[j] = 'h';
                         } else {
-                            hapstr.append(convert[j][theGeno]);
+                            if (theGeno == a1){
+                                thisHap[j] = '1';
+                            }else if (theGeno == a2){
+                                thisHap[j] = '2';
+                            }else{
+                                thisHap[j] = '0';
+                            }
                         }
                     }
-                    inputHaploVector.add(hapstr.toString());
-                    hapstr = new StringBuffer(theBlock.length);
+                    inputHaploVector.add(thisHap);
+                    thisHap = new byte[theBlock.length];
                     for (int j = 0; j < theBlock.length; j++){
+                        byte a1 = Chromosome.getFilteredMarker(theBlock[j]).getMajor();
+                        byte a2 = Chromosome.getFilteredMarker(theBlock[j]).getMinor();
                         byte nextGeno = nextChrom.getFilteredGenotype(theBlock[j]);
-                        if (nextGeno == 5){
-                            hapstr.append("h");
-                        }else{
-                            hapstr.append(convert[j][nextGeno]);
+                        if (nextGeno >= 5){
+                            thisHap[j] = 'h';
+                        } else {
+                            if (nextGeno == a1){
+                                thisHap[j] = '1';
+                            }else if (nextGeno == a2){
+                                thisHap[j] = '2';
+                            }else{
+                                thisHap[j] = '0';
+                            }
                         }
                     }
-                    inputHaploVector.add(hapstr.toString());
-                    hapstr = new StringBuffer(theBlock.length);
+                    inputHaploVector.add(thisHap);
                 }
             }
-            String[] input_haplos = (String[])inputHaploVector.toArray(new String[0]);
+            byte[][] input_haplos = (byte[][])inputHaploVector.toArray(new byte[0][0]);
 
             //break up large blocks if needed
             int[] block_size;
@@ -716,14 +713,10 @@ public class HaploData implements Constants{
             int[] num_haplos_present = new int[1];
             Vector haplos_present = new Vector();
             Vector haplo_freq = new Vector();
-            char[][] input_haplos2 = new char[input_haplos.length][];
-            for (int j = 0; j < input_haplos.length; j++){
-                input_haplos2[j] = input_haplos[j].toCharArray();
-            }
 
             //kirby patch
             EM theEM = new EM();
-            theEM.full_em_breakup(input_haplos2, 4, num_haplos_present, haplos_present, haplo_freq, block_size, 0);
+            theEM.full_em_breakup(input_haplos, 4, num_haplos_present, haplos_present, haplo_freq, block_size, 0);
             for (int j = 0; j < haplos_present.size(); j++){
                 EMreturn += (String)haplos_present.elementAt(j)+"\t"+(String)haplo_freq.elementAt(j)+"\t";
             }
@@ -736,7 +729,16 @@ public class HaploData implements Constants{
                 String aString = st.nextToken();
                 int[] genos = new int[aString.length()];
                 for (int j = 0; j < aString.length(); j++){
-                    genos[j] = unconvert[j][Integer.parseInt(aString.substring(j, j+1))];
+                    byte returnBit = Byte.parseByte(aString.substring(j,j+1));
+                    if (returnBit == 1){
+                        genos[j] = Chromosome.getFilteredMarker(theBlock[j]).getMajor();
+                    }else{
+                        if (Chromosome.getFilteredMarker(theBlock[j]).getMinor() == 0){
+                            genos[j] = 8;
+                        }else{
+                            genos[j] = Chromosome.getFilteredMarker(theBlock[j]).getMinor();
+                        }
+                    }
                 }
                 double tempPerc = Double.parseDouble(st.nextToken());
                 if (tempPerc*100 > hapthresh){
@@ -1134,52 +1136,21 @@ public class HaploData implements Constants{
                 twoMarkerHaplos[i][j] = 0;
             }
         }
-        doublehet = 0;
-        //get the alleles for the markers
-        int m1a1 = 0; int m1a2 = 0; int m2a1 = 0; int m2a2 = 0; int m1H = 0; int m2H = 0;
-
-        for (int i = 0; i < chromosomes.size(); i++){
-            byte a1 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos1);
-            byte a2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
-            if (m1a1 > 0){
-                if (m1a2 == 0 && !(a1 == 5) && !(a1 == 0) && a1 != m1a1) m1a2 = a1;
-            } else if (!(a1 == 5) && !(a1 == 0)) m1a1=a1;
-
-            if (m2a1 > 0){
-                if (m2a2 == 0 && !(a2 == 5) && !(a2 == 0) && a2 != m2a1) m2a2 = a2;
-            } else if (!(a2 == 5) && !(a2 == 0)) m2a1=a2;
-
-            if (a1 == 5) m1H++;
-            if (a2 == 5) m2H++;
-        }
 
         //check for non-polymorphic markers
-        if (m1a2==0){
-            if (m1H==0){
-               //System.out.println("Marker " + (pos1+1) + " is monomorphic.");//TODO Make this happier
-               return null;
-            } else {
-                if (m1a1 == 1){ m1a2=2; }
-                else { m1a2 = 1; }
-            }
-        }
-        if (m2a2==0){
-            if (m2H==0){
-                return null;
-            } else {
-                if (m2a1 == 1){ m2a2=2; }
-                else { m2a2 = 1; }
-            }
+        if (Chromosome.getMarker(pos1).getMAF() == 0 || Chromosome.getMarker(pos2).getMAF() == 0){
+            return null;
+            //System.out.println("Marker " + (pos1+1) + " is monomorphic.");//TODO Make this happier
         }
 
         int[] marker1num = new int[5]; int[] marker2num = new int[5];
 
         marker1num[0]=0;
-        marker1num[m1a1]=1;
-        marker1num[m1a2]=2;
+        marker1num[Chromosome.getMarker(pos1).getMajor()]=1;
+        marker1num[Chromosome.getMarker(pos1).getMinor()]=2;
         marker2num[0]=0;
-        marker2num[m2a1]=1;
-        marker2num[m2a2]=2;
+        marker2num[Chromosome.getMarker(pos2).getMajor()]=1;
+        marker2num[Chromosome.getMarker(pos2).getMinor()]=2;
         //iterate through all chromosomes in dataset
         for (int i = 0; i < chromosomes.size(); i++){
             //System.out.println(i + " " + pos1 + " " + pos2);
@@ -1190,12 +1161,12 @@ public class HaploData implements Constants{
             byte b2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
             if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
                 //skip missing data
-            } else if ((a1 == 5 && a2 == 5) || (a1 == 5 && !(a2 == b2)) || (a2 == 5 && !(a1 == b1))) doublehet++;
+            } else if ((a1 >= 5 && a2 >= 5) || (a1 >= 5 && !(a2 == b2)) || (a2 >= 5 && !(a1 == b1))) doublehet++;
             //find doublehets and resolved haplotypes
-            else if (a1 == 5){
+            else if (a1 >= 5){
                 twoMarkerHaplos[1][marker2num[a2]]++;
                 twoMarkerHaplos[2][marker2num[a2]]++;
-            } else if (a2 == 5){
+            } else if (a2 >= 5){
                 twoMarkerHaplos[marker1num[a1]][1]++;
                 twoMarkerHaplos[marker1num[a1]][2]++;
             } else {
