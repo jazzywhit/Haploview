@@ -33,6 +33,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private String[] displayStrings;
     private final int popupLeftMargin = 12;
 
+    private final Color BG_GREY = new Color(212,208,200);
+
 
     BasicStroke thickerStroke = new BasicStroke(1);
     BasicStroke thinnerStroke = new BasicStroke(0.35f);
@@ -273,8 +275,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         FontMetrics metrics;
         int ascent;
-
-        g2.setColor(this.getBackground());
+        g2.setColor(BG_GREY);
         g2.fillRect(0,0,pref.width,pref.height);
         g2.setColor(Color.black);
 
