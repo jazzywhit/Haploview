@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.17 2004/08/05 21:30:47 jcbarret Exp $
+* $Id: PedFile.java,v 1.18 2004/08/13 20:41:23 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -12,7 +12,10 @@
 package edu.mit.wi.pedfile;
 
 
+import edu.mit.wi.haploview.Chromosome;
+
 import java.util.*;
+//import edu.mit.wi.haploview.Chromosome;
 
 /**
  * Handles input and storage of Pedigree files
@@ -403,9 +406,19 @@ public class PedFile {
                     //meta-data crap
                     String s = tokenizer.nextToken().trim();
 
-                    //get marker name and pos
+                    //get marker name, chrom and pos
                     if (skip == 0){
                         hminfo[k-1][0] = s;
+                    }
+                    if (skip == 2){
+                        if (Chromosome.dataChrom != null){
+                            if (!Chromosome.dataChrom.equals(s)){
+                                throw new PedFileException("Hapmap file format error on line " + (k+1)+
+                                        ":\n There appear to be multiple chromosomes in the file.");
+                            }
+                        }else{
+                            Chromosome.dataChrom = s;
+                        }
                     }
                     if (skip == 3){
                         hminfo[k-1][1] = s;

@@ -51,7 +51,7 @@ public class TDTPanel extends JPanel {
         for (int i = 0; i < numRes; i++){
             Vector tempVect = new Vector();
             TDTResult currentResult = (TDTResult)result.get(Chromosome.realIndex[i]);
-            tempVect.add(new Integer(i+1));
+            tempVect.add(new Integer(Chromosome.realIndex[i]+1));
             tempVect.add(currentResult.getName());
             tempVect.add(currentResult.getOverTransmittedAllele(type));
             tempVect.add(currentResult.getTURatio(type));

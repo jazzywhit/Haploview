@@ -1,7 +1,7 @@
 package edu.mit.wi.haploview;
 
 
-class Chromosome{
+public class Chromosome{
 
     private String ped;
     private String individual;
@@ -13,6 +13,7 @@ class Chromosome{
     boolean[] kidMissing;
     private boolean affected = false;
 
+    public static String dataChrom = null;
     static int[] realIndex;
     static Object[] markers;
     static int trueSize;

@@ -8,6 +8,8 @@ import java.awt.event.*;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.net.URL;
+import java.net.MalformedURLException;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
@@ -426,8 +428,73 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         int diamondY[] = new int[4];
         Polygon diamond;
 
+        //System.out.println(Chromosome.dataChrom + " " + Chromosome.getFilteredMarker(0).getPosition() + " " +
+        //        Chromosome.getFilteredMarker(Chromosome.getFilteredSize()-1).getPosition());
+        /*
+#################
+START OF SIMON'S HACKS
+#################
+
+
+See http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img
+for more info on GBrowse img.
+
+
+
+        URL imgUrl;
+        int imgHeight = 0;
+        int gbLineSpan = (dPrimeTable.length-1) * boxSize;
+        long gbminpos = Chromosome.getFilteredMarker(0).getPosition();
+        long gbmaxpos = Chromosome.getFilteredMarker(Chromosome.getFilteredSize()-1).getPosition();
+
+
+
+        try {
+// imgUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=chr5:" + gbminpos + ".." + gbmaxpos + ";width=" + gbLineSpan + ";type=genotyped_SNPs+LocusLink+RefSeq_mRNA");
+
+// fake the real region, actual file coordinates are not in actual genomic bp
+            imgUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=chr5:131856314..131999887;width=" + gbLineSpan + ";type=genotyped_SNPs+LocusLink+RefSeq_mRNA");
+
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Image gbrowse_img = toolkit.getImage(imgUrl); // get from the URL
+            MediaTracker mediaTracker = new MediaTracker(this);
+            mediaTracker.addImage(gbrowse_img, 0);
+            try
+            {
+                mediaTracker.waitForID(0);
+            }
+            catch (InterruptedException ie)
+            {
+                System.err.println(ie);
+                System.exit(1);
+            }
+
+
+
+
+            g2.drawImage(gbrowse_img, H_BORDER,0,this); // not sure if this is an imageObserver, however
+
+
+            imgHeight = gbrowse_img.getHeight(this); // get height so we can shift everything down
+
+        }
+        catch(MalformedURLException mue) {
+            System.err.println(mue);
+            System.exit(1);
+        }
+
+        */
         left = H_BORDER;
-        top = V_BORDER;
+        top = V_BORDER;// + imgHeight; // push the haplotype display down to make room for gbrowse image.
+
+
+/*
+###############
+END OF HIS HACKS
+###############
+*/
+
+
         if (forExport){
             left -= exportStart * boxSize;
         }
@@ -487,8 +554,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         int lineSpan = (dPrimeTable.length-1) * boxSize;
-        long minpos = Chromosome.getMarker(0).getPosition();
-        long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
+        long minpos = Chromosome.getFilteredMarker(0).getPosition();
+        long maxpos = Chromosome.getFilteredMarker(Chromosome.getFilteredSize()-1).getPosition();
         double spanpos = maxpos - minpos;
 
         if (theData.trackExists){
