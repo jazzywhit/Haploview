@@ -534,7 +534,7 @@ public class HaploView extends JFrame implements ActionListener{
         boolean nogui = false;
         HaploView window;
         for(int i = 0;i<args.length;i++) {
-            if(args[i].equals("-nogui") || args[i].equals("-n") ) {
+            if(args[i].equals("-n") || args[i].equals("-h")) {
                 nogui = true;
             }
         }
