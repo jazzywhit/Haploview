@@ -144,10 +144,12 @@ public class HaploData implements Constants{
                                 "\n Info file must be of format: <markername> <markerposition>");
                     }
 
-                    /*if (loc < prevloc){
-                        throw new HaploViewException("Info file out of order:\n"+
-                                name);
-                    } */
+                    //basically if anyone is crazy enough to load a dataset, then go back and load
+                    //an out-of-order info file we tell them to bugger off and start over.
+                    if (loc < prevloc && Chromosome.markers != null){
+                        throw new HaploViewException("Info file out of order with preloaded dataset:\n"+
+                                name + "\nPlease reload data file and info file together.");
+                    }
                     prevloc = loc;
                     names.add(name);
                     positions.add(l);
@@ -172,7 +174,7 @@ public class HaploData implements Constants{
                 }
                 infoKnown = true;
             }
-            else {
+            else if (infile != null){
                 //we only sort if we read the info from an info file. if
                 //it is from a hapmap file, then the markers were already sorted
                 //when they were read in (in class Pedfile).
@@ -374,6 +376,9 @@ public class HaploData implements Constants{
         for (int i = 0; i < genos.length; i++){
             Chromosome.realIndex[i] = i;
         }
+
+        //wipe clean any existing marker info so we know we're starting clean with a new file
+        Chromosome.markers = null;
     }
 
     public void linkageToChrom(File infile, int type)
@@ -654,6 +659,8 @@ public class HaploData implements Constants{
             }
         }
         chromosomes = chrom;
+        //wipe clean any existing marker info so we know we're starting with a new file
+        Chromosome.markers = null;
         return result;
     }
 
