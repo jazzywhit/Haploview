@@ -1418,9 +1418,7 @@ public class HaploData implements Constants{
                 saveHapsWriter.write("\n");
             }
             if (i < finishedHaplos.length - 1){
-                saveHapsWriter.write("Multiallelic Dprime: " + multidprime[i] + "\n");
-            }else{
-                saveHapsWriter.write("\n");
+                saveHapsWriter.write("Multiallelic Dprime: " + nf.format(multidprime[i]) + "\n");
             }
         }
         saveHapsWriter.close();
