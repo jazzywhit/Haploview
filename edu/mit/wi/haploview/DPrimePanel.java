@@ -7,11 +7,11 @@ import java.awt.event.*;
 
 class DPrimePanel extends JPanel{
     
-    private String[][] table;
+    private PairwiseLinkage[][] table;
     private boolean info;
     private Vector vec;
 
-    DPrimePanel(String[][] t, boolean b, Vector v){
+    DPrimePanel(PairwiseLinkage[][] t, boolean b, Vector v){
 	table = t;
 	info = b;
 	vec = v;
