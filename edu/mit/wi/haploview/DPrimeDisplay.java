@@ -6,24 +6,22 @@ import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.util.Vector;
 import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
 import javax.swing.border.CompoundBorder;
-import javax.swing.border.BevelBorder;
 
 class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionListener{
     private static final int H_BORDER = 30;
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;
 
-    private static final int DEFAULT_BOX_SIZE = 50;
-    private static final int DEFAULT_BOX_RADIUS = 24;
+    private static final int BOX_SIZES[] = {50, 24, 12};
+    private static final int BOX_RADII[] = {24, 11, 6};
     private static final int TICK_HEIGHT = 8;
     private static final int TICK_BOTTOM = 50;
 
     private int widestMarkerName = 80; //default size
     private int infoHeight = 0, blockDispHeight = 0;
-    private int boxSize = DEFAULT_BOX_SIZE;
-    private int boxRadius = DEFAULT_BOX_RADIUS;
+    private int boxSize = BOX_SIZES[0];
+    private int boxRadius = BOX_RADII[0];
     private int lowX, highX, lowY, highY;
     private int left, top, clickXShift, clickYShift;
     private String[] displayStrings = new String[5];
@@ -37,6 +35,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private Font boldMarkerNameFont = new Font("Default", Font.BOLD, 12);
 
     private boolean printDetails = true;
+    private boolean showWM = false;
+    private int zoomLevel = 0;
     private boolean noImage = true;
     private boolean popupExists, resizeRectExists = false;
 
@@ -47,7 +47,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private Rectangle worldmapRect = new Rectangle(0,0,-1,-1);
     private BufferedImage worldmap;
     private HaploData theData;
-    private Dimension chartSize;
+    private Dimension chartSize=null;
     private int wmMaxWidth=0;
 
     DPrimeDisplay(HaploData h){
@@ -62,24 +62,62 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         repaint();
     }
 
+    public void zoom(int type){
+        int diff = type - zoomLevel;
+
+        zoomLevel = type;
+        int x=0, y=0;
+        int oldX = getVisibleRect().x;
+        int oldY = getVisibleRect().y;
+        int oldWidth = getVisibleRect().width;
+        int oldHeight = getVisibleRect().height;
+
+        if (diff > 0){
+            //we're zooming out
+            x = oldX /(2*diff) - oldWidth/4*diff;
+            y = oldY /(2*diff) - oldHeight/4*diff;
+        } else if (diff < 0 ) {
+            //we're zooming in
+            diff = -diff;
+            x = oldX*2*diff + oldWidth/2*diff;
+            y = oldY*2*diff + oldHeight/2*diff;
+        }else{
+            //we didn't change the zoom so don't waste cycles
+            return;
+        }
+        if (x < 0){
+            x = 0;
+        }
+        if (y < 0){
+            y = 0;
+        }
+        boxSize = BOX_SIZES[zoomLevel];
+        boxRadius = BOX_RADII[zoomLevel];
+        ((JViewport)getParent()).setViewSize(getPreferredSize());
+        //System.out.println(oldX + " " + x + " " + oldY + " " + y);
+        ((JViewport)getParent()).setViewPosition(new Point(x,y));
+    }
+
     public void paintComponent(Graphics g){
         PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
         Vector blocks = theData.blocks;
+        Rectangle visRect = getVisibleRect();
 
+        //deal with zooming
+        if (chartSize.getWidth() > (3*visRect.width)){
+            showWM = true;
+        }else{
+            showWM = false;
+        }
+        if (zoomLevel == 0){
+            printDetails = true;
+        } else{
+            printDetails = false;
+        }
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
-        Rectangle visRect = getVisibleRect();
-        /*
-        boxSize = ((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
-        if (boxSize < 12){boxSize=12;}
-        if (boxSize < 25){
-        printDetails = false;
-        boxRadius = boxSize/2;
-        }else{
-        boxRadius = boxSize/2 - 1;
-        }
-        */
+        ((JViewport)this.getParent()).setViewSize(pref);
 
         //okay so this dumb if block is to prevent the ugly repainting
         //bug when loading markers after the data are already being displayed,
@@ -186,8 +224,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_OFF);
         }
-
-        blockDispHeight = ascent+boxSize/2;
         top  += blockDispHeight;
 
         //// draw the marker numbers
@@ -277,8 +313,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }
         }
 
-        //highlight blocks
         boolean even = true;
+        //highlight blocks
         g2.setFont(markerNameFont);
         ascent = g2.getFontMetrics().getAscent();
         //g.setColor(new Color(153,255,153));
@@ -310,29 +346,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         top-blockDispHeight,
                         left+j*boxSize+boxSize/2,
                         top-blockDispHeight);
-
-                /*
-                //little vees on top of each marker
-                g2.drawLine(left + (2*theBlock[j+1]) * boxSize/2,
-                top + boxSize/2,
-                left + (2*theBlock[j+1]) * boxSize/2 + boxRadius,
-                top+1);
-                g2.drawLine (left + (2*theBlock[j+1]) * boxSize/2,
-                top + boxSize/2,
-                left + (2*theBlock[j+1]-1) * boxSize/2,
-                top);
-                */
             }
-
-            //special lines for fencepost markers
-            /*g2.drawLine(left+first*boxSize+1,
-            top+boxRadius,
-            left+first*boxSize+boxRadius,
-            top+1);
-            g2.drawLine(left+last*boxSize-1,
-            top+boxRadius,
-            left+last*boxSize-boxRadius,
-            top+1);  */
 
             //lines to connect to block display
             g2.setStroke(fatStroke);
@@ -344,11 +358,13 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     top-1,
                     left+last*boxSize+boxSize/2,
                     top-blockDispHeight);
-
-            String labelString = new String ("Block " + (i+1));
-            g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/2);
+            if (printDetails){
+                String labelString = new String ("Block " + (i+1));
+                g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/2);
+            }
         }
         g2.setStroke(thickerStroke);
+
 
         //see if the user has right-clicked to popup some marker info
         if(popupExists){
@@ -376,7 +392,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }
         }
 
-        if (pref.getWidth() > (2*visRect.width)){
+        if (showWM){
             //dataset is big enough to require worldmap
             if (noImage){
                 //first time through draw a worldmap if dataset is big:
@@ -516,12 +532,17 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         Graphics g = this.getGraphics();
         g.setFont(markerNameFont);
         FontMetrics fm = g.getFontMetrics();
-        blockDispHeight = boxSize/2 + fm.getAscent();
+        if (printDetails){
+            blockDispHeight = boxSize/2 + fm.getAscent();
+        }else{
+            blockDispHeight = boxSize/2;
+        }
 
         int high = 2*V_BORDER + count*boxSize/2 + blockDispHeight;
         chartSize = new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1),high);
         //this dimension is just the area taken up by the dprime chart
         //it is used in drawing the worldmap
+
 
         if (theData.infoKnown){
             infoHeight = TICK_BOTTOM + widestMarkerName + TEXT_GAP;
@@ -529,7 +550,15 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }else{
             infoHeight=0;
         }
-        return new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1), high);
+        int wide = 2*H_BORDER + boxSize*(dPrimeTable.length-1);
+        Rectangle visRect = getVisibleRect();
+        if (wide < visRect.width){
+            wide = visRect.width;
+        }
+        if (high < visRect.height){
+            high = visRect.height;
+        }
+        return new Dimension(wide, high);
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -537,35 +566,39 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 InputEvent.BUTTON1_MASK) {
             int clickX = e.getX();
             int clickY = e.getY();
-            if (worldmapRect.contains(clickX,clickY)){
-                //convert a click on the worldmap to a point on the big picture
-                int bigClickX = (((clickX - getVisibleRect().x) * chartSize.width) /
-                        worldmap.getWidth())-getVisibleRect().width/2;
-                int bigClickY = (((clickY - getVisibleRect().y -
-                        (getVisibleRect().height-worldmap.getHeight())) *
-                        chartSize.height) / worldmap.getHeight()) -
-                        getVisibleRect().height/2 + infoHeight;
+            if (showWM){
+                if (worldmapRect.contains(clickX,clickY)){
+                    //convert a click on the worldmap to a point on the big picture
+                    int bigClickX = (((clickX - getVisibleRect().x) * chartSize.width) /
+                            worldmap.getWidth())-getVisibleRect().width/2;
+                    int bigClickY = (((clickY - getVisibleRect().y -
+                            (getVisibleRect().height-worldmap.getHeight())) *
+                            chartSize.height) / worldmap.getHeight()) -
+                            getVisibleRect().height/2 + infoHeight;
 
-                //if the clicks are near the edges, correct values
-                if (bigClickX > chartSize.width - getVisibleRect().width){
-                    bigClickX = chartSize.width - getVisibleRect().width;
-                }
-                if (bigClickX < 0){
-                    bigClickX = 0;
-                }
-                if (bigClickY > chartSize.height - getVisibleRect().height + infoHeight){
-                    bigClickY = chartSize.height - getVisibleRect().height + infoHeight;
-                }
-                if (bigClickY < 0){
-                    bigClickY = 0;
-                }
+                    //if the clicks are near the edges, correct values
+                    if (bigClickX > chartSize.width - getVisibleRect().width){
+                        bigClickX = chartSize.width - getVisibleRect().width;
+                    }
+                    if (bigClickX < 0){
+                        bigClickX = 0;
+                    }
+                    if (bigClickY > chartSize.height - getVisibleRect().height + infoHeight){
+                        bigClickY = chartSize.height - getVisibleRect().height + infoHeight;
+                    }
+                    if (bigClickY < 0){
+                        bigClickY = 0;
+                    }
 
-                ((JViewport)getParent()).setViewPosition(new Point(bigClickX,bigClickY));
+                    ((JViewport)getParent()).setViewPosition(new Point(bigClickX,bigClickY));
+                }
             }
         }
     }
 
     public void mousePressed (MouseEvent e) {
+
+        //if users right clicks & holds, pop up the info
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
                 InputEvent.BUTTON3_MASK){
 
@@ -635,18 +668,22 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     }
 
     public void mouseReleased(MouseEvent e) {
+        //remove popped up window
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
                 InputEvent.BUTTON3_MASK){
             popupExists = false;
             repaint();
+        //resize window once user has ceased dragging
         } else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
                 InputEvent.BUTTON1_MASK){
-            resizeRectExists = false;
-            noImage = true;
-            if (resizeWMRect.width > 20){
-                wmMaxWidth = resizeWMRect.width;
+            if (getCursor() == Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR)){
+                resizeRectExists = false;
+                noImage = true;
+                if (resizeWMRect.width > 20){
+                    wmMaxWidth = resizeWMRect.width;
+                }
+                repaint();
             }
-            repaint();
         }
     }
 
@@ -656,15 +693,14 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             //conveniently, we can tell if this drag started in the resize corner
             //based on what the cursor is
             if (getCursor() == Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR)){
-                final int clickX = e.getX();
-                final int clickY = e.getY();
-                Graphics g = getGraphics();
-                g.setColor(Color.black);
+                int width = e.getX() - worldmapRect.x;
+                double ratio = (double)width/(double)worldmap.getWidth();
+                int height = (int)(ratio*worldmap.getHeight());
 
-                resizeWMRect = new Rectangle(worldmapRect.x,
-                        clickY,
-                        clickX - worldmapRect.x,
-                        worldmapRect.y + worldmapRect.height - clickY);
+                resizeWMRect = new Rectangle(worldmapRect.x+1,
+                        worldmapRect.y + worldmapRect.height - height,
+                        width,
+                        height-1);
                 resizeRectExists = true;
                 repaint();
             }
