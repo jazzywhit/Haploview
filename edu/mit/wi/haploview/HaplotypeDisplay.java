@@ -51,32 +51,8 @@ public class HaplotypeDisplay extends JComponent {
     public void getHaps() throws HaploViewException{
         if (theData.blocks == null) {return;}
 
-        Haplotype[][] haplos = theData.generateHaplotypes(theData.blocks,false);
+        orderedHaplos = theData.generateHaplotypes(theData.blocks,false);
 
-        orderedHaplos = new Haplotype[haplos.length][];
-        for (int i = 0; i < haplos.length; i++) {
-            Vector orderedHaps = new Vector();
-            //step through each haplotype in this block
-            for (int hapCount = 0; hapCount < haplos[i].length; hapCount++) {
-                if (orderedHaps.size() == 0) {
-                    orderedHaps.add(haplos[i][hapCount]);
-                } else {
-                    for (int j = 0; j < orderedHaps.size(); j++) {
-                        if (((Haplotype)(orderedHaps.elementAt(j))).getPercentage() <
-                                haplos[i][hapCount].getPercentage()) {
-                            orderedHaps.add(j, haplos[i][hapCount]);
-                            break;
-                        }
-                        if ((j+1) == orderedHaps.size()) {
-                            orderedHaps.add(haplos[i][hapCount]);
-                            break;
-                        }
-                    }
-                }
-            }
-            orderedHaplos[i] = new Haplotype[orderedHaps.size()];
-            orderedHaps.copyInto(orderedHaplos[i]);
-        }
         adjustDisplay();
     }
 
@@ -216,16 +192,10 @@ public class HaplotypeDisplay extends JComponent {
 
         filteredHaplos = filts;
 
-        //then re-tag
-        try{
-            filteredHaplos = theData.generateCrossovers(filteredHaplos);
-        }catch (HaploViewException e){
-                    JOptionPane.showMessageDialog(this.getParent(),
-                    e.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-        multidprimeArray = theData.getMultiDprime();
+        //then re-tag, sort and get MA D'
+        filteredHaplos = theData.orderByCrossing(filteredHaplos);
+        theData.pickTags(filteredHaplos);
+        multidprimeArray = theData.computeMultiDprime(filteredHaplos);
 
         //if the haps pane exists, we want to make sure the vert scroll bar appears if necessary
         if (this.getParent() != null){

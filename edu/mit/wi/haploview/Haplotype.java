@@ -43,8 +43,16 @@ class Haplotype{
         }
     }
 
+    public void setTags(boolean[] t){
+        tags = t;
+    }
+
     public double getCrossover(int index){
         return crossovers[index];
+    }
+
+    public double[] getCrossovers(){
+        return crossovers;
     }
 
     public int[] getMarkers(){

@@ -27,7 +27,6 @@ public class HaploData implements Constants{
     private PedFile pedFile;
     public boolean finished = false;
     private double[] percentBadGenotypes;
-    private double[] multidprimeArray;
     Vector analysisPositions = new Vector();
     Vector analysisValues = new Vector();
     boolean trackExists = false;
@@ -738,7 +737,7 @@ public class HaploData implements Constants{
 
     Haplotype[][] generateHaplotypes(Vector blocks, boolean crossover) throws HaploViewException{
         //TODO: output indiv hap estimates
-        Haplotype[][] results = new Haplotype[blocks.size()][];
+        Haplotype[][] rawHaplotypes = new Haplotype[blocks.size()][];
         //String raw = new String();
         //String currentLine;
         this.totalBlocks = blocks.size();
@@ -879,7 +878,7 @@ public class HaploData implements Constants{
 
                 //if (tempPerc*100 > hapthresh){
                 tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock);
-                //if we are performing association tests, then store the results
+                //if we are performing association tests, then store the rawHaplotypes
                 if (Options.getAssocTest() == ASSOC_TRIO){
                     tempArray[i].setTransCount(theEM.getTransCount(i));
                     tempArray[i].setUntransCount(theEM.getUntransCount(i));
@@ -890,21 +889,173 @@ public class HaploData implements Constants{
                 //p++;
                 //}
             }
-            //make the results array only large enough to hold haps
+            //make the rawHaplotypes array only large enough to hold haps
             //which pass threshold above
-            results[k] = new Haplotype[theEM.numHaplos()];
+            rawHaplotypes[k] = new Haplotype[theEM.numHaplos()];
             for (int z = 0; z < theEM.numHaplos(); z++){
-                results[k][z] = tempArray[z];
+                rawHaplotypes[k][z] = tempArray[z];
             }
         }
         if (!crossover){
-            haplotypes = results;
+            haplotypes = new Haplotype[rawHaplotypes.length][];
+            for (int i = 0; i < rawHaplotypes.length; i++) {
+                Vector orderedHaps = new Vector();
+                //step through each haplotype in this block
+                for (int hapCount = 0; hapCount < rawHaplotypes[i].length; hapCount++) {
+                    if (orderedHaps.size() == 0) {
+                        orderedHaps.add(rawHaplotypes[i][hapCount]);
+                    } else {
+                        for (int j = 0; j < orderedHaps.size(); j++) {
+                            if (((Haplotype)(orderedHaps.elementAt(j))).getPercentage() <
+                                    rawHaplotypes[i][hapCount].getPercentage()) {
+                                orderedHaps.add(j, rawHaplotypes[i][hapCount]);
+                                break;
+                            }
+                            if ((j+1) == orderedHaps.size()) {
+                                orderedHaps.add(rawHaplotypes[i][hapCount]);
+                                break;
+                            }
+                        }
+                    }
+                }
+                haplotypes[i] = new Haplotype[orderedHaps.size()];
+                orderedHaps.copyInto(haplotypes[i]);
+            }
+            haplotypes = generateCrossovers(haplotypes);
+            return haplotypes;
         }
-        return results;
+        return rawHaplotypes;
     }
 
-    double[] getMultiDprime(){
+
+    public double[] computeMultiDprime(Haplotype[][] haplos){
+        double[] multidprimeArray = new double[haplos.length];
+        for (int gap = 0; gap < haplos.length - 1; gap++){
+            double[][] multilocusTable = new double[haplos[gap].length][];
+            double[] rowSum = new double[haplos[gap].length];
+            double[] colSum = new double[haplos[gap+1].length];
+            double multilocusTotal = 0;
+            for (int i = 0; i < haplos[gap].length; i++){
+                multilocusTable[i] = haplos[gap][i].getCrossovers();
+            }
+            //compute multilocus D'
+            for (int i = 0; i < rowSum.length; i++){
+                for (int j = 0; j < colSum.length; j++){
+                    rowSum[i] += multilocusTable[i][j];
+                    colSum[j] += multilocusTable[i][j];
+                    multilocusTotal += multilocusTable[i][j];
+                    if (rowSum[i] == 0) rowSum[i] = 0.0001;
+                    if (colSum[j] == 0) colSum[j] = 0.0001;
+                }
+            }
+            double multidprime = 0;
+            boolean noDivByZero = false;
+            for (int i = 0; i < rowSum.length; i++){
+                for (int j = 0; j < colSum.length; j++){
+                    double num = (multilocusTable[i][j]/multilocusTotal) - (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal);
+                    double denom;
+                    if (num < 0){
+                        double denom1 = (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal);
+                        double denom2 = (1.0 - (rowSum[i]/multilocusTotal))*(1.0 - (colSum[j]/multilocusTotal));
+                        if (denom1 < denom2) {
+                            denom = denom1;
+                        }else{
+                            denom = denom2;
+                        }
+                    }else{
+                        double denom1 = (rowSum[i]/multilocusTotal)*(1.0 -(colSum[j]/multilocusTotal));
+                        double denom2 = (1.0 - (rowSum[i]/multilocusTotal))*(colSum[j]/multilocusTotal);
+                        if (denom1 < denom2){
+                            denom = denom1;
+                        }else{
+                            denom = denom2;
+                        }
+                    }
+                    if (denom != 0){
+                        noDivByZero = true;
+                        multidprime += (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal)*Math.abs(num/denom);
+                    }
+                }
+            }
+            if (noDivByZero){
+                multidprimeArray[gap] = multidprime;
+            }else{
+                multidprimeArray[gap] = 1.00;
+            }
+        }
         return multidprimeArray;
+    }
+
+    public void pickTags(Haplotype[][] haplos){
+        for (int i = 0; i < haplos.length; i++){
+            //first clear the tags for this block
+            haplos[i][0].clearTags();
+
+            //next pick the tagSNPs
+            Vector theBestSubset = getBestSubset(haplos[i]);
+            for (int j = 0; j < theBestSubset.size(); j++){
+                    haplos[i][0].addTag(((Integer)theBestSubset.elementAt(j)).intValue());
+            }
+
+            for (int k = 1; k < haplos[i].length; k++){
+                //so the tags should be a property of the block, but there's no object to represent it right now
+                //so we just make sure we copy the tags into all the haps in this block...sorry, I suck.
+                haplos[i][k].clearTags();
+                haplos[i][k].setTags(haplos[i][0].getTags());
+            }
+        }
+    }
+
+    public Haplotype[][] orderByCrossing(Haplotype[][] haplos){
+         //seed first block with ordering numbers
+        for (int u = 0; u < haplos[0].length; u++){
+            haplos[0][u].setListOrder(u);
+        }
+
+        for (int gap = 0; gap < haplos.length - 1; gap++){
+            //sort based on "straight line" crossings
+            int hilimit;
+            int lolimit;
+            if (haplos[gap+1].length > haplos[gap].length) {
+                hilimit = haplos[gap+1].length;
+                lolimit = haplos[gap].length;
+            }else{
+                hilimit = haplos[gap].length;
+                lolimit = haplos[gap+1].length;
+            }
+            boolean[] unavailable = new boolean[hilimit];
+            int[] prevBlockLocs = new int[haplos[gap].length];
+            for (int q = 0; q < prevBlockLocs.length; q++){
+                prevBlockLocs[haplos[gap][q].getListOrder()] = q;
+            }
+
+            for (int u = 0; u < haplos[gap+1].length; u++){
+                double currentBestVal = 0;
+                int currentBestLoc = -1;
+                for (int v = 0; v < lolimit; v++){
+                    if (!(unavailable[v])){
+                        if (haplos[gap][prevBlockLocs[v]].getCrossover(u) >= currentBestVal) {
+                            currentBestLoc = haplos[gap][prevBlockLocs[v]].getListOrder();
+                            currentBestVal = haplos[gap][prevBlockLocs[v]].getCrossover(u);
+                        }
+                    }
+                }
+                //it didn't get lined up with any of the previous block's markers
+                //put it at the end of the list
+                if (currentBestLoc == -1){
+                    for (int v = 0; v < unavailable.length; v++){
+                        if (!(unavailable[v])){
+                            currentBestLoc = v;
+                            break;
+                        }
+                    }
+                }
+
+                haplos[gap+1][u].setListOrder(currentBestLoc);
+                unavailable[currentBestLoc] = true;
+            }
+        }
+        return haplos;
     }
 
     Haplotype[][] generateCrossovers(Haplotype[][] haplos) throws HaploViewException{
@@ -913,23 +1064,6 @@ public class HaploData implements Constants{
 
         if (haplos.length == 0) return null;
 
-        //seed first block with ordering numbers
-        for (int u = 0; u < haplos[0].length; u++){
-            haplos[0][u].setListOrder(u);
-        }
-
-        for (int i = 0; i < haplos.length; i++){
-            haplos[i][0].clearTags();
-        }
-
-        multidprimeArray = new double[haplos.length];
-        //get "tag" SNPS if there is only one block:
-        if (haplos.length==1){
-            Vector theBestSubset = getBestSubset(haplos[0]);
-            for (int i = 0; i < theBestSubset.size(); i++){
-                haplos[0][0].addTag(((Integer)theBestSubset.elementAt(i)).intValue());
-            }
-        }
         for (int gap = 0; gap < haplos.length - 1; gap++){         //compute crossovers for each inter-block gap
             Vector preGapSubset = getBestSubset(haplos[gap]);
             Vector postGapSubset = getBestSubset(haplos[gap+1]);
@@ -939,13 +1073,9 @@ public class HaploData implements Constants{
             crossBlock.clear();                 //make a "block" of the markers which id the pre- and post- gap haps
             for (int i = 0; i < preGapSubset.size(); i++){
                 crossBlock.add(new Integer(preMarkerID[((Integer)preGapSubset.elementAt(i)).intValue()]));
-                //mark tags
-                haplos[gap][0].addTag(((Integer)preGapSubset.elementAt(i)).intValue());
             }
             for (int i = 0; i < postGapSubset.size(); i++){
                 crossBlock.add(new Integer(postMarkerID[((Integer)postGapSubset.elementAt(i)).intValue()]));
-                //mark tags
-                haplos[gap+1][0].addTag(((Integer)postGapSubset.elementAt(i)).intValue());
             }
 
             Vector inputVector = new Vector();
@@ -956,10 +1086,7 @@ public class HaploData implements Constants{
             inputVector.add(intArray);
 
             Haplotype[] crossHaplos = generateHaplotypes(inputVector,true)[0];  //get haplos of gap
-            double[][] multilocusTable = new double[haplos[gap].length][];
-            double[] rowSum = new double[haplos[gap].length];
-            double[] colSum = new double[haplos[gap+1].length];
-            double multilocusTotal = 0;
+
 
             for (int i = 0; i < haplos[gap].length; i++){
                 double[] crossPercentages = new double[haplos[gap+1].length];
@@ -1004,94 +1131,6 @@ public class HaploData implements Constants{
                 fixedCross[y] = crossPercentages[y]/percentageSum;
                 }*/
                 haplos[gap][i].addCrossovers(crossPercentages);
-                multilocusTable[i] = crossPercentages;
-            }
-
-            //sort based on "straight line" crossings
-            int hilimit;
-            int lolimit;
-            if (haplos[gap+1].length > haplos[gap].length) {
-                hilimit = haplos[gap+1].length;
-                lolimit = haplos[gap].length;
-            }else{
-                hilimit = haplos[gap].length;
-                lolimit = haplos[gap+1].length;
-            }
-            boolean[] unavailable = new boolean[hilimit];
-            int[] prevBlockLocs = new int[haplos[gap].length];
-            for (int q = 0; q < prevBlockLocs.length; q++){
-                prevBlockLocs[haplos[gap][q].getListOrder()] = q;
-            }
-
-            for (int u = 0; u < haplos[gap+1].length; u++){
-                double currentBestVal = 0;
-                int currentBestLoc = -1;
-                for (int v = 0; v < lolimit; v++){
-                    if (!(unavailable[v])){
-                        if (haplos[gap][prevBlockLocs[v]].getCrossover(u) >= currentBestVal) {
-                            currentBestLoc = haplos[gap][prevBlockLocs[v]].getListOrder();
-                            currentBestVal = haplos[gap][prevBlockLocs[v]].getCrossover(u);
-                        }
-                    }
-                }
-                //it didn't get lined up with any of the previous block's markers
-                //put it at the end of the list
-                if (currentBestLoc == -1){
-                    for (int v = 0; v < unavailable.length; v++){
-                        if (!(unavailable[v])){
-                            currentBestLoc = v;
-                            break;
-                        }
-                    }
-                }
-
-                haplos[gap+1][u].setListOrder(currentBestLoc);
-                unavailable[currentBestLoc] = true;
-            }
-
-            //compute multilocus D'
-            for (int i = 0; i < rowSum.length; i++){
-                for (int j = 0; j < colSum.length; j++){
-                    rowSum[i] += multilocusTable[i][j];
-                    colSum[j] += multilocusTable[i][j];
-                    multilocusTotal += multilocusTable[i][j];
-                    if (rowSum[i] == 0) rowSum[i] = 0.0001;
-                    if (colSum[j] == 0) colSum[j] = 0.0001;
-                }
-            }
-            double multidprime = 0;
-            boolean noDivByZero = false;
-            for (int i = 0; i < rowSum.length; i++){
-                for (int j = 0; j < colSum.length; j++){
-                    double num = (multilocusTable[i][j]/multilocusTotal) - (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal);
-                    double denom;
-                    if (num < 0){
-                        double denom1 = (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal);
-                        double denom2 = (1.0 - (rowSum[i]/multilocusTotal))*(1.0 - (colSum[j]/multilocusTotal));
-                        if (denom1 < denom2) {
-                            denom = denom1;
-                        }else{
-                            denom = denom2;
-                        }
-                    }else{
-                        double denom1 = (rowSum[i]/multilocusTotal)*(1.0 -(colSum[j]/multilocusTotal));
-                        double denom2 = (1.0 - (rowSum[i]/multilocusTotal))*(colSum[j]/multilocusTotal);
-                        if (denom1 < denom2){
-                            denom = denom1;
-                        }else{
-                            denom = denom2;
-                        }
-                    }
-                    if (denom != 0){
-                        noDivByZero = true;
-                        multidprime += (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal)*Math.abs(num/denom);
-                    }
-                }
-            }
-            if (noDivByZero){
-                multidprimeArray[gap] = multidprime;
-            }else{
-                multidprimeArray[gap] = 1.00;
             }
         }
         return haplos;

@@ -646,39 +646,33 @@ public class HaploText implements Constants{
                 }
 
                 //this handles output type ALL
-                Haplotype[][] orderedHaplos;
-                Haplotype[][] crossedHaplos;
                 if(outputType == BLOX_ALL) {
                     OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    orderedHaplos = orderHaps(haplos);
-                    crossedHaplos = textData.generateCrossovers(orderedHaplos);
-                    textData.saveHapsToText(crossedHaplos, textData.getMultiDprime(), OutputFile);
+                    textData.pickTags(haplos);
+                    textData.saveHapsToText(haplos, textData.computeMultiDprime(haplos), OutputFile);
                     OutputFile = validateOutputFile(fileName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    orderedHaplos = orderHaps(haplos);
-                    crossedHaplos = textData.generateCrossovers(orderedHaplos);
-                    textData.saveHapsToText(crossedHaplos, textData.getMultiDprime(), OutputFile);
+                    textData.pickTags(haplos);
+                    textData.saveHapsToText(haplos, textData.computeMultiDprime(haplos), OutputFile);
                     OutputFile = validateOutputFile(fileName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    orderedHaplos = orderHaps(haplos);
-                    crossedHaplos = textData.generateCrossovers(orderedHaplos);
-                    textData.saveHapsToText(crossedHaplos, textData.getMultiDprime(), OutputFile);
+                    textData.pickTags(haplos);
+                    textData.saveHapsToText(haplos, textData.computeMultiDprime(haplos), OutputFile);
                 }else{
                     textData.guessBlocks(outputType, cust);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    orderedHaplos = orderHaps(haplos);
-                    crossedHaplos = textData.generateCrossovers(orderedHaplos);
-                    textData.saveHapsToText(crossedHaplos, textData.getMultiDprime(), OutputFile);
+                    textData.pickTags(haplos);
+                    textData.saveHapsToText(haplos, textData.computeMultiDprime(haplos), OutputFile);
                 }
 
                 //todo: should this output hap assoc for each block type if they do more than one?
                 if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
                     //Haplotype[][] orderedHaps = orderHaps(textData.getHaplotypes());
-                    HaploData.saveHapAssocToText(orderedHaplos, fileName + ".HAPASSOC");
+                    HaploData.saveHapAssocToText(haplos, fileName + ".HAPASSOC");
                 }
             }
 
@@ -729,41 +723,4 @@ public class HaploText implements Constants{
             System.err.println(pfe.getMessage());
         }
     }
-
-
-    //note: generateCrossovers should never be called before calling orderHaps, since orderHaps does not reorder
-    //the stored crossover values
-    public Haplotype[][] orderHaps (Haplotype[][] haplos) throws HaploViewException{
-        Haplotype[][] orderedHaplos = new Haplotype[haplos.length][];
-        for (int i = 0; i < haplos.length; i++){
-            Vector orderedHaps = new Vector();
-            //step through each haplotype in this block
-            for (int hapCount = 0; hapCount < haplos[i].length; hapCount++){
-                if (orderedHaps.size() == 0){
-                    orderedHaps.add(haplos[i][hapCount]);
-                }else{
-                    for (int j = 0; j < orderedHaps.size(); j++){
-                        if (((Haplotype)(orderedHaps.elementAt(j))).getPercentage() < haplos[i][hapCount].getPercentage()){
-                            orderedHaps.add(j, haplos[i][hapCount]);
-                            break;
-                        }
-                        if ((j+1) == orderedHaps.size()){
-                            orderedHaps.add(haplos[i][hapCount]);
-                            break;
-                        }
-                    }
-                }
-            }
-            orderedHaplos[i] = new Haplotype[orderedHaps.size()];
-            for (int z = 0; z < orderedHaps.size(); z++){
-                orderedHaplos[i][z] = (Haplotype)orderedHaps.elementAt(z);
-            }
-
-        }
-        return orderedHaplos;
-    }
-
-
-
-
 }
