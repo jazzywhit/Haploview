@@ -95,14 +95,10 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         this.colorDPrime(STD_SCHEME);
     }
 
-    public void refresh(){
-        noImage = true;
-        repaint();
-    }
-
     public void colorDPrime(int scheme){
         currentScheme = scheme;
         PairwiseLinkage dPrime[][] = theData.filteredDPrimeTable;
+        noImage = true;
 
         if (scheme == STD_SCHEME){
             // set coloring based on LOD and D'
@@ -450,7 +446,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             cumulativeGap[i] = 0;
         }
         if (theData.infoKnown){
-            double mean = (((SNP)Chromosome.markers[Chromosome.markers.length-1]).getPosition() -
+            double mean
+            = (((SNP)Chromosome.markers[Chromosome.markers.length-1]).getPosition() -
                     ((SNP)Chromosome.markers[0]).getPosition())/Chromosome.markers.length-1;
             for (int i = 1; i < cumulativeGap.length; i++){
                 double sep = Chromosome.getMarker(i).getPosition() - Chromosome.getMarker(i-1).getPosition();

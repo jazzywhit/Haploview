@@ -236,8 +236,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
         });
 
-        addComponentListener(new ResizeListener());
-
     }
 
 
@@ -299,7 +297,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }else if (command.startsWith("color")){
             currentScheme = Integer.valueOf(command.substring(5)).intValue()+1;
             dPrimeDisplay.colorDPrime(currentScheme);
-            dPrimeDisplay.refresh();
             changeKey(currentScheme);
             //exporting clauses
         }else if (command == EXPORT_PNG){
@@ -895,23 +892,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
-    class ResizeListener implements ComponentListener{
-        public void componentResized(ComponentEvent e) {
-            if (dPrimeDisplay != null){
-                dPrimeDisplay.refresh();
-            }
-        }
-
-        public void componentMoved(ComponentEvent e) {
-        }
-
-        public void componentShown(ComponentEvent e) {
-        }
-
-        public void componentHidden(ComponentEvent e) {
-        }
-
-    }
 
     void export(int tabNum, int format, int start, int stop){
         fc.setSelectedFile(new File(""));
