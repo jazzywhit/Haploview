@@ -266,11 +266,15 @@ public class HaploView extends JFrame implements ActionListener{
 
         try{
             theData = new HaploData(new File(filenames[0]));
-            this.setCursor(Cursor.WAIT_CURSOR);
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
-                    theData.doMonitoredComputation();
+                    theData.generateDPrimeTable();
+                    theData.guessBlocks(0);
+                    infoKnown=false;
+                    drawPicture(theData);
+                    theData.finished = true;
                     return "";
                 }
             };
@@ -279,14 +283,12 @@ public class HaploView extends JFrame implements ActionListener{
                 public void actionPerformed(ActionEvent evt){
                     if (theData.finished){
                         timer.stop();
-                        infoKnown=false;
                         if (!(filenames[1].equals(""))){
                             readMarkers(new File(filenames[1]));
                         }
-                        drawPicture(theData);
                         defineBlocksItem.setEnabled(true);
                         readMarkerItem.setEnabled(true);
-                        setCursor(Cursor.DEFAULT_CURSOR);
+                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
                 }
             });
@@ -461,7 +463,7 @@ public class HaploView extends JFrame implements ActionListener{
                 methodList,
                 "Select a block-finding algorithm",
                 JOptionPane.QUESTION_MESSAGE);
-        theData.blocks = theData.guessBlocks(theData.dPrimeTable, methodList.getSelectedIndex());
+        theData.guessBlocks(methodList.getSelectedIndex());
         hapDisplay.getHaps();
         dPrimeDisplay.alreadyPainted = false;
         if (tabs.getSelectedIndex() == 0) dPrimeDisplay.repaint();
