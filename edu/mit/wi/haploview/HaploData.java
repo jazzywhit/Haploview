@@ -24,7 +24,6 @@ import java.util.Vector;
 public class HaploData{
     Vector chromosomes, blocks;
     int missingLimit = 5;
-    //Vector markerInfo = new Vector();
     PairwiseLinkage[][] dPrimeTable;
     public boolean finished = false;
     private boolean markersLoaded = false;

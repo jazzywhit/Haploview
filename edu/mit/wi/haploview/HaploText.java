@@ -258,7 +258,7 @@ public class HaploText {
 
             if(!fileType){
                 //read in haps file
-                textData.prepareGenotypeInput(inputFile);
+                textData.prepareHapsInput(inputFile);
             }
             else {
                 //read in ped file

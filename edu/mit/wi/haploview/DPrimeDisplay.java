@@ -7,8 +7,6 @@ import java.awt.event.*;
 //import java.io.*;
 //import java.text.*;
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 
 class DPrimeDisplay extends JComponent{
@@ -22,6 +20,7 @@ class DPrimeDisplay extends JComponent{
     private static final int TICK_BOTTOM = 50;
 
     private int widestMarkerName = 80; //default size
+    private int infoHeight = 0;
     private int boxSize = DEFAULT_BOX_SIZE;
     private int boxRadius = DEFAULT_BOX_RADIUS;
     private int lowX, highX, lowY, highY;
@@ -35,8 +34,11 @@ class DPrimeDisplay extends JComponent{
     private boolean printDetails = true;
     private boolean noImage = true;
 
+    private Rectangle ir = new Rectangle();
+    private Rectangle worldmapRect = new Rectangle(0,0,-1,-1);
     private BufferedImage worldmap;
     private PairwiseLinkage dPrimeTable[][];
+    private Dimension chartSize;
 
     DPrimeDisplay(PairwiseLinkage[][] t, boolean b){
         markersLoaded = b;
@@ -140,6 +142,7 @@ class DPrimeDisplay extends JComponent{
 
                 widestMarkerName = metrics.stringWidth(Chromosome.getMarker(0).getName());
                 for (int x = 1; x < dPrimeTable.length; x++) {
+                    //TODO: fix bug with loading datasets with data and then without
                     int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }
@@ -166,6 +169,7 @@ class DPrimeDisplay extends JComponent{
             g.setFont(markerNumFont);
             metrics = g.getFontMetrics();
             ascent = metrics.getAscent();
+            System.out.println(dPrimeTable.length);
             for (int x = 0; x < dPrimeTable.length; x++) {
                 String mark = String.valueOf(Chromosome.realIndex[x] + 1);
                 g.drawString(mark,
@@ -249,40 +253,59 @@ class DPrimeDisplay extends JComponent{
         }
 
         if (pref.getWidth() > visRect.width){
-            Rectangle ir = new Rectangle();
             if (noImage){
                 //first time through draw a worldmap if dataset is big:
                 final int WM_MAX_WIDTH = 300;
-                final int WM_MAX_HEIGHT = 150;
                 int scalefactor;
-
-                if (pref.getWidth()/WM_MAX_WIDTH > pref.getHeight()/WM_MAX_HEIGHT){
-                    scalefactor = pref.width/WM_MAX_WIDTH;
-                }else{
-                    scalefactor = pref.height/WM_MAX_HEIGHT;
+                if (2*dPrimeTable.length < WM_MAX_WIDTH){
+                    scalefactor = chartSize.width/(2*(dPrimeTable.length-1));
+                } else {
+                    scalefactor = chartSize.width/WM_MAX_WIDTH;
                 }
-                worldmap = new BufferedImage(pref.width/scalefactor, pref.height/scalefactor,
+
+                CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
+                        BorderFactory.createLoweredBevelBorder());
+                worldmap = new BufferedImage(chartSize.width/scalefactor+wmBorder.getBorderInsets(this).left*2,
+                        chartSize.height/scalefactor+wmBorder.getBorderInsets(this).top*2,
                         BufferedImage.TYPE_3BYTE_BGR);
 
                 Graphics gw = worldmap.getGraphics();
-                /*boxSize = ((visRect.width-2*H_BORDER)/dPrimeTable.length-1);
-                if (boxSize < 12){boxSize=12;}
-                if (boxSize < 25){
-                printDetails = false;
-                boxRadius = boxSize/2;
-                }else{
-                boxRadius = boxSize/2 - 1;
-                } */
                 gw.setColor(this.getBackground());
                 gw.fillRect(1,1,worldmap.getWidth()-2,worldmap.getHeight()-2);
                 //make a pretty border
                 gw.setColor(Color.BLACK);
-                CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
-                        BorderFactory.createLoweredBevelBorder());
+
                 wmBorder.paintBorder(this,gw,0,0,worldmap.getWidth()-1,worldmap.getHeight()-1);
                 ir = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth()-1, worldmap.getHeight()-1);
+
+                int prefBoxSize = ((worldmap.getWidth())/dPrimeTable.length-1);
+                if (prefBoxSize < 1){
+                    prefBoxSize=1;
+                }
+                for (int x = 0; x < dPrimeTable.length-1; x++){
+                    for (int y = x+1; y < dPrimeTable.length; y++){
+                        if (dPrimeTable[x][y] == null){
+                            continue;
+                        }
+                        int xx = (x + y)+wmBorder.getBorderInsets(this).left;// * boxSize / 2;
+                        int yy = (y - x)+wmBorder.getBorderInsets(this).top;// * boxSize / 2;
+
+                        diamondX[0] = xx; diamondY[0] = yy - 1;
+                        diamondX[1] = xx + 1; diamondY[1] = yy;
+                        diamondX[2] = xx; diamondY[2] = yy + 1;
+                        diamondX[3] = xx - 1; diamondY[3] = yy;
+
+                        gw.setColor(dPrimeTable[x][y].getColor());
+                        gw.fillPolygon(new Polygon(diamondX, diamondY,4));
+
+                        /*gw.fillRect(xx+wmBorder.getBorderInsets(this).left,
+                                yy+wmBorder.getBorderInsets(this).top,3,3);//prefBoxSize,prefBoxSize);*/
+                    }
+                }
+
+                noImage = false;
             }
-            paintWorldMap(g, ir);
+            paintWorldMap(g);
         }
     }
 
@@ -303,33 +326,44 @@ class DPrimeDisplay extends JComponent{
         count ++;
 
         int high = 2*V_BORDER + count*boxSize/2;
+        chartSize = new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1),high);
+        //this dimension is just the area taken up by the dprime chart
+        //it is used in drawing the worldmap
+
         if (markersLoaded){
-            high += TICK_BOTTOM + widestMarkerName + TEXT_NUMBER_GAP;
+            infoHeight = TICK_BOTTOM + widestMarkerName + TEXT_NUMBER_GAP;
+            high += infoHeight;
+        }else{
+            infoHeight=0;
         }
         return new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1), high);
     }
 
-    void paintWorldMap(Graphics g, Rectangle ir){
+    void paintWorldMap(Graphics g){
         Rectangle visRect = getVisibleRect();
         Dimension pref = getPreferredSize();
 
-        Graphics gw = worldmap.getGraphics();
+        g.drawImage(worldmap,visRect.x,
+                visRect.y + visRect.height - worldmap.getHeight(),
+                this);
+        worldmapRect = new Rectangle(visRect.x,
+                visRect.y+visRect.height-worldmap.getHeight(),
+                worldmap.getWidth(),
+                worldmap.getHeight());
 
         //draw the outline of the viewport
-        gw.setColor(Color.BLACK);
+        g.setColor(Color.BLACK);
         double hRatio = ir.getWidth()/pref.getWidth();
         double vRatio = ir.getHeight()/pref.getHeight();
         int hBump = worldmap.getWidth()-ir.width;
         int vBump = worldmap.getHeight()-ir.height;
         //bump a few pixels to avoid drawing on the border
-        gw.drawRect((int)(visRect.x*hRatio)+hBump/2,
-                (int)(visRect.y*vRatio)+vBump/2,
+        g.drawRect((int)(visRect.x*hRatio)+hBump/2+visRect.x,
+                (int)(visRect.y*vRatio)+vBump/2+(visRect.y + visRect.height - worldmap.getHeight()),
                 (int)(visRect.width*hRatio),
                 (int)(visRect.height*vRatio));
 
-        g.drawImage(worldmap,visRect.x,
-                visRect.y + visRect.height - worldmap.getHeight(),
-                this);
+
     }
 
     int[] centerString(String s, FontMetrics fm) {
@@ -342,11 +376,41 @@ class DPrimeDisplay extends JComponent{
 
     class PopMouseListener implements MouseListener{
         JComponent caller;
-        public PopMouseListener(JComponent c){
-              caller = c;
+        public PopMouseListener(DPrimeDisplay d){
+              caller = d;
         }
 
         public void mouseClicked(MouseEvent e) {
+            if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
+                    InputEvent.BUTTON1_MASK) {
+                int clickX = e.getX();
+                int clickY = e.getY();
+                if (worldmapRect.contains(clickX,clickY)){
+                    //convert a click on the worldmap to a point on the big picture
+                    int bigClickX = (((clickX - caller.getVisibleRect().x) * chartSize.width) /
+                            worldmap.getWidth())-caller.getVisibleRect().width/2;
+                    int bigClickY = (((clickY - caller.getVisibleRect().y -
+                            (caller.getVisibleRect().height-worldmap.getHeight())) *
+                            chartSize.height) / worldmap.getHeight()) -
+                            caller.getVisibleRect().height/2 + infoHeight;
+
+                    //if the clicks are near the edges, correct values
+                    if (bigClickX > chartSize.width - caller.getVisibleRect().width){
+                        bigClickX = chartSize.width - caller.getVisibleRect().width;
+                    }
+                    if (bigClickX < 0){
+                        bigClickX = 0;
+                    }
+                    if (bigClickY > chartSize.height - caller.getVisibleRect().height + infoHeight){
+                        bigClickY = chartSize.height - caller.getVisibleRect().height + infoHeight;
+                    }
+                    if (bigClickY < 0){
+                        bigClickY = 0;
+                    }
+
+                    ((JViewport)caller.getParent()).setViewPosition(new Point(bigClickX,bigClickY));
+                }
+            }
         }
 
         public void mousePressed (MouseEvent e) {
@@ -368,7 +432,9 @@ class DPrimeDisplay extends JComponent{
                 }else{
                     boxY = (int)(dboxY + 0.5);
                 }
-                if ((boxX >= lowX && boxX <= highX) && (boxY > boxX && boxY < highY)){
+                if ((boxX >= lowX && boxX <= highX) &&
+                        (boxY > boxX && boxY < highY) &&
+                        !(worldmapRect.contains(clickX,clickY))){
                     if (dPrimeTable[boxX][boxY] != null){
                         final SwingWorker worker = new SwingWorker(){
                             public Object construct(){
