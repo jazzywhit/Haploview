@@ -2,6 +2,7 @@ package edu.mit.wi.haploview;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
 //import java.awt.font.*;
@@ -275,29 +276,37 @@ class DPrimeDisplay extends JComponent{
                 ir = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth()-1, worldmap.getHeight()-1);
 
                 double prefBoxSize = boxSize/scalefactor;
-                //System.out.println(prefBoxSize);
+                float[] smallDiamondX = new float[4];
+                float[] smallDiamondY = new float[4];
+                GeneralPath gp;
+                System.out.println(System.currentTimeMillis());
                 for (int x = 0; x < dPrimeTable.length-1; x++){
                     for (int y = x+1; y < dPrimeTable.length; y++){
                         if (dPrimeTable[x][y] == null){
                             continue;
                         }
-                        //TODO:make this a lil' less ugly
                         double xx = (x + y)*prefBoxSize/2+wmBorder.getBorderInsets(this).left;
                         double yy = (y - x)*prefBoxSize/2+wmBorder.getBorderInsets(this).top;
 
-                        /*
-                        diamondX[0] = xx; diamondY[0] = yy - 1;
-                        diamondX[1] = xx + 1; diamondY[1] = yy;
-                        diamondX[2] = xx; diamondY[2] = yy + 1;
-                        diamondX[3] = xx - 1; diamondY[3] = yy;
 
-                        gw2.fillPolygon(new Polygon(diamondX, diamondY,4));
-                          */
+                        smallDiamondX[0] = (float)xx; smallDiamondY[0] = (float)(yy - prefBoxSize/2);
+                        smallDiamondX[1] = (float)(xx + prefBoxSize/2); smallDiamondY[1] = (float)yy;
+                        smallDiamondX[2] = (float)xx; smallDiamondY[2] = (float)(yy + prefBoxSize/2);
+                        smallDiamondX[3] = (float)(xx - prefBoxSize/2); smallDiamondY[3] = (float)yy;
+
+                        gp =  new GeneralPath(GeneralPath.WIND_EVEN_ODD,  smallDiamondX.length);
+                        gp.moveTo(smallDiamondX[0],smallDiamondY[0]);
+                        for (int i = 1; i < smallDiamondX.length; i++){
+                            gp.lineTo(smallDiamondX[i], smallDiamondY[i]);
+                        }
+                        gp.closePath();
+
                         gw2.setColor(dPrimeTable[x][y].getColor());
-                        gw2.fill(new Rectangle2D.Double(xx,yy,prefBoxSize,prefBoxSize));
+                        gw2.fill(gp);
+
                     }
                 }
-
+                System.out.println(System.currentTimeMillis());
                 noImage = false;
             }
             paintWorldMap(g);
