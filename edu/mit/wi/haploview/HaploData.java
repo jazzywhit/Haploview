@@ -878,6 +878,14 @@ public class HaploData implements Constants{
                 double tempPerc = returnedFreqs[i];
                 if (tempPerc*100 > hapthresh){
                     tempArray[p] = new Haplotype(genos, tempPerc, preFiltBlock);
+                    //if we are performing association tests, then store the results
+                    if (Options.getAssocTest() == ASSOC_TRIO){
+                        tempArray[p].setTransCount(theEM.getTransCount(i));
+                        tempArray[p].setUntransCount(theEM.getUntransCount(i));
+                    }else if (Options.getAssocTest() == ASSOC_CC){
+                        tempArray[p].setCaseFreq(theEM.getCaseFreq(i));
+                        tempArray[p].setControlFreq(theEM.getControlFreq(i));
+                    }
                     p++;
                 }
             }
@@ -886,13 +894,6 @@ public class HaploData implements Constants{
             results[k] = new Haplotype[p];
             for (int z = 0; z < p; z++){
                 results[k][z] = tempArray[z];
-                if (Options.getAssocTest() == ASSOC_TRIO){
-                    results[k][z].setTransCount(theEM.getTransCount(z));
-                    results[k][z].setUntransCount(theEM.getUntransCount(z));
-                }else if (Options.getAssocTest() == ASSOC_CC){
-                    results[k][z].setCaseFreq(theEM.getCaseFreq(z));
-                    results[k][z].setControlFreq(theEM.getControlFreq(z));
-                }
             }
         }
         if (!crossover){
