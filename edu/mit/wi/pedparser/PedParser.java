@@ -7,7 +7,8 @@ import org._3pq.jgrapht.alg.ConnectivityInspector;
 
 import java.util.*;
 
-public class PedParser {
+public class
+        PedParser {
 
     double TRIO_SCORE = 2.001;
     double TRIO_DIFFERENTIAL = TRIO_SCORE - 1;
