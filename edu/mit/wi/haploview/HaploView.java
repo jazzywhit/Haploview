@@ -473,8 +473,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }else if (command.equals("Quit")){
             quit();
         } else {
-            for (int i = 0; i < viewItems.length; i++) {
-                if (command.equals(viewItems[i])) tabs.setSelectedIndex(i);
+            for (int i = 0; i < tabs.getTabCount(); i++) {
+                if (command.equals(tabs.getTitleAt(i))){
+                    tabs.setSelectedIndex(i);
+                    break;
+                }
             }
         }
     }
