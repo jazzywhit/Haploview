@@ -113,7 +113,12 @@ class DrawingMethods {
 		String thePercentage = new String();
 		int[] theGeno = hapsInBlocks[i][curHapNum].getGeno();
 		for (int k = 0; k < theGeno.length; k++){
-		    theHap += theGeno[k];
+		    //if we don't know what one of the alleles for a marker is, use "x"
+		    if (theGeno[k] == 8){
+			theHap += "x";
+		    }else{
+			theHap += theGeno[k];
+		    }
 		}
 		//draw the haplotype in mono font
 		g.setFont(regFont);
