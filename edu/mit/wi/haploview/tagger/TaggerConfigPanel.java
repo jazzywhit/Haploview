@@ -28,7 +28,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
     private Timer timer;
     private HaploData theData;
     private Hashtable snpsByName;
-    private NumberTextField rsqField;
+    private NumberTextField rsqField, lodField;
 
     public TaggerConfigPanel(HaploData hd)  {
         theData = hd;
@@ -94,6 +94,18 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         scrollPane.setMaximumSize(scrollPane.getPreferredSize());
         add(scrollPane);
 
+        JPanel rsqPanel = new JPanel();
+        rsqPanel.add(new JLabel("r\u00b2 threshold"));
+        rsqField = new NumberTextField(String.valueOf(Options.getTaggerRsqCutoff()),5,true);
+        rsqPanel.add(rsqField);
+        add(rsqPanel);
+
+        JPanel lodPanel = new JPanel();
+        lodPanel.add(new JLabel("LOD threshold for multi-marker tests"));
+        lodField = new NumberTextField(String.valueOf(Options.getTaggerLODCutoff()),5,true);
+        lodPanel.add(lodField);
+        add(lodPanel);
+
         runTaggerButton = new JButton("Run Tagger");
         runTaggerButton.addActionListener(this);
 
@@ -106,12 +118,6 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         buttonPanel.add(resetTableButton);
 
         add(buttonPanel);
-
-        JPanel configPanel = new JPanel();
-        configPanel.add(new JLabel("r\u00b2 cutoff"));
-        rsqField = new NumberTextField(String.valueOf(Options.getTaggerRsqCutoff()),5,true);
-        configPanel.add(rsqField);
-        add(configPanel);
     }
 
     public void addActionListener(ActionListener al){
@@ -141,6 +147,14 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                 rsqField.setText("0.0");
             }else{
                 Options.setTaggerRsqCutoff(rsqCut);
+            }
+
+            double lodCut = new Double(lodField.getText()).doubleValue();
+            if (lodCut < 0){
+                Options.setTaggerLODCutoff(0.0);
+                lodField.setText("0.0");
+            }else{
+                Options.setTaggerLODCutoff(lodCut);
             }
 
             //build include/exclude lists

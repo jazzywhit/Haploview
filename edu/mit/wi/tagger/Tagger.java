@@ -7,7 +7,6 @@ public class Tagger {
     public static final double DEFAULT_RSQ_CUTOFF = 0.8;
     public static final double DEFAULT_LOD_CUTOFF = 3.0;
 
-    //todo: SNPS?? should this be named (and store) variantseqs?
     //vector of SNP objects, which contains every SNP (tags and non-tags)
     private Vector snps;
 
@@ -20,7 +19,6 @@ public class Tagger {
     private Vector forceExclude;
 
     private AlleleCorrelator alleleCorrelator;
-    //private Hashtable pairwiseCompsHash;
     private double minRSquared;
     private Hashtable snpHash;
 

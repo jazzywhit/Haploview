@@ -65,17 +65,8 @@ public class TaggerController {
         }
 
         HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq,theData);
-/*        edu.mit.wi.tagger.SNP s1 = (edu.mit.wi.tagger.SNP) snpHash.get("Marker 2");
-        edu.mit.wi.tagger.SNP s2 = (edu.mit.wi.tagger.SNP) snpHash.get("Marker 3");
-        Vector v = new Vector();
-        v.add(s1);
-        v.add(s2);
-        Block b = new Block(v);
-        hac.getCorrelation(s1,b);*/
 
         tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff());
-
-
     }
 
     public void runTagger() {
