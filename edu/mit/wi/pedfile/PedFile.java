@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.1 2003/08/01 19:36:19 jmaller Exp $
+* $Id: PedFile.java,v 1.2 2003/08/14 15:06:48 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -111,7 +111,7 @@ public class PedFile {
      * data is stored in families in the member hashtable families
      * @param pedigrees a Vector of strings containing one pedigree line per string
      */
-    public void parse(Vector pedigrees) {
+    public void parse(Vector pedigrees) throws PedFileException {
         int colNum = -1;
         boolean withOptionalColumn = false;
         int numLines = pedigrees.size();
@@ -149,13 +149,22 @@ public class PedFile {
                 }
                 boolean isTyped = false;
                 while(tokenizer.hasMoreTokens()){
-                    int allele1 = Integer.parseInt(tokenizer.nextToken().trim());
-                    int allele2 = Integer.parseInt(tokenizer.nextToken().trim());
-                    if ( !( (allele1==0) && (allele2 == 0) ) ) isTyped = true;
-                    byte[] markers = new byte[2];
-                    markers[0] = (byte)allele1;
-                    markers[1]= (byte)allele2;
-                    ind.addMarker(markers);
+                    try {
+                        int allele1 = Integer.parseInt(tokenizer.nextToken().trim());
+                        int allele2 = Integer.parseInt(tokenizer.nextToken().trim());
+                        if ( !( (allele1==0) && (allele2 == 0) ) ) isTyped = true;
+                        if(allele1 <0 || allele1 > 4 || allele2 <0 || allele2 >4) {
+                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + k
+                                    + ".\n all genotypes must be 0-4.");
+                        }
+                        byte[] markers = new byte[2];
+                        markers[0] = (byte)allele1;
+                        markers[1]= (byte)allele2;
+                        ind.addMarker(markers);
+                    }
+                    catch(NumberFormatException nfe) {
+                        throw new PedFileException("Pedigree file input error: invalid genotype on line " + k );
+                    }
                 }
                 //note whether this is a real indiv (true) or a "dummy" (false)
                 ind.setIsTyped(isTyped);
