@@ -17,8 +17,8 @@ public class CheckDataPanel extends JPanel {
 	    pedfile = new PedFileParser().parse(file);
 
 	    CheckData data = new CheckData(pedfile);
-	    PedResult result = data.check();
-	    int numResults = result.getNumResults();
+	    Vector result = data.check();
+	    int numResults = result.size();
 
 	    Vector tableColumnNames = new Vector();
 	    tableColumnNames.add("Name");
@@ -34,7 +34,7 @@ public class CheckDataPanel extends JPanel {
 	    int[] ratingArray = new int[numResults];
 	    for (int i = 0; i < numResults; i++){
 		Vector tempVect = new Vector();
-		MarkerResult currentResult = result.getMarkerResult(i);
+		MarkerResult currentResult = (MarkerResult)result.get(i);
 		tempVect.add(currentResult.getName());
 		tempVect.add(new Double(currentResult.getObsHet()));
 		tempVect.add(new Double(currentResult.getPredHet()));

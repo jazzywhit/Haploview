@@ -12,7 +12,7 @@ import java.util.*;
  * column 4: mom ID
  * column 5: gender
  * column 6: affected status
- * column 7: (optional) libility
+ * column 7: (optional) liability
  * column 8 and 9: marker 1 (seperated by space)
  * column 2n and 2n+1: marker n (seperated by space)
  * </p>
@@ -27,8 +27,9 @@ public class PedFileEntry {
     private String _dadID;
     private int _gender;
     private int _affectedStatus;
-    private String _libility="";
-    private Vector _markers;
+    private String _liability="";
+    //private Vector _markers;
+    private byte[] _markers;
     private boolean _isTyped = false;
 
 
@@ -39,7 +40,7 @@ public class PedFileEntry {
     public final static String DATA_MISSING ="0";
 
     public PedFileEntry() {
-        _markers = new Vector();
+        //_markers = new Vector();
     }
 
     /**
@@ -147,41 +148,57 @@ public class PedFileEntry {
     }
 
     /**
-     * Sets libility
+     * Sets liability
      */
-    public void setLibility(String libility){
-        this._libility = libility;
+    public void setLiability(String liability){
+        this._liability = liability;
     }
 
     /**
-     * Gets libility
+     * Gets liability
      */
-    public String getLibility(){
-        return this._libility;
+    public String getLiability(){
+        return this._liability;
     }
 
     /**
-     * Adds marker into the PedFileEntry
+     * this method takes a byte[] as parameter and stores it in the local variable _markers_b.
+     * this array of bytes contains the marker values for this entry in the pedigree file
+     * each index in the array contains two markers, the first in upper four bits of the byte
+     * and the second in the lower 4
      */
-    public void addMarker(PedMarker marker){
-        this._markers.add(marker);
+    public void addMarkers(byte[] tempMarkers){
+        this._markers=tempMarkers;
     }
+    
 
     /**
      * Gets all markers in the PedFileEntry
-     * @return Vector a list of PedMarker object.
+     * @return byte[] a list of PedMarker object.
      */
-    public Vector getAllMarkers(){
+    public byte[] getAllMarkers(){
         return this._markers;
     }
 
     /**
-     * Gets marker at loc
-     * @return PedMarker
+     * returns the number of markers for this PedFileEntry
+     * @return int number of markers
      */
-    public PedMarker getMarker(int loc){
-        return (PedMarker)this._markers.get(loc);
+    public int getNumMarkers() {
+	return this._markers.length;
     }
+    
+    /**
+     * Gets marker at loc
+     * @return byte[] two byte array containing the marker values
+     */
+    public byte[] getMarker(int loc){
+	byte[] temp = new byte[2];
+	temp[0] = (byte)(this._markers[loc] & (byte)0x0f);
+	temp[1] = (byte)( ( this._markers[loc]  & (byte)0xf0 ) >>> 4);
+	return temp;
+    }
+    
 
     /**
      * Prints out the PedFileEntry data as original pedigree file format.
@@ -193,12 +210,12 @@ public class PedFileEntry {
         System.out.print(this._momID+"\t");
         System.out.print(this._gender+"\t");
         System.out.print(this._affectedStatus+"\t");
-        System.out.print(this._libility+"\t");
-        Iterator iter = this._markers.iterator();
+        System.out.print(this._liability+"\t");
+	/*        Iterator iter = this._markers.iterator();
         while(iter.hasNext()){
             PedMarker marker = (PedMarker)iter.next();
             marker.print();
-        }
+	    }*/
         System.out.print("\n");
     }
 }

@@ -108,27 +108,30 @@ class TextMethods {
 		}
 	    }
 	}
+
+	int numMarkers=0;
 	Vector usedParents = new Vector();
 	for (int x = 0; x < keys.size(); x++){
 	    PedFileEntry entry = (PedFileEntry)pedHash.get(keys.elementAt(x));
 	    boolean begin = false;    //this boolean lets us do spacing correctly
 	    if (entry.getIsTyped()){
 		String ped = entry.getFamilyID();
-		Vector markers = entry.getAllMarkers();
+		//byte[] markers = entry.getAllMarkers();
 		//singleton
 		if (Integer.parseInt((String)pedSizeHash.get(ped)) == 1){
 		    String hap1 = new String(""); String hap2 = new String("");
 		    hap1 += ped + "\t" + entry.getIndivID() + "\t";
 		    hap2 += ped + "\t" + entry.getIndivID() + "\t";
-		    for (int i = 0; i < markers.size(); i++){
+		    numMarkers = entry.getNumMarkers();
+		    for (int i = 0; i < numMarkers; i++){
 			if (markerResults[i]){
 			    if (begin){
 				hap1+=" "; hap2+=" ";
 			    }
-			    PedMarker thisMarker = (PedMarker)markers.elementAt(i);
-			    if (thisMarker.getAllele1() == thisMarker.getAllele2()){
-				hap1 += thisMarker.getAllele1();
-				hap2 += thisMarker.getAllele2();
+			    byte[] thisMarker = entry.getMarker(i);
+			    if (thisMarker[0] == thisMarker[1]){
+				hap1 += thisMarker[0];
+				hap2 += thisMarker[1];
 			    }else{
 				hap1 += "h";
 				hap2 += "h";
@@ -147,20 +150,22 @@ class TextMethods {
 			if (!(usedParents.contains(ped + " " + entry.getMomID()) || 
 			      usedParents.contains(ped + " " + entry.getDadID()))){
 			    //add 4 phased haps provided that we haven't used this trio already
-			    
-			    for (int i = 0; i < markers.size(); i++){
+			    numMarkers = entry.getNumMarkers();
+			    for (int i = 0; i < numMarkers; i++){
 				if (markerResults[i]){
 				    if (begin){
 					dadT+=" ";dadU+=" ";momT+=" ";momU+=" ";
 				    }
-				    PedMarker thisMarker = (PedMarker)markers.elementAt(i);
-				    int kid1 = thisMarker.getAllele1();
-				    int kid2 = thisMarker.getAllele2();
+				    byte[] thisMarker = entry.getMarker(i);
+				    int kid1 = thisMarker[0];
+				    int kid2 = thisMarker[1];
 				    //System.out.println(entry.getMomID());
-				    int mom1 = ((PedFileEntry)pedHash.get(ped + " " + entry.getMomID())).getMarker(i).getAllele1();
-				    int mom2 = ((PedFileEntry)pedHash.get(ped + " " + entry.getMomID())).getMarker(i).getAllele2();
-				    int dad1 = ((PedFileEntry)pedHash.get(ped + " " + entry.getDadID())).getMarker(i).getAllele1();
-				    int dad2 = ((PedFileEntry)pedHash.get(ped + " " + entry.getDadID())).getMarker(i).getAllele2();
+				    thisMarker = ((PedFileEntry)pedHash.get(ped + " " + entry.getMomID())).getMarker(i);
+				    int mom1 = thisMarker[0];
+				    int mom2 = thisMarker[1];
+				    thisMarker = ((PedFileEntry)pedHash.get(ped + " " + entry.getDadID())).getMarker(i);
+				    int dad1 = thisMarker[0];
+				    int dad2 = thisMarker[1];
 				    
 				    if (kid1==0 || kid2==0){
 					//kid missing

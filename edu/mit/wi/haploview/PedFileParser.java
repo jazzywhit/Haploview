@@ -1,6 +1,8 @@
 package edu.mit.wi.haploview;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.File;
 import java.util.*;
 /**
  * <p>Title: PedFileParser.java </p>
@@ -37,6 +39,8 @@ public class PedFileParser {
         BufferedReader reader = new BufferedReader(new FileReader(in));
         String line=null;
         int colNum = -1;
+        int i=0;
+        byte[] markers;
         boolean withOptionalColumn = false;
         while((line=reader.readLine())!=null){
             StringTokenizer tokenizer = new StringTokenizer(line, "\n\t\" \"");
@@ -46,7 +50,17 @@ public class PedFileParser {
                 colNum = tokenizer.countTokens();
                 if(colNum%2==1) withOptionalColumn = true;
             }
+	    if(colNum != tokenizer.countTokens()) {
+                //this line has a different number of columns
+                //should send some sort of error message
+		
+            }
+            if(withOptionalColumn) markers = new byte[(colNum-7)/2];
+	    else markers = new byte[(colNum-6)/2];
+            
             PedFileEntry entry = new PedFileEntry();
+	    Arrays.fill(markers,(byte)0x00);
+            i=0;
             if(tokenizer.hasMoreTokens()){
                 entry.setFamilyID(tokenizer.nextToken().trim());
                 entry.setIndivID(tokenizer.nextToken().trim());
@@ -54,90 +68,28 @@ public class PedFileParser {
                 entry.setMomID(tokenizer.nextToken().trim());
                 entry.setGender(Integer.parseInt(tokenizer.nextToken().trim()));
                 entry.setAffectedStatus(Integer.parseInt(tokenizer.nextToken().trim()));
-                if(withOptionalColumn) entry.setLibility(tokenizer.nextToken().trim());
+                if(withOptionalColumn) entry.setLiability(tokenizer.nextToken().trim());
 		boolean isTyped = false;
                 while(tokenizer.hasMoreTokens()){
                     //alleles seperated by space
-                    PedMarker marker = new PedMarker();
-                    String allele1 = tokenizer.nextToken().trim();
-                    String allele2 = tokenizer.nextToken().trim();
-		    if (!(allele1.equals("0") && allele2.equals("0"))) isTyped = true;
-                    marker.setAllele1(Integer.parseInt(allele1));
-                    marker.setAllele2(Integer.parseInt(allele2));
-                    entry.addMarker(marker);
+                    //PedMarker marker = new PedMarker();
+                    int allele1 = Integer.parseInt(tokenizer.nextToken().trim());
+                    int allele2 = Integer.parseInt(tokenizer.nextToken().trim());
+		    if (!( (allele1==0) && (allele2 == 0) )) isTyped = true;
+                    markers[i] = (byte)allele1;
+                    markers[i]= (byte)(markers[i] | (allele2 << 4));
+                    //marker.setAllele1(Integer.parseInt(allele1));
+                    //marker.setAllele2(Integer.parseInt(allele2));
+                    //entry.addMarker(marker);
+		    i++;
                 }
 		//note whether this is a real indiv (true) or a "dummy" (false)
 		if (isTyped) entry.setIsTyped(true);
             }
+	    entry.addMarkers(markers);
 	    pedFile.addContent(entry);
         }
         return pedFile;
     }
-
-
-    /**
-     * Parse an input PedFile with header
-     * @param in pedigree file with header
-     */
-    public static PedFile parserHeaderFile(File in) throws Exception{
-        PedFile pedFile = new PedFile();
-
-        BufferedReader reader = new BufferedReader(new FileReader(in));
-        String line=null;
-        int colNum = -1, markerNum=0;
-        boolean withOptionalColumn = false;
-        String header="";
-        //first line for Markerfile is header
-        if((line=reader.readLine())!=null) header = line;
-        while((line=reader.readLine())!=null){
-            StringTokenizer tokenizer = new StringTokenizer(line, "\n\t\" \"");
-            //reading the first line
-            if(colNum < 0){
-                //only check column number count for the first line
-                colNum = tokenizer.countTokens();
-                if(colNum%2==1) withOptionalColumn = true;
-            }
-            PedFileEntry entry = new PedFileEntry();
-            if(tokenizer.hasMoreTokens()){
-                entry.setFamilyID(tokenizer.nextToken().trim());
-                entry.setIndivID(tokenizer.nextToken().trim());
-                entry.setDadID(tokenizer.nextToken().trim());
-                entry.setMomID(tokenizer.nextToken().trim());
-                entry.setGender(Integer.parseInt(tokenizer.nextToken().trim()));
-                entry.setAffectedStatus(Integer.parseInt(tokenizer.nextToken().trim()));
-                if(withOptionalColumn) entry.setLibility(tokenizer.nextToken().trim());
-
-                while(tokenizer.hasMoreTokens()){
-                    //alleles seperated by space
-                    PedMarker marker = new PedMarker();
-                    String allele1 = tokenizer.nextToken().trim();
-                    String allele2 = tokenizer.nextToken().trim();
-                    marker.setAllele1(Integer.parseInt(allele1));
-                    marker.setAllele2(Integer.parseInt(allele2));
-                    entry.addMarker(marker);
-                }
-            }
-            pedFile.addContent(entry);
-        }
-        StringTokenizer tokenizer = new StringTokenizer(header);
-        int numBeforeMarker = withOptionalColumn?7:6;
-
-        int i=0;
-        Vector names = new Vector();
-        while(tokenizer.hasMoreTokens()){
-            i++;
-            if(i<=numBeforeMarker){
-                tokenizer.nextToken();
-                continue;
-            }
-            else{
-                names.add(tokenizer.nextToken());
-            }
-        }
-        //System.out.println("name: "+names.size());
-        pedFile.setMarkerNames(names);
-        return pedFile;
-    }
-
 
 }

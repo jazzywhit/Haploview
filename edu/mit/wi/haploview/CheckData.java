@@ -27,12 +27,12 @@ public class CheckData {
      * predicted heterozygosity, Hardy-Weinberg test p-value, genotyped percent,
      * number of families with a fully genotyped trio and number of Mendelian inheritance errors.
      */
-    public PedResult check(){
-        PedResult results = new PedResult();
+    public Vector check(){
+        Vector results = new Vector();
 	pedFileHash = this._pedFile.getContent();
         _pedFileEntries = new Vector(pedFileHash.values());
         _size = _pedFileEntries.size();
-        int numOfMarkers = ((PedFileEntry)_pedFileEntries.get(0)).getAllMarkers().size();
+        int numOfMarkers = ((PedFileEntry)_pedFileEntries.get(0)).getNumMarkers();
         Vector names = this._pedFile.getMarkerNames();
         boolean withName=false;
         if(names!=null && names.size()==numOfMarkers) withName = true;
@@ -40,7 +40,7 @@ public class CheckData {
             MarkerResult markerResult;
             if(withName) markerResult = checkMarker(i, (String)names.get(i));
             else markerResult = checkMarker(i, new String("Marker " + (i+1)));
-            results.addMarkerResult(markerResult);
+            results.add(markerResult);
         }
         return results;
     }
@@ -62,10 +62,10 @@ public class CheckData {
         for(int i=0; i<_size; i++){
             entry = (PedFileEntry)_pedFileEntries.get(i);
 	    if (entry.getIsTyped()){
-		PedMarker markers = entry.getMarker(loc);
-		allele1 = markers.getAllele1();
+		byte[] markers = entry.getMarker(loc);
+		allele1 = markers[0];
 		allele1_string = Integer.toString(allele1);
-		allele2 = markers.getAllele2();
+		allele2 = markers[1];
 		allele2_string = Integer.toString(allele2);
 		
 		String ped = entry.getFamilyID();
@@ -82,10 +82,12 @@ public class CheckData {
 		    //make sure entry has parents
 		    if(!(entry.getMomID().equals("0") || entry.getDadID().equals("0"))){
 			//do mendel check
-			int momAllele1 = ((PedFileEntry)pedFileHash.get(ped + " " + entry.getMomID())).getMarker(loc).getAllele1();
-			int momAllele2 = ((PedFileEntry)pedFileHash.get(ped + " " + entry.getMomID())).getMarker(loc).getAllele2();
-			int dadAllele1 = ((PedFileEntry)pedFileHash.get(ped + " " + entry.getDadID())).getMarker(loc).getAllele1();
-			int dadAllele2 = ((PedFileEntry)pedFileHash.get(ped + " " + entry.getDadID())).getMarker(loc).getAllele2();
+			byte[] marker = ((PedFileEntry)pedFileHash.get(ped + " " + entry.getMomID())).getMarker(loc);
+			int momAllele1 = marker[0];
+			int momAllele2 = marker[1];
+			marker = ((PedFileEntry)pedFileHash.get(ped + " " + entry.getDadID())).getMarker(loc);
+			int dadAllele1 = marker[0];			
+			int dadAllele2 = marker[1];
 
 			//don't check if parents are missing any data
 			if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0 || dadAllele2 ==0)){
@@ -237,10 +239,10 @@ public class CheckData {
         //caculate p value from homA, parentHet and homB
         // using hw
         //System.out.println("homA="+homA+" homB="+homB+" parentHet="+parentHet);
-        HW hw = new HW((double)homA, (double)parentHet, (double)homB);
+        //HW hw = new HW((double)homA, (double)parentHet, (double)homB);
         try{
-            hw.caculate();
-            pvalue = hw.getPvalue();
+            //hw.caculate();
+            pvalue = hwCalculate((double)homA, (double)parentHet, (double)homB);
         }
         catch(CheckDataException e){
             System.out.println("input data error in caculating p value");
@@ -248,6 +250,55 @@ public class CheckData {
         }
         return pvalue;
     }
+
+
+    /**
+     * Does the calculation
+     */
+    private double hwCalculate(double obsAA, double obsAB, double obsBB) throws CheckDataException{
+            double obs[]={0.0, obsAA, obsAB, obsBB};
+            double expect[]={0.0, 0.0, 0.0, 0.0};
+            double sum_obs;
+            double sum_expect, df, csq, prob, p, start, end;
+            double best_prob =-1.0;
+            double best_p=0;
+            sum_obs = obs [1 ]+ obs [2 ]+ obs [3 ];
+            for (p = 0.01 ; p <= .99 ; p += .01 ) {
+                expect [1 ]= sum_obs * p * p ;
+                expect [2 ]= sum_obs * 2.0 * p * (1.0 - p);
+                expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p);
+                Chsone chsone = new Chsone(obs , expect , 3 , 1);
+                chsone.caculate();
+                prob = chsone.getPvalue();
+                if (prob > best_prob ) {
+                    best_prob = prob ;
+                    best_p = p ;
+                }
+            }
+            start = (best_p - .025 > .001)? (best_p - .025): .001 ;
+            end = (best_p + .025 < .999)? (best_p + .025): .999 ;
+            for (p = start ; p <= end ; p += .001 ) {
+                expect [1 ]= sum_obs * p * p ;
+                expect [2 ]= sum_obs * 2.0 * p * (1.0 - p) ;
+                expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p) ;
+                Chsone chsone = new Chsone(obs , expect , 3 , 1);
+                chsone.caculate();
+                prob = chsone.getPvalue();
+                if (prob > best_prob ) {
+                    best_prob = prob ;
+                    best_p = p ;
+                }
+            }
+            p = best_p ;
+            expect [1 ]= sum_obs * p * p ;
+            expect [2 ]= sum_obs * 2.0 * p * (1.0 - p);
+            expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p);
+            Chsone chsone = new Chsone(obs , expect , 3 , 1);
+            chsone.caculate();
+            //this._p = chsone.getPvalue();
+	    return chsone.getPvalue();
+    }
+
 
     private double getGenoPercent(int het, int hom, int missing){
         double genoPct = 100.0*(het+hom)/(het+hom+missing);
