@@ -4,6 +4,7 @@ import java.awt.*;
 import java.io.*;
 //import java.util.*;
 import java.awt.event.*;
+import java.util.Vector;
 import javax.swing.*;
 //import java.awt.geom.*;
 //import java.awt.image.*;
@@ -187,7 +188,7 @@ public class HaploView extends JFrame implements ActionListener{
             readDialog.setVisible(true);
 
         }else if (command == "Continue"){
-            /**
+
              JTable table = checkPanel.getTable();
              checkWindow.dispose();
              boolean[] markerResultArray = new boolean[table.getRowCount()];
@@ -195,14 +196,14 @@ public class HaploView extends JFrame implements ActionListener{
              markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
              }
              try{
-             new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),hapInputFileName+".haps");
+             new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),"test.haps");
              }catch (IOException ioexec){
              JOptionPane.showMessageDialog(this,
              ioexec.getMessage(),
              "File Error",
              JOptionPane.ERROR_MESSAGE);
              }
-             processInput(new File(hapInputFileName+".haps"));**/
+             //processInput(new File(hapInputFileName+".haps"));
         } else if (command == READ_MARKERS){
             fc.setSelectedFile(null);
             int returnVal = fc.showOpenDialog(this);
@@ -477,7 +478,84 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
 
+    /**
+     * this method finds haplotypes and caclulates dprime without using any graphics
+     */
+    private static void hapsTextOnly(String hapsFile,int outputType){
+        try {
+            HaploData theData;
+            File OutputFile;
+            File inputFile = new File(hapsFile);
+            if(!inputFile.exists()){
+                System.out.println("haps input file " + hapsFile + " does not exist");
+            }
+            switch(outputType){
+                case 1:
+                    OutputFile = new File(hapsFile + ".4GAMblocks");
+                    break;
+                case 2:
+                    OutputFile = new File(hapsFile + ".MJDblocks");
+                    break;
+                default:
+                    OutputFile = new File(hapsFile + ".SFSblocks");
+                    break;
+            }
+
+            theData = new HaploData(new File(hapsFile));
+            String name = hapsFile;
+            String baseName = hapsFile.substring(0,name.length()-5);
+            File maybeInfo = new File(baseName + ".info");
+            if (maybeInfo.exists()){
+                theData.prepareMarkerInput(maybeInfo);
+            }
+            //theData.doMonitoredComputation();
+            Haplotype[][] haplos;
+
+            if(outputType == 1 || outputType == 2){
+                theData.guessBlocks(outputType);
+            }
+            haplos = theData.generateHaplotypes(theData.blocks, 1);
+            new TextMethods().saveHapsToText(orderHaps(haplos, theData), theData.getMultiDprime(), OutputFile);
+        }
+        catch(IOException e){}
+    }
+
+    public static Haplotype[][] orderHaps (Haplotype[][] haplos, HaploData theData) throws IOException{
+        Haplotype[][] orderedHaplos = new Haplotype[haplos.length][];
+        for (int i = 0; i < haplos.length; i++){
+            Vector orderedHaps = new Vector();
+            //step through each haplotype in this block
+            for (int hapCount = 0; hapCount < haplos[i].length; hapCount++){
+                if (orderedHaps.size() == 0){
+                    orderedHaps.add(haplos[i][hapCount]);
+                }else{
+                    for (int j = 0; j < orderedHaps.size(); j++){
+                        if (((Haplotype)(orderedHaps.elementAt(j))).getPercentage() < haplos[i][hapCount].getPercentage()){
+                            orderedHaps.add(j, haplos[i][hapCount]);
+                            break;
+                        }
+                        if ((j+1) == orderedHaps.size()){
+                            orderedHaps.add(haplos[i][hapCount]);
+                            break;
+                        }
+                    }
+                }
+            }
+            orderedHaplos[i] = new Haplotype[orderedHaps.size()];
+            for (int z = 0; z < orderedHaps.size(); z++){
+                orderedHaplos[i][z] = (Haplotype)orderedHaps.elementAt(z);
+            }
+
+        }
+        return theData.generateCrossovers(orderedHaplos);
+    }
+
+
+
+
     public static void main(String[] args) {//throws IOException{
+
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) { }

@@ -1,8 +1,13 @@
 package edu.mit.wi.haploview;
 
+import edu.mit.wi.pedfile.PedFile;
+import edu.mit.wi.pedfile.Individual;
+import edu.mit.wi.pedfile.Family;
+
 import java.io.*;
-import java.text.*;
-import java.util.*;
+import java.text.NumberFormat;
+import java.util.Vector;
+//import java.util.Hashtable;
 
 class TextMethods {
 
@@ -91,44 +96,35 @@ class TextMethods {
 
     public void linkageToHaps(boolean[] markerResults, PedFile pedFile, String hapFileName)throws IOException{
         FileWriter linkageToHapsWriter = new FileWriter(new File(hapFileName));
-        Hashtable pedSizeHash = new Hashtable();
-        Hashtable pedHash = pedFile.getContent();
-        Enumeration pedEnum = pedHash.elements();
-        Vector keys = pedFile.getKeys();
-        //fill up pedSizeHash with the number of genotyped indivs in each ped
-        while (pedEnum.hasMoreElements()){
-            PedFileEntry entry = (PedFileEntry)pedEnum.nextElement();
-            if (entry.getIsTyped()){
-                String ped = entry.getFamilyID();
-                if (pedSizeHash.containsKey(ped)){
-                    int value = Integer.parseInt((String)pedSizeHash.get(ped));
-                    pedSizeHash.put(ped, Integer.toString(++value));
-                }else{
-                    pedSizeHash.put(ped, "1");
-                }
-            }
-        }
 
-        int numMarkers=0;
+        Vector indList = pedFile.getOrder();
+        int numMarkers = 0;
         Vector usedParents = new Vector();
-        for (int x = 0; x < keys.size(); x++){
-            PedFileEntry entry = (PedFileEntry)pedHash.get(keys.elementAt(x));
-            boolean begin = false;    //this boolean lets us do spacing correctly
-            if (entry.getIsTyped()){
-                String ped = entry.getFamilyID();
-                //byte[] markers = entry.getAllMarkers();
+        Individual currentInd;
+        Family currentFamily;
+
+
+        for(int x=0; x < indList.size(); x++){
+
+            String[] indAndFamID = (String[])indList.elementAt(x);
+            currentFamily = pedFile.getFamily(indAndFamID[0]);
+            currentInd = currentFamily.getMember(indAndFamID[1]);
+
+            boolean begin = false;
+
+            if(currentInd.getIsTyped()){
                 //singleton
-                if (Integer.parseInt((String)pedSizeHash.get(ped)) == 1){
+                if(currentFamily.getNumMembers() == 1){
                     String hap1 = new String(""); String hap2 = new String("");
-                    hap1 += ped + "\t" + entry.getIndivID() + "\t";
-                    hap2 += ped + "\t" + entry.getIndivID() + "\t";
-                    numMarkers = entry.getNumMarkers();
+                    hap1 += currentInd.getFamilyID() + "\t" + currentInd.getIndividualID() + "\t";
+                    hap2 += currentInd.getFamilyID() + "\t" + currentInd.getIndividualID() + "\t";
+                    numMarkers = currentInd.getNumMarkers();
                     for (int i = 0; i < numMarkers; i++){
                         if (markerResults[i]){
                             if (begin){
                                 hap1+=" "; hap2+=" ";
                             }
-                            byte[] thisMarker = entry.getMarker(i);
+                            byte[] thisMarker = currentInd.getMarker(i);
                             if (thisMarker[0] == thisMarker[1]){
                                 hap1 += thisMarker[0];
                                 hap2 += thisMarker[1];
@@ -141,29 +137,32 @@ class TextMethods {
                     }
                     hap1 += "\n"; hap2+= "\n";
                     linkageToHapsWriter.write(hap1 + hap2);
-                }else{
+                }
+               else{
                     //skip if indiv is parent in trio or unaffected
-                    if (!(entry.getMomID().equals("0") || entry.getDadID().equals("0") || entry.getAffectedStatus() != 2)){
+                    if (!(currentInd.getMomID().equals("0") || currentInd.getDadID().equals("0") || currentInd.getAffectedStatus() != 2)){
                         //trio
-                        String dadT = new String(""); String dadU = new String("");
-                        String momT = new String(""); String momU = new String("");
-                        if (!(usedParents.contains(ped + " " + entry.getMomID()) ||
-                                usedParents.contains(ped + " " + entry.getDadID()))){
+                        String dadT = new String("");
+                        String dadU = new String("");
+                        String momT = new String("");
+                        String momU = new String("");
+                        if (!(usedParents.contains( currentInd.getFamilyID() + " " + currentInd.getMomID()) ||
+                                usedParents.contains(currentInd.getFamilyID() + " " + currentInd.getDadID()))){
                             //add 4 phased haps provided that we haven't used this trio already
-                            numMarkers = entry.getNumMarkers();
+                            numMarkers = currentInd.getNumMarkers();
                             for (int i = 0; i < numMarkers; i++){
                                 if (markerResults[i]){
                                     if (begin){
                                         dadT+=" ";dadU+=" ";momT+=" ";momU+=" ";
                                     }
-                                    byte[] thisMarker = entry.getMarker(i);
+                                    byte[] thisMarker = currentInd.getMarker(i);
                                     int kid1 = thisMarker[0];
                                     int kid2 = thisMarker[1];
-                                    //System.out.println(entry.getMomID());
-                                    thisMarker = ((PedFileEntry)pedHash.get(ped + " " + entry.getMomID())).getMarker(i);
+
+                                    thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
                                     int mom1 = thisMarker[0];
                                     int mom2 = thisMarker[1];
-                                    thisMarker = ((PedFileEntry)pedHash.get(ped + " " + entry.getDadID())).getMarker(i);
+                                    thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
                                     int dad1 = thisMarker[0];
                                     int dad2 = thisMarker[1];
 
@@ -223,20 +222,23 @@ class TextMethods {
                                 }
                             }
                             momT+="\n";momU+="\n";dadT+="\n";dadU+="\n";
-                            linkageToHapsWriter.write(ped+"-"+entry.getDadID()+"\tT\t" + dadT);
-                            linkageToHapsWriter.write(ped+"-"+entry.getDadID()+"\tU\t" + dadU);
-                            linkageToHapsWriter.write(ped+"-"+entry.getMomID()+"\tT\t" + momT);
-                            linkageToHapsWriter.write(ped+"-"+entry.getMomID()+"\tU\t" + momU);
+                            linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getDadID()+"\tT\t" + dadT);
+                            linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getDadID()+"\tU\t" + dadU);
+                            linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getMomID()+"\tT\t" + momT);
+                            linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getMomID()+"\tU\t" + momU);
 
-                            usedParents.add(ped+" "+entry.getDadID());
-                            usedParents.add(ped+" "+entry.getMomID());
+                            usedParents.add(currentInd.getFamilyID()+" "+currentInd.getDadID());
+                            usedParents.add(currentInd.getFamilyID()+" "+currentInd.getMomID());
                         }
                     }
                 }
             }
         }
         linkageToHapsWriter.close();
+
     }
+
+
 
 }
 
