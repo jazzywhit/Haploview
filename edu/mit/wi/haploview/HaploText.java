@@ -503,9 +503,25 @@ public class HaploText {
 
                 }
 
-                textData.guessBlocks(outputType);
-                haplos = textData.generateHaplotypes(textData.blocks, 1);
-                textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                if(outputType == 3) {
+                    OutputFile = new File(fileName + ".SFSblocks");
+                    textData.guessBlocks(0);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1);
+                    textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                    OutputFile = new File(fileName + ".4GAMblocks");
+                    textData.guessBlocks(1);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1);
+                    textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                    OutputFile = new File(fileName + ".MJDblocks");
+                    textData.guessBlocks(2);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1);
+                    textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                }
+                else {
+                    textData.guessBlocks(outputType);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1);
+                    textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                }
             }
             if(this.arg_dprime) {
                 OutputFile = new File(fileName + ".DPRIME");
