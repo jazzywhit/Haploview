@@ -643,7 +643,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 InputEvent.BUTTON1_MASK){
             resizeRectExists = false;
             noImage = true;
-            wmMaxWidth = resizeWMRect.width;
+            if (resizeWMRect.width > 20){
+                wmMaxWidth = resizeWMRect.width;
+            }
             repaint();
         }
     }
