@@ -412,7 +412,7 @@ public class HaploText implements Constants{
 
 
 
-            textData = new HaploData();
+            textData = new HaploData(0);
             Vector result = null;
 
 

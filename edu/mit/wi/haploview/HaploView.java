@@ -377,24 +377,51 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         System.exit(0);
     }
 
-    void readPedGenotypes(String[] f, int type){
+    void readGenotypes(String[] inputOptions, int type){
         //input is a 3 element array with
         //inputOptions[0] = ped file
         //inputOptions[1] = info file ("" if none)
         //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
         //type is either 3 or 4 for ped and hapmap files respectively
 
-        File inFile = new File(f[0]);
+        final File inFile = new File(inputOptions[0]);
         try {
             if (inFile.length() < 1){
-                throw new HaploViewException("Pedfile is empty or nonexistent: " + inFile.getName());
+                throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
+            }
+
+            if (type == HAPS){
+                //these are not available for non ped files
+                viewMenuItems[VIEW_CHECK_NUM].setEnabled(false);
+                viewMenuItems[VIEW_TDT_NUM].setEnabled(false);
+                assocTest = 0;
             }
             theData = new HaploData(assocTest);
-            theData.linkageToChrom(inFile, type);
-            checkPanel = new CheckDataPanel(theData.getPedFile());
-            checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            processData(theData.getPedFile().getHMInfo(),f);
+            if (type == HAPS){
+                theData.prepareHapsInput(new File(inputOptions[0]));
+            }else{
+                theData.linkageToChrom(inFile, type);
+            }
+
+            //deal with marker information
+            theData.infoKnown = false;
+            File markerFile;
+            if (inputOptions[1].equals("")){
+                markerFile = null;
+            }else{
+                markerFile = new File(inputOptions[1]);
+            }
+
+            checkPanel = null;
+            if (type == HAPS){
+                readMarkers(markerFile, null);
+            }else{
+                readMarkers(markerFile, theData.getPedFile().getHMInfo());
+                checkPanel = new CheckDataPanel(theData);
+                checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            }
+
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
@@ -411,59 +438,18 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-    }
 
-    void readPhasedGenotypes(String[] f){
-        //input is a 3 element array with
-        //inputOptions[0] = haps file
-        //inputOptions[1] = info file ("" if none)
-        //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
-
-        //these are not available for non ped files
-        viewMenuItems[VIEW_CHECK_NUM].setEnabled(false);
-        viewMenuItems[VIEW_TDT_NUM].setEnabled(false);
-        checkPanel = null;
-        assocTest = 0;
-
-
-        theData = new HaploData();
-        try{
-            theData.prepareHapsInput(new File(f[0]));
-            processData(null, f);
-        }catch(IOException ioexec) {
-            JOptionPane.showMessageDialog(this,
-                    ioexec.getMessage(),
-                    "File Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }catch(HaploViewException ex){
-            JOptionPane.showMessageDialog(this,
-                    ex.getMessage(),
-                    "File Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-
-    }
-
-    void processData(final String[][] hminfo, String[] in) {
-        final String[] inputOptions = in;
+        //deal with max comparison distance
         if (inputOptions[2].equals("")){
             inputOptions[2] = "0";
         }
         maxCompDist = Long.parseLong(inputOptions[2])*1000;
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
+        //let's start the math
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         final SwingWorker worker = new SwingWorker(){
             public Object construct(){
                 dPrimeDisplay=null;
-
-                theData.infoKnown = false;
-                File markerFile;
-                if (inputOptions[1].equals("")){
-                    markerFile = null;
-                }else{
-                    markerFile = new File(inputOptions[1]);
-                }
-                readMarkers(markerFile, hminfo);
 
                 changeKey(1);
                 theData.generateDPrimeTable();
@@ -571,7 +557,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 setVisible(true);
 
                 theData.finished = true;
-                setTitle(TITLE_STRING + " -- " + inputOptions[0]);
+                setTitle(TITLE_STRING + " -- " + inFile.getName());
                 return null;
             }
         };
@@ -596,9 +582,30 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     void readMarkers(File inputFile, String[][] hminfo){
         try {
-            theData.prepareMarkerInput(inputFile,maxCompDist,hminfo);
+            theData.prepareMarkerInput(inputFile, maxCompDist, hminfo);
             if (checkPanel != null){
-                checkPanel.refreshNames();
+                //this is triggered when loading markers after already loading genotypes
+                //it is dumb and sucks, but at least it works. bah.
+                checkPanel = new CheckDataPanel(theData);
+                Container checkTab = (Container)tabs.getComponentAt(VIEW_CHECK_NUM);
+                checkTab.removeAll();
+
+                JPanel metaCheckPanel = new JPanel();
+                metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
+                JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
+                        + theData.numTrios + " trios from "
+                        + theData.numPeds + " families.");
+                if (theData.numTrios + theData.numSingletons == 0){
+                    countsLabel.setForeground(Color.red);
+                }
+                countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                metaCheckPanel.add(countsLabel);
+                metaCheckPanel.add(checkPanel);
+                cdc = new CheckDataController(window);
+                metaCheckPanel.add(cdc);
+
+                checkTab.add(metaCheckPanel);
+                repaint();
             }
             if (tdtPanel != null){
                 tdtPanel.refreshNames();
@@ -613,6 +620,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     ioexec.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
+        }catch (PedFileException pfe){
         }
         if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
             dPrimeDisplay.refresh();
@@ -670,7 +678,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 JTable table = checkPanel.getTable();
                 boolean[] markerResults = new boolean[table.getRowCount()];
                 for (int i = 0; i < table.getRowCount(); i++){
-                    markerResults[i] = ((Boolean)table.getValueAt(i,9)).booleanValue();
+                    markerResults[i] = ((Boolean)table.getValueAt(i,CheckDataPanel.STATUS_COL)).booleanValue();
                 }
                 int count = 0;
                 for (int i = 0; i < Chromosome.getSize(); i++){
@@ -897,17 +905,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
                 inputArray[2] = String.valueOf(argParser.getMaxDistance());
-                window.readPhasedGenotypes(inputArray);
+                window.readGenotypes(inputArray, HAPS);
             }else if (argParser.getPedFileName() != ""){
                 inputArray[0] = argParser.getPedFileName();
                 inputArray[1] = argParser.getInfoFileName();
                 inputArray[2] = String.valueOf(argParser.getMaxDistance());
-                window.readPedGenotypes(inputArray, 3);
+                window.readGenotypes(inputArray, PED);
             }else if (argParser.getHapmapFileName() != ""){
                 inputArray[0] = argParser.getHapmapFileName();
                 inputArray[1] = "";
                 inputArray[2] = String.valueOf(argParser.getMaxDistance());
-                window.readPedGenotypes(inputArray, 4);
+                window.readGenotypes(inputArray, DCC);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
                 readDialog.pack();

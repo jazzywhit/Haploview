@@ -60,9 +60,7 @@ public class HaploData implements Constants{
     private int assocTest;
     int numTrios, numSingletons,numPeds;
 
-    HaploData(){
-        assocTest = 0;
-    }
+
     HaploData(int b){
         assocTest = b;
     }

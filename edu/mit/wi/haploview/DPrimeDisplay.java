@@ -806,11 +806,15 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     (boxY > boxX && boxY < highY) &&
                     !(wmInteriorRect.contains(clickX,clickY))){
                 if (dPrimeTable[boxX][boxY] != null){
-                    displayStrings = new String[5];
                     if (theData.infoKnown){
+                        displayStrings = new String[6];
                         displayStrings[0] = new String ("(" +Chromosome.getFilteredMarker(boxX).getName() +
                                 ", " + Chromosome.getFilteredMarker(boxY).getName() + ")");
+                        int sep = (int)((Chromosome.getFilteredMarker(boxY).getPosition() -
+                                Chromosome.getFilteredMarker(boxX).getPosition())/1000);
+                        displayStrings[5] = new Long(sep).toString() + " kb";
                     }else{
+                        displayStrings = new String[5];
                         displayStrings[0] = new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
                                 (Chromosome.realIndex[boxY]+1) + ")");
                     }

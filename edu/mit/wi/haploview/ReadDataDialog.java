@@ -7,7 +7,7 @@ import java.io.*;
 import java.util.*;
 
 
-public class ReadDataDialog extends JDialog implements ActionListener {
+public class ReadDataDialog extends JDialog implements ActionListener, Constants {
 
     static final String HAPMAP_DATA = "Browse HapMap data from DCC";
     static final String RAW_DATA = "Load genotypes (linkage format)";
@@ -15,11 +15,6 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     static final String MARKER_DATA_EXT = ".info";
     static final String BROWSE_GENO = "browse for geno files";
     static final String BROWSE_INFO = "browse for info files";
-    static final int GENO = 0;
-    static final int INFO = 1;
-    static final int HAPS = 2;
-    static final int PED = 3;
-    static final int DCC = 4;
 
     int fileType;
     JTextField genoFileField, infoFileField;
@@ -82,13 +77,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
             }
 
             String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};
-            if (fileType == HAPS){
-                caller.readPhasedGenotypes(returnStrings);
-            }else if (fileType == PED){
-                caller.readPedGenotypes(returnStrings, PED);
-            }else if (fileType == DCC){
-                caller.readPedGenotypes(returnStrings, DCC);
-            }
+            caller.readGenotypes(returnStrings, fileType);
 
             if (caller.dPrimeDisplay != null){
                 caller.dPrimeDisplay.setVisible(false);

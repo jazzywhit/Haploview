@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 1.3 2003/12/17 21:29:29 jcbarret Exp $
+ * $Id: MarkerResult.java,v 1.4 2004/04/09 14:41:40 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -35,26 +35,13 @@ public class MarkerResult {
 	private int _famTrioNum;
 	private int _mendErrNum;
 	private int _rating;
-	private String _name="";
     NumberFormat nf = NumberFormat.getInstance(Locale.US);
 
 	public MarkerResult() {
 		nf.setMinimumFractionDigits(3);
 		nf.setMaximumFractionDigits(3);
     }
-	/**
-	 * Sets the marker name
-	 */
-	public void setName(String name){
-		this._name = name;
-	}
 
-	/**
-	 * Gets the marker name
-	 */
-	public String getName(){
-		return this._name;
-	}
 
 	/**
 	 * Sets observed heterozygosity

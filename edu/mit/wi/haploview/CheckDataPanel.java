@@ -12,24 +12,29 @@ import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.PedFileException;
 
-
 public class CheckDataPanel extends JPanel implements TableModelListener{
-	JTable table;
-	PedFile pedfile;
+	private JTable table;
+	private PedFile pedfile;
+    private HaploData theData;
 
     boolean changed;
-    private static int STATUS_COL = 9;
+    static int STATUS_COL = 8;
 
-    public CheckDataPanel(PedFile pf) throws IOException, PedFileException{
+    public CheckDataPanel(HaploData hd) throws IOException, PedFileException{
+        STATUS_COL = 8;
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
-        pedfile = pf;
+        pedfile = hd.getPedFile();
+        theData = hd;
         Vector result = pedfile.getResults();
 
         int numResults = result.size();
-
         Vector tableColumnNames = new Vector();
         tableColumnNames.add("#");
-        tableColumnNames.add("Name");
+        if (theData.infoKnown){
+            tableColumnNames.add("Name");
+            tableColumnNames.add("Position");
+            STATUS_COL += 2;
+        }
         tableColumnNames.add("ObsHET");
         tableColumnNames.add("PredHET");
         tableColumnNames.add("HWpval");
@@ -45,7 +50,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             Vector tempVect = new Vector();
             MarkerResult currentResult = (MarkerResult)result.get(i);
             tempVect.add(new Integer(i+1));
-            tempVect.add(currentResult.getName());
+            if (theData.infoKnown){
+                tempVect.add(Chromosome.getMarker(i).getName());
+                tempVect.add(new Long(Chromosome.getMarker(i).getPosition()));
+            }
             tempVect.add(new Double(currentResult.getObsHet()));
             tempVect.add(new Double(currentResult.getPredHet()));
             tempVect.add(new Double(currentResult.getHWpvalue()));
@@ -73,11 +81,13 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         try{
             table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
             table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
+            table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
         }catch (Exception e){
         }
         table.getColumnModel().getColumn(0).setPreferredWidth(30);
-        table.getColumnModel().getColumn(1).setPreferredWidth(100);
-
+        if (theData.infoKnown){
+            table.getColumnModel().getColumn(1).setPreferredWidth(100);
+        }
         JScrollPane tableScroller = new JScrollPane(table);
         add(tableScroller);
 	}
@@ -96,11 +106,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         }
     }
 
-    public void refreshNames() {
-        for (int i = 0; i < table.getRowCount(); i++){
-              table.setValueAt(Chromosome.getMarker(i).getName(),i,1);
-        }
-    }
+
 
     public void selectAll(){
         for (int i = 0; i < table.getRowCount(); i++){
@@ -169,6 +175,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 				return false;
 			}
 		}
+
+
 
 		public void setValueAt(Object value, int row, int col){
 			((Vector)data.elementAt(row)).set(col, value);

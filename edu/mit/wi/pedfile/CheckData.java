@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.9 2004/04/01 22:21:24 jcbarret Exp $
+ * $Id: CheckData.java,v 1.10 2004/04/09 14:41:40 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -49,27 +49,14 @@ public class CheckData {
 		//_size = _pedFile.getNumIndividuals();
 
 		int numOfMarkers = _pedFile.getNumMarkers();
-		//not worrying about names right now
-		//TODO: store and use marker names
-		//Vector names = this._pedFile.getMarkerNames();
-		Vector names = null;
-		boolean withName=false;
-		if(names!=null && names.size()==numOfMarkers) {
-			withName = true;
-		}
+
 		for(int i= 0; i < numOfMarkers; i++){
-			MarkerResult markerResult;
-			if(withName) {
-				markerResult = checkMarker(i, (String)names.get(i));
-			}else{
-				markerResult = checkMarker(i, new String("Marker " + (i+1)));
-			}
-			results.add(markerResult);
+			results.add(checkMarker(i));
 		}
 		return results;
 	}
 
-	private MarkerResult checkMarker(int loc, String name)throws PedFileException{
+	private MarkerResult checkMarker(int loc)throws PedFileException{
 		MarkerResult result = new MarkerResult();
 		Individual currentInd;
 		//int indivgeno=0,
@@ -250,7 +237,6 @@ public class CheckData {
 		result.setFamTrioNum(famTrio);
 		result.setMendErrNum(mendErrNum);
 		result.setRating(rating);
-		result.setName(name);
 		return result;
 	}
    /**

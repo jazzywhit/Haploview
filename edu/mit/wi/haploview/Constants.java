@@ -42,4 +42,11 @@ public interface Constants {
     public static final int BLOX_CUSTOM = 3;
     public static final int BLOX_ALL = 4;
     public static final int BLOX_NONE = 5;
+
+    //filetypes
+    static final int GENO = 0;
+    static final int INFO = 1;
+    static final int HAPS = 2;
+    static final int PED = 3;
+    static final int DCC = 4;
 }
