@@ -189,7 +189,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             double max_l = 0.0;
 
             for (int i = 0; i < Chromosome.getSize(); i++){
-                for (int j = i+1; j < dPrime.getLength(i); j++){
+                for (int j = i+1; j < i + dPrime.getLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                     if (thisPair == null){
                         continue;
@@ -203,7 +203,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             if (max_l > 5.0) max_l = 5.0;
 
             for (int i = 0; i < Chromosome.getSize(); i++){
-                for (int j = i+1; j < dPrime.getLength(i); j++){
+                for (int j = i+1; j < i + dPrime.getLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                     if (thisPair == null){
                         continue;
@@ -260,7 +260,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             // set coloring based on R-squared values
 
             for (int i = 0; i < Chromosome.getSize(); i++){
-                for (int j = i+1; j < dPrime.getLength(i); j++){
+                for (int j = i+1; j < i + dPrime.getLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                     if (thisPair == null){
                         continue;

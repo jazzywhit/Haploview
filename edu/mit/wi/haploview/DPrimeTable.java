@@ -50,6 +50,7 @@ public class DPrimeTable {
     public int getLength(int x){
         //same as above but for the filtered dataset
         int whichMarker = Chromosome.realIndex[x];
+        if (whichMarker >= theTable.length-1) return 0;
         for (int m = theTable[whichMarker].length+whichMarker; m > whichMarker; m--){
             if (Chromosome.filterIndex[m] != -1){
                 //length of array is one greater than difference of first and last elements
