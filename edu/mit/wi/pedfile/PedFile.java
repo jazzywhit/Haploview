@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.26 2004/09/22 15:15:34 jmaller Exp $
+* $Id: PedFile.java,v 1.27 2004/09/23 16:48:47 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -430,10 +430,13 @@ public class PedFile {
                 //this line has a different number of columns
                 //should send some sort of error message
                 //TODO: add something which stores number of markers for all lines and checks that they're consistent
-                throw new PedFileException("line number mismatch in pedfile. line " + (k+1));
+                throw new PedFileException("Line number mismatch in pedfile. line " + (k+1));
             }
 
             ind = new Individual(tokenizer.countTokens());
+            if(tokenizer.countTokens() < 6) {
+                throw new PedFileException("Incorrect number of fields on line " + (k+1));
+            }
 
             if(tokenizer.hasMoreTokens()){
 

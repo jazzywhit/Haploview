@@ -48,6 +48,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         //this.setLocation((getParent().getWidth() - this.getWidth()) / 2,
         //		   (getParent().getHeight() - this.getHeight()) / 2);
         this.setModal(true);
+        this.setResizable(false);
     }
 
 

@@ -78,6 +78,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
         }
 
+
         //menu setup
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -1130,6 +1131,34 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             //System.setProperty("swing.disableFileChooserSpeedFix", "true");
 
             window  =  new HaploView();
+
+
+            final SwingWorker worker = new SwingWorker(){
+                UpdateChecker uc;
+                public Object construct() {
+                    uc = new UpdateChecker();
+                    uc.checkForUpdate();
+                    return null;
+                }
+                public void finished() {
+                    if(uc != null) {
+                        if(uc.isNewVersionAvailable()) {
+                            //theres an update available so lets pop some crap up
+                            JLayeredPane jlp = window.getLayeredPane();
+                            JLabel updateLabel = new JLabel("test");
+                            updateLabel.setBounds(100,100,200,200);
+                            updateLabel.setOpaque(true);
+                            updateLabel.setBackground(Color.red);
+                            //updateLabel.setBorder(BorderFactory.createCompoundBorder());
+                            jlp.add(updateLabel, JLayeredPane.POPUP_LAYER);
+                            window.setLayeredPane(jlp);
+
+                        }
+                    }
+                }
+            };
+
+            worker.start();
 
             //setup view object
             window.setTitle(TITLE_STRING);
