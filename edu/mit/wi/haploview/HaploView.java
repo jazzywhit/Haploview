@@ -326,7 +326,7 @@ public class HaploView extends JFrame implements ActionListener{
             processData();
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
-                    ioexec.getMessage()+"\nCould not access file.",
+                    ioexec.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }catch(HaploViewException ex){
