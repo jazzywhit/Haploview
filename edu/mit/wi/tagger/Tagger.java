@@ -4,6 +4,8 @@ import java.util.*;
 import java.io.*;
 
 public class Tagger {
+    public static final double DEFAULT_RSQ_CUTOFF = 0.8;
+
     //todo: SNPS?? should this be named (and store) variantseqs?
     //vector of SNP objects, which contains every SNP (tags and non-tags)
     private Vector snps;
@@ -18,7 +20,7 @@ public class Tagger {
 
     private AlleleCorrelator alleleCorrelator;
     //private Hashtable pairwiseCompsHash;
-    private double minRSquared = .8;
+    private double minRSquared;
     private Hashtable snpHash;
 
     //Vector of Tag objects determined by the most recent call to findTags()
@@ -30,7 +32,13 @@ public class Tagger {
 
     public int taggedSoFar;
 
-    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac) {
+    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac){
+        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF);
+    }
+
+    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut) {
+        minRSquared = rsqCut;
+
         if(s != null) {
             snps = s;
         } else {
@@ -156,7 +164,7 @@ public class Tagger {
             if(!(forceExclude.contains(currentVarSeq) ) ){//|| (currentVarSeq instanceof SNP && ((SNP)currentVarSeq).getMAF() < .05))) {
                 PotentialTag tempPT = new PotentialTag(currentVarSeq);
                 for(int j=0;j<snps.size();j++) {
-                    if( getPairwiseComp(currentVarSeq,(VariantSequence) snps.get(j)) > minRSquared) {
+                    if( getPairwiseComp(currentVarSeq,(VariantSequence) snps.get(j)) >= minRSquared) {
                         tempPT.addTagged((VariantSequence) snps.get(j));
                     }
                 }

@@ -103,6 +103,7 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         bufferPanel.add(listsPanel);
 
         add(bufferPanel);
+        add(new JSeparator(JSeparator.VERTICAL));
         add(markerPanel);
         refresh();
     }

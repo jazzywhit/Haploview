@@ -6,6 +6,7 @@ import edu.mit.wi.pedfile.CheckData;
 import edu.mit.wi.haploview.association.*;
 import edu.mit.wi.haploview.tagger.TaggerConfigPanel;
 import edu.mit.wi.haploview.tagger.TaggerResultsPanel;
+import edu.mit.wi.tagger.Tagger;
 
 import javax.help.*;
 import javax.swing.*;
@@ -1210,6 +1211,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     public static void main(String[] args) {
         //set defaults
+        Options.setTaggerRsqCutoff(Tagger.DEFAULT_RSQ_CUTOFF);
         Options.setMissingThreshold(0.5);
         Options.setSpacingThreshold(0.0);
         Options.setAssocTest(ASSOC_NONE);

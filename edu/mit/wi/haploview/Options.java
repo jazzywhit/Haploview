@@ -13,6 +13,7 @@ public class Options {
     private static long gBrowseRight;
     private static String gBrowseOpts;
     private static String gBrowseTypes;
+    private static double taggerRsqCutoff;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -118,5 +119,13 @@ public class Options {
 
     public static void setgBrowseTypes(String gBrowseTypes) {
         Options.gBrowseTypes = gBrowseTypes;
+    }
+
+    public static double getTaggerRsqCutoff() {
+        return taggerRsqCutoff;
+    }
+
+    public static void setTaggerRsqCutoff(double taggerRsqCutoff) {
+        Options.taggerRsqCutoff = taggerRsqCutoff;
     }
 }

@@ -1,8 +1,7 @@
 package edu.mit.wi.haploview.tagger;
 
-import edu.mit.wi.haploview.Chromosome;
-import edu.mit.wi.haploview.HaploData;
-import edu.mit.wi.haploview.SNP;
+import edu.mit.wi.haploview.*;
+import edu.mit.wi.tagger.Tagger;
 
 import javax.swing.*;
 import javax.swing.event.TableModelListener;
@@ -27,6 +26,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
     private Timer timer;
     private HaploData theData;
     private Hashtable snpsByName;
+    private NumberTextField rsqField;
 
     public TaggerConfigPanel(HaploData hd)  {
         theData = hd;
@@ -106,8 +106,9 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         add(buttonPanel);
 
         JPanel configPanel = new JPanel();
-        configPanel.add(new JLabel("r squared cutoff "));
-        configPanel.add(new JTextField(10));
+        configPanel.add(new JLabel("r\u00b2 cutoff"));
+        rsqField = new NumberTextField(String.valueOf(Options.getTaggerRsqCutoff()),5,true);
+        configPanel.add(rsqField);
         add(configPanel);
     }
 
@@ -128,6 +129,17 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         String command = e.getActionCommand();
         if (command.equals("Run Tagger")) {
             runTaggerButton.setEnabled(false);
+
+            double rsqCut = new Double(rsqField.getText()).doubleValue();
+            if (rsqCut > 1){
+                Options.setTaggerRsqCutoff(1.0);
+                rsqField.setText("1.0");
+            }else if (rsqCut < 0){
+                Options.setTaggerRsqCutoff(0.0);
+                rsqField.setText("0.0");
+            }else{
+                Options.setTaggerRsqCutoff(rsqCut);
+            }
 
             //build include/exclude lists
             Vector include = new Vector();
@@ -167,6 +179,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                 table.setValueAt(new Boolean(false), i, INCLUDE_COL);
                 table.setValueAt(new Boolean(true), i, CAPTURE_COL);
             }
+            rsqField.setText(String.valueOf(Tagger.DEFAULT_RSQ_CUTOFF));
         }
     }
 

@@ -46,7 +46,7 @@ public class TaggerController {
         }
         HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq,theData.dpTable);
 
-        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac);
+        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff());
 
 
     }

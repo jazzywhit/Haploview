@@ -13,10 +13,10 @@ public class NumberTextField extends JTextField {
     int size;
     boolean decimal;
 
-    public NumberTextField(String str, int s, boolean d){
+    public NumberTextField(String str, int s, boolean allowDecimal){
         super(s);
         size = s;
-        decimal = d;
+        decimal = allowDecimal;
         this.setText(str);
     }
 
