@@ -17,7 +17,7 @@ public interface Constants {
     public static final String CLEAR_BLOCKS = "Clear all blocks";
     public static final String CUST_BLOCKS = "Customize Block Definitions";
 
-    public static final String VIEW_DPRIME = "D Prime Plot";
+    public static final String VIEW_DPRIME = "LD Plot";
     public static final String VIEW_HAPLOTYPES = "Haplotypes";
     public static final String VIEW_LOD = "Genotyping completeness";
     public static final String VIEW_CHECK_PANEL = "Check Markers";

@@ -101,6 +101,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         readMarkerItem.setEnabled(false);
         fileMenu.add(readMarkerItem);
 
+
+
         /*
         viewMarkerItem = new JMenuItem(VIEW_MARKERS);
         viewMarkerItem.addActionListener(this);
@@ -149,7 +151,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         displayMenu.addSeparator();
         //a submenu
         ButtonGroup zg = new ButtonGroup();
-        JMenu zoomMenu = new JMenu("D prime zoom");
+        JMenu zoomMenu = new JMenu("LD zoom");
         zoomMenu.setMnemonic(KeyEvent.VK_Z);
         zoomMenuItems = new JRadioButtonMenuItem[zoomItems.length];
         for (int i = 0; i < zoomItems.length; i++){
@@ -162,7 +164,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         displayMenu.add(zoomMenu);
         //another submenu
         ButtonGroup cg = new ButtonGroup();
-        JMenu colorMenu = new JMenu("D prime color scheme");
+        JMenu colorMenu = new JMenu("LD color scheme");
         colorMenu.setMnemonic(KeyEvent.VK_C);
         colorMenuItems = new JRadioButtonMenuItem[colorItems.length];
         for (int i = 0; i< colorItems.length; i++){
@@ -385,6 +387,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         //type is either 3 or 4 for ped and hapmap files respectively
 
         final File inFile = new File(inputOptions[0]);
+
+        //deal with max comparison distance
+        if (inputOptions[2].equals("")){
+            inputOptions[2] = "0";
+        }
+        maxCompDist = Long.parseLong(inputOptions[2])*1000;
+
+
         try {
             if (inFile.length() < 1){
                 throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
@@ -422,13 +432,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
             }
 
-
-
-            //deal with max comparison distance
-            if (inputOptions[2].equals("")){
-                inputOptions[2] = "0";
-            }
-            maxCompDist = Long.parseLong(inputOptions[2])*1000;
 
             //let's start the math
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
