@@ -20,7 +20,7 @@ public class HaplotypeDisplayController extends JPanel {
     HaplotypeDisplay parent;
 
 
-    public HaplotypeDisplayController(HaplotypeDisplay parent) {
+    public HaplotypeDisplayController(HaplotypeDisplay parent){
         this.parent = parent;
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -30,8 +30,8 @@ public class HaplotypeDisplayController extends JPanel {
         hapPercentPanel.add(minDisplayField =
                 new NumberTextField(String.valueOf(parent.displayThresh), 3));
         minDisplayField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                setDisplayThresh(Integer.parseInt(minDisplayField.getText()));
+            public void insertUpdate(DocumentEvent e){
+                    setDisplayThresh(Integer.parseInt(minDisplayField.getText()));
             }
             public void changedUpdate(DocumentEvent e) { }
             public void removeUpdate(DocumentEvent e) { }

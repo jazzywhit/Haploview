@@ -371,7 +371,6 @@ public class HaploView extends JFrame implements ActionListener{
             theData.prepareMarkerInput(inputFile,maxCompDist);
         }catch (HaploViewException e){
             JOptionPane.showMessageDialog(this,
-                    //"Number of markers in info file does not match number of markers in dataset.",
                     e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);

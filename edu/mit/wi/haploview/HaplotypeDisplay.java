@@ -167,7 +167,7 @@ public class HaplotypeDisplay extends JComponent {
         }
     }
 
-    public void adjustDisplay() throws HaploViewException {
+    public void adjustDisplay() {
         //this is called when the controller wants to change the haps
         //displayed, instead of directly repainting so that none of this math
         //is done when the screen repaints for other reasons (resizing, focus change, etc)
@@ -195,7 +195,14 @@ public class HaplotypeDisplay extends JComponent {
         if (!(printable == filteredHaplos.length)) return;
 
         //then re-tag
-        filteredHaplos = theData.generateCrossovers(filteredHaplos);
+        try{
+            filteredHaplos = theData.generateCrossovers(filteredHaplos);
+        }catch (HaploViewException e){
+                    JOptionPane.showMessageDialog(this.getParent(),
+                    e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
         multidprimeArray = theData.getMultiDprime();
 
         repaint();
