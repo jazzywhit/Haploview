@@ -24,9 +24,10 @@ public class TDTResult {
     }
 
     public void tallyCCInd(byte[] a, int cc){
-        //case = 2, control = 1 for int cc
-        //but to make the array indexes easier to use, we set cc to zero if it
-        //is passed in as 2.
+        //for int cc:
+        //case = 2, control = 1, unknown = 0
+        //if 0 (unknown), exit the method, if 2 (case) set to zero to make array indexes easier.
+        if (cc == 0) return;
         if (cc == 2) cc = 0;
         byte a1 = a[0];
         byte a2 = a[1];
