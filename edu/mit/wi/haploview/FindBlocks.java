@@ -3,16 +3,59 @@ package edu.mit.wi.haploview;
 import java.util.*;
 
 class FindBlocks {
-    String[][] dPrime;
+    PairwiseLinkage[][] dPrime;
+    double fourGameteCutoff = 0.01;
 
-    FindBlocks(String[][] data){
+    FindBlocks(PairwiseLinkage[][] data){
 	dPrime = data;
     }
-
+    
+    Vector do4Gamete(){
+	Vector blocks = new Vector();
+	for (int x = 0; x < dPrime.length-1; x++){
+	    String thisOne = new String(x + " ");
+	    boolean start = false;
+	    for (int y = x+1; y < dPrime.length; y++){
+		PairwiseLinkage thisPair = dPrime[x][y];
+		double[] freqs = thisPair.getFreqs();
+		int numGam = 0;
+		for (int i = 0; i < freqs.length; i++){
+		    if (freqs[i] > fourGameteCutoff) numGam++;
+		}
+		if (numGam == 4){
+		    if (start){
+			boolean isABlock = true;
+			/** FIX THIS
+			for (int xx = x+1; x < y-1; xx++){
+			    for (int yy = xx+1; yy < y; yy++){
+				int numGam2=0;
+				for (int i = 0; i < freqs.length; i++){
+				    if (freqs[i] > fourGameteCutoff) numGam2++;
+				}
+				if(numGam2 == 4){
+				    isABlock = false;
+				}
+			    }
+			}
+			**/
+			if (isABlock){
+			    thisOne += y-1;
+			    blocks.add(thisOne);
+			    x=y-1;
+			}
+		    }
+		    break;
+		}
+		start = true;
+	    }
+	}
+	return stringVec2intVec(blocks);
+    }
+    
     Vector doSFS(){
-	float cutHighCI = 0.98f;
-	float cutLowCI = 0.70f;
-	float recHighCI = 0.90f;
+	double cutHighCI = 0.98;
+	double cutLowCI = 0.70;
+	double recHighCI = 0.90;
 	
 	int numStrong = 0; int numRec = 0; int numInGroup = 0;
 	Vector blocks = new Vector();
@@ -21,13 +64,11 @@ class FindBlocks {
 	//first make a list of marker pairs in "strong LD", sorted by distance apart
 	for (int x = 0; x < dPrime.length-1; x++){
 	    for (int y = x+1; y < dPrime.length; y++){
-		StringTokenizer st = new StringTokenizer(dPrime[x][y]);
+		PairwiseLinkage thisPair = dPrime[x][y];
 		//get the right bits from the string
-		st.nextToken();
-		float lod = Float.parseFloat(st.nextToken());
-		st.nextToken();
-		float lowCI = Float.parseFloat(st.nextToken());
-		float highCI = Float.parseFloat(st.nextToken());
+		double lod = thisPair.getLOD();
+		double lowCI = thisPair.getConfidenceLow();
+		double highCI = thisPair.getConfidenceHigh();
 		if (lod < -90) continue; //missing data
 		if (highCI < cutHighCI || lowCI < cutLowCI) continue; //must pass "strong LD" test
 
@@ -59,13 +100,11 @@ class FindBlocks {
 	    for (int y = first+1; y <= last; y++){
 		//loop over columns in row y
 		for (int x = first; x < y; x++){
-		    StringTokenizer st = new StringTokenizer(dPrime[x][y]);
+		    PairwiseLinkage thisPair = dPrime[x][y];
 		    //get the right bits
-		    st.nextToken();
-		    float lod = Float.parseFloat(st.nextToken());
-		    st.nextToken();
-		    float lowCI = Float.parseFloat(st.nextToken());
-		    float highCI = Float.parseFloat(st.nextToken());
+		    double lod = thisPair.getLOD();
+		    double lowCI = thisPair.getConfidenceLow();
+		    double highCI = thisPair.getConfidenceHigh();
 		    if (lod < -90) continue;   //monomorphic marker error
 		    if (lod == 0 && lowCI == 0 && highCI == 0) continue; //skip bad markers
 		    if (lowCI > cutLowCI && highCI > cutHighCI) {
@@ -125,9 +164,9 @@ class FindBlocks {
 	    baddies=0;
 	    //find how far LD from marker i extends
 	    for (int j = i+1; j < dPrime[i].length; j++){
-		StringTokenizer st = new StringTokenizer(dPrime[i][j]);
+		PairwiseLinkage thisPair = dPrime[i][j];
 		//LD extends if D' > 0.8
-		if (Float.parseFloat(st.nextToken()) < 0.8){
+		if (thisPair.getDPrime() < 0.8){
 		    //LD extends through one 'bad' marker
 		    if (baddies < 1){
 			baddies++;
@@ -143,8 +182,8 @@ class FindBlocks {
 	    //one which is good
 	    for (int m = verticalExtent; m > i; m--){
 		for (int k = i; k < m; k++){
-		    StringTokenizer st = new StringTokenizer(dPrime[k][m]);
-		    if(Float.parseFloat(st.nextToken()) < 0.8){
+		    PairwiseLinkage thisPair = dPrime[k][m];
+		    if(thisPair.getDPrime() < 0.8){
 			if (baddies < 1){
 			    baddies++;
 			} else {
@@ -167,6 +206,11 @@ class FindBlocks {
 	}
 	return stringVec2intVec(blocks);
     }
+
+    //Vector do4Gamete(){
+	
+    //}
+
     Vector stringVec2intVec(Vector inVec){
 	//instead of strings with starting and ending positions convert blocks
 	//to int arrays

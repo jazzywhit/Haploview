@@ -13,6 +13,7 @@ public class PedFile {
 
     private Hashtable _contents;
     private Vector _markerName=null;
+    private Vector keys = new Vector();
 
     /**
      * Constructor
@@ -28,6 +29,7 @@ public class PedFile {
     public void addContent(PedFileEntry entry){
 	String key = entry.getFamilyID() + " " + entry.getIndivID();
         this._contents.put(key, entry);
+	keys.add(key);
     }
 
     public void setMarkerNames(Vector names){
@@ -44,6 +46,10 @@ public class PedFile {
      */
     public Hashtable getContent(){
         return this._contents;
+    }
+
+    public Vector getKeys(){
+	return keys;
     }
 
     /**

@@ -195,17 +195,21 @@ class DrawingMethods {
 
 
     public Dimension dPrimeGetPreferredSize(int size, boolean info){
-	if (info){
-	    return new Dimension((labeloffset+size*30), size*30);
-	}else{
-	    return new Dimension(size*30, size*30);
-	}
+	//if (size < 26){
+	    if (info){
+		return new Dimension((labeloffset+size*30), size*30);
+	    }else{
+		return new Dimension(size*30, size*30);
+	    }
+	    //}else{
+	    //return new Dimension(600,600);
+	    //}
     }
 
-    public void dPrimeDraw(String[][] table, boolean info, Vector snps, Graphics g){
+    public void dPrimeDraw(PairwiseLinkage[][] table, boolean info, Vector snps, Graphics g){
 	int scale = table.length*30;
 	int activeOffset = 0;
-	float d, l, blgr;
+	double d, l, blgr;
 	Color myColor;
 	int[] shifts;
 	Font regFont = new Font("Lucida Sans Regular", Font.PLAIN, 10);
@@ -213,93 +217,149 @@ class DrawingMethods {
 	Font boldFont = new Font("Lucida Sans Bold", Font.BOLD, 14);
 	FontMetrics boldfm = g.getFontMetrics(boldFont);	
 
-	if (info) activeOffset = labeloffset;
-
-	//background color
-	g.setColor(new Color(192,192,192));
-	g.fillRect(0,0,scale+activeOffset,scale);
-
-	//first label:
-	g.setColor(Color.black);
-	g.setFont(boldFont);
-	shifts = centerString("1", boldfm);
-	g.drawString("1", activeOffset + shifts[0], shifts[1]);
-
-	//if we know the marker names, print them down the side, along with MAF
-	if (info){
-	    NumberFormat nf = NumberFormat.getInstance();
-	    nf.setMinimumFractionDigits(2);
-	    nf.setMaximumFractionDigits(2);
-	    g.setFont(regFont);
-	    for (int y = 0; y < table.length; y++){
-		String name = ((SNP)snps.elementAt(y)).getName();
-		name += " (";
-		name += nf.format(((SNP)snps.elementAt(y)).getMAF());
-		name += ")";
-		g.drawString(name, labeloffset-3-regfm.stringWidth(name), y*30 + shifts[1]);
-	    }
-
-	    //now draw a diagonal bar showing marker spacings
-	    if (table.length > 3){
-		g.drawLine(labeloffset+95,0,labeloffset+scale,scale-95);
-		double lineLength = Math.sqrt((scale-95)*(scale-95)*2);
-		double start = ((SNP)snps.elementAt(0)).getPosition();
-		double totalLength = ((SNP)snps.elementAt(table.length-1)).getPosition() - start;
-		int numKB = (int)(totalLength/1000);
-		g.drawString(numKB+" Kb", labeloffset+150, 30); 
-		for (int y = 0; y < table.length; y++){
-		    double fracLength = (((SNP)snps.elementAt(y)).getPosition() - start)/totalLength;
-		    double xOrYDist = Math.sqrt((fracLength*lineLength*fracLength*lineLength)/2);
-		    
-		    int xSpineCoord = (int)(labeloffset + 90 +xOrYDist);
-		    int ySpineCoord = (int)(5+xOrYDist);
-		    
-		    g.drawLine(labeloffset+25+y*30, 5+y*30,xSpineCoord,ySpineCoord);
-		    //add "ticks" to spine
-		    g.drawLine(xSpineCoord, ySpineCoord, (xSpineCoord+5), (ySpineCoord-5)); 
-		}
-	    }
-	}
-
-	//draw table column by column
-	for (int x = 0; x < table.length-1; x++){
-	    for (int y = x + 1; y < table.length; y++){
-		StringTokenizer st = new StringTokenizer(table[x][y]);
-		d = Float.parseFloat(st.nextToken());
-		l = Float.parseFloat(st.nextToken());
-		//set coloring based on LOD and D'
-		if (l > 2){
-		    if (d < 0.5) {
-			//high LOD, low D' bluish color
-			myColor = new Color(255, 224, 224);
-		    } else {
-			//high LOD, high D' shades of red
-			blgr = (255-32)*2*(1-d);
-			myColor = new Color(255, (int) blgr, (int) blgr);
-		    } 
-		}else if (d > 0.99){
-		    //high D', low LOD gray color
-		    myColor = new Color(192, 192, 240);
-		}else {
-		    //no LD
-		    myColor = Color.white;
-		}
-
-		//draw the boxes
-		g.setColor(myColor);
-		g.fillRect(x*30+1+activeOffset, y*30+1, 28, 28);
-		g.setColor(Color.black);
-		g.drawRect(x*30+activeOffset, y*30, 30, 30);
-		g.setFont(regFont);
-		shifts=centerString(Float.toString(d), regfm);
-		g.drawString(Float.toString(d), shifts[0]+(x*30)+activeOffset,(y*30)+shifts[1]);
-	    }
-	    //draw the labels
+	//if(scale < 26*30){	
+	    if (info) activeOffset = labeloffset;
+	    
+	    //background color
+	    g.setColor(new Color(192,192,192));
+	    g.fillRect(0,0,scale+activeOffset,scale);
+	    
+	    //first label:
 	    g.setColor(Color.black);
 	    g.setFont(boldFont);
-	    shifts = centerString(Integer.toString(x+2), boldfm);
-	    g.drawString(Integer.toString(x+2), shifts[0]+(x+1)*30+activeOffset, shifts[1]+(x+1)*30);
-	}
+	    shifts = centerString("1", boldfm);
+	    g.drawString("1", activeOffset + shifts[0], shifts[1]);
+	    
+	    //if we know the marker names, print them down the side, along with MAF
+	    if (info){
+		NumberFormat nf = NumberFormat.getInstance();
+		nf.setMinimumFractionDigits(2);
+		nf.setMaximumFractionDigits(2);
+		g.setFont(regFont);
+		for (int y = 0; y < table.length; y++){
+		    String name = ((SNP)snps.elementAt(y)).getName();
+		    name += " (";
+		    name += nf.format(((SNP)snps.elementAt(y)).getMAF());
+		    name += ")";
+		    g.drawString(name, labeloffset-3-regfm.stringWidth(name), y*30 + shifts[1]);
+		}
+		
+		//now draw a diagonal bar showing marker spacings
+		if (table.length > 3){
+		    g.drawLine(labeloffset+95,0,labeloffset+scale,scale-95);
+		    double lineLength = Math.sqrt((scale-95)*(scale-95)*2);
+		    double start = ((SNP)snps.elementAt(0)).getPosition();
+		    double totalLength = ((SNP)snps.elementAt(table.length-1)).getPosition() - start;
+		    int numKB = (int)(totalLength/1000);
+		    g.drawString(numKB+" Kb", labeloffset+150, 30); 
+		    for (int y = 0; y < table.length; y++){
+			double fracLength = (((SNP)snps.elementAt(y)).getPosition() - start)/totalLength;
+			double xOrYDist = Math.sqrt((fracLength*lineLength*fracLength*lineLength)/2);
+			
+			int xSpineCoord = (int)(labeloffset + 90 +xOrYDist);
+			int ySpineCoord = (int)(5+xOrYDist);
+			
+			g.drawLine(labeloffset+25+y*30, 5+y*30,xSpineCoord,ySpineCoord);
+			//add "ticks" to spine
+			g.drawLine(xSpineCoord, ySpineCoord, (xSpineCoord+5), (ySpineCoord-5)); 
+		    }
+		}
+	    }
+
+	    //draw table column by column
+	    for (int x = 0; x < table.length-1; x++){
+		for (int y = x + 1; y < table.length; y++){
+		    PairwiseLinkage thisPair = table[x][y];
+		    d = thisPair.getDPrime();
+		    l = thisPair.getLOD();
+		    //set coloring based on LOD and D'
+		    if (l > 2){
+			if (d < 0.5) {
+			    //high LOD, low D' bluish color
+			    myColor = new Color(255, 224, 224);
+			} else {
+			    //high LOD, high D' shades of red
+			    blgr = (255-32)*2*(1-d);
+			    myColor = new Color(255, (int) blgr, (int) blgr);
+			} 
+		    }else if (d > 0.99){
+			//high D', low LOD gray color
+			myColor = new Color(192, 192, 240);
+		    }else {
+			//no LD
+			myColor = Color.white;
+		    }
+
+		    //draw the boxes
+		    g.setColor(myColor);
+		    g.fillRect(x*30+1+activeOffset, y*30+1, 29, 29);
+		    g.setColor(Color.black);
+		    g.drawRect(x*30+activeOffset, y*30, 30, 30);
+		    g.setFont(regFont);
+		    shifts=centerString(Double.toString(d), regfm);
+		    g.drawString(Double.toString(d), shifts[0]+(x*30)+activeOffset,(y*30)+shifts[1]);
+		}
+		//draw the labels
+		g.setColor(Color.black);
+		g.setFont(boldFont);
+		shifts = centerString(Integer.toString(x+2), boldfm);
+		g.drawString(Integer.toString(x+2), shifts[0]+(x+1)*30+activeOffset, shifts[1]+(x+1)*30);
+	    }
+	    /**}else{
+	    //we're in zoomed out mode
+	    int boxDimension = 600/table.length;
+	    scale = 600;
+	    if(info){
+		if (table.length > 3){
+		    labeloffset=0;
+		    g.drawLine(labeloffset+95,0,labeloffset+scale,scale-95);
+		    double lineLength = Math.sqrt((scale-95)*(scale-95)*2);
+		    double start = ((SNP)snps.elementAt(0)).getPosition();
+		    double totalLength = ((SNP)snps.elementAt(table.length-1)).getPosition() - start;
+		    int numKB = (int)(totalLength/1000);
+		    g.drawString(numKB+" Kb", labeloffset+150, boxDimension); 
+		    for (int y = 0; y < table.length; y++){
+			double fracLength = (((SNP)snps.elementAt(y)).getPosition() - start)/totalLength;
+			double xOrYDist = Math.sqrt((fracLength*lineLength*fracLength*lineLength)/2);
+			
+			int xSpineCoord = (int)(labeloffset + 90 +xOrYDist);
+			int ySpineCoord = (int)(5+xOrYDist);
+			
+			g.drawLine(labeloffset+25+y*boxDimension, 5+y*boxDimension,xSpineCoord,ySpineCoord);
+			//add "ticks" to spine
+			g.drawLine(xSpineCoord, ySpineCoord, (xSpineCoord+5), (ySpineCoord-5)); 
+		    }
+		}
+	    }
+	    for (int x = 0; x < table.length-1; x++){
+		for (int y = x + 1; y < table.length; y++){
+		    StringTokenizer st = new StringTokenizer(table[x][y]);
+		    d = Float.parseFloat(st.nextToken());
+		    l = Float.parseFloat(st.nextToken());
+		    //set coloring based on LOD and D'
+		    if (l > 2){
+			if (d < 0.5) {
+			    //high LOD, low D' bluish color
+			    myColor = new Color(255, 224, 224);
+			} else {
+			    //high LOD, high D' shades of red
+			    blgr = (255-32)*2*(1-d);
+			    myColor = new Color(255, (int) blgr, (int) blgr);
+			} 
+		    }else if (d > 0.99){
+			//high D', low LOD gray color
+			myColor = new Color(192, 192, 240);
+		    }else {
+			//no LD
+			myColor = Color.white;
+		    }
+
+		    //draw the boxes
+		    g.setColor(myColor);
+		    g.fillRect(x*boxDimension, y*boxDimension, boxDimension, boxDimension);
+		}
+	    }
+	    }**/
     }
 
     int[] centerString(String s, FontMetrics fm){
@@ -312,10 +372,10 @@ class DrawingMethods {
 
     void saveImage(BufferedImage image, String filename) throws IOException{
 	try {
-	    if (! (filename.endsWith(".jpg") || filename.endsWith(".JPG"))){
-		filename += ".jpg";
+	    if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
+		filename += ".png";
 	    }
-	    Jimi.putImage("image/jpg", (Image)image, filename);
+	    Jimi.putImage("image/png", (Image)image, filename);
 	}catch (com.sun.jimi.core.JimiException e){
 	    e.printStackTrace();
 	}

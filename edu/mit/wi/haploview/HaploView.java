@@ -14,9 +14,12 @@ public class HaploView extends JFrame implements ActionListener{
     final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
     HaploData theData;
     HaploView window;
+    JFrame checkWindow;
     Container contents;
     Haplotype[][] finishedHaplos;
     int[][] lookupPos;
+    private CheckDataPanel checkPanel;
+    private String hapInputFileName;
     private BlockDisplay theBlocks;
     private String loadInfoStr = "Load Marker Info";
     private String infileName="";
@@ -31,12 +34,12 @@ public class HaploView extends JFrame implements ActionListener{
     private NumberTextField minThickCrossValTF, minThinCrossValTF, minColorValTF;
     JMenuItem loadInfoMenuItem = new JMenuItem(loadInfoStr);
     JMenuItem hapMenuItem = new JMenuItem("Generate Haplotypes");
-    JMenuItem exportMenuItem = new JMenuItem("Export LD Picture to JPG");
+    JMenuItem exportMenuItem = new JMenuItem("Export LD Picture to PNG");
     JMenuItem saveDprimeMenuItem = new JMenuItem("Dump LD Output to Text");
     JMenuItem clearBlocksMenuItem = new JMenuItem("Clear All Blocks");
     JMenuItem guessBlocksMenuItem = new JMenuItem("Define Blocks");
     JMenuItem saveHapsMenuItem = new JMenuItem("Save Haplotypes to Text");
-    JMenuItem saveHapsPicMenuItem = new JMenuItem("Save Haplotypes to JPG");
+    JMenuItem saveHapsPicMenuItem = new JMenuItem("Save Haplotypes to PNG");
     JMenuItem customizeHapsMenuItem = new JMenuItem("Customize Haplotype Output");
     DPrimePanel theDPrime;
 
@@ -425,6 +428,7 @@ public class HaploView extends JFrame implements ActionListener{
 
     void defineBlocks(){
 	String[] methodStrings = {"95% of informative pairwise comparisons show strong LD via confidence intervals (SFS)",
+				  "Four Gamete Rule",
 				  "Solid block of strong LD via D prime (MJD)"};
 	JComboBox methodList = new JComboBox(methodStrings);
 	JOptionPane.showMessageDialog(window,
@@ -434,74 +438,116 @@ public class HaploView extends JFrame implements ActionListener{
 	theData.blocks = theData.guessBlocks(theData.dPrimeTable, methodList.getSelectedIndex());
 	drawPicture(theData);
     }    
+    
+    void processInput(File theFile){
+	try{
+	    theData = new HaploData(theFile);
+	    infileName = theFile.getName();
+	    
+	    //compute D primes and monitor progress
+	    progressMonitor = new ProgressMonitor(this, "Computing " + theData.getToBeCompleted() + " values of D prime","", 0, theData.getToBeCompleted());
+	    progressMonitor.setProgress(0);
+	    progressMonitor.setMillisToDecideToPopup(2000);
+	    
+	    final SwingWorker worker = new SwingWorker(){
+		public Object construct(){
+		    theData.doMonitoredComputation();
+		    return "";
+		}
+	    };
+	    
+	    timer = new javax.swing.Timer(50, new ActionListener(){
+		public void actionPerformed(ActionEvent evt){
+		    progressMonitor.setProgress(theData.getComplete());
+		    if (theData.finished){
+			timer.stop();
+			progressMonitor.close();
+			infoKnown=false;
+			drawPicture(theData);
+			loadInfoMenuItem.setEnabled(true);
+			hapMenuItem.setEnabled(true);
+			customizeHapsMenuItem.setEnabled(true);
+			exportMenuItem.setEnabled(true);
+			saveDprimeMenuItem.setEnabled(true);
+			clearBlocksMenuItem.setEnabled(true);
+			guessBlocksMenuItem.setEnabled(true);
+		    }
+		}
+	    });
+	    
+	    worker.start();
+	    timer.start();
+	    
+	}catch (IOException ioexec){
+	    JOptionPane.showMessageDialog(this, 
+					  ioexec.getMessage(), 
+					  "File Error",
+					  JOptionPane.ERROR_MESSAGE);
+	}catch (RuntimeException rtexec){
+	    JOptionPane.showMessageDialog(this,
+					  "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
+					  "Error",
+					  JOptionPane.ERROR_MESSAGE);
+	}
+    }
 	
     public void actionPerformed(ActionEvent e) {
 	String command = e.getActionCommand();
-	if (command == "Open Haplotype File" || command == "Open Linkage File"){
+	String shortHapInputFileName;
+	if (command == "Open Linkage File"){
 	    fc.setSelectedFile(null);
 	    int returnVal = fc.showOpenDialog(this);
 	    if (returnVal == JFileChooser.APPROVE_OPTION) {
-		File inputFile = fc.getSelectedFile();
-		if (command == "Open Linkage File"){
-		    //pop open checkdata window
-		    JFrame checkWindow = new JFrame();
-		    CheckDataPanel checkPanel = new CheckDataPanel(inputFile);
-		    checkWindow.setTitle("Checking markers...");
-		    checkWindow.add(checkPanel);
-		    checkWindow.add(new JButton("FOO"));
-		    checkWindow.pack();
-		    checkWindow.setVisible(true);
-		}
+		shortHapInputFileName = fc.getSelectedFile().getName();
 		try{
-		    theData = new HaploData(inputFile);
-		    infileName = inputFile.getName();
-		    
-		    //compute D primes and monitor progress
-		    progressMonitor = new ProgressMonitor(this, "Computing " + theData.getToBeCompleted() + " values of D prime","", 0, theData.getToBeCompleted());
-		    progressMonitor.setProgress(0);
-		    progressMonitor.setMillisToDecideToPopup(2000);
-
-		    final SwingWorker worker = new SwingWorker(){
-			    public Object construct(){
-				theData.doMonitoredComputation();
-				return "";
-			    }
-			};
-		    
-		    timer = new javax.swing.Timer(50, new ActionListener(){
-			    public void actionPerformed(ActionEvent evt){
-				progressMonitor.setProgress(theData.getComplete());
-				if (theData.finished){
-				    timer.stop();
-				    progressMonitor.close();
-				    infoKnown=false;
-				    drawPicture(theData);
-				    loadInfoMenuItem.setEnabled(true);
-				    hapMenuItem.setEnabled(true);
-				    customizeHapsMenuItem.setEnabled(true);
-				    exportMenuItem.setEnabled(true);
-				    saveDprimeMenuItem.setEnabled(true);
-				    clearBlocksMenuItem.setEnabled(true);
-				    guessBlocksMenuItem.setEnabled(true);
-				}
-			    }
-			});
-
-		    worker.start();
-		    timer.start();
-		    
+		    hapInputFileName = fc.getSelectedFile().getCanonicalPath();
 		}catch (IOException ioexec){
 		    JOptionPane.showMessageDialog(this, 
 						  ioexec.getMessage(), 
 						  "File Error",
 						  JOptionPane.ERROR_MESSAGE);
-		}catch (RuntimeException rtexec){
-		    JOptionPane.showMessageDialog(this,
-						  "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
-						  "Error",
-						  JOptionPane.ERROR_MESSAGE);
 		}
+		//pop open checkdata window
+		checkWindow = new JFrame();
+		checkPanel = new CheckDataPanel(fc.getSelectedFile());
+		checkWindow.setTitle("Checking markers..."+shortHapInputFileName);
+		JPanel metaCheckPanel = new JPanel();
+		metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
+		JButton checkContinueButton = new JButton("Continue");
+		checkContinueButton.addActionListener(this);
+		checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		metaCheckPanel.add(checkPanel);
+		checkContinueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		metaCheckPanel.add(checkContinueButton);
+		JLabel infoLabel = new JLabel("(this will create a haplotype file named " + shortHapInputFileName + ".haps)");
+		infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		metaCheckPanel.add(infoLabel);
+		checkWindow.setContentPane(metaCheckPanel);
+		checkWindow.pack();
+		checkWindow.setVisible(true);
 	    }
+	}else if (command == "Open Haplotype File"){
+	    fc.setSelectedFile(null);
+	    int returnVal = fc.showOpenDialog(this);
+	    if (returnVal == JFileChooser.APPROVE_OPTION){
+		processInput(fc.getSelectedFile());
+	    }
+	}else if (command == "Continue"){
+	    JTable table = checkPanel.getTable();
+	    checkWindow.dispose();
+	    boolean[] markerResultArray = new boolean[table.getRowCount()];
+	    for (int i = 0; i < table.getRowCount(); i++){
+		markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
+	    }
+	    try{
+		new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),hapInputFileName+".haps");
+	    }catch (IOException ioexec){
+		JOptionPane.showMessageDialog(this, 
+					      ioexec.getMessage(), 
+					      "File Error",
+					      JOptionPane.ERROR_MESSAGE);
+	    }
+	    processInput(new File(hapInputFileName+".haps"));
 	} else if (command == loadInfoStr){
 	    fc.setSelectedFile(null);
 	    int returnVal = fc.showOpenDialog(this);
@@ -538,13 +584,13 @@ public class HaploView extends JFrame implements ActionListener{
 	    customizeHaps();
 	}else if (command == "Tutorial"){
 	    showHelp();
-	}else if (command == "Export LD Picture to JPG"){
+	}else if (command == "Export LD Picture to PNG"){
 	    doExportDPrime();
 	}else if (command == "Dump LD Output to Text"){
 	    saveDprimeToText();
 	}else if (command == "Save Haplotypes to Text"){
 	    saveHapsToText();
-	}else if (command == "Save Haplotypes to JPG"){
+	}else if (command == "Save Haplotypes to PNG"){
 	    saveHapsPic();
 	}else if (command == "Generate Haplotypes"){
 	    try{
