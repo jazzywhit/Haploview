@@ -707,35 +707,55 @@ public class HaploText implements Constants{
                     OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    filtHaplos = filterHaplos(haplos);
-                    textData.pickTags(filtHaplos);
-                    textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
+                    if (haplos != null){
+                        filtHaplos = filterHaplos(haplos);
+                        textData.pickTags(filtHaplos);
+                        textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
+                    }else if (!quietMode){
+                        System.out.println("Skipping block output: no valid Gabriel blocks.");
+                    }
                     OutputFile = validateOutputFile(fileName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    filtHaplos = filterHaplos(haplos);
-                    textData.pickTags(filtHaplos);
-                    textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);;
+                    if (haplos != null){
+                        filtHaplos = filterHaplos(haplos);
+                        textData.pickTags(filtHaplos);
+                        textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);;
+                    }else if (!quietMode){
+                        System.out.println("Skipping block output: no valid 4 Gamete blocks.");
+                    }
                     OutputFile = validateOutputFile(fileName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
-                    filtHaplos = filterHaplos(haplos);
-                    textData.pickTags(filtHaplos);
-                    textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
+                    if (haplos != null){
+                        filtHaplos = filterHaplos(haplos);
+                        textData.pickTags(filtHaplos);
+                        textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
+                    }else if (!quietMode){
+                        System.out.println("Skipping block output: no valid LD Spine blocks.");
+                    }
                 }else{
                     //guesses blocks based on output type determined above.
                     textData.guessBlocks(blockOutputType, cust);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
+                    if (haplos != null){
                     filtHaplos = filterHaplos(haplos);
                     textData.pickTags(filtHaplos);
                     textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
+                    }else if (!quietMode){
+                        System.out.println("Skipping block output: no valid blocks.");
+                    }
                 }
 
                 if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
                     if (blockOutputType == BLOX_ALL){
                         System.out.println("Haplotype association results cannot be used with block output \"ALL\"");
                     }else{
+                        if (haplos != null){
                         HaploData.saveHapAssocToText(haplos, validateOutputFile(fileName + ".HAPASSOC"));
+                        }else if (!quietMode){
+                            System.out.println("Skipping block association output: no valid blocks.");
+                        }
                     }
                 }
             }
@@ -759,7 +779,7 @@ public class HaploText implements Constants{
                     textData.readAnalysisTrack(new File(trackFileName));
                 }
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
-                BufferedImage i = dpd.export(0,Chromosome.getSize(),outputCompressedPNG);
+                BufferedImage i = dpd.export(0,Chromosome.getUnfilteredSize(),outputCompressedPNG);
                 try{
                     Jimi.putImage("image/png", i, OutputFile.getName());
                 }catch(JimiException je){
@@ -789,6 +809,9 @@ public class HaploText implements Constants{
     }
 
     public Haplotype[][] filterHaplos(Haplotype[][] haplos) {
+        if (haplos == null){
+            return null;
+        }
         Haplotype[][] filteredHaplos = new Haplotype[haplos.length][];
         for (int i = 0; i < haplos.length; i++){
             Vector tempVector = new Vector();
