@@ -9,6 +9,7 @@ public class Tagger {
     public static final int PAIRWISE_ONLY = 0;
     public static final int AGGRESSIVE_DUPLE = 1;
     public static final int AGGRESSIVE_TRIPLE = 2;
+    private static final long DEFAULT_MAXDIST = 500000;
 
     //vector of SNP objects, which contains every SNP (tags and non-tags)
     private Vector snps;
@@ -25,6 +26,8 @@ public class Tagger {
     private double minRSquared;
     private Hashtable snpHash;
     private int aggression;
+    //maximum comparison distance
+    private long maxComparisonDistance;
 
     //Vector of Tag objects determined by the most recent call to findTags()
     private Vector tags;
@@ -35,13 +38,20 @@ public class Tagger {
     public int taggedSoFar;
 
 
+
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac){
-        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE);
+        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST);
     }
 
-    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut, int aggressionLevel) {
+    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut, int aggressionLevel, long maxCompDist) {
         minRSquared = rsqCut;
         aggression = aggressionLevel;
+
+        if(maxCompDist < 0 ) {
+            maxComparisonDistance = DEFAULT_MAXDIST;
+        } else {
+            maxComparisonDistance = maxCompDist;
+        }
 
         if(s != null) {
             snps = s;
@@ -71,16 +81,6 @@ public class Tagger {
                 curVarSeq.setTagComparator(trsc);
             }
         }
-        /*pairwiseCompsHash = new Hashtable(snps.size());
-        for(int i=0;i<snps.size();i++) {
-            Hashtable ht = new Hashtable();
-            pairwiseCompsHash.put(snps.get(i), ht);
-        }
-
-        //add pairwiseComparison objects for each snp and itself, with rsquared 1
-            for(int i=0;i<snps.size();i++) {
-                addPairwiseComp(i,i,1);
-            } */
     }
 
     //temporary constructor for testing purposes
@@ -169,14 +169,15 @@ public class Tagger {
         for(int i=0;i<snps.size();i++) {
             currentVarSeq = (VariantSequence)snps.get(i);
 
-            if(!(forceExclude.contains(currentVarSeq) ) ){//|| (currentVarSeq instanceof SNP && ((SNP)currentVarSeq).getMAF() < .05))) {
+            if(!(forceExclude.contains(currentVarSeq) ) ){
                 PotentialTag tempPT = new PotentialTag(currentVarSeq);
                 for(int j=0;j<snps.size();j++) {
-                    if( getPairwiseCompRsq(currentVarSeq,(VariantSequence) snps.get(j)) >= minRSquared) {
-                        tempPT.addTagged((VariantSequence) snps.get(j));
+                    if( maxComparisonDistance == 0 || Math.abs(((SNP)currentVarSeq).getLocation() - ((SNP)snps.get(j)).getLocation()) <= maxComparisonDistance)  {
+                        if( getPairwiseCompRsq(currentVarSeq,(VariantSequence) snps.get(j)) >= minRSquared) {
+                            tempPT.addTagged((VariantSequence) snps.get(j));
+                        }
                     }
                 }
-
                 potentialTagHash.put(currentVarSeq,tempPT);
             }
         }
@@ -328,6 +329,7 @@ public class Tagger {
                 }
                 tags.remove(curTag);
             }
+
         }
     }
 
@@ -572,7 +574,7 @@ public class Tagger {
         }
     }
 
-    boolean debug = false;
+    boolean debug = true;
 
     void debugPrint(String s) {
         if(debug) {

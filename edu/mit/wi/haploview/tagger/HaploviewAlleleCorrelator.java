@@ -35,14 +35,19 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
             int v2Index = ((Integer)indicesByVarSeq.get(v2)).intValue();
 
             double rsq;
+            PairwiseLinkage pl;
             if (v1Index > v2Index){
-                rsq =((PairwiseLinkage)dpTable.getLDStats(v2Index,
-                        v1Index)).getRSquared();
-
+                 pl = dpTable.getLDStats(v2Index,v1Index);
             }else{
-                rsq = ((PairwiseLinkage)dpTable.getLDStats(v1Index,
-                        v2Index)).getRSquared();
+                pl = dpTable.getLDStats(v1Index,v2Index);
             }
+
+            if(pl == null) {
+                rsq = 0;
+            } else {
+                rsq =pl.getRSquared();
+            }
+
             LocusCorrelation lc = new LocusCorrelation(null,rsq);
             return lc;
         }else{

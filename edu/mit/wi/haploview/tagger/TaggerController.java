@@ -54,7 +54,8 @@ public class TaggerController {
             edu.mit.wi.tagger.SNP taggerSNP = (edu.mit.wi.tagger.SNP) snpHash.get(tempSNP.getName());
             int p = ((Integer)indicesByVarSeq.get(taggerSNP)).intValue();
             for (int j = 1; j < theData.dpTable.getLength(p); j++){
-                if (theData.dpTable.getLDStats(p,j+p).getLOD() >= Options.getTaggerLODCutoff()){
+                PairwiseLinkage pl = theData.dpTable.getLDStats(p,j+p);
+                if (pl != null && pl.getLOD() >= Options.getTaggerLODCutoff()){
                     if (indicesByVarSeq.containsValue(new Integer(j+p))){
                         edu.mit.wi.tagger.SNP ldsnp =
                                 (edu.mit.wi.tagger.SNP) snpHash.get(Chromosome.getMarker(j+p).getName());
@@ -67,7 +68,7 @@ public class TaggerController {
 
         HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq,theData);
 
-        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff(), aggressionLevel);
+        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff(), aggressionLevel, Options.getMaxDistance());
     }
 
     public void runTagger() {
