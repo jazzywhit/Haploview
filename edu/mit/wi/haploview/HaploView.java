@@ -155,9 +155,9 @@ public class HaploView extends JFrame implements ActionListener{
 	int returnVal = fc.showSaveDialog(this);
 	if (returnVal == JFileChooser.APPROVE_OPTION){
 	    try {
-		int scaleSize = theData.dPrimeTable.length*30;
 		DrawingMethods dm = new DrawingMethods();
-		BufferedImage image = new BufferedImage(scaleSize, scaleSize, BufferedImage.TYPE_3BYTE_BGR);
+		Dimension theSize = dm.dPrimeGetPreferredSize(theData.dPrimeTable.length, infoKnown);
+		BufferedImage image = new BufferedImage((int)theSize.getWidth(), (int)theSize.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
 		dm.dPrimeDraw(theData.dPrimeTable, infoKnown, theData.markerInfo, image.getGraphics());
 		dm.saveImage(image, fc.getSelectedFile().getPath());
 	    } catch (IOException ioexec){
