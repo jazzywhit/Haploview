@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.6 2003/10/31 22:04:50 jcbarret Exp $
+* $Id: PedFile.java,v 1.7 2003/11/07 22:02:53 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -10,6 +10,7 @@
 * use, misuse, or functionality.
 */
 package edu.mit.wi.pedfile;
+
 
 import java.util.*;
 
@@ -30,6 +31,7 @@ public class PedFile {
     * also used in parsing hapmap data
     */
     private Vector order;
+    private String[][] hminfo;
 
     private static Hashtable hapMapTranslate;
 
@@ -326,6 +328,9 @@ public class PedFile {
             ind = new Individual();
             String name = st.nextToken();
             String details = (String)hapMapTranslate.get(name);
+            if (details == null){
+                throw new PedFileException("Hapmap data format error.");
+            }
             dt = new StringTokenizer(details, "\n\t\" \"");
             ind.setFamilyID(dt.nextToken().trim());
             ind.setIndividualID(dt.nextToken().trim());
@@ -355,6 +360,7 @@ public class PedFile {
         }
 
         //start at k=1 to skip header which we just processed above.
+        hminfo = new String[numLines-1][];
         for(int k=1;k<numLines;k++){
             StringTokenizer tokenizer = new StringTokenizer((String)lines.get(k), "\n\t\" \"");
             //reading the first line
@@ -370,9 +376,18 @@ public class PedFile {
             }
 
             if(tokenizer.hasMoreTokens()){
+                hminfo[k-1] = new String[2];
                 for (int skip = 0; skip < 7; skip++){
                     //meta-data crap
-                    tokenizer.nextToken().trim();
+                    String s = tokenizer.nextToken().trim();
+
+                    //get marker name and pos
+                    if (skip == 0){
+                        hminfo[k-1][0] = s;
+                    }
+                    if (skip == 3){
+                        hminfo[k-1][1] = s;
+                    }
                 }
                 int index = 0;
                 while(tokenizer.hasMoreTokens()){
@@ -417,6 +432,10 @@ public class PedFile {
         System.out.println(markerResult.toString());
         }*/
         return results;
+    }
+
+    public String[][] getHMInfo() {
+        return hminfo;
     }
 
 }
