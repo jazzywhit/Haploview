@@ -4,6 +4,7 @@ import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.PedFileException;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 import java.util.Vector;
 
 public class TDTPanel extends JPanel {
@@ -62,7 +63,9 @@ public class TDTPanel extends JPanel {
             tableData.add(tempVect.clone());
         }
 
-        table = new JTable(tableData,tableColumnNames);
+        TDTTableModel tm = new TDTTableModel(tableColumnNames, tableData);
+        table = new JTable(tm);
+
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
         table.getColumnModel().getColumn(1).setPreferredWidth(100);
         if (Options.getAssocTest() != 1){
@@ -74,6 +77,29 @@ public class TDTPanel extends JPanel {
         add(tableScroller);
 
     }
+
+    class TDTTableModel extends AbstractTableModel {
+		Vector columnNames; Vector data;
+
+		public TDTTableModel(Vector c, Vector d){
+			columnNames=c;
+			data=d;
+		}
+
+		public int getColumnCount(){
+			return columnNames.size();
+		}
+
+		public int getRowCount(){
+			return data.size();
+		}
+
+		public Object getValueAt(int row, int column){
+			return ((Vector)data.elementAt(row)).elementAt(column);
+		}
+
+	}
+
 }
 
 
