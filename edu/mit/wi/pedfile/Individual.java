@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.4 2004/08/13 20:58:50 jmaller Exp $
+* $Id: Individual.java,v 1.5 2004/08/26 21:02:49 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -54,6 +54,14 @@ public class Individual {
         //this.zeroed = new Vector(numLines);
         this.zeroed = new boolean[numLines];
         this.currMarker = 0;
+    }
+
+    public boolean hasBothParents(){
+        if (momID.equals("0") || dadID.equals("0")){
+            return false;
+        }else{
+            return true;
+        }
     }
 
     /**

@@ -10,6 +10,7 @@ package edu.mit.wi.haploview;
 public class Options {
     private static int maxDistance;
     private static int genoFileType;
+    private static double missingThreshold;
 
     public static int getGenoFileType() {
         return genoFileType;
@@ -25,6 +26,14 @@ public class Options {
 
     public static void setMaxDistance(int maxDistance) {
         Options.maxDistance = maxDistance;
+    }
+
+    public static double getMissingThreshold() {
+        return missingThreshold;
+    }
+
+    public static void setMissingThreshold(double missingThreshold) {
+        Options.missingThreshold = missingThreshold;
     }
 
 

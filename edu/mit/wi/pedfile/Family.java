@@ -1,5 +1,5 @@
 /*
-* $Id: Family.java,v 1.2 2003/09/26 21:11:05 jcbarret Exp $
+* $Id: Family.java,v 1.3 2004/08/26 21:02:49 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -89,6 +89,10 @@ public class Family {
      */
     public void addMember(Individual ind){
         this.members.put(ind.getIndividualID(),ind);
+    }
+
+    public void removeMember(String id){
+        members.remove(id);
     }
 
     /**

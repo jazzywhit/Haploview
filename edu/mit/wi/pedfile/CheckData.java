@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 1.14 2004/08/16 18:35:03 jcbarret Exp $
+* $Id: CheckData.java,v 1.15 2004/08/26 21:02:49 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -219,6 +219,9 @@ public class CheckData {
                                 //incOrSetOne(parenthom,allele1_string);
                                 parentHom[allele1]++;
                             }
+
+                            count[allele1]++;
+                            count[allele2]++;
                         }
                         else{//$kidgeno{$ped}++
                             if(kidgeno.containsKey(familyID)){
@@ -235,11 +238,6 @@ public class CheckData {
                         else {
                             het++;
                         }
-                        //count number of allele
-                        //incOrSetOne(count,allele1_string);
-                        //incOrSetOne(count,allele2_string);
-                        count[allele1]++;
-                        count[allele2]++;
                     }
                     //missing data
                     else missing++;

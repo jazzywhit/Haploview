@@ -66,6 +66,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
     public HaploView(){
+        Options.setMissingThreshold(0.4);
         try{
             fc = new JFileChooser(System.getProperty("user.dir"));
         }catch(NullPointerException n){

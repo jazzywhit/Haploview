@@ -437,9 +437,8 @@ public class HaploData implements Constants{
 
         for(int x=0; x < indList.size(); x++){
 
-            String[] indAndFamID = (String[])indList.elementAt(x);
-            currentFamily = pedFile.getFamily(indAndFamID[0]);
-            currentInd = currentFamily.getMember(indAndFamID[1]);
+            currentInd = (Individual)indList.elementAt(x);
+            currentFamily = pedFile.getFamily(currentInd.getFamilyID());
 
             byte[] zeroArray = {0,0};
             if(currentInd.getIsTyped()){

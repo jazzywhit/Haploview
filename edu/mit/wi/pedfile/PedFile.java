@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.19 2004/08/13 20:58:50 jmaller Exp $
+* $Id: PedFile.java,v 1.20 2004/08/26 21:02:49 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -13,6 +13,7 @@ package edu.mit.wi.pedfile;
 
 
 import edu.mit.wi.haploview.Chromosome;
+import edu.mit.wi.haploview.Options;
 
 import java.util.*;
 //import edu.mit.wi.haploview.Chromosome;
@@ -26,6 +27,8 @@ import java.util.*;
  */
 public class PedFile {
     private Hashtable families;
+    private Vector axedPeople = new Vector();
+    private Vector axedFamilies = new Vector();
 
     /*
     * stores the familyIDs and individualIDs of all individuals found by parse()
@@ -298,7 +301,7 @@ public class PedFile {
                 String[] indFamID = new String[2];
                 indFamID[0] = ind.getFamilyID();
                 indFamID[1] = ind.getIndividualID();
-                this.order.add(indFamID);
+                this.order.add(ind);
 
             }
         }
@@ -381,7 +384,7 @@ public class PedFile {
             String[] indFamID = new String[2];
             indFamID[0] = ind.getFamilyID();
             indFamID[1] = ind.getIndividualID();
-            this.order.add(indFamID);
+            this.order.add(ind);
         }
 
         //start at k=1 to skip header which we just processed above.
@@ -459,6 +462,94 @@ public class PedFile {
     }
 
     public Vector check() throws PedFileException{
+        //before we perform the check we want to prune out individuals with too much missing data
+        //or trios which contain individuals with too much missing data
+        Vector indList = getOrder();
+        Individual currentInd;
+        Family currentFamily;
+        //the killMe array has a boolean for each person which specifies which people should be removed.
+        //the parents or children of such a person are also removed.
+        boolean[] killMe = new boolean[indList.size()];
+        Arrays.fill(killMe, false);
+
+        for(int x=0; x < indList.size(); x++){
+            currentInd = (Individual)indList.elementAt(x);
+            currentFamily = getFamily(currentInd.getFamilyID());
+            if(currentInd.getIsTyped()){
+                //this person is a singleton
+                if(currentFamily.getNumMembers() == 1){
+                    double numMissing = 0;
+                    int numMarkers = currentInd.getNumMarkers();
+                    for (int i = 0; i < numMarkers; i++){
+                        byte[] thisMarker = currentInd.getMarker(i);
+                        if (thisMarker[0] == 0 || thisMarker[1] == 0){
+                            numMissing++;
+                        }
+                    }
+                    if (numMissing/numMarkers > Options.getMissingThreshold()){
+                        killMe[x] = true;
+                    }
+                }else if (currentInd.hasBothParents()){
+                    //this person has parents
+                    Individual mom = currentFamily.getMember(currentInd.getMomID());
+                    double momMissing = 0;
+                    double dadMissing = 0;
+                    Individual dad = currentFamily.getMember(currentInd.getDadID());
+                    if (!(mom.hasBothParents() || dad.hasBothParents())){
+                        //if my parents have parents, skip me because i don't add any information
+                        //i.e. i'm a 3rd+ generation member of this family
+                        int numMarkers = currentInd.getNumMarkers();
+                        for (int i = 0; i < numMarkers; i++){
+                            byte[] dadMarker = dad.getMarker(i);
+                            byte[] momMarker = mom.getMarker(i);
+                            if (momMarker[0] == 0 || momMarker[1] == 0){
+                                momMissing++;
+                            }
+                            if (dadMarker[0] == 0 || dadMarker[1] == 0){
+                                dadMissing++;
+                            }
+                        }
+                        if (momMissing/numMarkers > Options.getMissingThreshold() ||
+                                dadMissing/numMarkers > Options.getMissingThreshold()){
+                            killMe[x] = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int x = 0; x < killMe.length; x++){
+            //now loop through the list of people to be killed
+            //making sure to get their parents and kids if they exist
+            if (killMe[x]){
+                currentInd = (Individual)indList.elementAt(x);
+                currentFamily = getFamily(currentInd.getFamilyID());
+                order.removeElement(currentInd);
+                axedPeople.add(currentInd.getIndividualID());
+                currentFamily.removeMember(currentInd.getIndividualID());
+                Enumeration peopleinFam = currentFamily.getMemberList();
+                while (peopleinFam.hasMoreElements()){
+                    //this looks at the whole family and if any of the members are
+                    //parents or kids of the current ind, we kill them too
+                    String p = (String)peopleinFam.nextElement();
+                    Individual thisPerson = currentFamily.getMember(p);
+                    if (thisPerson.getMomID().equals(currentInd.getIndividualID()) ||
+                            thisPerson.getDadID().equals(currentInd.getIndividualID()) ||
+                            currentInd.getMomID().equals(thisPerson.getIndividualID()) ||
+                            currentInd.getDadID().equals(thisPerson.getIndividualID())){
+                        order.removeElement(thisPerson);
+                        axedPeople.add(currentInd.getIndividualID());
+                        currentFamily.removeMember(thisPerson.getIndividualID());
+                    }
+                }
+                if (currentFamily.getNumMembers() == 0){
+                    //if everyone in a family is gone, we remove it from the list
+                    families.remove(currentInd.getFamilyID());
+                    axedFamilies.add(currentInd.getFamilyID());
+                }
+            }
+        }
+
         CheckData cd = new CheckData(this);
         Vector results = cd.check();
         /*int size = results.size();

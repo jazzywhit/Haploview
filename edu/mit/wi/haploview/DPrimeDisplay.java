@@ -1365,6 +1365,7 @@ END OF HIS HACKS
             }
         }
     }
+    
 
     public void mouseReleased(MouseEvent e) {
         //remove popped up window
