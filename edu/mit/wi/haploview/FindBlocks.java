@@ -129,6 +129,7 @@ class FindBlocks {
 	//now take this list of pairs with "strong LD" and construct blocks
 	boolean[] usedInBlock = new boolean[dPrime.length + 1];
 	for (int v = 0; v < strongPairs.size(); v++){
+	    numStrong = 0; numRec = 0; numInGroup = 0;
 	    int first = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(0));
 	    int last = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(1));
 	    //first see if this block overlaps with another:
@@ -152,7 +153,7 @@ class FindBlocks {
 		    numInGroup ++;
 		}
 	    }
-
+	    System.out.println(first + " " + last + "  " + numStrong);
 	    //change the definition somewhat for small blocks
 	    if (numInGroup > 3){
 		if (numStrong + numRec < 6) continue;
@@ -184,7 +185,6 @@ class FindBlocks {
 		    usedInBlock[used] = true;
 		}
 	    }
-	    numStrong = 0; numRec = 0; numInGroup = 0;
 	}
 	return stringVec2intVec(blocks);
     }
