@@ -48,11 +48,11 @@ public class HaploView extends JFrame implements ActionListener{
 
     static final int VIEW_D_NUM = 0;
     static final int VIEW_HAP_NUM = 1;
-    static final int VIEW_TDT_NUM = 2;
-    static final int VIEW_CHECK_NUM = 3;
+    static final int VIEW_CHECK_NUM = 2;
+    static final int VIEW_TDT_NUM = 3;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_TDT, VIEW_CHECK_PANEL
+        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TDT
     };
     JRadioButtonMenuItem viewMenuItems[];
     String zoomItems[] = {
@@ -70,7 +70,7 @@ public class HaploView extends JFrame implements ActionListener{
     private CheckDataPanel checkPanel;
     private int currentBlockDef = 0;
     private TDTPanel tdtPanel;
-    private boolean doTDT = false;
+    boolean doTDT = false;
     private javax.swing.Timer timer;
 
     static HaploView window;
@@ -269,9 +269,15 @@ public class HaploView extends JFrame implements ActionListener{
                 dPrimeDisplay.zoom(2);
             }
         }else if (command == EXPORT_PNG){
-            export(tabs.getSelectedIndex(), PNG_MODE);
+            JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+            if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+                export(tabs.getSelectedIndex(), PNG_MODE, fc.getSelectedFile());
+            }
         }else if (command == EXPORT_TEXT){
-            export(tabs.getSelectedIndex(), TXT_MODE);
+            JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+            if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+                export(tabs.getSelectedIndex(), TXT_MODE, fc.getSelectedFile());
+            }
         }else if (command == "Tutorial"){
             showHelp();
         } else if (command == QUIT){
@@ -316,7 +322,6 @@ public class HaploView extends JFrame implements ActionListener{
             }
 
             theData.linkageToChrom(markerResultArray,checkPanel.getPedFile());
-            this.doTDT = true;
             processData();
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
@@ -426,13 +431,6 @@ public class HaploView extends JFrame implements ActionListener{
                 tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
                 viewMenuItems[VIEW_HAP_NUM].setEnabled(true);
 
-                //TDT panel
-                if(doTDT) {
-                    tdtPanel = new TDTPanel(theData.chromosomes);
-                    tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
-                    viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
-                }
-
                 //check data panel
                 if (checkPanel != null){
                     tabs.addTab(viewItems[VIEW_CHECK_NUM], checkPanel);
@@ -440,31 +438,21 @@ public class HaploView extends JFrame implements ActionListener{
                     currentTab=VIEW_CHECK_NUM;
                 }
 
-
+                //TDT panel
+                if(doTDT) {
+                    tdtPanel = new TDTPanel(theData.chromosomes);
+                    tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
+                    viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
+                }
 
                 tabs.setSelectedIndex(currentTab);
                 contents.add(tabs);
 
-                //next add a little spacer
-                //ontents.add(Box.createRigidArea(new Dimension(0,5)));
-
-                //and then add the block display
-                //theBlocks = new BlockDisplay(theData.markerInfo, theData.blocks, dPrimeDisplay, infoKnown);
-                //contents.setBackground(Color.black);
-
-                //put the block display in a scroll pane in case the data set is very large.
-                //JScrollPane blockScroller = new JScrollPane(theBlocks,
-                //						    JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                //					    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                //blockScroller.getHorizontalScrollBar().setUnitIncrement(60);
-                //blockScroller.setMinimumSize(new Dimension(800, 100));
-                //contents.add(blockScroller);
                 repaint();
                 setVisible(true);
-                //}
 
                 theData.finished = true;
-                return "";
+                return null;
             }
         };
 
@@ -490,6 +478,9 @@ public class HaploView extends JFrame implements ActionListener{
             theData.prepareMarkerInput(inputFile,maxCompDist);
             if (checkPanel != null){
                 checkPanel.refreshNames();
+            }
+            if (tdtPanel != null){
+                tdtPanel.refreshNames();
             }
         }catch (HaploViewException e){
             JOptionPane.showMessageDialog(this,
@@ -609,53 +600,92 @@ public class HaploView extends JFrame implements ActionListener{
 
     }
 
-    void export(int tabNum, int format){
-        JFileChooser fc;
-        fc = new JFileChooser(System.getProperty("user.dir"));
-        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
-            if (format == PNG_MODE){
-                BufferedImage image;
-                if (tabNum == VIEW_D_NUM){
-                    Dimension pref = dPrimeDisplay.getPreferredSize();
-                    image = new BufferedImage(pref.width, pref.height,
-                            BufferedImage.TYPE_3BYTE_BGR);
-                    dPrimeDisplay.export(image);
-                }else if (tabNum == VIEW_HAP_NUM){
-                    Dimension size = hapDisplay.getPreferredSize();
-                    image = new BufferedImage(size.width, size.height,
-                            BufferedImage.TYPE_3BYTE_BGR);
-                    hapDisplay.export(image);
-                }else{
-                    image = new BufferedImage(1,1,BufferedImage.TYPE_3BYTE_BGR);
-                }
+    void export(int tabNum, int format, File outfile){
+        if (format == PNG_MODE){
+            BufferedImage image;
+            if (tabNum == VIEW_D_NUM){
+                Dimension pref = dPrimeDisplay.getPreferredSize();
+                image = new BufferedImage(pref.width, pref.height,
+                        BufferedImage.TYPE_3BYTE_BGR);
+                dPrimeDisplay.export(image);
+            }else if (tabNum == VIEW_HAP_NUM){
+                Dimension size = hapDisplay.getPreferredSize();
+                image = new BufferedImage(size.width, size.height,
+                        BufferedImage.TYPE_3BYTE_BGR);
+                hapDisplay.export(image);
+            }else{
+                image = new BufferedImage(1,1,BufferedImage.TYPE_3BYTE_BGR);
+            }
 
-                try{
-                    String filename = fc.getSelectedFile().getPath();
-                    if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
-                        filename += ".png";
-                    }
-                    Jimi.putImage("image/png", image, filename);
-                }catch(JimiException je){
-                    JOptionPane.showMessageDialog(this,
-                            je.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
+            try{
+                String filename = outfile.getPath();
+                if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
+                    filename += ".png";
                 }
-            } else if (format == TXT_MODE){
-                try{
-                    if (tabNum == VIEW_D_NUM){
-                        theData.saveDprimeToText(fc.getSelectedFile());
-                    }else if (tabNum == VIEW_HAP_NUM){
-                        theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray,fc.getSelectedFile());
-                    }else if (tabNum == VIEW_CHECK_NUM){
-                        //TODO: add check table dump
+                Jimi.putImage("image/png", image, filename);
+            }catch(JimiException je){
+                JOptionPane.showMessageDialog(this,
+                        je.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } else if (format == TXT_MODE){
+            try{
+                if (tabNum == VIEW_D_NUM){
+                    theData.saveDprimeToText(outfile);
+                }else if (tabNum == VIEW_HAP_NUM){
+                    theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray, outfile);
+                }else if (tabNum == VIEW_CHECK_NUM){
+                    JTable table = checkPanel.getTable();
+
+                    FileWriter checkWriter = new FileWriter(outfile);
+                    int numCols = table.getColumnCount();
+                    StringBuffer header = new StringBuffer();
+                    for (int i = 0; i < numCols; i++){
+                        header.append(table.getColumnName(i)).append("\t");
                     }
-                }catch(IOException ioe){
-                    JOptionPane.showMessageDialog(this,
-                            ioe.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
+                    header.append("\n");
+                    checkWriter.write(header.toString());
+                    for (int i = 0; i < table.getRowCount(); i++){
+                        StringBuffer sb = new StringBuffer();
+                        //don't print the true/false vals in last column
+                        for (int j = 0; j < numCols-1; j++){
+                            sb.append(table.getValueAt(i,j)).append("\t");
+                        }
+                        //print BAD if last column is false
+                        if (((Boolean)table.getValueAt(i, numCols-1)).booleanValue()){
+                            sb.append("\n");
+                        }else{
+                            sb.append("BAD\n");
+                        }
+                        checkWriter.write(sb.toString());
+                    }
+                    checkWriter.close();
+                }else if (tabNum == VIEW_TDT_NUM){
+                    JTable table = tdtPanel.getTable();
+                    FileWriter checkWriter = new FileWriter(outfile);
+                    int numCols = table.getColumnCount();
+                    StringBuffer header = new StringBuffer();
+                    for (int i = 0; i < numCols; i++){
+                        header.append(table.getColumnName(i)).append("\t");
+                    }
+                    header.append("\n");
+                    checkWriter.write(header.toString());
+                    for (int i = 0; i < table.getRowCount(); i++){
+                        StringBuffer sb = new StringBuffer();
+                        for (int j = 0; j < numCols; j++){
+                            sb.append(table.getValueAt(i,j)).append("\t");
+                        }
+                        sb.append("\n");
+                        checkWriter.write(sb.toString());
+                    }
+                    checkWriter.close();
                 }
+            }catch(IOException ioe){
+                JOptionPane.showMessageDialog(this,
+                        ioe.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     }

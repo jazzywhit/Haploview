@@ -26,6 +26,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     HaploView caller;
     int fileType;
     JTextField genoFileField, infoFileField;
+    JCheckBox doTDT;
     NumberTextField maxComparisonDistField;
 
     public ReadDataDialog(String title, HaploView h){
@@ -79,6 +80,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
             }else if (fileType == PED){
                 caller.readPedGenotypes(returnStrings);
             }
+            caller.doTDT = this.doTDT.isSelected();
             if (caller.dPrimeDisplay != null){
                 caller.dPrimeDisplay.setVisible(false);
             }
@@ -174,6 +176,15 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         prefsPanel.add(maxComparisonDistField);
         prefsPanel.add(new JLabel("kb apart."));
         contents.add(prefsPanel);
+
+        doTDT = new JCheckBox();
+        doTDT.setSelected(false);
+        if (ft == PED){
+            JPanel tdtPanel = new JPanel();
+            tdtPanel.add(new JLabel("Run family trio TDT? "));
+            tdtPanel.add(doTDT);
+            contents.add(tdtPanel);
+        }
 
         JPanel choicePanel = new JPanel();
         JButton okButton = new JButton("OK");

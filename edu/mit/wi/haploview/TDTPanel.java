@@ -7,6 +7,7 @@ import java.awt.*;
 public class TDTPanel extends JPanel {
 
     Vector result;
+    JTable table;
     Vector tableColumnNames = new Vector();
 
     public TDTPanel(Vector chromosomes) {
@@ -20,9 +21,18 @@ public class TDTPanel extends JPanel {
         refreshTable();
     }
 
+    public void refreshNames() {
+        for (int i = 0; i < table.getRowCount(); i++){
+            table.setValueAt(Chromosome.getMarker(i).getName(),i,0);
+        }
+    }
+
+	public JTable getTable(){
+		return table;
+	}
+
     public void refreshTable(){
         this.removeAll();
-        JTable table;
         Vector tableData = new Vector();
 
         int numRes = Chromosome.getFilteredSize();
