@@ -1,0 +1,1190 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
+   "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY geq "&#x2265;">
+]>
+<book>
+  
+  <bookinfo>
+    <title>Haploview Documentation</title>
+  </bookinfo>
+  
+  <chapter id="using">
+    <title>Using Haploview</title>
+    
+    <section id="load"> <title>Loading a Dataset</title>
+      
+      <para>
+	Data can be loaded in three <link linkend="formats">formats</link> along with an optional marker info file 
+	(except for HapMap files which do not require an info
+	file). Further options are presented on the load screen:
+	
+	<itemizedlist>
+
+	  <listitem>
+	    Haploview saves time by only computing pairwise LD
+	    statistics for markers within a certain distance of each
+	    other. The default is 500KB. Enter a value of zero to
+	    force all pairwise computations.
+	  </listitem>
+
+	  <listitem>
+	    Haploview excludes individuals with less than 50% complete
+	    genotypes. This threshold can be adjusted in the load
+	    dialog. Additional details about excluded individuals are
+	    available from the <link linkend="checks">marker check tab</link>.
+	  </listitem>
+
+	  <listitem>
+	    When loading a file dumped from the HapMap project
+	    website, it is possible to automatically display SNP and
+	    gene tracks from the HapMap above the data by checking the
+	    "Download and show HapMap info track" box. More information
+	    is available with the <link linkend="tracks">LD Display</link> help. [hapmap file only]
+	  </listitem>
+
+	  <listitem>
+	    If you wish to perform association tests, you must inform
+	    the program now and select either family trios or
+	    case/controls. More details are available under
+	    <link linkend="association">association</link>. [pedfile only]
+	  </listitem>
+	</itemizedlist>
+      </para>
+      
+      <para>
+	Please note that bugs are sure to crop up which occasionally
+	cause the program to hang. In general any dataset which causes
+	the program to hang for > 15 minutes is unlikely ever to
+	return. Therefore, prolonged wait times are probably a symptom
+	of a failure as opposed to lengthy compute time. If you
+	encounter such a problem, please contact the 
+	<ulink url="http://www.broad.mit.edu/mpg/haploview/about.php">authors</ulink>.
+      </para>
+
+      <para>
+	Haploview allocates 1G of memory by default. This is usually
+	sufficient to handle datasets with several thousand
+	markers. If you are running the program on very large datasets
+	(>20,000 markers) you may need to force more memory (presuming
+	your computer has sufficient resources available). This can be
+	accomplished using the following command:
+      </para>
+      <screen>java -Xmx2000M -cp Haploview.jar edu/mit/wi/haploview/Haploview</screen>
+      <para>
+	Where "2000M" in this case specifies 2000 megabytes (2G) of
+	memory and can be adjusted as necessary.
+	</para>
+
+    </section>
+    <section id="checks">
+      <title>Data Quality Checks</title>
+
+      <section>
+	<title>Marker Checks</title>
+	<para>
+	  After loading a linkage or HapMap format file, Haploview
+	  shows some basic data quality checks for the
+	  markers. Markers are filtered out based on some default
+	  criteria which can be adjusted as necessary. Markers can be
+	  added or removed from analyses by hand via the checkboxes.
+	</para>
+	<itemizedlist>
+	  <listitem><emphasis role="bold">#</emphasis> is the marker number.</listitem>
+	  <listitem><emphasis role="bold">Name</emphasis> is the marker ID specified (only if an info file is loaded).</listitem>
+	  <listitem><emphasis role="bold">Position</emphasis> is the marker position specified (only if an info file is loaded).</listitem>
+	  <listitem><emphasis role="bold">ObsHET</emphasis> is the marker's observed heterozygosity.</listitem>
+	  <listitem><emphasis role="bold">PredHET</emphasis> is the marker's predicted heterozygosity (i.e. 2*MAF*(1-MAF)).</listitem>
+	  <listitem><emphasis role="bold">HWpval</emphasis> is the Hardy-Weinberg equilibrium p value, which is the probability that its deviation from H-W equilibrium could be explained by chance.</listitem>
+	  <listitem><emphasis role="bold">%Geno</emphasis> is the percentage of non-missing genotypes for this marker.</listitem>
+	  <listitem><emphasis role="bold">FamTrio</emphasis> is the number of fully genotyped family trios for this marker (0 for datasets with unrelated individuals).</listitem>
+	  <listitem><emphasis role="bold">MendErr</emphasis> is the number of observed Mendelian inheritance errors (0 for datasets with unrelated individuals).</listitem>
+	  <listitem><emphasis role="bold">MAF</emphasis> is the minor allele frequency (using founders only) for this marker.</listitem>
+	  <listitem><emphasis role="bold">Rating</emphasis> is checked if the marker passes all the tests and unchecked if it fails one or more tests (highlighted in red).</listitem>
+	</itemizedlist>
+
+	<para>
+	  You can adjust the filtering thresholds and click "Rescore"
+	  to refilter the markers using the new values. Markers can
+	  also be selected/unselected by hand by clicking the "Rating"
+	  checkbox. Any marker which fails one of the quality tests
+	  will have the relevant field(s) highlighted in red.
+	</para>
+      </section>
+      
+      <section >
+	<title>Duplicate Markers </title>
+	<para>
+	  If two markers in an input file have the same chromosomal
+	  position, Haploview will by ignore the less completely
+	  genotyped marker by default and highlight both in yellow on
+	  the check markers panel. When running in nogui mode
+	  Haploview always ignores the less completely genotyped
+	  version of two markers with the same position. If you want
+	  to use both from the command line, you'll need to adjust one
+	  of the positions.
+	  </para>
+      </section>
+      
+      <section>
+	<title>Filtered Individuals</title>
+	<para>
+	  The top of the tab contains information about individuals
+	  filtered during the loading of the file. It will show
+	  overview information about the number of singletons and
+	  trios used and the number of independent families
+	  loaded. Further information about filtered individuals can
+	  be shown by clicking the "Show Excluded Individuals"
+	  button. This will present a list of excluded individuals as
+	  well as the reason for exclusion. Details about individual
+	  filtering can be found in the 
+<ulink url="http://www.broad.mit.edu/mpg/haploview/faq.php#filter">FAQ</ulink>.
+	</para>
+      </section>      
+    </section>
+    
+    <section id="lddisplay"> <title>LD Display</title>
+      
+      <section>
+	<title>Perusing the LD Display</title>
+
+	<itemizedlist>
+	  <listitem>
+	    <para> The color scheme option (Display menu) allows you
+	    to choose among several LD color schemes. The following
+	    tables provide details on the color schemes, and a key to
+	    the meaning of the currently selected scheme can be
+	    dropped down from the "Key" menu in the upper right corner
+	    of the screen.</para>
+
+	    <table frame="all"><title>Standard Color Scheme</title>
+	      <tgroup cols="3" align="center">
+		<tbody>
+		  <row>
+		    <entry></entry>
+		    <entry>D' &lt; 1</entry>
+		    <entry>D' = 1</entry>
+		  </row>
+		  <row>
+		    <entry>LOD &lt; 2</entry>
+		    <entry>white</entry>
+		    <entry>blue</entry>
+		  </row>
+		  
+		  <row>
+		    <entry>LOD &geq; 2</entry>
+		    <entry>shades of pink/red</entry>
+		    <entry>bright red</entry>
+		  </row>
+		</tbody>
+	      </tgroup>
+	    </table>
+	    
+	    <table frame="all"><title>Confidence Bounds Color Scheme</title>
+	      <tgroup cols="2" align="center">
+		<tbody>
+		  <row>
+		    <entry>Strong Evidence of LD</entry>
+		    <entry>dark grey</entry>
+		  </row>
+		  <row>
+		    <entry>Uninformative</entry>
+		    <entry>light grey</entry>
+		  </row>
+		  <row>
+		    <entry>Strong Evidence of Recombination</entry>
+		    <entry>white</entry>
+		  </row>
+		</tbody>
+	      </tgroup>
+	    </table>
+	    
+	    <table><title>r<superscript>2</superscript> Color Scheme</title>
+	      <tgroup cols='2' align="center">
+		<tbody>
+		  <row>
+		    <entry>r<superscript>2</superscript> = 0</entry>
+		    <entry>white</entry>
+		  </row>
+		  <row>
+		    <entry>0 &lt; r<superscript>2</superscript> &lt; 1 </entry>
+		    <entry>shades of grey</entry>
+		  </row>
+		  <row>
+		    <entry>r<superscript>2</superscript> = 1 </entry>
+		    <entry>black</entry>
+		  </row>
+		</tbody>
+	      </tgroup>
+	    </table>
+	    
+	    <table> <title>Alternate D'/LOD Color Scheme</title>
+	      <tgroup cols='3' align="center">
+		<tbody>
+		  <row>
+		    <entry></entry>
+		    <entry>Low D'</entry>
+		    <entry>High D'</entry>
+		  </row>
+		  <row>
+		    <entry>Low LOD</entry>
+		    <entry>white</entry>
+		    <entry>shades of pink</entry>
+		  </row>
+		  <row>
+		    <entry>High LOD</entry>
+		    <entry>white</entry>
+		    <entry>black </entry>
+		  </row>
+		</tbody>
+	      </tgroup>
+	    </table>
+	    
+	    <para><emphasis>(r<superscript>2</superscript> and Alt D'/LOD courtesy of Will Fitzhugh)</emphasis></para>
+
+	    <table> <title>4 Gamete Color Scheme</title>
+	      <tgroup cols='2' align="center">
+		<tbody>
+		  <row>
+		    <entry>4 distinct 2-marker haplotypes</entry>
+		    <entry>white</entry>
+		  </row>
+		  <row>
+		    <entry>&lt; 4 distinct 2-marker haplotypes</entry>
+		    <entry>black</entry>
+		  </row>
+		</tbody>
+	      </tgroup>
+	    </table>
+	  </listitem>
+
+
+	  <listitem>
+	    In order to help keep the display uncluttered, D prime
+	    values of 1.0 are never shown (the box is empty). The
+	    r<superscript>2</superscript> and Alternate D'/LOD schemes
+	    do not show any values in the boxes.</listitem>
+	  <listitem>
+	    The zoom option (Display menu) allows you to select one of
+	    three zoom modes. The two zoomed out versions can be
+	    useful for browsing large datasets.</listitem>
+	  <listitem>
+	    Large datasets also show a "map" in the lower left corner
+	    which gives an overview of the D prime display and allows
+	    you to navigate quickly. Clicking on an area of the map
+	    will cause the main display to jump to that area. This map
+	    also shows the currently defined blocks as small black
+	    lines across the top.</listitem>
+	  <listitem>
+	    Markers with additional notes (as loaded from the <link linkend="info">info</link>
+	    file) are highlighted (the names are green in the
+	    zoomed-in view and the lines from the SNP position to the
+	    LD chart are green in the zoomed-out view. Details can be
+	    viewed by right clicking on the marker number (as
+	    mentioned below).</listitem>
+	  <listitem>
+	    Right clicking on the marker number (or the equivalent
+	    space in the zoomed out views) shows the marker name,
+	    minor allele frequency and any additional notes specified
+	    in the <link linkend="info">info</link> file. This can be especially helpful in the
+	    zoomed out views which do not display marker
+	    names.</listitem>
+	  <listitem>
+	    Right clicking on any pairwise LD comparison will show a
+	    more detailed summary of the LD between the two markers in
+	    question.</listitem>
+	  
+	</itemizedlist>
+      </section>
+      <section id="tracks">
+	<title>Additional Data Tracks </title>
+	<section>
+	  <title>Analysis Track </title>
+	  <para>
+	    A graph of any variable versus chromosomal location can be
+	    added above the LD plot with the "Load Analysis Track"
+	    option. Simply create a file with two columns: &lt;position&gt; 
+	    &lt;value&gt; . Haploview will plot the values in a continuous
+	    line along the top of the screen.
+	  </para>
+
+	</section>
+	<section>
+	  <title> HapMap Gene/SNP Track</title>
+	  <para>
+	    The "Download HapMap info track" option (with an internet
+	    connection) allows you to connect to the HapMap Project
+	    server and download and display a track with HapMap
+	    genotyped SNPs and gene names. If an info file is
+	    specified, the default boundaries are the positions of the
+	    first and last markers (which is only valid if the info
+	    file is in genomic coordinates). You must specify the
+	    proper chromosome in the dialog box. If you are using a
+	    file downloaded from the HapMap website the program will
+	    specify the correct default chromosome and start/end
+	    positions.
+	    
+	    This track display can be configured with the "HapMap Info
+	    Track Options" item in the "Display" menu. Available
+	    tracks include HapMap SNPs, gene names, mRNas, contigs,
+	    gaps and GC content.
+	    
+	  </para>
+
+	</section>
+      </section>
+    </section>
+    <section>
+      <title>Blocks and Haplotypes</title>
+      <section id="blocks"> <title>Blocks</title>
+	<para>Haploview generates blocks whenever a file is opened, but
+	  these blocks can be edited and redefined in a number of
+	  ways. In the Analysis menu, you can clear all the blocks in
+	  order to start over, define blocks based on one of several
+	  automated methods or customize the parameters of those
+	  algorithms. Additionally, the blocks can be edited by hand.
+	</para>
+
+	<section>
+	  <title>Confidence Intervals [DEFAULT]</title> 
+	  
+	  <para>The default algorithm is taken from Gabriel et al, Science,
+	    2002. 95% confidence bounds on D prime are generated and
+	    each comparison is called "strong LD", "inconclusive" or
+	    "strong recombination". A block is created if 95% of
+	    informative (i.e. non-inconclusive) comparisons are "strong
+	    LD". This method by default ignores markers with MAF &lt;
+	    0.05. The MAF cutoff and the confidence bound cutoffs can be
+	    edited by choosing "Customize Block Definitions" (Analysis
+	    menu). This definition allows for many overlapping blocks to
+	    be valid. The default behavior is to sort the list of all
+	    possible blocks and start with the largest and keep adding
+	    blocks as long as they don't overlap with an already
+	    declared block.
+	  </para>
+	  
+	</section>
+	<section>
+	  <title>Four Gamete Rule </title> 
+	  
+	  <para>This is a variant on
+	    the algorithm described in Wang et al, Am. J. Hum. Genet.,
+	    2002. For each marker pair, the population frequencies of
+	    the 4 possible two-marker haplotypes are computed. If all 4
+	    are observed with at least frequency 0.01, a recombination
+	    is deemed to have taken place. Blocks are formed by
+	    consecutive markers where only 3 gametes are observed. The
+	    1% cutoff can be edited to make the definition more or less
+	    stringent.
+	  </para>
+	  
+	</section>
+	<section>
+	  <title>Solid Spine of LD </title> 
+	  
+	  <para>This internally developed method
+	    searches for a "spine" of strong LD running from one marker
+	    to another along the legs of the triangle in the LD chart
+	    (this would mean that the first and last markers in a block
+	    are in strong LD with all intermediate markers but that the
+	    intermediate markers are not necessarily in LD with each other).
+	  </para>
+	  
+	</section>
+	
+	<para>Markers can be removed from blocks by clicking on the marker
+	  number (along the top of the D prime graph). Blocks can be
+	  defined by hand by clicking and dragging along the marker
+	  number row. Any block which overlaps with an existing block
+	  will take precedence and delete the existing block.
+	</para>
+
+      </section>
+      <section id="haplotypes"> <title>Haplotypes</title>
+	<section>
+	  <title>Display</title>
+
+	  <para> View haplotypes for selected blocks by clicking on
+	    the "Haplotypes" tab or selecting "Haplotypes" from the
+	    Display menu. Haplotypes are estimated using an accelerated
+	    EM algorithm similar to the partition/ligation method
+	    described in Qin et al, 2002, Am J Hum Genet. This creates
+	    highly accurate population frequency estimates of the phased
+	    haplotypes based on the maximum likelihood as determined
+	    from the unphased input. 
+	  </para>
+
+	  <para>The haplotype display shows each haplotype in a block with
+	    its population frequency and connections from one block to the
+	    next. In the crossing areas, a value of multiallelic D' is
+	    shown. This represents the level of recombination between the two
+	    blocks. Note that the value of multiallelic D' is computed for
+	    only the haplotypes ("alleles") currently displayed. This usually
+	    does not have a strong effect, as the rare haplotypes contribute
+	    only slightly to the overall value. Above the haplotypes are
+	    marker numbers along with a tick beneath haplotype tag SNPs
+	    (htSNPs).
+	  </para>
+	  
+	</section>
+	<section>
+	  <title>Display Controls </title>
+
+	  <para>The display can be edited using the controls at the
+	    bottom of the screen to display only more common haplotypes
+	    or to adjust the connecting lines. By default, alleles are
+	    displayed using A,C,G,T along with the special symbol 'X'
+	    which represents a fairly rare situation in which only one
+	    allele is unambiguously observed in phased data. The 'X'
+	    represents the allele of unknown identity. The display can
+	    also be changed to show the alleles numerically from 1-4
+	    with 8 being the equivalent of 'X', or as blue and red
+	    boxes, with blue being the major allele and red the minor.
+	  </para>
+	  
+	</section>
+	<section>
+	  <title>Tag SNPs </title>
+
+	  <para> The htSNPs are selected on a block-by-block
+	    basis. This means that the end set is not necessarily the
+	    most parsimonious one for the entire dataset, but it
+	    provides for a much more thorough testing set if you plan to
+	    move from an initial sample used to pick htSNPs to a much
+	    larger sample, that is, it is much more likely to catch
+	    variation in the new, large dataset that was not observed in
+	    the initial dataset. Preference for this method or another
+	    depends on experimental design.
+	  </para>
+
+	  <para>Specifically, the SNPs in each block are ranked in
+	    order of completeness of genotyping and then a set is
+	    selected which defines all haplotypes above a certain
+	    (adjustable) frequency threshold. The method ensures the
+	    most efficient possible set for strict 4 gamete blocks, but
+	    occasionally features redundancies of larger and more
+	    loosely defined blocks (where some recombination has
+	    occurred).
+
+	  </para>
+	  
+	</section>
+	
+      </section>
+      
+    </section>
+    <section id="association">
+      <title>Association Tests</title>
+      <para>
+	If selected when <link linkend="load">loading</link>
+	the data, Haploview computes single
+	locus and multi-marker haplotype association tests. For
+	case/control data, the chi square and p-value for the allele
+	frequencies in cases vs. control are shown. For family trios,
+	all probands (affected individual with genotyped parents) are
+	used to compute TDT values.
+      </para>
+      <para>
+	The haplotype association test is performed on the set of blocks
+	selected on the LD and haplotype tabs. Results are shown only for
+	those haplotypes above the display threshold on the haplotype
+	tab. Counts for both TDT and case control association tests are
+	obtained by summing the fractional likelihoods of each individual for
+	each haplotype. In other words, if a particular individual has been
+	determined by the EM to have a 40% likelihood of haplotype A and 60%
+	likelihood of haplotype B, 0.4 and 0.6 would be added to the counts
+	for A and B respectively.
+      </para>
+      <para>
+	Additional information about the way in which pedigrees are filtered
+	for TDT purposes can be found in the <ulink url="http://www.broad.mit.edu/mpg/haploview/faq.php#peds">FAQ</ulink>.
+      </para>
+      
+      <para>
+	Haploview is not intended to be the only way of testing association
+	results, but to provide a straightforward way to do simple association
+	tests. It's always a good idea to try out multiple approaches to
+	analyzing your data.
+      </para>
+
+    </section>
+
+  </chapter>
+
+
+  <chapter id="files">
+    <title>Files</title>
+    <section id="formats">
+      <title>Input File Formats</title>
+      
+      <para>Haploview currently accepts input data in three formats,
+	standard linkage format, completely or partially phased
+	haplotypes and <ulink url="http://www.hapmap.org/">HapMap Project</ulink> data dumps. It also takes in a
+	separate file with marker position information. The four formats
+	are explained in depth below.</para>
+      
+      <glosslist>
+	<glossentry id="ped"><glossterm>Linkage Format</glossterm>
+	  <glossdef>
+	    
+	    <para>
+	      Linkage data should be in the Linkage Pedigree (pre MAKEPED)
+	      format, with columns of family, individual, father, mother,
+	      gender, affected status and genotypes. The file should not
+	      have a header line (i.e. the first line should be for the
+	      first individual, not the names of the columns). Please note
+	      that Haploview can only interpret biallelic markers &mdash;
+	      markers with greater than two alleles (e.g. microsatellites)
+	      will not work correctly. A sample line from such a file
+	      might look something like:</para>
+
+<screen>3    12    8    9    1    2    1 2    3 3    0 0    4 2
+a     b    c    d    e    f    -----------g------------ </screen>
+
+	    <glosslist>
+	      <glossentry><glossterm>(a)  pedigree name</glossterm>
+		<glossdef><para>A unique alphanumeric identifier for this individual's family. Unrelated individuals should not share a pedigree name.</para></glossdef></glossentry>
+	      <glossentry><glossterm>(b)  individual ID</glossterm>
+		<glossdef><para>An alphanumeric identifier for this individual. Should be unique within his family (see above).</para></glossdef></glossentry>
+	      <glossentry><glossterm>(c)  father's ID</glossterm>
+		<glossdef><para>Identifier corresponding to father's individual ID or "0" if unknown father. Note that if a father ID is specified, the father must also appear in the file.</para></glossdef></glossentry>
+	      <glossentry><glossterm>(d)  mother's ID</glossterm>
+		<glossdef><para>Identifier corresponding to mother's individual ID or "0" if unknown mother Note that if a mother ID is specified, the mother must also appear in the file.</para></glossdef></glossentry>
+	      <glossentry><glossterm>(e)  sex</glossterm>
+		<glossdef><para>Individual's gender (1=MALE, 2=FEMALE).</para></glossdef></glossentry>
+	      <glossentry><glossterm>(f)  affectation status</glossterm>
+		<glossdef><para>Affectation status to be used for association tests (0=UNKNOWN, 1=UNAFFECTED, 2=AFFECTED).</para></glossdef></glossentry>
+	      <glossentry><glossterm>(g)  marker genotypes</glossterm>
+		<glossdef><para>Each marker is represented by two columns (one for each allele, separated by a space) and coded 1-4 where: 1=A, 2=C, 3=G, T=4. 
+		  A 0 in any of the marker genotype position (as in the the genotypes for the third marker above) indicates missing data.
+		</para></glossdef></glossentry>
+	    </glosslist>
+
+	    <para>It is also worth noting that this format can be used with
+	      non-family based data. Simply use a dummy value for the
+	      pedigree name (1, 2, 3...) and fill in zeroes for father and
+	      mother ID. It is important that the "dummy" value for the ped
+	      name be unique for each individual. Affectation status can be
+	      used to designate cases vs. controls (2 and 1, respectively).</para>
+	    
+	    <para>Files should also follow the following guidelines:</para>
+	    <itemizedlist>
+	      <listitem>Families should be listed consecutively within the file
+		(i.e. all the lines with the same pedigree ID should be adjacent)</listitem>
+	      <listitem>If an individual has a nonzero parent, the parent should 
+		be included in the file on his own line.</listitem>
+	    </itemizedlist>
+	  </glossdef></glossentry>
+
+	<glossentry id="haps"><glossterm>Phased Haplotypes</glossterm>
+	  <glossdef>
+	    <para>
+	      Haplotype data for Haploview's input must be formatted in
+	      columns of Family, Individual and Genotypes. There
+	      should be two lines (chromosomes) for each individual. This is
+	      the standard format of Genehunter's TDT output. See the sample
+	      below:
+	    </para>
+<screen>FAM1    FAM1M01    0    4    2    2
+FAM1    FAM1M01    0    4    2    2
+FAM1    FAM1F02    3    h    1    2
+FAM1    FAM1F02    3    h    1    2</screen>
+
+	    <para>
+	      The data format uses the numerals 1-4 to represent genotypes,
+	      the number zero to represent missing data, and the letter "h" to 
+	      represent a heterozygous allele. That is, if an individual is
+	      heterozygous at a locus, both alleles should be "h" if the
+	      phasing (which allele falls on which chromosome) is uncertain.
+	    </para>
+	  </glossdef></glossentry>
+
+	<glossentry id="hapmap"><glossterm>HapMap Project Data Dumps</glossterm>
+	  <glossdef>
+	    <para>Data from the HapMap Project
+	      can be dumped by region using the GBrowse interface. Downloading
+	      data requires user registration and agreement to the terms of
+	      use. The saved data file is in a marker-per-line format which
+	      can be loaded in Haploview.</para>
+	    
+	    <para>GBrowse dumps only one file, which has one marker per line
+	      and which includes familial relationships among the HapMap
+	      samples as well as marker position information. The file format
+	      has several header lines (beginning with "#") which Haploview
+	      parses. Open the file by selecting "Browse HapMap Data" option
+	      and selecting the downloaded file.</para>
+	  </glossdef></glossentry>
+
+	<glossentry id="info"><glossterm>Marker Information File</glossterm>
+	  <glossdef>
+	    <para>The marker info file is two columns, marker name and
+	      position. The positions can be either absolute chromosomal
+	      coordinates or relative positions. It might look something
+	      like this:</para>
+	    <screen>marker01 190299
+marker02 190950
+marker03 191287</screen>
+	    
+	    <para>An optional third column can be included in the info file to
+	      make additional notes for specific SNPs. SNPs with additional
+	      information are highlighted in green on the LD display. For instance,
+	      you could make note that the first SNP is a coding variant as follows:</para>
+	    
+	    <screen>marker01 190299 CODING_SNP
+marker02 190950
+marker03 191287</screen>
+	    
+	  </glossdef></glossentry>
+
+	<glossentry id="batch"><glossterm>Batch Load File</glossterm>
+	  
+	  <glossdef><para>The "-batch" flag on the command line allows you to run
+	      Haploview automatically (in nogui mode) on several files. Batch input
+	      files should have one genotype file per line, along with an info file
+	      (if desired) separated by a space. Filenames must conform to the
+	      following rules:</para>
+
+	    <itemizedlist>
+	      <listitem>Pedfile names must end in ".ped"</listitem>
+	      <listitem>Phased haplotype file names must end in ".haps"</listitem>
+	      <listitem>HapMap file names must end in ".hmp"</listitem>
+	      <listitem>Info file names must end in ".info"</listitem>
+	    </itemizedlist>
+
+	    <para>The following example shows 2 pedfiles (with info files) and a
+	      hapmap file:</para>
+
+	    <screen>sample1.ped   sample1.info
+sample2.ped   sample2.info
+sample3.hmp</screen>
+	  </glossdef></glossentry>
+      </glosslist>
+    </section>
+
+    <section>
+      <title>Output Files</title>
+      <para>For any given tab the information in the display can be
+	saved. For the data check and association test tabs, a simple
+	tab-delimited text file is generated from the tables. For the LD
+	and Haplotype tabs, data can either be dumped to text files or
+	the image can be saved to a PNG.</para>
+      
+      <glosslist>
+	<glossentry><glossterm>LD Text Output File</glossterm>
+	  <glossdef>
+	    <para>LD text output is a tab delimited set of columns
+	      containing the various measures of LD used by the
+	      program. Details for each column are shown below:</para>
+	    <itemizedlist>
+	      <listitem><literal>L1</literal> and <literal>L2</literal> are the two loci in question,
+		referenced by their number or name (if marker info file is
+		provided)</listitem>
+	      <listitem><literal>D'</literal> is the value of D prime between the 
+		two loci.</listitem>
+	      <listitem><literal>LOD</literal> is the log of the likelihood odds 
+		ratio, a measure of confidence in the value 
+		of <literal>D'</literal></listitem>
+	      <listitem><literal>r<superscript>2</superscript></literal> is the correlation coefficient between
+		the two loci</listitem>
+	      <listitem><literal>CIlow</literal> is 95% confidence lower bound on
+		<literal>D'</literal></listitem>
+	      <listitem><literal>CIhi</literal> is the 95% confidence upper bound on
+		<literal>D'</literal></listitem>
+	      <listitem><literal>Dist</literal> is the distance (in bases) between the
+		loci, and is only displayed if a marker info file has been
+		loaded</listitem>
+	      <listitem><literal>T-int</literal> is a statistic used by the HapMap
+		Project to measure the completeness of information represented
+		by a set of markers in a region</listitem>
+	    </itemizedlist>
+
+
+	    <para>Details about additional options for this output type can be
+	      found below in the <link linkend="export">Export Options</link>
+	      section.</para>
+	  </glossdef></glossentry>
+
+	<glossentry><glossterm>LD PNG Output</glossterm>
+	  <glossdef>
+	    <para>When saving the LD table to a PNG, Haploview saves an image
+	      using the current <link linkend="lddisplay">display settings</link>. 
+              This includes color scheme, zoom and proportional
+	      spacing. Thus, in order to save a less detailed image to a PNG,
+	      first zoom out, then export the tab. Note that Haploview cannot
+	      save large datasets at the higher zoom levels. For more
+	      information see the <link linkend="export">Export Options</link> section
+	      below.</para>
+	  </glossdef></glossentry>
+	
+	<glossentry><glossterm>Haplotype Text Output File</glossterm>
+	  <glossdef>
+	    <para>Haplotype output shows a block, its markers, the haplotypes
+	      and their population frequencies, the crossover percentages to
+	      the next block and the multiallelic D prime. Tag SNPs are
+	      denoted with a "!". Crossover percentages are shown as a matrix
+	      with this block's haplotypes as the rows and the next block's
+	      haplotypes as the columns. An example might look like:</para>
+	    
+	    <para>   
+	      <screen>BLOCK 1.  MARKERS: 1 2 3! 4!
+3312 (0.825)    |0.800  0.025   0.000|
+1144 (0.163)    |0.031  0.125   0.007|
+3342 (0.013)    |0.006  0.000   0.006|
+Multiallelic Dprime: 0.802
+BLOCK 2.  MARKERS: 10! 11! 12
+441 (0.837)
+222 (0.150)
+242 (0.013)</screen>
+	    </para>
+	    
+	    <para>In this example, the first block has 4 markers with 3
+	      haplotypes displayed and the second block has 3 markers and 3
+	      haplotypes. The tag SNPs for each block are (3,4) and (10,11)
+	      respectively. The crossover percentage matrix can be read as follows:
+	      80% of all samples have the pattern 3312-441, 3.1% have the
+	      pattern 1144-441 and so forth.</para>
+	    
+	  </glossdef></glossentry>
+	
+	<glossentry><glossterm>Haplotype PNG Output</glossterm>
+	  <glossdef>
+	    <para>Saving the haplotype tab to a PNG produces an image using the
+	      current <link linkend="haplotypes">display settings</link> (such as haplotype frequency cutoff).</para>
+	  </glossdef></glossentry>
+	
+	<glossentry><glossterm>Single Marker Association Text Output File</glossterm>
+	  <glossdef>
+	    <para>Single marker association results are saved in a
+	      tab-delimited text file with the following columns:</para>
+	    
+	    <itemizedlist>
+	      <listitem><literal>#</literal> is the marker number.</listitem>
+	      <listitem><literal>Name</literal> is the marker ID specified if an info file is loaded.</listitem>
+	      <listitem><literal>Chi Square</literal> is the chi square value for the marker.</listitem>
+	      <listitem><literal>p value</literal> is the significance level for the above chi square.</listitem>      
+	    </itemizedlist>
+	    
+	    <para>Trio (TDT) data only:</para>
+	    <itemizedlist>
+	      <listitem><literal>Overtransmitted</literal> is the allele overtransmitted to affected offspring.</listitem>
+	      <listitem><literal>T:U</literal> is the ratio of transmissions to non transmissions of the overtransmitted allele (see above).</listitem>
+	    </itemizedlist>
+	    
+	    <para>Case-Control data only:</para>
+	    <itemizedlist>
+	      <listitem><literal>Major Alleles</literal> are the major alleles in the case and control populations respectively.</listitem>
+	      <listitem><literal>Case Control Ratios</literal> are the ratios (shown as either counts or quotients, depending on selected options) for the case and control populations, respectively.</listitem>
+	    </itemizedlist>
+	  </glossdef></glossentry>
+	
+	<glossentry><glossterm>Haplotype Association Text Output</glossterm>
+	  <glossdef>
+	    <para>Haplotype association text output is a tab-delimited file,
+	      broken into sections by block. The columns are:</para>
+	    <itemizedlist>
+	      <listitem><literal>Haplotype</literal> is the sequence of alleles for this haplotype in this block.</listitem>
+	      <listitem><literal>Frequency</literal> is the population frequency for this haplotype.</listitem>
+	      <listitem><literal>Chi Square</literal> is the chi square value for the haplotype.</listitem>
+	      <listitem><literal>p value</literal> is the significance level for the above chi square.</listitem>      
+	    </itemizedlist>
+	    
+	    <para>Trio (TDT) data only:</para>
+	    <itemizedlist>
+	      <listitem><literal>T:U</literal> is the ratio of transmissions to non transmissions of the haplotype to affected offspring.</listitem>
+	    </itemizedlist>
+	    
+	    <para>Case-Control data only:</para>
+	    <itemizedlist>
+	      <listitem><literal>Case Control Ratios</literal> are the ratios (shown as either counts or quotients, depending on selected options) for the case and control populations, respectively.</listitem>
+	    </itemizedlist>
+	  </glossdef></glossentry>
+	
+	<glossentry><glossterm>Marker Check Text Output File</glossterm>
+	  <glossdef>
+	    <para>The marker check data is a tab-delimited file with the
+	      following columns:</para>
+	    <itemizedlist>
+	      <listitem><literal>#</literal> is the marker number.</listitem>
+	      <listitem><literal>Name</literal> is the marker ID specified (only if an info file is loaded).</listitem>
+	      <listitem><literal>Position</literal> is the marker position specified (only if an info file is loaded).</listitem>
+	      <listitem><literal>ObsHET</literal> is the marker's observed heterozygosity.</listitem>
+	      <listitem><literal>PredHET</literal> is the marker's predicted heterozygosity (i.e. 2*MAF*(1-MAF)).</listitem>
+	      <listitem><literal>HWpval</literal> is the Hardy-Weinberg equilibrium p value, which is the probability that its deviation from H-W equilibrium could be explained by chance.</listitem>
+	      <listitem><literal>%Geno</literal> is the percentage of non-missing genotypes for this marker.</listitem>
+	      <listitem><literal>FamTrio</literal> is the number of fully genotyped family trios for this marker (0 for datasets with unrelated individuals).</listitem>
+	      <listitem><literal>MendErr</literal> is the number of observed Mendelian inheritance errors (0 for datasets with unrelated individuals).</listitem>
+	      <listitem><literal>MAF</literal> is the minor allele frequency (using founders only) for this marker.</listitem>
+	      <listitem><literal>Rating</literal> is "BAD" if the marker failed any of the above tests and blank otherwise.</listitem>
+	    </itemizedlist>
+	  </glossdef></glossentry>
+      </glosslist>
+    </section>
+    
+    <section id="export">
+      <title>Export Options</title>
+      <para>The "Export Options" item in the File Menu allows adjustment of
+	several parameters and allows the user to save any tab without
+	having to switch to it. Specifically, the LD tab allow the markers
+	to be filtered to output only some of the markers:</para>
+      <glosslist>
+	<glossentry><glossterm>All</glossterm>
+	  <glossdef><para>The default setting (and only one available for most tabs) is to use all the markers.</para></glossdef></glossentry>
+	<glossentry><glossterm>Marker Range</glossterm>
+	  <glossdef><para>Generates the LD text or PNG file for only a specific range of markers.</para></glossdef></glossentry>
+	<glossentry><glossterm>Adjacent Markers</glossterm>
+	  <glossdef><para>Generates the LD text file for only adjacent markers. This can be useful to view the T-int stat, which measures LD information content in the gaps between markers.</para></glossdef></glossentry>
+      </glosslist>
+      
+      <para>There is also an option to generate a "compressed" LD PNG,
+	which is useful for very large datasets. The image is shrunk
+	to an arbitrary zoom level which allows Haploview to save the PNG
+	with minimal memory usage.</para>
+    </section>
+
+    <section>
+      <title>Auxiliary Input Files</title>
+      <glosslist>
+	<glossentry id="blocksfile"><glossterm>Blocks File</glossterm>
+	  
+	  <glossdef><para>You can specify a set of blocks by loading a blocks
+	      file. Each line is a space separated list of markers with one
+	      block per line. For example:</para>
+	    
+	    <screen>1 2 3 4
+9 10 11 12 13 14 15</screen>
+	    
+	    <para>Would create one block from markers 1-4 and another from
+	      9-15. The first marker in the file is number 1 (not 0).</para>
+	  </glossdef></glossentry>
+	
+	<glossentry id="trackfile"><glossterm>Analysis Track File</glossterm>
+	  
+	  <glossdef><para>You can add an analysis track along the top of the LD
+	      display by loading a file with two columns, &lt;position&gt;
+	      &lt;value&gt;. Haploview will plot the values continuously with
+	      respect to the positions of the markers, so the positions should
+	      use the same coordinates as the marker info file. For
+	      example:</para>
+	    
+	    <screen>1000 0.3
+2000 1.7
+3000 11.0
+4000 2.3
+5000 4.6</screen>
+	    
+	    <para>Would plot a line from position 1000 to 5000. The values
+	      can be of any units or magnitude, as the Haploview scales the
+	      analysis track to the bounds of the values.</para>
+	  </glossdef></glossentry>
+      </glosslist>
+    </section>
+  </chapter>
+
+
+  <chapter id="commandline">
+    <title>Command Line Options</title>
+    <para>Haploview can be run from the command li ne without the display in
+      order to do processing of multiple datasets or quick computation on
+      very large datasets. In order to run Haploview without the display,
+      add the "-nogui" flag. The "-help" flag shows a condensed explanation
+      of all the command line options explained below.</para>
+
+    <section>    
+      <title>General Options</title>
+      <glosslist>
+	<glossentry><glossterm>-h, -help</glossterm>
+	  <glossdef><para>Print help information.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-n, -nogui</glossterm>
+	  <glossdef><para>Command line mode&mdash;does not launch display.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-q, -quiet</glossterm>
+	  <glossdef><para>Quiet mode&mdash;minimizes output to command line.</para></glossdef></glossentry>
+      </glosslist>
+    </section>
+    
+    <section>
+      <title>Input Options</title>
+      <glosslist>
+	<glossentry><glossterm>-pedfile &lt;filename&gt;</glossterm>  
+	  <glossdef><para>Specify a genotype input file in <link linkend="ped">pedigree</link>
+	    format. This option works in GUI mode.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-hapmap &lt;filename&gt;</glossterm>
+	  <glossdef>
+	    <para>Specify a <link linkend="hapmap">HapMap</link> 
+            format input file. This option works in GUI mode. </para>
+	  </glossdef></glossentry>
+	
+	<glossentry><glossterm>-haps &lt;filename&gt;</glossterm>
+	  <glossdef><para>Specify a <link linkend="haps">phased</link> input file. This option works in GUI mode.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-info &lt;filename&gt;</glossterm>
+	  <glossdef><para>Specify a marker <link linkend="info">information</link> file. This option works in GUI mode.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-batch &lt;filename&gt;</glossterm>
+	  <glossdef><para>Specify a <link linkend="batch">batch</link> load file.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-blocks &lt;filename&gt;</glossterm>
+	  <glossdef><para>Specify a <link linkend="blocksfile">block</link> definition file. This will automatically use this block definition for haplotype output.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-track &lt;filename&gt;</glossterm>
+	  <glossdef><para>Specify an analysis <link linkend="trackfile">track</link> file</para></glossdef></glossentry>
+      </glosslist>
+    </section>
+
+    <section>
+      <title>Data Check Options</title>
+      <glosslist>
+	<glossentry><glossterm>-skipcheck</glossterm>
+	  <glossdef><para>Skip all the genotype data quality checks and uses all markers for all analyses.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-minMAF &lt;threshold&gt;</glossterm>
+	  <glossdef><para>Exclude all markers with minor allele frequency below &lt;threshold&gt;, which must be between 0 and 0.5. Default of 0. This option works in GUI mode.</para></glossdef></glossentry>
+
+	<glossentry><glossterm>-maxMendel &lt;integer&gt;</glossterm>
+	  <glossdef><para>Exclude markers with greater than &lt;integer&gt; Mendelian inheritance errors. Default of 1. This option works in GUI mode.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-minGeno &lt;threshold&gt;</glossterm>
+	  <glossdef><para>Exclude markers with less than &lt;threshold&gt; fraction of nonzero genotypes. &lt;threshold&gt; must be between 0 and 1 with a default of 0.5. This option works in GUI mode.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-hwcutoff &lt;threshold&gt;</glossterm>
+	  <glossdef><para>Exclude markers with a Hardy Weinberg p-value less than &lt;threshold&gt;, which ranges from 0 to 1 with a default of 0.001 This option works in GUI mode.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-maxDistance &lt;distance&gt;</glossterm>
+	  <glossdef><para>Maximum intermarker distance for LD comparisons (in kilobases). Default is 500. This option works in GUI mode.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-missingCutoff &lt;threshold&gt;</glossterm>
+	  <glossdef><para>Exclude individuals with more than &lt;threshold&gt; fraction missing data, where &lt;threshold&gt; is a value between 0 and 1 with a default of 0.5. This option works in GUI mode.</para></glossdef></glossentry>
+      </glosslist>
+    </section>
+
+    <section>
+      <title>Output Options</title>
+      <glosslist>
+	<glossentry><glossterm>-blockoutput &lt;type&gt;</glossterm>
+	  <glossdef><para>Generate haplotypes and population frequencies for blocks of &lt;type&gt;, which can be GAB (Gabriel et al), GAM (4 gamete blocks), SPI (solid spine blocks) or ALL (each of the previous 3). The default block type is Gabriel. More information can be found with the <link linkend="blocks">blocks</link> help.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-check</glossterm>
+	  <glossdef><para>Output marker quality checks to &lt;inputfile&gt;.CHECK</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-dprime</glossterm>
+	  <glossdef><para>Output pairwise LD text table to &lt;inputfile&gt;.LD. Note that -dprime and -check default to no haplotype output unless the -blockoutput flag is also specified.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-png</glossterm>
+	  <glossdef><para>Output PNG image file of LD display to &lt;inputfile&gt;.LD.PNG</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-compressedpng</glossterm>
+	  <glossdef><para>Output low-resolution (smaller file) PNG image of LD display to &lt;inputfile&gt;.LD.PNG</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-spacing &lt;threshold&gt;</glossterm>
+	  <glossdef><para>Use proportional spacing for dumped LD pngs. &lt;threshold&gt; ranges from 0 (no spacing) to 1 (max spacing) with a default of 0.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-ldcolorscheme &lt;type&gt;</glossterm>
+	  <glossdef><para>Use a particular color scheme for dumped LD pngs. &lt;type&gt; can be DEFAULT, RSQ, DPALT, GAB or GAM. More information can be found with the <link linkend="lddisplay">LD</link> display help</para></glossdef></glossentry>
+
+	<glossentry><glossterm>-assocCC</glossterm>
+	  <glossdef><para>Output case/control association results. Saves single marker results to &lt;inputfile&gt;.ASSOC and haplotype results to &lt;inputfile&gt;.HAPASSOC. Haplotype association results are not generated if block type is set to ALL.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-assocTDT</glossterm>
+	  <glossdef><para>Output TDT association results. Saves single marker results to &lt;inputfile&gt;.ASSOC and haplotype results to &lt;inputfile&gt;.HAPASSOC. Haplotype association results not generated if block type is set to ALL.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-hapthresh &lt;threshold&gt;</glossterm>
+	  <glossdef><para>Only output haplotypes with frequency &ge; &lt;threshold&gt;. Note that multiallelic D' and htSNPs are computed using only displayed haplotypes.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-excludeMarkers &lt;markers&gt;</glossterm>
+	  <glossdef><para>Exclude markers in a comma separated list with ranges specified as start..end. So, to exclude markers 3, 5 and 10 through 15 you'd use "-excludeMarkers 3,5,10..15"</para></glossdef></glossentry>
+      </glosslist>
+    </section>
+  </chapter>
+
+  <chapter id="about">
+    <title>About Haploview</title>
+    <section> 
+      <para>
+	Haploview was developed in and is maintained by 
+	<ulink url="http://www.broad.mit.edu/personal/mjdaly/">Mark Daly's lab</ulink>
+	at the <ulink url="http://www.wi.mit.edu">Whitehead Institute</ulink> by 
+	<ulink url="mailto:jcbarret@broad.mit.edu">Jeffrey Barrett</ulink> and 
+	<ulink url="mailto:jules@broad.mit.edu">Julian Maller</ulink>.</para>
+      
+      <itemizedlist>
+	<listitem>The design of the interfaces is the work of <emphasis role="bold">Ben Fry</emphasis> at
+	  the <ulink url="http://acg.media.mit.edu/people/fry">MIT Media
+	    Lab</ulink>.</listitem>
+	
+	<listitem>Thanks to <emphasis role="bold">Andrew Kirby</emphasis> for large chunks of coding.</listitem>
+	
+	<listitem>Hardy-Weinberg calculation code courtesy of <emphasis role="bold">Goncalo
+	    Abecasis</emphasis> and <emphasis role="bold">Jan Wigginton</emphasis> at the 
+	  <ulink url="http://www.sph.umich.edu/csg/index.html">University of Michigan
+	    Center for Statistical Genetics</ulink></listitem>
+	
+	
+	<listitem>The r<superscript>2</superscript> and alternative D' color schemes are the work
+	  of <emphasis role="bold">Will Fitzhugh</emphasis>. </listitem>
+	
+	<listitem>The interface to the HapMap GBrowse track is courtesy of
+	  <emphasis role="bold">Simon Twigger</emphasis>. </listitem>
+	
+      </itemizedlist>
+      
+      <para><emphasis role="bold">Source Code</emphasis></para>
+      
+      <para>Haploview is an open source project hosted by 
+	<ulink url="http://sf.net/">SourceForge</ulink>. The source can be downloaded at
+	the SourceForge <ulink url="http://sf.net/projects/haploview/">project
+	  site</ulink>.</para>
+      
+      <para><emphasis role="bold">Citation</emphasis></para>
+      
+      <para>Haploview can be cited with the following 
+	<ulink url="http://bioinformatics.oupjournals.org/cgi/content/full/bth457?ijkey=54SiAdNbKzbNg">paper</ulink>:</para> 
+      
+      <para>Barrett JC, Fry B, Maller J, Daly MJ. Haploview: analysis and
+	visualization of LD and haplotype maps. <emphasis>Bioinformatics</emphasis>. 2005
+	Jan 15 [PubMed ID: 15297300]</para>
+      
+      <para>Questions, complaints and suggestion should be directed to 
+	<ulink url="mailto:jcbarret@broad.mit.edu">Jeffrey Barrett</ulink>.</para>
+      
+    </section>
+    
+    <section>
+      <title>System Requirements</title>
+      <para>It is recommended that Haploview be run on a machine with at least
+	128M of memory. The Haploview jarfile should now automatically
+	allocate extra memory when starting up, so the -Xmx flag is no longer
+	required when running the program from the command line.</para>
+      
+      <para>Haploview requires Java JRE 1.3 or later, but 1.4 is strongly
+	recommended. It is worthwhile in any case to <ulink url="http://www.java.com/">download the most recent Java
+	release</ulink>.</para>
+    </section>
+
+    <section>
+      <title>Known Issues</title>
+      <para>Saving PNG files from the command line (the -png and -compressedpng
+	flags) requires Java version 1.4 or later.</para>
+
+      <para>There appears to be an issue with the Windows JDK version
+	1.4.1_03. Note that all other versions (both earlier and later
+	versions of 1.4.1 included) seem to work fine. If you find this
+	to be your current Java version (type java -version at the
+	command prompt), please install the latest version.</para>
+
+      <para>Windows JDK version 1.3.1_02 seems to have trouble saving PNGs
+	properly. Marker names are partially truncated in the saved
+	file. Again, installing the latest version of Java should fix this
+	issue.</para>
+    </section>
+
+    <section>
+      <title>Updates</title>
+      <para>If you have an internet connection, Haploview will automatically
+	check for an update upon startup. If a new version is available, it
+	will show a message in the lower right corner of the screen for a few
+	seconds. Details can be found by using the "Check for Updates" button
+	in the File menu.</para>
+    </section>
+
+    <section>
+      <title>Change Log</title>
+      
+      <section>
+	<title>Version 3.1, 27 January 2005</title>
+	<itemizedlist>
+	  <listitem>Additional HapMap info track display options.</listitem>
+	  <listitem>Improved parsing of complex pedigrees.</listitem>
+	  <listitem>Fixed bug with loading of haps style input files.</listitem>
+	  <listitem>Fixed bug with correctly parsing out-of-order info files.</listitem>
+	  <listitem>Fixed problem with association tests on datasets with no blocks.</listitem>
+	  <listitem>Fixed bug with exporting range of markers to LD PNG.</listitem>
+	</itemizedlist>
+      </section>
+      
+      <section>
+	<title>Version 3.0, 7 October 2004</title>
+	<itemizedlist>
+	  <listitem>bugfixes for block size display, checkdata tab, allele sorting, EM missing data.</listitem>
+	  <listitem>Added compressed PNG output mode.</listitem>
+	  <listitem>Lots of new command line options.</listitem>
+	  <listitem>Changed batch mode input format.</listitem>
+	  <listitem>Re-sort out of order info files.</listitem>
+	  <listitem>Substantial improvement in speed and memory usage in EM.</listitem>
+	  <listitem>New color schemes.</listitem>
+	  <listitem>Added additional sample information for 2nd and 3rd HapMap plate.</listitem>
+	  <listitem>Fixed handling of complex pedigrees.</listitem>
+	  <listitem>Added proportional spacing to LD display.</listitem>
+	  <listitem>Added HapMap GBrowse track.</listitem>
+	  <listitem>Filter individuals with lots of missing genotypes.</listitem>
+	  <listitem>Haplotype association tests.</listitem>
+	  <listitem>Update checker.</listitem>
+	</itemizedlist>
+      </section>
+      
+      <section>
+	<title>Version 2.05, 27 April 2004</title>
+	<itemizedlist>
+	  <listitem>Fixed problem with EM for long blocks</listitem>
+	  <listitem>Added "Export options" to allow exporting subsets of data and LD values for only adjacent marker pairs.</listitem>
+	  <listitem>Numerous minor bugfixes</listitem>
+	  <listitem>Added block labels to haplotype display</listitem>
+	  <listitem>Added block size to LD display</listitem>
+	  <listitem>Added saved block definition input file</listitem>
+	  <listitem>Added analysis track input option</listitem>
+	  <listitem>Enabled direct click from HapMap webpage to Haploview</listitem>
+	</itemizedlist>
+      </section>
+      
+      <section>
+	<title>Version 2.04, 21 January 2004</title>
+	<itemizedlist>
+	  <listitem>All color schemes now allowed with all block definitions,
+	    including hand-defined blocks.</listitem>
+	  <listitem>Enabled loading input file from command line while still
+	    opening GUI.</listitem>
+	  <listitem>Added command line HapMap Project input option.</listitem>
+	  <listitem>Added colored box haplotype display.</listitem>
+	  <listitem>Tweaked command line flags.</listitem>
+	  <listitem>Added command line checkdata only output.</listitem>
+	  <listitem>More accurate Hardy-Weinberg code implemented (courtesy of
+	    G. Abecasis &amp; J. Wigginton).</listitem>
+	  <listitem>Correctly deals with genotype inputs with poorly genotyped markers.</listitem>
+	</itemizedlist>
+      </section>
+
+      <section>    
+	<title>Version 2.03, 18 December 2003</title>
+	<itemizedlist>
+	  <listitem>Correctly handles new HapMap Project dump format.</listitem>
+	  <listitem>Added minor allele frequency filter to data check tab.</listitem>
+	</itemizedlist>
+      </section>
+      
+      <section>
+	<title>Version 2.02, 05 December 2003</title>
+	<itemizedlist>
+	  <listitem>fixed confidence bounds coloring scheme bug</listitem>
+	  <listitem>fixed text output bug where marker numbers were
+	    incorrect</listitem>
+	  <listitem>added marker spacing map to top of HapMap datasets</listitem>
+	  <listitem>added T-int statistic to text dump of LD chart</listitem>
+	</itemizedlist>
+      </section>
+      
+      <section>
+	<title>Version 2.01, 31 October 2003</title>
+	<itemizedlist>
+	  <listitem>fixed bug involving European style decimal format (e.g. 0,45
+	    vs. 0.45)</listitem>
+	  <listitem>when exporting data, default file name is now blank</listitem>
+	  <listitem>marker info file now works in either forward or reverse
+	    direction</listitem>
+	  <listitem>activated loading of HapMap Project dumped data</listitem>
+	</itemizedlist>
+      </section>
+    </section>
+  </chapter>
+
+</book>

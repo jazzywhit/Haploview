@@ -1,0 +1,18 @@
+A clean copy of this directory should contain several files used in
+compiling the Haploview javahelp classes from scratch. It also
+contains a precompiled version of the most recently released help
+jarfile.
+
+The ant build.xml file will almost certainly not work on your system
+as it is written specifically for the machine which builds the release
+versions of the code and help documentation.
+
+It's probably best if you just leave this directory alone. :)
+
+
+Jeffrey Barrett
+jcbarret@broad.mit.edu
+
+Julian Maller
+jules@broad.mit.edu
+

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Initial Set-Up -->
+
+<project name="HaploView" default="main" basedir=".">
+
+   <path id="haploview.root">
+     <pathelement location="${basedir}"/>
+   </path>
+
+
+ <!-- =========================================================== -->
+ <!-- Initialization                                              -->
+ <!-- =========================================================== -->
+<!-- Setup project roots -->
+ <target name="init">
+    <property name="haploview.root" value="${basedir}"/>
+    <property name="xslPath" value="/usr/share/sgml/docbook/xsl-stylesheets"/>
+    <property name="stylesheet.fo" value="${xslPath}/fo/docbook.xsl" />
+    <property name="stylesheet.html" value="${xslPath}/html/chunk.xsl" />
+    <property name="stylesheet.javahelp" value="${xslPath}/javahelp/javahelp.xsl" />
+    <property name="stylesheet.params" value="toc.section.depth=1 generate.toc=&quot;book toc&quot; shade.verbatim=1 chunk.section.depth=0 suppress.navigation=1" /> 
+    <property name="xslt.processor.class" value="com.icl.saxon.StyleSheet" />
+    <property name="out.doc.fo" value="pdf/haploview.fo" />    
+    <property name="out.doc.pdf" value="pdf/" />
+    <property name="out.doc.html" value="html/" />
+    <property name="out.doc.javahelp" value="javahelp/" />
+    <property name="stylesheet.params.html" value="${stylesheet.params} base.dir=${out.doc.html} root.filename=&quot;documentation&quot; use.id.as.filename=1 html.ext=&quot;.php&quot;" />
+    <property name="stylesheet.params.javahelp" value="${stylesheet.params} base.dir=${out.doc.javahelp}" />
+    <property name="stylesheet.params.pdf" value="${stylesheet.params} ulink.show=0"/> 
+    <property name="out.doc.javahelp" value="javahelp/" />
+    <property name="doc.xml" value="haploview.xml" />
+    <property name="jhindexer" value="/opt/javahelp/javahelp/bin/jhindexer" />
+    <property name="doc.javahelp.jar" value="HaploHelp.jar" />
+
+    <path id="xslt.processor.classpath">                                         
+      <pathelement path="/opt/saxon/saxon.jar" />
+      <pathelement path="${xslPath}/extensions/saxon651.jar"/> 
+    </path>
+    <tstamp>
+      <format property="build.number" pattern="yyyyMMddHHmm"/>
+    </tstamp>
+</target>
+
+ <target name="doc-pdf" depends="init">
+    <delete dir="${out.doc.pdf}"/>
+    <java classname="${xslt.processor.class}" 
+	      fork="yes" 
+              failonerror="true">
+      <classpath refid="xslt.processor.classpath" />
+      <arg line="-o ${out.doc.fo}"/>
+      <arg line="${doc.xml} ${stylesheet.fo} ${stylesheet.params.pdf}" /> 
+    </java>
+
+    <exec executable="pdfxmltex" dir="${out.doc.pdf}" output="/dev/null">
+      <arg line="haploview.fo"/>
+    </exec>
+</target>
+
+<target name="doc-html" depends="init">
+    <delete dir="${out.doc.html}"/>
+
+    <java classname="${xslt.processor.class}" 
+	      fork="yes" 
+	      failonerror="true">
+      <classpath refid="xslt.processor.classpath" />
+	  <arg line="${doc.xml} ${stylesheet.html} ${stylesheet.params.html}" /> 
+    </java>
+
+    <exec executable="perl">
+         <arg line="add-web-headers.pl ${out.doc.html}"/>
+    </exec>
+    
+</target>
+
+<target name="doc-javahelp" depends="init">
+    <delete dir="${out.doc.javahelp}"/>
+    <java classname="${xslt.processor.class}" 
+	      fork="yes" 
+	      failonerror="true">
+      <classpath refid="xslt.processor.classpath" />
+	  <arg line="${doc.xml} ${stylesheet.javahelp} ${stylesheet.params.javahelp}" /> 
+    </java>
+    
+    <exec executable="${jhindexer}" dir="${out.doc.javahelp}">
+      <arg line="."/>
+    </exec>
+    
+    <jar destfile="${doc.javahelp.jar}" basedir="${out.doc.javahelp}" />
+    
+</target>
+
+
+<target name="docs" depends="doc-javahelp,doc-html,doc-pdf">
+</target>
+
+<target name="main" depends="init">
+  <echo message="------------------------------------------------------------"/>
+  <echo message="welcome to haploview documentation build file"/>
+  <echo message="Usage: ant [target-name]"/>
+  <echo message="where [target-name] is one of the following targets:"/>
+  <echo message="doc-pdf --> renders docs in pdf"/>
+  <echo message="doc-javahelp --> renders docs in javahelp jar"/>
+  <echo message="doc-html --> renders docs in html"/>
+  <echo message="docs --> generates all 3 formats above"/>
+  <echo message="------------------------------------------------------------"/>
+</target>
+
+
+</project>
