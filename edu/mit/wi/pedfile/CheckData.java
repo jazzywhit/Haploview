@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 1.19 2005/01/25 21:30:39 jcbarret Exp $
+* $Id: CheckData.java,v 1.20 2005/01/27 18:00:39 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -182,9 +182,7 @@ public class CheckData {
                     markers = currentInd.getMarker(loc);
                 }
                 allele1 = markers[0];
-                //allele1_string = Integer.toString(allele1);
                 allele2 = markers[1];
-                //allele2_string = Integer.toString(allele2);
 
                 String familyID = currentInd.getFamilyID();
 
@@ -199,8 +197,7 @@ public class CheckData {
                 //no allele data missing
                 if(allele1 > 0 && allele2 >0){
                     //indiv has no parents -- i.e. is a founder
-                    if(currentInd.getMomID().compareTo(Individual.DATA_MISSING)==0 && currentInd.getDadID().compareTo(Individual.DATA_MISSING)==0){
-                        //$parentgeno{$ped}++
+                    if(!currentFamily.hasAncestor(currentInd.getIndividualID())){
                         //set parentgeno
 
                         if(parentgeno.containsKey(familyID)){
@@ -215,14 +212,13 @@ public class CheckData {
                             parenthet++;
                         }
                         else{
-                            //incOrSetOne(parenthom,allele1_string);
                             parentHom[allele1]++;
                         }
 
                         count[allele1]++;
                         count[allele2]++;
                     }
-                    else{//$kidgeno{$ped}++
+                    else{
                         if(kidgeno.containsKey(familyID)){
                             int value = ((Integer)kidgeno.get(familyID)).intValue() +1;
                             kidgeno.put(familyID, new Integer(value));

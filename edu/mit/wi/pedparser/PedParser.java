@@ -146,7 +146,7 @@ public class PedParser {
             Iterator fitr = allIndividuals.iterator();
             if (fitr.hasNext()){
                 Individual i = (Individual) fitr.next();
-                //if we select thits person to be our fake edge he must not be an edge.
+                //if we select this person to be our fake edge he must not be an edge.
                 PedEdge e = new PedEdge(fakeVertex, starter, i);
                 ScoreData sd = scoreEdge(e,fakeVertex,g);
                 Vector retVec = new Vector();

@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.10 2005/01/25 21:30:39 jcbarret Exp $
+* $Id: Individual.java,v 1.11 2005/01/27 18:00:42 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -45,10 +45,6 @@ public class Individual {
 	public final static String DATA_MISSING ="0";
 
 
-/*    public Individual(){
-        this.markers = new Vector();
-        this.zeroed = new Vector();
-    }*/
 
     public Individual(int numLines) {
         this.markers = new Vector(numLines);

@@ -1,5 +1,5 @@
 /*
-* $Id: Family.java,v 1.4 2005/01/25 21:30:39 jcbarret Exp $
+* $Id: Family.java,v 1.5 2005/01/27 18:00:41 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -41,6 +41,23 @@ public class Family {
 	 */
     public String getFamilyName() {
         return familyName;
+    }
+
+    public boolean hasAncestor(String id){
+        Individual ind = (Individual) members.get(id);
+        if (ind != null){
+            if (ind.getDadID().equals("0") && ind.getMomID().equals("0")){
+                return false;
+            }else{
+                if (members.containsKey(ind.getDadID()) || members.containsKey(ind.getMomID())){
+                    return true;
+                }else{
+                    return (hasAncestor(ind.getDadID()) || hasAncestor(ind.getMomID()));
+                }
+            }
+        }else{
+            return false;
+        }
     }
 
 	/**
