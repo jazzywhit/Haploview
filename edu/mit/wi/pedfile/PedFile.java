@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.0 2005/01/27 18:19:03 jcbarret Exp $
+* $Id: PedFile.java,v 3.1 2005/01/31 20:10:48 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -709,8 +709,12 @@ public class PedFile {
                 }catch (PedigreeException pe){
                     throw new PedFileException(pe.getMessage() + "\nin family " + curFam.getFamilyName());
                 }
-            }else{
-                useable.addAll(victor);
+            }else if (victor.size() == 1){
+                Individual singleton = (Individual) victor.elementAt(0);
+                //only add this singleton if he has more than the minimum allowable amount of data
+                if (!(singleton.getGenoPC() < 1 - Options.getMissingThreshold())){
+                    useable.addAll(victor);
+                }
             }
         }
         unrelatedIndividuals = useable;
