@@ -26,7 +26,7 @@ public class HaploData implements Constants{
     boolean[] isInBlock;
     boolean infoKnown = false;
     boolean blocksChanged = false;
-    DPrimeTable dpTable;
+    public DPrimeTable dpTable;
     private PedFile pedFile;
     public boolean finished = false;
     private double[] percentBadGenotypes;

@@ -2,13 +2,6 @@ package edu.mit.wi.haploview;
 
 import java.util.Vector;
 
-/**
- * Created by IntelliJ IDEA.
- * User: julian
- * Date: Aug 12, 2004
- * Time: 1:35:31 PM
- * To change this template use File | Settings | File Templates.
- */
 public class DPrimeTable {
     private PairwiseLinkage[][] theTable;
 
@@ -16,11 +9,9 @@ public class DPrimeTable {
         theTable = new PairwiseLinkage[numMarkers][];
     }
 
-
     public void addMarker(Vector marker, int pos){
         theTable[pos] = (PairwiseLinkage[]) marker.toArray(new PairwiseLinkage[0]);
     }
-
 
     public PairwiseLinkage getLDStats(int pos1, int pos2){
         //we need to convert the input of an absolute position into the relative position
@@ -39,12 +30,6 @@ public class DPrimeTable {
         }
     }
 
-   /* public int getLength(int whichMarker){
-        //this is the number of markers in one "row" of the table
-        //that is, for whichmarker, the num of other markers it is compared to
-        return theTable[whichMarker].length;
-    }*/
-
     public int getLength(int x){
         //same as above but for the filtered dataset
         int whichMarker = Chromosome.realIndex[x];
@@ -57,6 +42,4 @@ public class DPrimeTable {
         }
         return 0;
     }
-
-
 }

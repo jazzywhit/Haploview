@@ -3,9 +3,9 @@ package edu.mit.wi.haploview;
 
 import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
-import edu.mit.wi.pedfile.MarkerResult;
-import edu.mit.wi.haploview.TreeTable.*;
 import edu.mit.wi.haploview.association.*;
+import edu.mit.wi.haploview.tagger.TaggerConfigPanel;
+import edu.mit.wi.haploview.tagger.TaggerResultsPanel;
 
 import javax.help.*;
 import javax.swing.*;
@@ -68,6 +68,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     CustomAssocPanel custAssocPanel;
     TDTPanel tdtPanel;    
     HaploAssocPanel hapAssocPanel;
+    private TaggerConfigPanel taggerConfigPanel;
+
 
     public HaploView(){
         try{
@@ -806,6 +808,33 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     }
 
+                                        //tagger display
+                    //if(Options.isUseTagger()) {
+                        //TaggerController tagControl = new TaggerController(theData,null,null,null);
+
+                    taggerConfigPanel = new TaggerConfigPanel(theData);
+
+                    JPanel metaTagPanel = new JPanel();
+
+                    metaTagPanel.setLayout(new BoxLayout(metaTagPanel,BoxLayout.Y_AXIS));
+                    metaTagPanel.add(taggerConfigPanel);
+
+                    JTabbedPane tagTabs = new JTabbedPane();
+                    tagTabs.add("Configuration",metaTagPanel);
+
+                    JPanel resMetaPanel = new JPanel();
+
+                    resMetaPanel.setLayout(new BoxLayout(resMetaPanel,BoxLayout.Y_AXIS));
+
+                    TaggerResultsPanel tagResultsPanel = new TaggerResultsPanel();
+                    taggerConfigPanel.addActionListener(tagResultsPanel);
+
+                    resMetaPanel.add(tagResultsPanel);
+                    tagTabs.addTab("Results",resMetaPanel);
+
+                    tabs.addTab("Tagger",tagTabs);
+                    //}
+
                     tabs.setSelectedIndex(currentTab);
                     contents.add(tabs);
 
@@ -1056,6 +1085,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     if (tdtPanel != null){
                         tdtPanel.refreshTable();
+                    }
+
+                    if (taggerConfigPanel != null){
+                        taggerConfigPanel.refreshTable();
                     }
 
                     if(permutationPanel != null) {

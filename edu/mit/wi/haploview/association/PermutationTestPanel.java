@@ -214,9 +214,11 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
             stopPerms();
 
             //don't let it run off forever!
-            int numIterations = 0;
-            while (!finishedPerms && numIterations < 1000000){
-                numIterations++;
+            while (!finishedPerms){
+                try{
+                    Thread.sleep(100);
+                }catch (InterruptedException e){
+                }
             }
         }
         testSet.writeResultsToFile(outfile);

@@ -14,7 +14,7 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
 
-class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionListener, Constants{
+public class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionListener, Constants{
     private static final int H_BORDER = 30;
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;

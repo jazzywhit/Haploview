@@ -2,7 +2,7 @@ package edu.mit.wi.haploview;
 
 import java.awt.Color;
 
-class PairwiseLinkage{
+public class PairwiseLinkage{
 
     private double dprime, lod, r2, ci_low, ci_high;
     private double[] freqs;
