@@ -70,7 +70,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     TDTPanel tdtPanel;    
     HaploAssocPanel hapAssocPanel;
     private TaggerConfigPanel taggerConfigPanel;
-    private HaploviewTab ldTab, hapsTab, checkTab, taggerTab, associationTab;
+    HaploviewTab ldTab, hapsTab, checkTab, taggerTab, associationTab;
 
     public HaploView(){
         try{

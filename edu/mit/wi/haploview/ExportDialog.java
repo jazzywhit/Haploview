@@ -187,7 +187,8 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             pngButton.setEnabled(false);
             txtButton.setSelected(true);
         }else if (command.equals("OK")){
-            int format, tab;
+            int format;
+            HaploviewTab tab;
             if (pngButton.isSelected()){
                 if (compressCheckBox.isSelected()){
                     format = COMPRESSED_PNG_MODE;
@@ -198,20 +199,20 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
                 format = TXT_MODE;
             }
             if (dpButton.isSelected()){
-                tab = VIEW_D_NUM;
+                tab = hv.ldTab;
             } else if (hapButton.isSelected()){
-                tab = VIEW_HAP_NUM;
+                tab = hv.hapsTab;
             } else if (checkButton.isSelected()){
-                tab = VIEW_CHECK_NUM;
+                tab = hv.checkTab;
             } else if (singleAssocButton.isSelected()){
-                tab = VIEW_ASSOC_NUM;
-                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedComponent(hv.tdtPanel);
+                tab = hv.associationTab;
+                ((JTabbedPane)tab.getComponent(0)).setSelectedComponent(hv.tdtPanel);
             }else if (hapAssocButton.isSelected()){
-                tab = VIEW_ASSOC_NUM;
-                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedComponent(hv.hapAssocPanel);
+                tab = hv.associationTab;
+                ((JTabbedPane)tab.getComponent(0)).setSelectedComponent(hv.hapAssocPanel);
             }else{
-                tab = VIEW_ASSOC_NUM;
-                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedComponent(hv.permutationPanel);
+                tab = hv.associationTab;
+                ((JTabbedPane)tab.getComponent(0)).setSelectedComponent(hv.permutationPanel);
             }
             this.dispose();
 
