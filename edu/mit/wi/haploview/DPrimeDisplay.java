@@ -35,7 +35,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private int left = H_BORDER;
     private int top = V_BORDER;
     private int clickXShift, clickYShift;
-    private String[] displayStrings;
+    private Vector displayStrings;
     private final int popupLeftMargin = 12;
 
     private final Color BG_GREY = new Color(212,208,200);
@@ -837,8 +837,8 @@ END OF HIS HACKS
                     popupDrawRect.width,
                     popupDrawRect.height);
 
-            for (int x = 0; x < displayStrings.length; x++){
-                g.drawString(displayStrings[x],popupDrawRect.x + popupLeftMargin-smallDatasetSlopH,
+            for (int x = 0; x < displayStrings.size(); x++){
+                g.drawString((String)displayStrings.elementAt(x),popupDrawRect.x + popupLeftMargin-smallDatasetSlopH,
                         popupDrawRect.y+((x+1)*metrics.getHeight())-smallDatasetSlopV);
             }
         }
@@ -1066,7 +1066,7 @@ END OF HIS HACKS
         double lineSpan = (Chromosome.getSize()-1) * boxSize;
 
         //keep trying until we've got at least a certain fraction of the markers aligned
-        while (aligned < 0.11){
+        while (aligned < 0.25){
             double numAligned = 0;
             for (int i = 0; i < initialPositions.length; i++){
                 initialPositions[i] = (lineSpan*((Chromosome.getMarker(i).getPosition()-minpos)/spanpos));
@@ -1255,24 +1255,24 @@ END OF HIS HACKS
                 if (dPrimeTable.getLDStats(boxX,boxY) != null){
                     double[] freqs = dPrimeTable.getLDStats(boxX,boxY).getFreqs();
 
-                    displayStrings = new String[10];
-
+                    displayStrings = new Vector();
                     if (theData.infoKnown){
-                        displayStrings[0] = new String ("(" +Chromosome.getMarker(boxX).getName() +
-                                ", " + Chromosome.getMarker(boxY).getName() + ")");
-                        int sep = (int)((Chromosome.getMarker(boxY).getPosition() -
-                                Chromosome.getMarker(boxX).getPosition())/1000);
-                        displayStrings[5] = new Long(sep).toString() + " kb";
+                        displayStrings.add(new String ("(" +Chromosome.getMarker(boxX).getName() +
+                                ", " + Chromosome.getMarker(boxY).getName() + ")"));
+                        double sep = (int)((Chromosome.getMarker(boxY).getPosition() -
+                                Chromosome.getMarker(boxX).getPosition())/100);
+                        sep /= 10;
+                        displayStrings.add(new Double(sep).toString() + " kb");
                     }else{
-                        displayStrings[0] = new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
-                                (Chromosome.realIndex[boxY]+1) + ")");
+                        displayStrings.add(new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
+                                (Chromosome.realIndex[boxY]+1) + ")"));
                     }
-                    displayStrings[1] = new String ("D': " + dPrimeTable.getLDStats(boxX,boxY).getDPrime());
-                    displayStrings[2] = new String ("LOD: " + dPrimeTable.getLDStats(boxX,boxY).getLOD());
-                    displayStrings[3] = new String ("r-squared: " + dPrimeTable.getLDStats(boxX,boxY).getRSquared());
-                    displayStrings[4] = new String ("D' conf. bounds: " +
+                    displayStrings.add(new String ("D': " + dPrimeTable.getLDStats(boxX,boxY).getDPrime()));
+                    displayStrings.add(new String ("LOD: " + dPrimeTable.getLDStats(boxX,boxY).getLOD()));
+                    displayStrings.add( new String ("r-squared: " + dPrimeTable.getLDStats(boxX,boxY).getRSquared()));
+                    displayStrings.add(new String ("D' conf. bounds: " +
                             dPrimeTable.getLDStats(boxX,boxY).getConfidenceLow() + "-" +
-                            dPrimeTable.getLDStats(boxX,boxY).getConfidenceHigh());
+                            dPrimeTable.getLDStats(boxX,boxY).getConfidenceHigh()));
 
                     //get the alleles for the 4 two-marker haplotypes
                     String[] alleleStrings = new String[4];
@@ -1300,12 +1300,13 @@ END OF HIS HACKS
                         alleleStrings[3] += alleleMap[Chromosome.getMarker(boxY).getMinor()];
                     }
 
-                    displayStrings[5] = new String("Frequencies:");
-                    displayStrings[6] = new String(alleleStrings[0] + " = " + Math.rint(1000 * freqs[0])/10 + "%");
-                    displayStrings[7] = new String(alleleStrings[1] + " = " + Math.rint(1000 * freqs[1])/10 + "%");
-                    displayStrings[8] = new String(alleleStrings[2] + " = " + Math.rint(1000 * freqs[2])/10 + "%");
-                    displayStrings[9] = new String(alleleStrings[3] + " = " + Math.rint(1000 * freqs[3])/10 + "%");
-
+                    displayStrings.add(new String("Frequencies:"));
+                    for (int i = 0; i < 4; i++){
+                        if (freqs[i] > 1.0E-10){
+                            displayStrings.add( new String(alleleStrings[i] + " = " +
+                                    Math.rint(1000 * freqs[i])/10 + "%"));
+                        }
+                    }
                     popupExists = true;
                 }
             } else if (blockselector.contains(clickX, clickY)){
@@ -1314,25 +1315,23 @@ END OF HIS HACKS
 
                 if (Chromosome.getMarker(marker).getExtra() != null) size++;
 
-                displayStrings = new String[size];
-
-                int count = 0;
+                displayStrings = new Vector();
 
                 if (theData.infoKnown){
-                    displayStrings[count++] = new String (Chromosome.getMarker(marker).getName());
+                    displayStrings.add(new String (Chromosome.getMarker(marker).getName()));
                 }else{
-                    displayStrings[count++] = new String("Marker " + (Chromosome.realIndex[marker]+1));
+                    displayStrings.add(new String("Marker " + (Chromosome.realIndex[marker]+1)));
                 }
-                displayStrings[count++] = new String ("MAF: " + Chromosome.getMarker(marker).getMAF());
+                displayStrings.add(new String ("MAF: " + Chromosome.getMarker(marker).getMAF()));
                 if (Chromosome.getMarker(marker).getExtra() != null)
-                    displayStrings[count++] = new String (Chromosome.getMarker(marker).getExtra());
+                    displayStrings.add(new String (Chromosome.getMarker(marker).getExtra()));
                 popupExists = true;
             }
             if (popupExists){
                 int strlen = 0;
-                for (int x = 0; x < displayStrings.length; x++){
-                    if (strlen < metrics.stringWidth(displayStrings[x])){
-                        strlen = metrics.stringWidth(displayStrings[x]);
+                for (int x = 0; x < displayStrings.size(); x++){
+                    if (strlen < metrics.stringWidth((String)displayStrings.elementAt(x))){
+                        strlen = metrics.stringWidth((String)displayStrings.elementAt(x));
                     }
                 }
                 //edge shifts prevent window from popping up partially offscreen
@@ -1343,8 +1342,8 @@ END OF HIS HACKS
                     rightEdgeShift = clickX + strlen + popupLeftMargin + 10 - visRightBound;
                 }
                 int botEdgeShift = 0;
-                if (clickY + displayStrings.length*metrics.getHeight()+10 > visBotBound){
-                    botEdgeShift = clickY + displayStrings.length*metrics.getHeight()+15 - visBotBound;
+                if (clickY + displayStrings.size()*metrics.getHeight()+10 > visBotBound){
+                    botEdgeShift = clickY + displayStrings.size()*metrics.getHeight()+15 - visBotBound;
                 }
                 int smallDataVertSlop = 0;
                 if (getPreferredSize().getWidth() < getVisibleRect().width && theData.infoKnown){
@@ -1353,7 +1352,7 @@ END OF HIS HACKS
                 popupDrawRect = new Rectangle(clickX-rightEdgeShift,
                         clickY-botEdgeShift+smallDataVertSlop,
                         strlen+popupLeftMargin+5,
-                        displayStrings.length*metrics.getHeight()+10);
+                        displayStrings.size()*metrics.getHeight()+10);
                 repaint();
             }
         }else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
