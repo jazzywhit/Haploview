@@ -1035,18 +1035,17 @@ public class HaploText implements Constants{
             }
 
             if(doPermutationTest) {
-                AssociationTestSet permTests = null;
-                if( customAssocSet != null) {
-                    permTests = customAssocSet;
-                }else {
-                    permTests = new AssociationTestSet();
-                    permTests.cat(markerTestSet);
-                    permTests.cat(blockTestSet);
-                }
-                final PermutationTestSet pts = new PermutationTestSet(permutationCount,textData.getSavedEMs(),textData.getPedFile(),permTests);
+                AssociationTestSet permTests = new AssociationTestSet();
+                permTests.cat(markerTestSet);
+                permTests.cat(blockTestSet);
+                final PermutationTestSet pts = new PermutationTestSet(permutationCount,textData.getPedFile(),customAssocSet,permTests);
                 Thread permThread = new Thread(new Runnable() {
                     public void run() {
-                        pts.doPermutations();
+                        if (pts.isCustom()){
+                            pts.doPermutations(PermutationTestSet.CUSTOM);
+                        }else{
+                            pts.doPermutations(PermutationTestSet.SINGLE_PLUS_BLOCKS);
+                        }
                     }
                 });
 

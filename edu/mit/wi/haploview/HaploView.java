@@ -814,19 +814,16 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             }
                         }
 
-                        AssociationTestSet permSet;
-                        boolean cust = false;
+                        AssociationTestSet custPermSet = null;
                         if (custAssocPanel != null){
-                            permSet = custAssocPanel.getTestSet();
-                            cust = true;
-                        }else{
-                            permSet = new AssociationTestSet();
-                            permSet.cat(tdtPanel.getTestSet());
-                            permSet.cat(hapAssocPanel.getTestSet());
+                            custPermSet = custAssocPanel.getTestSet();
                         }
+                        AssociationTestSet permSet = new AssociationTestSet();
+                        permSet.cat(tdtPanel.getTestSet());
+                        permSet.cat(hapAssocPanel.getTestSet());
 
-                        permutationPanel = new PermutationTestPanel(new PermutationTestSet(0,theData.getSavedEMs(),
-                                theData.getPedFile(),permSet), cust);
+                        permutationPanel = new PermutationTestPanel(
+                                new PermutationTestSet(0,theData.getPedFile(),custPermSet, permSet));
                         metaAssoc.add(permutationPanel,"Permutation Tests");
 
                         associationTab = new HaploviewTab(metaAssoc);
@@ -1017,13 +1014,15 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
                         htp.makeTable(new AssociationTestSet(theData.getHaplotypes(), null));
                         permutationPanel.setBlocksChanged();
+                        AssociationTestSet custSet = null;
                         if (custAssocPanel == null){
-                            //change tests if we don't have a custom set
-                            AssociationTestSet permSet = new AssociationTestSet();
-                            permSet.cat(tdtPanel.getTestSet());
-                            permSet.cat(hapAssocPanel.getTestSet());
-                            permutationPanel.setTestSet(new PermutationTestSet(0,theData.getSavedEMs(),theData.getPedFile(),permSet));
+                            custSet = custAssocPanel.getTestSet();
                         }
+                        AssociationTestSet permSet = new AssociationTestSet();
+                        permSet.cat(tdtPanel.getTestSet());
+                        permSet.cat(hapAssocPanel.getTestSet());
+                        permutationPanel.setTestSet(
+                                new PermutationTestSet(0,theData.getPedFile(),custSet,permSet));
                     }
                 }
 
@@ -1095,13 +1094,15 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     if(permutationPanel != null) {
                         permutationPanel.setBlocksChanged();
+                        AssociationTestSet custSet = null;
                         if (custAssocPanel == null){
-                            //change tests if we don't have a custom set
-                            AssociationTestSet permSet = new AssociationTestSet();
-                            permSet.cat(tdtPanel.getTestSet());
-                            permSet.cat(hapAssocPanel.getTestSet());
-                            permutationPanel.setTestSet(new PermutationTestSet(0,theData.getSavedEMs(),theData.getPedFile(),permSet));
+                            custSet = custAssocPanel.getTestSet();
                         }
+                        AssociationTestSet permSet = new AssociationTestSet();
+                        permSet.cat(tdtPanel.getTestSet());
+                        permSet.cat(hapAssocPanel.getTestSet());
+                        permutationPanel.setTestSet(
+                                new PermutationTestSet(0,theData.getPedFile(),custSet,permSet));
                     }
 
                     checkPanel.changed=false;
@@ -1115,13 +1116,15 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             hapAssocPanel.makeTable(new AssociationTestSet(theData.getHaplotypes(), null));
 
                             permutationPanel.setBlocksChanged();
+                            AssociationTestSet custSet = null;
                             if (custAssocPanel == null){
-                                //change tests if we don't have a custom set
-                                AssociationTestSet permSet = new AssociationTestSet();
-                                permSet.cat(tdtPanel.getTestSet());
-                                permSet.cat(hapAssocPanel.getTestSet());
-                                permutationPanel.setTestSet(new PermutationTestSet(0,theData.getSavedEMs(),theData.getPedFile(),permSet));
+                                custSet = custAssocPanel.getTestSet();
                             }
+                            AssociationTestSet permSet = new AssociationTestSet();
+                            permSet.cat(tdtPanel.getTestSet());
+                            permSet.cat(hapAssocPanel.getTestSet());
+                            permutationPanel.setTestSet(
+                                    new PermutationTestSet(0,theData.getPedFile(),custSet,permSet));
                         }
                     }catch(HaploViewException hv){
                         JOptionPane.showMessageDialog(window,

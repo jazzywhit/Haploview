@@ -14,13 +14,15 @@ public class Haplotype{
     private double untransCount;
     private double caseCount;
     private double controlCount;
+    private EM blockEM;
 
-    public Haplotype(int[] g, double p, int[] m){
+    public Haplotype(int[] g, double p, int[] m, EM em){
         genotypes=g;
         percentage = p;
         markers = m;
         tags = new boolean[genotypes.length];
         listorder = 0;
+        blockEM = em;
     }
 
     public int[] getGeno(){
@@ -121,5 +123,9 @@ public class Haplotype{
         }
 
         return curHap.toString();
+    }
+
+    public EM getEM() {
+        return blockEM;
     }
 }

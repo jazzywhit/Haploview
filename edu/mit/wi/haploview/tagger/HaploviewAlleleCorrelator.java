@@ -135,7 +135,7 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
 
             Vector victor = new Vector();
             victor.add(blockArray);
-            phasedCache = theData.generateHaplotypes(victor,false)[0];
+            phasedCache = theData.generateHaplotypes(victor)[0];
         }catch (HaploViewException hve){
             throw new RuntimeException("PC_LOADLETTER.\n" + hve.getMessage());
         }

@@ -131,10 +131,10 @@ public class AssociationTestSet implements Constants{
                 int[] g2 = {allele2};
                 int[] m  = {i};
 
-                Haplotype thisSNP1 = new Haplotype(g1, 0, m);
+                Haplotype thisSNP1 = new Haplotype(g1, 0, m, null);
                 thisSNP1.setCaseCount(counts[0][0]);
                 thisSNP1.setControlCount(counts[1][0]);
-                Haplotype thisSNP2 = new Haplotype(g2, 0, m);
+                Haplotype thisSNP2 = new Haplotype(g2, 0, m, null);
                 thisSNP2.setCaseCount(counts[0][1]);
                 thisSNP2.setControlCount(counts[1][1]);
 
@@ -254,10 +254,10 @@ public class AssociationTestSet implements Constants{
                 int[] g2 = {tt.allele2};
                 int[] m  = {i};
 
-                Haplotype thisSNP1 = new Haplotype(g1, 0, m);
+                Haplotype thisSNP1 = new Haplotype(g1, 0, m, null);
                 thisSNP1.setTransCount(tt.counts[0][0]);
                 thisSNP1.setUntransCount(tt.counts[1][0]);
-                Haplotype thisSNP2 = new Haplotype(g2, 0, m);
+                Haplotype thisSNP2 = new Haplotype(g2, 0, m, null);
                 thisSNP2.setTransCount(tt.counts[0][1]);
                 thisSNP2.setUntransCount(tt.counts[1][1]);
 
@@ -397,7 +397,7 @@ public class AssociationTestSet implements Constants{
             }
         }
         this.filterAlleles = alleles;
-        Haplotype[][] blockHaps = theData.generateHaplotypes(blocks, true);
+        Haplotype[][] blockHaps = theData.generateHaplotypes(blocks);
         Vector blockResults = new AssociationTestSet(blockHaps, names, alleles).getResults();
         Iterator britr = blockResults.iterator();
 
@@ -483,6 +483,10 @@ public class AssociationTestSet implements Constants{
 
     public void cat(AssociationTestSet ats){
         results.addAll(ats.getResults());
+    }
+
+    public boolean isCustom() {
+        return tests != null;
     }
 
     class AssociationTest {

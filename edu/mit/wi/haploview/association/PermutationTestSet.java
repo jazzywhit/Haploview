@@ -13,14 +13,17 @@ import java.io.FileWriter;
 
 
 public class PermutationTestSet implements Constants{
+    public static final int SINGLE_ONLY = 0;
+    public static final int SINGLE_PLUS_BLOCKS = 1;
+    public static final int CUSTOM = 2;
+
     private int permutationCount;
     private int bestExceededCount;
     private double bestObsChiSq;
     private String bestObsName;
 
-    private Vector theEMs;
     private PedFile pedFile;
-    private AssociationTestSet testSet;
+    private AssociationTestSet activeAssocTestSet, custAssocTestSet, defaultAssocTestSet;
 
     private double[] permBestChiSq;
 
@@ -31,22 +34,40 @@ public class PermutationTestSet implements Constants{
     //this variable reaches the value of permutationCount, permutation tests have all completed.
     private int permutationsPerformed;
     private double permBestOverallChiSq;
+    private int selectionType;
 
-    public PermutationTestSet(int permCount, Vector ems, PedFile pf, AssociationTestSet ats){
+    public PermutationTestSet(int permCount, PedFile pf, AssociationTestSet cats, AssociationTestSet dats){
         if(permCount > 0) {
             permutationCount = permCount;
         } else {
             permCount = 0;
         }
 
-        theEMs = ems;
         pedFile = pf;
-        testSet = ats;
+        custAssocTestSet = cats;
+        defaultAssocTestSet = dats;
+        if (custAssocTestSet != null){
+            activeAssocTestSet = custAssocTestSet;
+        }else{
+            activeAssocTestSet = defaultAssocTestSet;
+        }
+    }
+
+    public void doPermutations(int selection) {
+        selectionType = selection;
+        stopProcessing = false;
+        Vector curResults = null;
+
+        if (selectionType == CUSTOM){
+            activeAssocTestSet = custAssocTestSet;
+        }else{
+            activeAssocTestSet = defaultAssocTestSet;
+        }
 
         double curBest = 0;
         String curName = "";
-        for(int i=0;i<ats.getFilteredResults().size();i++) {
-            AssociationResult tmpRes = (AssociationResult) ats.getFilteredResults().get(i);
+        for(int i=0;i<activeAssocTestSet.getFilteredResults().size();i++) {
+            AssociationResult tmpRes = (AssociationResult) activeAssocTestSet.getFilteredResults().get(i);
             for (int j = 0; j < tmpRes.getAlleleCount(); j++){
                 if (tmpRes.getChiSquare(j) > curBest){
                     curName = tmpRes.getDisplayName(j);
@@ -56,14 +77,10 @@ public class PermutationTestSet implements Constants{
         }
         bestObsChiSq = curBest;
         bestObsName = curName;
-    }
 
-    public void doPermutations() {
-        stopProcessing = false;
-        Vector curResults = null;
 
-        Haplotype[][] haplotypes = new Haplotype[testSet.getHaplotypeAssociationResults().size()][];
-        Iterator hitr = testSet.getHaplotypeAssociationResults().iterator();
+        Haplotype[][] haplotypes = new Haplotype[activeAssocTestSet.getHaplotypeAssociationResults().size()][];
+        Iterator hitr = activeAssocTestSet.getHaplotypeAssociationResults().iterator();
         int count = 0;
         while (hitr.hasNext()){
             haplotypes[count] = ((HaplotypeAssociationResult)hitr.next()).getHaps();
@@ -71,7 +88,7 @@ public class PermutationTestSet implements Constants{
         }
 
         Vector snpSet = new Vector();
-        Iterator sitr = testSet.getFilteredResults().iterator();
+        Iterator sitr = activeAssocTestSet.getFilteredResults().iterator();
         while (sitr.hasNext()){
             Object o = sitr.next();
             if (o instanceof MarkerAssociationResult){
@@ -91,7 +108,7 @@ public class PermutationTestSet implements Constants{
                 fakeHaplos[j] =  new Haplotype[haplotypes[j].length];
                 for(int k=0;k<haplotypes[j].length;k++) {
                     fakeHaplos[j][k] = new Haplotype(haplotypes[j][k].getGeno(),haplotypes[j][k].getPercentage(),
-                            haplotypes[j][k].getMarkers());
+                            haplotypes[j][k].getMarkers(), haplotypes[j][k].getEM());
                 }
             }
         } else {
@@ -146,41 +163,41 @@ public class PermutationTestSet implements Constants{
 
             //end of marker association test
 
-            //begin haplotype association test
-
-            if(Options.getAssocTest() == ASSOC_TRIO) {
-                for(int j=0;j<fakeHaplos.length;j++) {
-                    EM curEM = (EM) theEMs.get(j);
-                    curEM.doAssociationTests(null,permuteInd);
-                    for(int k=0;k<fakeHaplos[j].length;k++) {
-                        fakeHaplos[j][k].setTransCount(curEM.getTransCount(k));
-                        fakeHaplos[j][k].setUntransCount(curEM.getUntransCount(k));
+            if (selectionType != SINGLE_ONLY){
+                //begin haplotype association test
+                if(Options.getAssocTest() == ASSOC_TRIO) {
+                    for(int j=0;j<fakeHaplos.length;j++) {
+                        EM curEM = fakeHaplos[j][0].getEM();
+                        curEM.doAssociationTests(null,permuteInd);
+                        for(int k=0;k<fakeHaplos[j].length;k++) {
+                            fakeHaplos[j][k].setTransCount(curEM.getTransCount(k));
+                            fakeHaplos[j][k].setUntransCount(curEM.getUntransCount(k));
+                        }
+                    }
+                } else if(Options.getAssocTest() == ASSOC_CC) {
+                    for(int j=0;j<fakeHaplos.length;j++) {
+                        EM curEM = fakeHaplos[j][0].getEM();
+                        curEM.doAssociationTests(affectedStatus,null);
+                        for(int k=0;k<fakeHaplos[j].length;k++) {
+                            fakeHaplos[j][k].setCaseCount(curEM.getCaseCount(k));
+                            fakeHaplos[j][k].setControlCount(curEM.getControlCount(k));
+                        }
                     }
                 }
-            } else if(Options.getAssocTest() == ASSOC_CC) {
-                for(int j=0;j<fakeHaplos.length;j++) {
-                    EM curEM = (EM) theEMs.get(j);
-                    curEM.doAssociationTests(affectedStatus,null);
-                    for(int k=0;k<fakeHaplos[j].length;k++) {
-                        fakeHaplos[j][k].setCaseCount(curEM.getCaseCount(k));
-                        fakeHaplos[j][k].setControlCount(curEM.getControlCount(k));
+                if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
+                    AssociationTestSet ats = null;
+                    if (activeAssocTestSet.getFilterAlleles() == null){
+                        ats = new AssociationTestSet(fakeHaplos, null);
+                    }else{
+                        try{
+                            ats = new AssociationTestSet(fakeHaplos,null,activeAssocTestSet.getFilterAlleles());
+                        }catch (HaploViewException hve){
+                        }
                     }
+                    curResults.addAll(ats.getResults());
                 }
+                //end of haplotype association test
             }
-            if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
-                AssociationTestSet ats = null;
-                if (testSet.getFilterAlleles() == null){
-                    ats = new AssociationTestSet(fakeHaplos, null);
-                }else{
-                    try{
-                        ats = new AssociationTestSet(fakeHaplos,null,testSet.getFilterAlleles());
-                    }catch (HaploViewException hve){
-                    }
-                }
-                curResults.addAll(ats.getResults());
-            }
-
-            //end of haplotype association test
 
             //find the best chi square from all the tests
             double tempBestChiSquare = 0;
@@ -258,8 +275,12 @@ public class PermutationTestSet implements Constants{
         Vector results = new Vector();
         //dont loop through if we haven't done any permutations yet
         if(permutationsPerformed > 0) {
-            for(int i=0;i<testSet.getFilteredResults().size();i++) {
-                AssociationResult tmpRes = (AssociationResult) testSet.getFilteredResults().get(i);
+            for(int i=0;i<activeAssocTestSet.getFilteredResults().size();i++) {
+                AssociationResult tmpRes = (AssociationResult) activeAssocTestSet.getFilteredResults().get(i);
+                if (selectionType == SINGLE_ONLY && tmpRes instanceof HaplotypeAssociationResult){
+                    //if we're not permuting the haps in blocks, don't add them to the results vector.
+                    continue;
+                }
                 for (int j = 0; j < tmpRes.getAlleleCount(); j++){
                     Vector fieldValues = new Vector();
                     fieldValues.add(tmpRes.getDisplayName(j));
@@ -310,6 +331,10 @@ public class PermutationTestSet implements Constants{
             }
         }
         out.close();
+    }
+
+    public boolean isCustom() {
+        return activeAssocTestSet.isCustom();
     }
 
     class SigResComparator implements Comparator{

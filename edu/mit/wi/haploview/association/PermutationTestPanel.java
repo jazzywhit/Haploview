@@ -42,8 +42,9 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
     private boolean finishedPerms;
     private JPanel bestObsPanel;
     private JPanel bestPermPanel;
+    private ButtonGroup selectionGroup;
 
-    public PermutationTestPanel(PermutationTestSet pts, boolean cust) {
+    public PermutationTestPanel(PermutationTestSet pts) {
         if(pts == null) {
             throw new NullPointerException();
         }
@@ -53,21 +54,36 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
         JPanel permCountPanel = new JPanel();
+
+        JPanel selectionPanel = new JPanel();
+        selectionGroup = new ButtonGroup();
+        selectionPanel.setLayout(new BoxLayout(selectionPanel, BoxLayout.Y_AXIS));
+        JRadioButton singleOnlyButton = new JRadioButton("Single Markers Only");
+        singleOnlyButton.setActionCommand(String.valueOf(PermutationTestSet.SINGLE_ONLY));
+        selectionPanel.add(singleOnlyButton);
+        selectionGroup.add(singleOnlyButton);
+        JRadioButton singlesPlusBlocksButton = new JRadioButton("Single Markers and Haplotypes in Blocks");
+        singlesPlusBlocksButton.setActionCommand(String.valueOf(PermutationTestSet.SINGLE_PLUS_BLOCKS));
+        selectionPanel.add(singlesPlusBlocksButton);
+        selectionGroup.add(singlesPlusBlocksButton);
+        singlesPlusBlocksButton.setSelected(true);
+        if (testSet.isCustom()){
+            JRadioButton customFileButton = new JRadioButton("Custom Tests from File");
+            customFileButton.setActionCommand(String.valueOf(PermutationTestSet.CUSTOM));
+            selectionPanel.add(customFileButton);
+            selectionGroup.add(customFileButton);
+            customFileButton.setSelected(true);
+        }
+        permCountPanel.add(selectionPanel);
+
         JLabel permCountTextLabel = new JLabel("Number of Permutations To Perform: ");
         permCountField = new NumberTextField("", 10, false);
         permCountPanel.add(permCountTextLabel);
         permCountPanel.add(permCountField);
+
         permCountPanel.setMaximumSize(permCountPanel.getPreferredSize());
         this.add(permCountPanel);
 
-        JLabel testDescriptor = new JLabel();
-        testDescriptor.setAlignmentX(Component.CENTER_ALIGNMENT);
-        if (cust){
-            testDescriptor.setText("[permuting custom test set]");
-        }else{
-            testDescriptor.setText("[permuting unfiltered markers and block haplotypes]");
-        }
-        add(testDescriptor);
 
         JPanel buttonPanel = new JPanel();
         doPermutationsButton = new JButton("Do Permutations");
@@ -82,7 +98,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
 
         bestObsPanel = new JPanel();
         JLabel bestObsTextLabel = new JLabel("Best Observed Chi-Square: ");
-        bestObsValueLabel = new JLabel(testSet.getBestObsChiSq() + " (" + testSet.getBestObsName() + ")");
+        bestObsValueLabel = new JLabel("");
         bestObsPanel.add(bestObsTextLabel);
         bestObsPanel.add(bestObsValueLabel);
         bestObsPanel.setMaximumSize(bestObsPanel.getPreferredSize());
@@ -131,11 +147,16 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
 
     public void setTestSet(PermutationTestSet pts){
         testSet = pts;
-        bestObsValueLabel.setText(testSet.getBestObsChiSq() + " (" + testSet.getBestObsName() + ")");
-        bestObsPanel.setMaximumSize(bestObsPanel.getPreferredSize());
     }
 
     public void startPerms() {
+        if (permCountField.getText().equals("") || Integer.parseInt(permCountField.getText()) < 1){
+            JOptionPane.showMessageDialog(this,
+                    "Please specify a non-zero number of permutations.",
+                    "Number of Permutations?",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         scoreBoardPanel.setVisible(true);
         finishedPerms = false;
 
@@ -176,6 +197,8 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         doPermutationsButton.setEnabled(true);
         stopPermutationsButton.setEnabled(false);
         this.remove(permProgressBar);
+        bestObsValueLabel.setText(testSet.getBestObsChiSq() + " (" + testSet.getBestObsName() + ")");
+        bestObsPanel.setMaximumSize(bestObsPanel.getPreferredSize());
         bestPermutationValueLabel.setText(String.valueOf(testSet.getBestPermChiSquare()));
         bestPermPanel.setMaximumSize(bestPermPanel.getPreferredSize());
         makeTable();
@@ -241,7 +264,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         }
 
         public void run() {
-            testSet.doPermutations();
+            testSet.doPermutations(Integer.valueOf(selectionGroup.getSelection().getActionCommand()).intValue());
             finishedPerms();
         }
     }

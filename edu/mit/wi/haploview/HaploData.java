@@ -2,9 +2,6 @@ package edu.mit.wi.haploview;
 
 
 import edu.mit.wi.pedfile.*;
-import edu.mit.wi.haploview.association.MarkerAssociationResult;
-import edu.mit.wi.haploview.association.HaplotypeAssociationResult;
-
 import java.io.*;
 import java.util.*;
 import java.io.BufferedReader;
@@ -21,7 +18,6 @@ public class HaploData implements Constants{
     private Vector chromosomes;
     private Haplotype[][] haplotypes;
     private Haplotype[][] rawHaplotypes;
-    private Vector savedEMs;
     Vector blocks;
     boolean[] isInBlock;
     boolean infoKnown = false;
@@ -725,7 +721,7 @@ public class HaploData implements Constants{
     }
 
     public Haplotype[][] generateBlockHaplotypes(Vector blocks) throws HaploViewException{
-        Haplotype[][] rawHaplotypes = generateHaplotypes(blocks, true);
+        Haplotype[][] rawHaplotypes = generateHaplotypes(blocks);
         Haplotype[][] tempHaplotypes = new Haplotype[rawHaplotypes.length][];
 
         for (int i = 0; i < rawHaplotypes.length; i++) {
@@ -757,13 +753,9 @@ public class HaploData implements Constants{
         return tempHaplotypes;
     }
 
-    public  Haplotype[][] generateHaplotypes(Vector blocks, boolean storeEMs) throws HaploViewException{
+    public Haplotype[][] generateHaplotypes(Vector blocks) throws HaploViewException{
         //TODO: output indiv hap estimates
         Haplotype[][] rawHaplotypes = new Haplotype[blocks.size()][];
-
-        if(storeEMs) {
-            savedEMs = new Vector();
-        }
 
         for (int k = 0; k < blocks.size(); k++){
             int[] preFiltBlock = (int[])blocks.elementAt(k);
@@ -824,10 +816,6 @@ public class HaploData implements Constants{
             //kirby patch
             EM theEM = new EM(chromosomes,numTrios);
             theEM.doEM(theBlock);
-
-            if(storeEMs) {
-                savedEMs.add(theEM);
-            }
 
             //int p = 0;
             Haplotype[] tempArray = new Haplotype[theEM.numHaplos()];
@@ -902,7 +890,7 @@ public class HaploData implements Constants{
                 }
 
                 //if (tempPerc*100 > hapthresh){
-                tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock);
+                tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock, theEM);
                 //if we are performing association tests, then store the rawHaplotypes
                 if (Options.getAssocTest() == ASSOC_TRIO){
                     tempArray[i].setTransCount(theEM.getTransCount(i));
@@ -1082,7 +1070,7 @@ public class HaploData implements Constants{
             }
             inputVector.add(intArray);
 
-            Haplotype[] crossHaplos = generateHaplotypes(inputVector, false)[0];  //get haplos of gap
+            Haplotype[] crossHaplos = generateHaplotypes(inputVector)[0];  //get haplos of gap
 
 
             for (int i = 0; i < haplos[gap].length; i++){
@@ -1897,10 +1885,6 @@ public class HaploData implements Constants{
 
     public Vector getChromosomes() {
         return chromosomes;
-    }
-
-    public Vector getSavedEMs() {
-        return savedEMs;
     }
 
     public Haplotype[][] getRawHaplotypes() {

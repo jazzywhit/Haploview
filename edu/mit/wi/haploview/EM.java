@@ -596,7 +596,6 @@ return(-5);
 
         Vector caseCounts = new Vector();
         Vector controlCounts = new Vector();
-        //double[] tempCase, tempControl, totalCase, totalControl;
         if (Options.getAssocTest() == ASSOC_CC){
             MapWrap totalCase = new MapWrap(0);
             MapWrap totalControl = new MapWrap(0);
