@@ -26,7 +26,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     boolean DEBUG = false;
 
-    private JMenuItem readMarkerItem, analysisItem, blocksItem, gbrowseItem, spacingItem;
+    JMenuItem readMarkerItem, analysisItem, blocksItem, gbrowseItem, spacingItem, gbEditItem;
     String exportItems[] = {
         EXPORT_TEXT, EXPORT_PNG, EXPORT_OPTIONS
     };
@@ -201,13 +201,21 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             cg.add(colorMenuItems[i]);
         }
         colorMenuItems[Options.getLDColorScheme()].setSelected(true);
-
         displayMenu.add(colorMenu);
+
         spacingItem = new JMenuItem("LD Display Spacing");
         spacingItem.setMnemonic(KeyEvent.VK_S);
         spacingItem.addActionListener(this);
         spacingItem.setEnabled(false);
         displayMenu.add(spacingItem);
+
+        //gbrowse options editor
+        gbEditItem = new JMenuItem(GBROWSE_OPTS);
+        gbEditItem.setMnemonic(KeyEvent.VK_H);
+        gbEditItem.addActionListener(this);
+        gbEditItem.setEnabled(false);
+        displayMenu.add(gbEditItem);
+
         displayMenu.setEnabled(false);
 
         //analysis menu
@@ -340,6 +348,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             GBrowseDialog gbd = new GBrowseDialog(this, "Connect to HapMap Info Server");
             gbd.pack();
             gbd.setVisible(true);
+        }else if (command.equals(GBROWSE_OPTS)){
+            GBrowseOptionDialog gbod = new GBrowseOptionDialog(this, "HapMap Info Track Options");
+            gbod.pack();
+            gbod.setVisible(true);
         }else if (command.equals(READ_BLOCKS_FILE)){
             fc.setSelectedFile(new File(""));
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
@@ -461,7 +473,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
         }
     }
-
 
     private void changeKey() {
         int scheme = Options.getLDColorScheme();
@@ -627,6 +638,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 markerFile = null;
             }else{
                 markerFile = new File(inputOptions[1]);
+            }
+
+            //turn on/off gbrowse menu
+            if (Options.isGBrowseShown()){
+                gbEditItem.setEnabled(true);
+            }else{
+                gbEditItem.setEnabled(false);
             }
 
             checkPanel = null;
@@ -1043,7 +1061,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
-
     void export(int tabNum, int format, int start, int stop){
         fc.setSelectedFile(new File(""));
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
@@ -1157,6 +1174,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         Options.setMaxDistance(500);
         Options.setLDColorScheme(STD_SCHEME);
         Options.setShowGBrowse(false);
+        Options.setgBrowseOpts(GB_DEFAULT_OPTS);
+        Options.setgBrowseTypes(GB_DEFAULT_TYPES);
 
         //this parses the command line arguments. if nogui mode is specified,
         //then haploText will execute whatever the user specified

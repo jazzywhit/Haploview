@@ -77,6 +77,7 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
                 Options.setgBrowseLeft(minpos);
                 Options.setgBrowseRight(maxpos);
                 Options.setShowGBrowse(true);
+                hv.gbEditItem.setEnabled(true);
                 this.dispose();
 
                 hv.setCursor(new Cursor(Cursor.WAIT_CURSOR));

@@ -18,6 +18,8 @@ public class Options {
     private static boolean showGBrowse;
     private static long gBrowseLeft;
     private static long gBrowseRight;
+    private static String gBrowseOpts;
+    private static String gBrowseTypes;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -99,5 +101,29 @@ public class Options {
 
     public static void setgBrowseRight(long gBrowseRight) {
         Options.gBrowseRight = gBrowseRight;
+    }
+
+    public static String getgBrowseOpts() {
+        if (gBrowseOpts.equals("")){
+            return "null";
+        }else{
+            return gBrowseOpts;
+        }
+    }
+
+    public static void setgBrowseOpts(String gBrowseOpts) {
+        Options.gBrowseOpts = gBrowseOpts;
+    }
+
+    public static String getgBrowseTypes() {
+        if (gBrowseTypes.equals("")){
+            return "null";
+        }else{
+            return gBrowseTypes;
+        }
+    }
+
+    public static void setgBrowseTypes(String gBrowseTypes) {
+        Options.gBrowseTypes = gBrowseTypes;
     }
 }

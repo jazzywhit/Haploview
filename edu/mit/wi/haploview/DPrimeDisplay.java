@@ -1064,7 +1064,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
                 URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
                         Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
-                        ";type=genotyped_SNPs+LocusLink_genes;options=genotyped_SNPs+1");
+                        ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 //getImage() caches by default so it will only download an image when the URL changes
                 Image i = toolkit.getImage(imageUrl);

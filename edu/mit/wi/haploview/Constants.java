@@ -20,6 +20,7 @@ public interface Constants {
     public static final String READ_ANALYSIS_TRACK = "Load analysis track";
     public static final String READ_BLOCKS_FILE = "Load block definitions";
     public static final String DOWNLOAD_GBROWSE = "Download HapMap info track";
+    public static final String GBROWSE_OPTS = "HapMap Info Track Options";
 
     public static final String EXPORT_TEXT = "Export current tab to text";
     public static final String EXPORT_PNG = "Export current tab to PNG";
@@ -85,6 +86,13 @@ public interface Constants {
     //haplotype association display stuff
     static final int SHOW_HAP_COUNTS = 0;
     static final int SHOW_HAP_RATIOS = 1;
+
+    //GBrowse options
+    static final String[] GB_TYPES = {"genotyped_SNPs", "LocusLink_genes", "RefSeq_mRNA", "NT_contigs", "Gaps", "DNA"};
+    static final String[] GB_OPTS = {"genotyped_SNPs+1", "", "", "", "", ""};
+    static final String[] GB_OPTS_NAMES = {"HapMap SNPs","LocusLink Genes","RefSeq mRNAs", "NT Contigs", "Gaps", "DNA/GC Content"};
+    static final String GB_DEFAULT_OPTS = GB_OPTS[0];
+    static final String GB_DEFAULT_TYPES = GB_TYPES[0] + "+" + GB_TYPES[1];
 
 
     static final String HELP_OUTPUT = TITLE_STRING + " Command line options\n" +
