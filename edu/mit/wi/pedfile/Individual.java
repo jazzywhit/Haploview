@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.1 2003/08/01 19:36:19 jmaller Exp $
+* $Id: Individual.java,v 1.2 2003/09/02 14:58:39 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -194,6 +194,11 @@ public class Individual {
      */
     public void addMarker(byte[] marker){
         this.markers.add(marker);
+    }
+
+    public void zeroOutMarker(int i){
+        byte zeroArray[] = {0,0};
+        this.markers.set(i, zeroArray);
     }
     /**
      * returns an iterator for the markers Vector

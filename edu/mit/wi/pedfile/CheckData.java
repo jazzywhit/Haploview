@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.2 2003/08/13 20:53:28 jcbarret Exp $
+ * $Id: CheckData.java,v 1.3 2003/09/02 14:58:39 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -120,34 +120,72 @@ public class CheckData {
 										//both parents hom same allele
 										if (momAllele1 == dadAllele1){
 											//kid must be hom same allele
-											if (allele1 != momAllele1 || allele2 != momAllele1) mendErrNum ++;
+											if (allele1 != momAllele1 || allele2 != momAllele1) {
+                                                mendErrNum ++;
+                                                currentInd.zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                            }
 											//parents hom diff allele
 										}else{
 											//kid must be het
-											if (allele1 == allele2) mendErrNum++;
+											if (allele1 == allele2) {
+                                                mendErrNum++;
+                                                currentInd.zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                            }
 										}
 										//mom hom dad het
 									}else{
 										//kid can't be hom for non-momallele
-										if (allele1 != momAllele1 && allele2 != momAllele1) mendErrNum++;
+										if (allele1 != momAllele1 && allele2 != momAllele1){
+                                            mendErrNum++;
+                                            currentInd.zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                        }
 									}
 									//mom het
 								}else{
 									//dad hom
 									if (dadAllele1 == dadAllele2){
 										//kid can't be hom for non-dadallele
-										if(allele1 != dadAllele1 && allele2 != dadAllele1) mendErrNum++;
+										if(allele1 != dadAllele1 && allele2 != dadAllele1){
+                                            mendErrNum++;
+                                            currentInd.zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                        }
 									}
 									//both parents het no mend err poss
 								}
 							}
 						}
 						//end mendel check
+                    }
+                }
+            }
+            indList = currentFamily.getMemberList();
+            //loop through each individual in the current Family
+            while(indList.hasMoreElements()){
+                currentInd = currentFamily.getMember((String)indList.nextElement());
+                if (currentInd.getIsTyped()){
+                    byte[] markers = currentInd.getMarker(loc);
+                    allele1 = markers[0];
+                    allele1_string = Integer.toString(allele1);
+                    allele2 = markers[1];
+                    allele2_string = Integer.toString(allele2);
 
-						//indivgeno++;
-						//indiv has parents
-						if(currentInd.getMomID().compareTo(Individual.DATA_MISSING)==0 && currentInd.getDadID().compareTo(Individual.DATA_MISSING)==0){
-							//$parentgeno{$ped}++
+                    String familyID = currentInd.getFamilyID();
+
+                    incOrSetOne(numindivs,familyID);
+
+                    //no allele data missing
+                    if(allele1 > 0 && allele2 >0){
+                        //indiv has parents
+                        if(currentInd.getMomID().compareTo(Individual.DATA_MISSING)==0 && currentInd.getDadID().compareTo(Individual.DATA_MISSING)==0){
+                            //$parentgeno{$ped}++
 							//set parentgeno
 							incOrSetOne(parentgeno,familyID);
 							if(allele1 != allele2) {
@@ -369,9 +407,9 @@ public class CheckData {
 			rating = -1;
 		}else if (genopct < 75.00){
 			rating = -2;
-		}else if (pval < 0.01){
+		}else if (pval < 0.001){
 			rating=-3;
-		}else if (menderr > 0){
+		}else if (menderr > 1){
 			rating=-4;
 		}else{
 			rating=1;
