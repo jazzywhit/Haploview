@@ -1,68 +1,38 @@
 package edu.mit.wi.haploview;
 
-//import edu.mit.wi.pedfile.MarkerResult;
+import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFileException;
 
 import java.io.*;
-import java.util.*;
+import java.util.Vector;
+import java.util.StringTokenizer;
 import java.awt.image.BufferedImage;
 
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 
-//import org.apache.commons.cli2.*;
-import org.apache.commons.cli2.builder.ArgumentBuilder;
-import org.apache.commons.cli2.builder.DefaultOptionBuilder;
-import org.apache.commons.cli2.builder.GroupBuilder;
-import org.apache.commons.cli2.Group;
-import org.apache.commons.cli2.CommandLine;
-import org.apache.commons.cli2.OptionException;
-import org.apache.commons.cli2.util.HelpFormatter;
-import org.apache.commons.cli2.commandline.Parser;
-import org.apache.commons.cli2.validation.EnumValidator;
-
 public class HaploText implements Constants{
 
+    private boolean nogui = false;
     private String batchFileName;
-    private String pedFileName;
-    private String infoFileName;
-    private String hapmapFileName;
     private String hapsFileName;
+    private String infoFileName;
+    private String pedFileName;
+    private String hapmapFileName;
     private String blockFileName;
     private String trackFileName;
-    private String checkFileName;
-    //private Vector ignoreMarkers;
-    private static boolean quietMode;
-    private static boolean noGUI;
-    private boolean outputPNG;
-    private boolean outputSmallPNG;
-    private boolean outputDprime;
-    private boolean skipCheck;
-    private boolean outputCheck;
+    private boolean skipCheck = false;
+    private Vector ignoreMarkers = new Vector();
+    private boolean quietMode = false;
     private int outputType;
-    private boolean checkForUpdate;
+    private boolean outputCheck;
+    private boolean outputDprime;
+    private boolean outputPNG;
+    private boolean outputCompressedPNG;
 
-
-    private boolean debug=true;
-
-    public static boolean isQuietMode() {
-        return quietMode;
-    }
-
-    public static boolean isNoGui() {
-        return noGUI;
-    }
 
     public String getBatchMode() {
         return batchFileName;
-    }
-
-    public String getInfoFileName(){
-        return infoFileName;
-    }
-
-    public String getHapmapFileName(){
-        return hapmapFileName;
     }
 
     public String getHapsFileName() {
@@ -73,462 +43,276 @@ public class HaploText implements Constants{
         return pedFileName;
     }
 
+    public String getInfoFileName(){
+        return infoFileName;
+    }
+
+    public String getHapmapFileName(){
+        return hapmapFileName;
+    }
+
+
+    public int getOutputType() {
+        return outputType;
+    }
+
     public HaploText(String[] args) {
         this.argHandler(args);
 
-        if(HaploText.noGUI) {
-            Configuration.readConfigFile();
-            if(this.checkForUpdate) {
-                UpdateChecker uc = new UpdateChecker();
-                if(uc.checkForUpdate()) {
-                    System.out.println("A newer version of Haploview is available (current version: "
-                            + Constants.VERSION + "\t newest version: " + uc.getNewVersion() + ")");
-                    System.out.println("please visit http://www.broad.mit.edu/mpg/haploview/ to download the new version");
-                }
-            }
+        if(this.batchFileName != null) {
+            System.out.println(TITLE_STRING);
+            this.doBatch();
+        }
 
-            if(this.batchFileName != null) {
+        if(!(this.pedFileName== null) || !(this.hapsFileName== null) || !(this.hapmapFileName== null)){
+            if(nogui){
                 System.out.println(TITLE_STRING);
-                this.doBatch();
+                processTextOnly();
             }
+        }
 
-            if(this.pedFileName != null || this.hapsFileName != null || this.hapmapFileName != null){
-                if(HaploText.noGUI){
-                    System.out.println(TITLE_STRING);
-                    if(Options.getGenoFileType() == PED) {
-                        processFile(this.pedFileName,PED,this.infoFileName);
+    }
+
+    private void argHandler(String[] args){
+
+        //TODO: -specify values from HaplotypeDisplayController (min hap percentage etc)
+        //TODO:      -want to be able to output haps file from pedfile
+       /* boolean nogui = false;
+        String batchMode = "";
+        String hapsFileName = "";
+        String pedFileName = "";
+        String infoFileName = "";
+        String hapmapFileName = "";
+        String blockFileName = "";
+        boolean showCheck = false;
+        boolean skipCheck = false;
+        Vector ignoreMarkers = new Vector();
+        int outputType = -1;
+        int maxDistance = -1;
+        boolean quietMode = false;
+        boolean outputDprime=false;
+        boolean outputPNG = false;
+        boolean outputSmallPNG = false;
+        boolean outputCheck=false;*/
+
+        int maxDistance = -1;
+
+        for(int i =0; i < args.length; i++) {
+            if(args[i].equals("-help") || args[i].equals("-h")) {
+                System.out.println(HELP_OUTPUT);
+                System.exit(0);
+            }
+            else if(args[i].equals("-n") || args[i].equals("-nogui")) {
+                nogui = true;
+            }
+            else if(args[i].equals("-p") || args[i].equals("-pedfile")) {
+                i++;
+                if( i>=args.length || (args[i].charAt(0) == '-')){
+                    System.out.println(args[i-1] + " requires a filename");
+                    System.exit(1);
+                }
+                else{
+                    if(pedFileName != null){
+                        System.out.println("multiple "+args[i-1] + " arguments found. only last pedfile listed will be used");
                     }
-                    else if(Options.getGenoFileType() == HAPS) {
-                        processFile(this.hapsFileName,HAPS,this.infoFileName);
-                    }
-                    else {
-                        processFile(this.hapmapFileName,HMP,this.infoFileName);
-                    }
+                    pedFileName = args[i];
                 }
             }
-            Configuration.writeConfigFile();
-        }
-    }
-
-    public void debugPrint(String d) {
-        if(debug) {
-            System.out.println(d);
-        }
-    }
-
-
-    private void argHandler(String[] args) {
-
-        //ArrayList outputOptions = new ArrayList();
-        HashSet outputOptions = new HashSet();
-        outputOptions.add("GAB");
-        outputOptions.add("GAM");
-        outputOptions.add("SPI");
-        outputOptions.add("MJD");
-        outputOptions.add("SFS");
-        outputOptions.add("ALL");
-
-        final DefaultOptionBuilder obuilder = new DefaultOptionBuilder();
-        final ArgumentBuilder abuilder = new ArgumentBuilder();
-        final GroupBuilder gbuilder = new GroupBuilder();
-
-        this.outputType=-1;
-
-        final Group inputOptions =
-            gbuilder
-                .withName("Input Options")
-                .withOption(
-                    obuilder
-                        .withShortName("pedfile")
-                        .withShortName("p")
-                        .withDescription("use the specified pedigree file")
-                        .withArgument(
-                            abuilder
-                                .withName("file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("hapmap")
-                        .withShortName("a")
-                        .withDescription("use the specified hapmap file")
-                        .withArgument(
-                            abuilder
-                                .withName("file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("haps")
-                        .withShortName("ha")
-                        .withDescription("use the specified haps file")
-                        .withArgument(
-                            abuilder
-                                .withName("file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("batch")
-                        .withShortName("b")
-                        .withDescription("batch mode. each line of the batch file should either have just a genotype file or a genotype file and an info file seperated by a space")
-                        .withArgument(
-                            abuilder
-                                .withName("file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .create())
-               .withOption(
-                    obuilder
-                        .withShortName("info")
-                        .withShortName("i")
-                        .withDescription("marker information file")
-                        .withArgument(
-                            abuilder
-                                .withName("file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .create())
-            .create();
-
-        final Group hapOutOptions =
-            gbuilder
-                .withName("Haplotype Output Options")
-                .withOption(
-                    obuilder
-                        .withShortName("output")
-                        .withShortName("o")
-                        .withArgument(
-                            abuilder
-                                .withName("block def")
-                                .withValidator(new EnumValidator(outputOptions))
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withDescription("Haplotype output block type. GAB (gabriel),GAM (4 gamete),SPI (spine) or ALL. Default is GAB")
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("hapthresh")
-                        .withArgument(
-                            abuilder
-                                .withName("frequency")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withDescription("Only output haps with at least this frequency")
-                        .create())
-           .create();
-
-        final Group checkOptions =
-            gbuilder
-                .withName("Data Quality Checks")
-                .withOption(
-                    obuilder
-                        .withShortName("skipcheck")
-                        .withDescription("Skip the various pedfile checks")
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("check")
-                        .withShortName("c")
-                        .withArgument(
-                            abuilder
-                                .withName("file")
-                                .withMinimum(0)
-                                .withMaximum(1)
-                                .create())
-                        .withDescription("Output checkdata to (optional)<file>. Prints to screen if no file provided.")
-                        .create())
-               .create();
-        final Group options =
-            gbuilder
-                .withName("Haploview")
-                .withOption(
-                    obuilder
-                        .withShortName("help")
-                        .withShortName("h")
-                        .withDescription("print this message")
-                        .create())
-                .withOption(inputOptions)
-                .withOption(hapOutOptions)
-                .withOption(checkOptions)
-/*                .withOption(
-                    obuilder
-                        .withShortName("ignoremarkers")
-                        .withDescription("print this message")
-                        .create())*/
-                .withOption(
-                    obuilder
-                        .withShortName("maxdistance")
-                        .withShortName("m")
-                        .withArgument(
-                            abuilder
-                            .withName("maximum distance")
-                            .withMinimum(1)
-                            .withMaximum(1)
-                            .create())
-                        .withDescription("maximum comparison distance in kilobases (integer). default is 500. use value of 0 for no maximum distance")
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("n")
-                        .withDescription("no gui mode (command line output only)")
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("quiet")
-                        .withShortName("q")
-                        .withDescription("mimimal output")
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("blockfile")
-                        .withShortName("k")
-                        .withArgument(
-                            abuilder
-                                .withName("file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withDescription("blocks file, one block per line, will force output for these blocks")
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("png")
-                        .withDescription("output a PNG file")
-                        .create())
-                .withOption(
-                    obuilder
-                        .withShortName("smallpng")
-                        .withDescription("output a small PNG file")
-                        .create())
-
-                .withOption(
-                    obuilder
-                        .withShortName("dprime")
-                        .withShortName("d")
-                        .withDescription("output dprime to <inputfile>.DPRIME")
-                        .create())
-
-                .withOption(
-                    obuilder
-                        .withShortName("track")
-                        .withArgument(
-                            abuilder
-                                .withName("file")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withDescription("use analysis track from specified file")
-                        .create())
-
-                .withOption(
-                        obuilder
-                        .withShortName("update")
-                        .withDescription("check for update")
-                        .create())
-                .create();
-
-
-        Parser parser = new Parser();
-        parser.setGroup(options);
-
-        int maxDistance;
-
-        try {
-            HelpFormatter helpFormatter = new HelpFormatter();
-            //ignore all printed
-            //helpFormatter.setPrintWriter(new PrintWriter(new StringWriter()));
-            helpFormatter.setGroup(options);
-            helpFormatter.setShellCommand("haploview");
-
-            parser.setHelpFormatter(helpFormatter);
-            parser.setHelpOption(options.findOption("-h"));
-            // parse the command line arguments
-            CommandLine line = parser.parse(args );
-            if(line.hasOption("-h")) {
-                try {
-                    helpFormatter.print();
-                } catch(IOException ioe) {
-                    System.err.println(ioe);
+            else if (args[i].equals("-skipcheck") || args[i].equals("--skipcheck")){
+                skipCheck = true;
+            }
+            //todo: fix ignoremarkers
+           /* else if (args[i].equals("--ignoremarkers")){
+                i++;
+                if(i>=args.length || (args[i].charAt(0) == '-')){
+                    System.out.println("--ignoremarkers requires a list of markers");
+                    System.exit(1);
+                }
+                else {
+                    StringTokenizer str = new StringTokenizer(args[i],",");
+                    while(str.hasMoreTokens()) {
+                        ignoreMarkers.add(str.nextToken());
+                    }
+                }
+            } */
+            else if(args[i].equals("-ha") || args[i].equals("-l") || args[i].equals("-haps")) {
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println(args[i-1] + " requires a filename");
+                    System.exit(1);
+                }
+                else{
+                    if(hapsFileName != null){
+                        System.out.println("multiple "+args[i-1] + " arguments found. only last haps file listed will be used");
+                    }
+                    hapsFileName = args[i];
+                }
+            }
+            else if(args[i].equals("-i") || args[i].equals("-info")) {
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println(args[i-1] + " requires a filename");
+                    System.exit(1);
+                }
+                else{
+                    if(infoFileName != null){
+                        System.out.println("multiple "+args[i-1] + " arguments found. only last info file listed will be used");
+                    }
+                    infoFileName = args[i];
+                }
+            } else if (args[i].equals("-a") || args[i].equals("-hapmap")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println(args[i-1] + " requires a filename");
+                    System.exit(1);
+                }
+                else{
+                    if(hapmapFileName != null){
+                        System.out.println("multiple "+args[i-1] + " arguments found. only last hapmap file listed will be used");
+                    }
+                    hapmapFileName = args[i];
+                }
+            }
+            else if(args[i].equals("-k") || args[i].equals("-blocks")) {
+                i++;
+                if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                    blockFileName = args[i];
+                    outputType = BLOX_CUSTOM;
+                }else{
+                    System.out.println(args[i-1] + " requires a filename");
                     System.exit(1);
                 }
             }
-            if(line.hasOption("-update")) {
-                this.checkForUpdate = true;
+            else if (args[i].equalsIgnoreCase("-png")){
+                outputPNG = true;
             }
-            if(line.hasOption("-p")) {
-                if(this.pedFileName != null
-                        || this.hapmapFileName != null
-                        || this.hapsFileName != null
-                        || this.batchFileName != null) {
-                    throw new HaploViewException("only allowed one option from: -p,-ha,-a,-b");
+            else if (args[i].equalsIgnoreCase("-smallpng") || args[i].equalsIgnoreCase("-compressedPNG")){
+                outputCompressedPNG = true;
+            }
+            else if (args[i].equals("-track")){
+                i++;
+                if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                   trackFileName = args[i];
+                }else{
+                    System.out.println("-track requires a filename");
+                    System.exit(1);
                 }
-                this.pedFileName = (String)line.getValue("-p");
-                Options.setGenoFileType(PED);
-                debugPrint("Found Pedfile:\t" + this.pedFileName);
             }
-            if(line.hasOption("-ha")) {
-                if(this.pedFileName != null
-                        || this.hapmapFileName != null
-                        || this.hapsFileName != null
-                        || this.batchFileName != null) {
-                    throw new HaploViewException("only allowed one option from: -p,-ha,-a,-b");
-                }
-                this.hapsFileName = (String)line.getValue("-ha");
-                Options.setGenoFileType(HAPS);
-                debugPrint("Found Hapsfile:\t" + this.hapsFileName);
-            }
-            if(line.hasOption("-a")) {
-                if(this.pedFileName != null
-                        || this.hapmapFileName != null
-                        || this.hapsFileName != null
-                        || this.batchFileName != null) {
-                    throw new HaploViewException("only allowed one option from: -p,-ha,-a,-b");
-                }
-                this.hapmapFileName = (String)line.getValue("-a");
-                Options.setGenoFileType(HMP);
-                debugPrint("Found Hapmap file:\t" + this.hapmapFileName);
-            }
-            if(line.hasOption("-b")){
-                if(this.pedFileName != null
-                        || this.hapmapFileName != null
-                        || this.hapsFileName != null
-                        || this.batchFileName != null) {
-                    throw new HaploViewException("only allowed one option from: -p,-ha,-a,-b");
-                }
-                this.batchFileName = (String)line.getValue("-b");
-                debugPrint("using batch mode file:\t" + this.batchFileName);
-            }
-            if(line.hasOption("-i")) {
-                this.infoFileName = (String)line.getValue("-i");
-                debugPrint("Found marker information file:\t" + this.infoFileName);
-            }
-
-            if(line.hasOption("-n")) {
-                HaploText.noGUI = true;
-                debugPrint("No gui mode");
-            }
-
-            if(line.hasOption("-skipcheck")) {
-                this.skipCheck = true;
-                debugPrint("skipping check");
-            }
-            //if(line.hasOption("-ignoremarkers")){
-                //String[] markers = (String)line.getValues("-ignoremarkers");
-                //debugPrint("ignoring markers:\t" + markers.toString());
-            //}
-
-            if(line.hasOption("-k")) {
-                this.blockFileName = (String)line.getValue("-k");
-                this.outputType = BLOX_CUSTOM;
-                debugPrint("using blocks file:\t" + this.blockFileName);
-            }
-            if(line.hasOption("-png")) {
-                this.outputPNG = true;
-                debugPrint("outputing png");
-            }
-            if(line.hasOption("-smallpng")) {
-                this.outputSmallPNG = true;
-                debugPrint("outputing small png");
-            }
-            if(line.hasOption("-track"))   {
-                this.trackFileName = (String)line.getValue("-track");
-                debugPrint("using track file:\t" + this.trackFileName);
-            }
-            if(line.hasOption("-o") && this.outputType != BLOX_CUSTOM) {
-                String temp = (String)line.getValue("-o");
-                if(temp.equalsIgnoreCase("SFS") || temp.equalsIgnoreCase("GAB")){
-                    this.outputType = BLOX_GABRIEL;
-                }
-                else if(temp.equalsIgnoreCase("GAM")){
-                    this.outputType =BLOX_4GAM;
-                }
-                else if(temp.equalsIgnoreCase("MJD") || temp.equalsIgnoreCase("SPI")){
-                    this.outputType =BLOX_SPINE;
-                }
-                else if(temp.equalsIgnoreCase("ALL")) {
-                    this.outputType = BLOX_ALL;
+            else if(args[i].equals("-o") || args[i].equals("-output") || args[i].equalsIgnoreCase("-blockoutput")) {
+                i++;
+                if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                    if(outputType != -1){
+                        System.out.println("only one output argument is allowed");
+                        System.exit(1);
+                    }
+                    if(args[i].equalsIgnoreCase("SFS") || args[i].equalsIgnoreCase("GAB")){
+                        outputType = BLOX_GABRIEL;
+                    }
+                    else if(args[i].equalsIgnoreCase("GAM")){
+                        outputType = BLOX_4GAM;
+                    }
+                    else if(args[i].equalsIgnoreCase("MJD") || args[i].equalsIgnoreCase("SPI")){
+                        outputType = BLOX_SPINE;
+                    }
+                    else if(args[i].equalsIgnoreCase("ALL")) {
+                        outputType = BLOX_ALL;
+                    }
                 }
                 else {
-                    throw new HaploViewException("unknown output type specified");
+                    //defaults to SFS output
+                    outputType = BLOX_GABRIEL;
+                    i--;
                 }
             }
-            if(line.hasOption("-d")){
-                this.outputDprime = true;
-                debugPrint("outputing dprime");
+            else if(args[i].equals("-d") || args[i].equals("--dprime") || args[i].equals("-dprime")) {
+                outputDprime = true;
             }
-            if(line.hasOption("-c")){
-                this.outputCheck = true;
-                if (line.getValue("-c") != null){
-                    this.checkFileName = (String)line.getValue("-c");
-                }
-                debugPrint("outputing check");
+            else if (args[i].equals("-c") || args[i].equals("-check")){
+                outputCheck = true;
             }
-            if(line.hasOption("-m")){
-                try {
-                    maxDistance = Integer.parseInt((String)line.getValue("-m"));
+            else if(args[i].equals("-m") || args[i].equals("-maxdistance")) {
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println(args[i-1] + " requires an integer argument");
+                    System.exit(1);
                 }
-                catch(NumberFormatException nfe) {
-                    throw new HaploViewException("Invalid value for maximum distance");
-                }
-                if(maxDistance < 0 ) {
-                    throw new HaploViewException("maximum distance cannot be negative");
-                }
-                Options.setMaxDistance(maxDistance);
-                debugPrint("using max distance:\t" + maxDistance);
-            }
-
-            if(line.hasOption("-hapthresh")) {
-                try {
-                    double thresh = Double.parseDouble((String)line.getValue("-hapthresh"));
-                    if(thresh<0 || thresh>1) {
-                        throw new HaploViewException("Haplotype threshold must be between 0 and 1");
+                else {
+                    if(maxDistance != -1){
+                        System.out.println("only one "+args[i-1] + " argument allowed");
+                        System.exit(1);
                     }
-                    Options.setHaplotypeDisplayThreshold((int)(thresh*100));
-                    debugPrint("using hapthresh " + Options.getHaplotypeDisplayThreshold());
-                }catch(NumberFormatException nfe) {
-                    throw new HaploViewException("Haplotype threshold must be a number between 0 and 1");
-                }
+                    maxDistance = Integer.parseInt(args[i]);
+                    if(maxDistance<0){
+                        System.out.println(args[i-1] + " argument must be a positive integer");
+                        System.exit(1);
+                    }
 
-            }
-
-
-            if(line.hasOption("-q")) {
-                HaploText.quietMode = true;
-                debugPrint("quiet mode");
-            }
-
-            if( this.outputType == -1 && ( this.pedFileName != null ||
-                    this.hapsFileName != null || this.batchFileName != null || this.hapmapFileName != null)
-                    && !this.outputDprime && !this.outputPNG && !this.outputSmallPNG) {
-                this.outputType = BLOX_GABRIEL;
-                if(HaploText.noGUI && !HaploText.quietMode) {
-                    System.out.println("No output type specified. Default of Gabriel will be used");
                 }
             }
-
-
+            else if(args[i].equals("-b") || args[i].equals("-batch")) {
+                //batch mode
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println(args[i-1] + " requires a filename");
+                    System.exit(1);
+                }
+                else{
+                    if(batchFileName != null){
+                        System.out.println("multiple " + args[i-1] +  " arguments found. only last batch file listed will be used");
+                    }
+                    batchFileName = args[i];
+                }
+            }
+            else if(args[i].equals("-q") || args[i].equals("-quiet")) {
+                quietMode = true;
+            }
+            else {
+                System.out.println("invalid parameter specified: " + args[i]);
+            }
         }
-        catch( OptionException exp ) {
-            // oops, something went wrong
-            System.err.println( "There was a problem with at least one of the options used:\n" + exp.getMessage() );
+
+        int countOptions = 0;
+        if(pedFileName != null) {
+            countOptions++;
+        }
+        if(hapsFileName != null) {
+            countOptions++;
+        }
+        if(hapmapFileName != null) {
+            countOptions++;
+        }
+        if(batchFileName != null) {
+            countOptions++;
+        }
+        if(countOptions > 1) {
+            System.out.println("Only one genotype input file may be specified on the command line.");
             System.exit(1);
-        }catch (HaploViewException exp){
-            System.err.println( "There was a problem with at least one of the options used:\n" + exp.getMessage() );
+        }
+        else if(countOptions == 0) {
+            System.out.println("You must specify a genotype input file.");
             System.exit(1);
         }
 
+        //mess with vars, set defaults, etc
+
+        if( outputType == -1 && ( pedFileName != null ||
+                hapsFileName != null || batchFileName != null || hapmapFileName != null)
+                && !outputDprime && !outputCheck && !outputPNG && !outputCompressedPNG) {
+            outputType = BLOX_GABRIEL;
+            if(nogui && !quietMode) {
+                System.out.println("No output type specified. Default of Gabriel will be used");
+            }
+        }
+        if(skipCheck && !quietMode) {
+            System.out.println("Skipping genotype file check");
+        }
+        if(maxDistance == -1){
+            maxDistance = 500;
+        }
+
+        Options.setMaxDistance(maxDistance);
     }
+
 
     private void doBatch() {
         Vector files;
@@ -539,10 +323,13 @@ public class HaploText implements Constants{
         String infoMaybe ="";
 
         files = new Vector();
+        if(batchFileName == null) {
+            return;
+        }
         batchFile = new File(this.batchFileName);
 
         if(!batchFile.exists()) {
-            System.out.println("batch file " + this.batchFileName + " does not exist");
+            System.out.println("batch file " + batchFileName + " does not exist");
             System.exit(1);
         }
 
@@ -575,14 +362,14 @@ public class HaploText implements Constants{
                             processFile(name,HMP,"");
                         }
                         else{
-                            if (!HaploText.quietMode){
+                            if (!quietMode){
                                 System.out.println("Filenames in batch file must end in .ped, .haps or .hmp\n" +
                                         name + " is not properly formatted.");
                             }
                         }
                     }
                     else {
-                        if(!HaploText.quietMode){
+                        if(!quietMode){
                             System.out.println("file " + dataFile.getName() + " listed in the batch file could not be found");
                         }
                     }
@@ -599,6 +386,40 @@ public class HaploText implements Constants{
 
     }
 
+    private File validateOutputFile(String fn){
+        File f = new File(fn);
+        if (f.canWrite()){
+            System.out.println("File " + f.getName() + " can not be written.");
+            System.exit(1);
+        }
+
+        if (f.exists() && !quietMode){
+            System.out.println("File " + f.getName() + " already exists and will be overwritten.");
+        }
+        return f;
+    }
+
+
+    /**
+     * this method finds haplotypes and caclulates dprime without using any graphics
+     */
+    private void processTextOnly(){
+        String fileName;
+        int fileType;
+        if(hapsFileName != null) {
+            fileName = hapsFileName;
+            fileType = HAPS;
+        }
+        else if (pedFileName != null){
+            fileName = pedFileName;
+            fileType = PED;
+        }else{
+            fileName = hapmapFileName;
+            fileType = HMP;
+        }
+
+        processFile(fileName,fileType,infoFileName);
+    }
     /**
      * this
      * @param fileName name of the file to process
@@ -607,12 +428,11 @@ public class HaploText implements Constants{
      */
     private void processFile(String fileName, int fileType, String infoFileName){
         try {
-            //int outputType;
             HaploData textData;
             File OutputFile;
             File inputFile;
 
-            if(!HaploText.quietMode && fileName != null){
+            if(!quietMode && fileName != null){
                 System.out.println("Using data file " + fileName);
             }
 
@@ -623,8 +443,10 @@ public class HaploText implements Constants{
             }
 
 
+
             textData = new HaploData();
             Vector result = null;
+
 
             if(fileType == HAPS){
                 //read in haps file
@@ -637,50 +459,37 @@ public class HaploText implements Constants{
                         int index = Integer.parseInt((String)this.arg_ignoreMarkers.get(i));
                         if(index>0 && index<markerResultArray.length){
                             markerResultArray[index] = false;
-                            if(!this.arg_quiet) {
+                            if(!this.quietMode) {
                                 System.out.println("Ignoring marker " + (index));
                             }
                         }
                     }
                 }*/
 
-                result = textData.linkageToChrom(inputFile, 3, this.skipCheck);
+                result = textData.linkageToChrom(inputFile, 3, skipCheck);
 
             }else{
                 //read in hapmapfile
-                result = textData.linkageToChrom(inputFile,4,this.skipCheck);
+                result = textData.linkageToChrom(inputFile,4,skipCheck);
             }
 
-            File infoFile = null;
-
-            if(infoFileName != null){
+            File infoFile;
+            if(infoFileName.equals("")) {
+                infoFile = null;
+            }else{
                 infoFile = new File(infoFileName);
             }
-
             if (result != null){
                 textData.prepareMarkerInput(infoFile,textData.getPedFile().getHMInfo());
             }else{
                 textData.prepareMarkerInput(infoFile,null);
             }
-
-            if(!HaploText.quietMode && infoFile != null){
+            if(!quietMode && infoFile != null){
                 System.out.println("Using marker file " + infoFile.getName());
             }
-
-            if(this.outputCheck && result != null){
+            if(outputCheck && result != null){
                 CheckDataPanel cp = new CheckDataPanel(textData, false);
-                if (batchFileName != null){
-                    //if we're in batchmode we just write the check out to a diff file for each input file
-                    cp.printTable(new File(fileName + ".CHECK"));
-                } else {
-                    if (checkFileName != null){
-                        //if a filename is provided write the check to that file
-                        cp.printTable(new File (checkFileName));
-                    }else{
-                        //else print it to screen
-                        cp.printTable(null);
-                    }
-                }
+                cp.printTable(validateOutputFile(fileName + ".CHECK"));
             }
             Vector cust = new Vector();
             if(outputType != -1){
@@ -688,65 +497,65 @@ public class HaploText implements Constants{
                 Haplotype[][] haplos;
                 switch(outputType){
                     case BLOX_GABRIEL:
-                        OutputFile = new File(fileName + ".GABRIELblocks");
+                        OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                         break;
                     case BLOX_4GAM:
-                        OutputFile = new File(fileName + ".4GAMblocks");
+                        OutputFile = validateOutputFile(fileName + ".4GAMblocks");
                         break;
                     case BLOX_SPINE:
-                        OutputFile = new File(fileName + ".SPINEblocks");
+                        OutputFile = validateOutputFile(fileName + ".SPINEblocks");
                         break;
                     case BLOX_CUSTOM:
-                        OutputFile = new File(fileName + ".CUSTblocks");
+                        OutputFile = validateOutputFile(fileName + ".CUSTblocks");
                         //read in the blocks file
-                        File blocksFile = new File(this.blockFileName);
+                        File blocksFile = new File(blockFileName);
                         cust = textData.readBlocks(blocksFile);
                         break;
                     default:
-                        OutputFile = new File(fileName + ".GABRIELblocks");
+                        OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                         break;
 
                 }
 
                 //this handles output type ALL
                 if(outputType == BLOX_ALL) {
-                    OutputFile = new File(fileName + ".GABRIELblocks");
+                    OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
-                    haplos = textData.generateHaplotypes(textData.blocks, Options.getHaplotypeDisplayThreshold(), false);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
-                    OutputFile = new File(fileName + ".4GAMblocks");
+                    OutputFile = validateOutputFile(fileName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
-                    haplos = textData.generateHaplotypes(textData.blocks, Options.getHaplotypeDisplayThreshold(),false);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
-                    OutputFile = new File(fileName + ".SPINEblocks");
+                    OutputFile = validateOutputFile(fileName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
-                    haplos = textData.generateHaplotypes(textData.blocks, Options.getHaplotypeDisplayThreshold(),false);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }else{
                     textData.guessBlocks(outputType, cust);
-                    haplos = textData.generateHaplotypes(textData.blocks, Options.getHaplotypeDisplayThreshold(),false);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }
             }
-            if(this.outputDprime) {
-                OutputFile = new File(fileName + ".DPRIME");
+            if(outputDprime) {
+                OutputFile = validateOutputFile(fileName + ".LD");
                 if (textData.dpTable != null){
                     textData.saveDprimeToText(OutputFile, TABLE_TYPE, 0, Chromosome.getSize());
                 }else{
                     textData.saveDprimeToText(OutputFile, LIVE_TYPE, 0, Chromosome.getSize());
                 }
             }
-            if (this.outputPNG || this.outputSmallPNG){
-                OutputFile = new File(fileName + ".LD.PNG");
+            if (outputPNG || outputCompressedPNG){
+                OutputFile = validateOutputFile(fileName + ".LD.PNG");
                 if (textData.dpTable == null){
                     textData.generateDPrimeTable();
                     textData.guessBlocks(BLOX_CUSTOM, new Vector());
                 }
-                if (this.trackFileName != null){
-                    textData.readAnalysisTrack(new File(this.trackFileName));
+                if (trackFileName != null){
+                    textData.readAnalysisTrack(new File(trackFileName));
                 }
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
-                BufferedImage i = dpd.export(0,Chromosome.getSize(),this.outputSmallPNG);
+                BufferedImage i = dpd.export(0,Chromosome.getSize(),outputCompressedPNG);
                 try{
                     Jimi.putImage("image/png", i, OutputFile.getName());
                 }catch(JimiException je){
@@ -796,14 +605,8 @@ public class HaploText implements Constants{
             for (int z = 0; z < orderedHaps.size(); z++){
                 orderedHaplos[i][z] = (Haplotype)orderedHaps.elementAt(z);
             }
-            if( orderedHaplos[i].length ==0) {
-                throw new HaploViewException("Error: At least one block has too few haplotypes of frequency > "
-                        + Options.getHaplotypeDisplayThreshold());
-            }
-        }
 
+        }
         return theData.generateCrossovers(orderedHaplos);
     }
-
-
 }
