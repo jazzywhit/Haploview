@@ -441,11 +441,10 @@ public class HaploView extends JFrame implements ActionListener{
             }
             theData = new HaploData(assocTest);
             theData.linkageToChrom(inFile, type);
-            processData(theData.getPedFile().getHMInfo());
-
             checkPanel = new CheckDataPanel(theData.getPedFile());
             checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+            processData(theData.getPedFile().getHMInfo());
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
