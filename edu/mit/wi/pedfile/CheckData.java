@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.4 2003/09/26 21:11:05 jcbarret Exp $
+ * $Id: CheckData.java,v 1.5 2003/12/15 20:48:17 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -290,7 +290,7 @@ public class CheckData {
 	}
 
 
-	private double getPValue(Hashtable parentHom, int parentHet){
+	private double getPValue(Hashtable parentHom, int parentHet) throws PedFileException{
 		//ie: 11 13 31 33 -> homA =1 homB = 1 parentHet=2
 		int homA=0, homB=0, num;
 		double pvalue=0;
@@ -305,83 +305,93 @@ public class CheckData {
 		//System.out.println("homA="+homA+" homB="+homB+" parentHet="+parentHet);
 		//HW hw = new HW((double)homA, (double)parentHet, (double)homB);
 			//hw.caculate();
-			pvalue = hwCalculate((double)homA, (double)parentHet, (double)homB);
+			pvalue = hwCalculate(homA, parentHet, homB);
 		return pvalue;
 	}
 
 
-	/**
-	 * Does the calculation
-	 */
-	private double hwCalculate(double obsAA, double obsAB, double obsBB){
-		double obs[]={0.0, obsAA, obsAB, obsBB};
-		double expect[]={0.0, 0.0, 0.0, 0.0};
-		double sum_obs;
-		//double csq, df, sum_expect;
-        double prob, p, start, end;
-		double best_prob =-1.0;
-		double best_p=0;
-		sum_obs = obs [1 ]+ obs [2 ]+ obs [3 ];
-		for (p = 0.01 ; p <= .99 ; p += .01 ) {
-			expect [1 ]= sum_obs * p * p ;
-			expect [2 ]= sum_obs * 2.0 * p * (1.0 - p);
-			expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p);
-			//Chsone chsone = new Chsone(obs , expect , 3 , 1);
-			//chsone.caculate();
-			//prob = chsone.getPvalue();
-			prob = chsoneCalculate(obs,expect,3,1);
-			if (prob > best_prob ) {
-				best_prob = prob ;
-				best_p = p ;
-			}
-		}
-		start = (best_p - .025 > .001)? (best_p - .025): .001 ;
-		end = (best_p + .025 < .999)? (best_p + .025): .999 ;
-		for (p = start ; p <= end ; p += .001 ) {
-			expect [1 ]= sum_obs * p * p ;
-			expect [2 ]= sum_obs * 2.0 * p * (1.0 - p) ;
-			expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p) ;
-			//Chsone chsone = new Chsone(obs , expect , 3 , 1);
-			//chsone.caculate();
-			//prob = chsone.getPvalue();
-			prob = chsoneCalculate(obs,expect,3,1);
-			if (prob > best_prob ) {
-				best_prob = prob ;
-				best_p = p ;
-			}
-		}
-		p = best_p ;
-		expect [1 ]= sum_obs * p * p ;
-		expect [2 ]= sum_obs * 2.0 * p * (1.0 - p);
-		expect [3 ]= sum_obs * (1.0 - p) * (1.0 - p);
-		//Chsone chsone = new Chsone(obs , expect , 3 , 1);
-		//chsone.caculate();
-		//this._p = chsone.getPvalue();
-		//return chsone.getPvalue();
-		return chsoneCalculate(obs,expect,3,1);
-	}
+	private double hwCalculate(int obsAA, int obsAB, int obsBB) throws PedFileException{
+        //Calculates exact two-sided hardy-weinberg p-value. Parameters
+        //are number of genotypes, number of rare alleles observed and
+        //number of heterozygotes observed.
+        //
+        // (c) 2003 Jan Wigginton, Goncalo Abecasis
+        int diplotypes =  obsAA + obsAB + obsBB;
+        int rare = (obsAA*2) + obsAB;
+        int hets = obsAB;
 
-	/*
-	* Description: Uses it to compare binned data to a model distribution.
-	* This is converted from a numerical recipes class in c</p>
-	* @author Hui Gong
-	*/
-	public double chsoneCalculate(double[] bins, double[] ebins, int nbins, int knstrn){
-		double prob, df, chsq, temp;
-		df = nbins - knstrn ;
-		chsq = 0.0 ;
-		for (int j = 1 ; j <= nbins ; j ++ ) {
-			if (ebins [j ]<= 0.0 ){
-                chsq=0;
+
+        //make sure "rare" allele is really the rare allele
+        if (rare > diplotypes){
+            rare = 2*diplotypes-rare;
+        }
+
+        //make sure numbers aren't screwy
+        if (hets > rare){
+            throw new PedFileException("HW test: " + hets + "heterozygotes but only " + rare + "rare alleles.");
+        }
+        double[] tailProbs = new double[rare+1];
+        for (int z = 0; z < tailProbs.length; z++){
+            tailProbs[z] = 0;
+        }
+
+        //start at midpoint
+        int mid = rare * (2 * diplotypes - rare) / (2 * diplotypes);
+
+        //check to ensure that midpoint and rare alleles have same parity
+        if (((rare & 1) ^ (mid & 1)) != 0){
+            mid++;
+        }
+        int het = mid;
+        int hom_r = (rare - mid) / 2;
+        int hom_c = diplotypes - het - hom_r;
+
+        //Calculate probability for each possible observed heterozygote
+        //count up to a scaling constant, to avoid underflow and overflow
+        tailProbs[mid] = 1.0;
+        double sum = tailProbs[mid];
+        for (het = mid; het > 1; het -=2){
+            tailProbs[het-2] = (tailProbs[het] * het * (het-1.0))/(4.0*(hom_r + 1.0) * (hom_c + 1.0));
+            sum += tailProbs[het-2];
+            //2 fewer hets for next iteration -> add one rare and one common homozygote
+            hom_r++;
+            hom_c++;
+        }
+
+        het = mid;
+        hom_r = (rare - mid) / 2;
+        hom_c = diplotypes - het - hom_r;
+        for (het = mid; het <= rare - 2; het += 2){
+            tailProbs[het+2] = (tailProbs[het] * 4.0 * hom_r * hom_c) / ((het+2.0)*(het+1.0));
+            sum += tailProbs[het+2];
+            //2 more hets for next iteration -> subtract one rare and one common homozygote
+            hom_r--;
+            hom_c--;
+        }
+
+        for (int z = 0; z < tailProbs.length; z++){
+            tailProbs[z] /= sum;
+        }
+
+        double top = tailProbs[hets];
+        for (int i = hets+1; i <= rare; i++){
+            top += tailProbs[i];
+        }
+        double otherSide = tailProbs[hets];
+        for (int i = hets-1; i >= 0; i--){
+            otherSide += tailProbs[i];
+        }
+
+        if (top > 0.5 && otherSide > 0.5){
+            return 1.0;
+        }else{
+            if (top < otherSide){
+                return top * 2;
             }else{
-                temp = bins[j]- ebins[j];
-                chsq += temp * temp / ebins [j];
+                return otherSide * 2;
             }
-		}
-		prob = MathUtil.gammq (0.5 * df, 0.5 * chsq );
-		return prob;
-		//this._chisq = chsq;
-	}
+        }
+    }
 
 	private double getGenoPercent(int het, int hom, int missing){
 		double genoPct = 100.0*(het+hom)/(het+hom+missing);
