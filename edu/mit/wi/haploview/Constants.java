@@ -80,8 +80,6 @@ public interface Constants {
                         "-nogui                          Command line output only\n" +
                         "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
                         "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
-                        //"         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
-                        //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
                         "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
                         "-haps <hapsfile>                Specify an input file in .haps format\n" +
                         "-info <infofile>                Specify a marker info file\n" +
