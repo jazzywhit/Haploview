@@ -253,7 +253,8 @@ class DPrimeDisplay extends JComponent{
         //highlight blocks
         boolean even = true;
         //g.setColor(new Color(153,255,153));
-        g.setColor(new Color(51,153,51));
+        g.setColor(Color.black);
+        //g.setColor(new Color(51,153,51));
         g2.setStroke(fatStroke);
         for (int i = 0; i < blocks.size(); i++){
             int[] theBlock = (int[])blocks.elementAt(i);
@@ -268,14 +269,14 @@ class DPrimeDisplay extends JComponent{
                     left + (2*last - 1) * boxSize/2+boxRadius,
                     top + boxSize/2);
             for (int j = 0; j < theBlock.length; j++){
-                g.drawLine(left + (2*theBlock[j]+1) * boxSize/2 - boxRadius,
-                        top + boxSize/2,
-                        left + (2*theBlock[j]+1) * boxSize/2,
-                        top + boxSize/2 - boxRadius);
-                g.drawLine (left + (2*theBlock[j]) * boxSize/2 - boxRadius,
-                        top + boxSize/2 - boxRadius,
-                        left + (2*theBlock[j]) * boxSize/2,
-                        top + boxSize/2);
+                g.drawLine(left + (2*theBlock[j]) * boxSize/2,
+                        top + boxRadius,
+                        left + (2*theBlock[j]) * boxSize/2 + boxRadius,
+                        top);
+                g.drawLine (left + (2*theBlock[j]) * boxSize/2,
+                        top + boxRadius,
+                        left + (2*theBlock[j]-1) * boxSize/2,
+                        top-1);
             }
         }
         g2.setStroke(thickerStroke);

@@ -459,6 +459,7 @@ public class HaploView extends JFrame implements ActionListener{
         }  */
         infoKnown=true;
         if (dPrimeDisplay != null){
+            dPrimeDisplay.dPrimeTable = theData.dPrimeTable;
             dPrimeDisplay.loadMarkers();
         }
     }
