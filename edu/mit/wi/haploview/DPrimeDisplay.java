@@ -166,6 +166,24 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         metrics = g2.getFontMetrics();
         ascent = metrics.getAscent();
 
+        /*//deal with adding some space to better display data with large gaps
+        int cumulativeGap[] = new int[Chromosome.getFilteredSize()];
+        for (int i = 0; i < cumulativeGap.length; i++){
+            cumulativeGap[i] = 0;
+        }
+        if (theData.infoKnown){
+            double mean = (((SNP)Chromosome.markers[Chromosome.markers.length-1]).getPosition() -
+                    ((SNP)Chromosome.markers[0]).getPosition())/Chromosome.markers.length-1;
+            for (int i = 1; i < cumulativeGap.length; i++){
+                double sep = Chromosome.getMarker(i).getPosition() - Chromosome.getMarker(i-1).getPosition();
+                if (sep > mean*10){
+                    cumulativeGap[i] = cumulativeGap[i-1] + (int)(sep/mean)*4;
+                }else{
+                    cumulativeGap[i] = cumulativeGap[i-1];
+                }
+            }
+        } */
+
         if (theData.infoKnown) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
@@ -602,7 +620,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
                 InputEvent.BUTTON3_MASK){
 
-            PairwiseLinkage[][] dPrimeTable = theData.getFilteredTable();
+            PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
             final int clickX = e.getX();
             final int clickY = e.getY();
             double dboxX = (double)(clickX - clickXShift - (clickY-clickYShift))/boxSize;
