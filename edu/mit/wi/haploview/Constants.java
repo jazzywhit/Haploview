@@ -103,19 +103,19 @@ public interface Constants {
                         "                                note: -dprime  and -check default to no blocks output. \n" +
                         "                                Use -blockoutput to also output blocks\n" +
                         "-blockoutput <GAB,GAM,SPI,ALL>  Output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
-                        "-maxdistance <distance>         Maximum comparison distance in kilobases (integer). default is 500\n" +
+                        "-maxdistance <distance>         Maximum comparison distance in kilobases (integer). Default is 500\n" +
                         "-hapthresh <frequency>          Only output haps with at least this frequency\n" +
                         "-spacing <threshold>            Proportional spacing of markers in LD display. <threshold> is a value\n" +
-                        "                                between 0 (no spacing) and 1 (max spacing).\n"  +
+                        "                                between 0 (no spacing) and 1 (max spacing). Default is 0\n"  +
                         "-minMAF <threshold>             Minimum minor allele frequency to include a marker. <threshold> is a value\n" +
-                        "                                between 0 and 0.5. \n" +
-                        "-maxMendel <integer>            Markers with more than <integer> Mendel errors will be excluded.\n" +
+                        "                                between 0 and 0.5. Default is 0\n" +
+                        "-maxMendel <integer>            Markers with more than <integer> Mendel errors will be excluded. Default is 1.\n" +
                         "-minGeno <threshold>            Exclude markers with less than <threshold> valid data. <threshold> is a value\n" +
-                        "                                between 0 and 1. \n" +
-                        "-hwcutoff <threshold>           Exclude markers with a HW p-value greater than <threshold>. <threshold> is a value\n" +
-                        "                                between 0 and 1. \n" +
+                        "                                between 0 and 1. Default is .75\n" +
+                        "-hwcutoff <threshold>           Exclude markers with a HW p-value smaller than <threshold>. <threshold> is a value\n" +
+                        "                                between 0 and 1. Default is .001\n" +
                         "-missingCutoff <threshold>      Exclude individuals with more than <threshold> fraction missing data.\n" +
-                        "                                <threshold> is a value between 0 and 1. \n" +
+                        "                                <threshold> is a value between 0 and 1. Default is .5 \n" +
                         "-assocCC                        Outputs case control association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC\n" +
                         "-assocTDT                       Outputs trio association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC"
 
