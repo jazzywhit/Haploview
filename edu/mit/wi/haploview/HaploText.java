@@ -604,7 +604,7 @@ public class HaploText implements Constants{
             }
 
             textData = new HaploData();
-            Vector result = null;
+            //Vector result = null;
 
             if(fileType == HAPS){
                 //read in haps file
@@ -612,14 +612,14 @@ public class HaploText implements Constants{
             }
             else if (fileType == PED) {
                 //read in ped file
-                result = textData.linkageToChrom(inputFile, PED);
+                textData.linkageToChrom(inputFile, PED);
 
                 if(textData.getPedFile().isBogusParents()) {
                     System.out.println("Error: One or more individuals in the file reference non-existent parents.\nThese references have been ignored.");
                 }
             }else{
                 //read in hapmapfile
-                result = textData.linkageToChrom(inputFile,HMP);
+                textData.linkageToChrom(inputFile,HMP);
             }
 
 
@@ -627,14 +627,16 @@ public class HaploText implements Constants{
             if (infoFileName != null){
                 infoFile = new File(infoFileName);
             }
-            if (result != null){
+            if (fileType != HAPS){
                 textData.prepareMarkerInput(infoFile,textData.getPedFile().getHMInfo());
             }else{
                 textData.prepareMarkerInput(infoFile,null);
             }
 
             boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
-            if (result != null){
+            Vector result = null;
+            if (fileType != HAPS){
+                result = textData.getPedFile().getResults();
                 //once check has been run we can filter the markers
                 for (int i = 0; i < result.size(); i++){
                     if ((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&

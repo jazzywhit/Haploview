@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.36 2004/12/29 16:12:34 jcbarret Exp $
+* $Id: PedFile.java,v 1.37 2005/01/10 18:29:37 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -790,6 +790,10 @@ public class PedFile {
 
     public Vector getResults() {
         return results;
+    }
+
+    public void setResults(Vector res){
+        results = res;
     }
 
     private void removeDescendants(Family f, String indID)throws PedFileException{

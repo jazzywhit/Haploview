@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.8 2004/09/30 21:37:17 jmaller Exp $
+* $Id: Individual.java,v 1.9 2005/01/10 18:29:37 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -187,6 +187,10 @@ public class Individual {
      */
     public Vector getMarkers() {
         return markers;
+    }
+
+    public void setMarkers(Vector m){
+        markers = m;
     }
 
     /**

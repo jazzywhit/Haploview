@@ -224,6 +224,27 @@ public class HaploData implements Constants{
                             tempChrom.setGenotype(tempGenotype[i],i);
                         }
                     }
+
+                    //sort pedfile objects
+                    //todo: this should really be done before pedfile is subjected to any processing.
+                    //todo: that would require altering some order of operations in dealing with inputs
+
+                    Vector unsortedRes = pedFile.getResults();
+                    Vector sortedRes = new Vector();
+                    for (int i = 0; i < realPos.length; i++){
+                        sortedRes.add(unsortedRes.elementAt(realPos[i]));
+                    }
+                    pedFile.setResults(sortedRes);
+                    Vector o = pedFile.getOrder();
+                    for (int i = 0; i < o.size(); i++){
+                        Individual ind = (Individual) o.get(i);
+                        Vector unsortedMarkers = ind.getMarkers();
+                        Vector sortedMarkers = new Vector();
+                        for (int j = 0; j < unsortedMarkers.size(); j++){
+                            sortedMarkers.add(unsortedMarkers.elementAt(realPos[j]));
+                        }
+                        ind.setMarkers(sortedMarkers);
+                    }
                 }
             }
         }catch (HaploViewException e){

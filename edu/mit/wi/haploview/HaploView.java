@@ -606,11 +606,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
             theData = new HaploData();
 
-            Vector result = null;
             if (type == HAPS){
                 theData.prepareHapsInput(new File(inputOptions[0]));
             }else{
-                result = theData.linkageToChrom(inFile, type);
+                theData.linkageToChrom(inFile, type);
             }
 
             if(type != HAPS && theData.getPedFile().isBogusParents()) {
@@ -641,6 +640,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 checkPanel = new CheckDataPanel(this);
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+                Vector result = theData.getPedFile().getResults();
                 boolean[] markerResults = new boolean[result.size()];
                 for (int i = 0; i < result.size(); i++){
                     if (((MarkerResult)result.get(i)).getRating() > 0 && Chromosome.getUnfilteredMarker(i).getDupStatus() != 2){
