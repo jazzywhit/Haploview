@@ -1063,11 +1063,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         checkPanel.printTable(outfile);
                     }else if (tabNum == VIEW_TDT_NUM){
                         FileWriter assocWriter = new FileWriter(outfile);
+                        StringBuffer header = new StringBuffer();
 
                         if(((JTabbedPane)tabs.getComponent(tabNum)).getSelectedIndex() == VIEW_SINGLE_ASSOC){
                             JTable table = tdtPanel.getTable();
                             int numCols = table.getColumnCount();
-                            StringBuffer header = new StringBuffer("Single Marker Association\n");
                             for (int i = 0; i < numCols; i++){
                                 header.append(table.getColumnName(i)).append("\t");
                             }
@@ -1086,7 +1086,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             JTreeTable jtt = ((HaploAssocPanel)((JTabbedPane)tabs.getComponent(tabNum)).
                                     getComponent(1)).jtt;
                             int numCols = jtt.getColumnCount();
-                            StringBuffer header = new StringBuffer("Haplotype Association\n\t");
                             for (int i = 0; i < numCols; i++){
                                 header.append(jtt.getColumnName(i)).append("\t");
                             }
