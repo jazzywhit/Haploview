@@ -140,24 +140,25 @@ class HaploData{
 	    
 	    //break up large blocks if needed
 	    int[] block_size;
-	    if (theBlock.length < 11){
+	    if (theBlock.length < 9){
 		block_size = new int[1];
 		block_size[0] = theBlock.length;
 	    } else {
-		int ones = theBlock.length%10;
-		int tens = (theBlock.length - ones)/10;
+		//some base-8 arithmetic
+		int ones = theBlock.length%8;
+		int eights = (theBlock.length - ones)/8;
 		if (ones == 0){
-		    block_size = new int[tens];
-		    for (int i = 0; i < tens; i++){
-			block_size[i]=10;
+		    block_size = new int[eights];
+		    for (int i = 0; i < eights; i++){
+			block_size[i]=8;
 		    }
 		} else {
-		    block_size = new int[tens+1];
-		    for (int i = 0; i < tens-2; i++){
-			block_size[i]=10;
+		    block_size = new int[eights+1];
+		    for (int i = 0; i < eights-1; i++){
+			block_size[i]=8;
 		    }
-		    block_size[tens-1] = (10+ones)/2;
-		    block_size[tens] = 10+ones-block_size[tens-1];
+		    block_size[eights-1] = (8+ones)/2;
+		    block_size[eights] = 8+ones-block_size[eights-1];
 		}
 	    }
 
@@ -172,7 +173,7 @@ class HaploData{
 	    }
 
 	    //kirby patch
-	    full_em_breakup(input_haplos.length, theBlock.length, input_haplos2, 5, num_haplos_present, haplos_present, haplo_freq, block_size.length, block_size, 0);
+	    full_em_breakup(input_haplos.length, theBlock.length, input_haplos2, 4, num_haplos_present, haplos_present, haplo_freq, block_size.length, block_size, 0);
 	    for (int j = 0; j < haplos_present.size(); j++){
 		EMreturn += (String)haplos_present.elementAt(j)+"\t"+(String)haplo_freq.elementAt(j)+"\t";
 	    }
@@ -834,13 +835,13 @@ class HaploData{
     //everything below here is related to em phasing of haps
     
     class RECOVERY {
-	int h1;
-	int h2;
-	double p;
+	short h1;
+	short h2;
+	float p;
 	public RECOVERY() {
 	    h1=0;
 	    h2=0;
-	    p=0.0;
+	    p=0.0f;
 	}
     }
 	
@@ -930,7 +931,7 @@ class HaploData{
 		for (i=0; i<num_indivs; i++) {
 		    total=0.0;
 		    for (k=0; k<data[i].nposs; k++) {
-			data[i].poss[k].p = prob[data[i].poss[k].h1]*prob[data[i].poss[k].h2];
+			data[i].poss[k].p = (float)(prob[data[i].poss[k].h1]*prob[data[i].poss[k].h2]);
 			total+=data[i].poss[k].p;
 		    }
 		    /* normalize */
@@ -1024,9 +1025,9 @@ class HaploData{
 	    for (i=0; i<num_indivs; i++) {
 		total=0.0;
 		for (k=0; k<superdata[i].nsuper; k++) {
-		    superdata[i].superposs[k].p = 
-			superprob[superdata[i].superposs[k].h1]*
-			superprob[superdata[i].superposs[k].h2];
+		    superdata[i].superposs[k].p = (float)
+			(superprob[superdata[i].superposs[k].h1]*
+			superprob[superdata[i].superposs[k].h2]);
 		    total+=superdata[i].superposs[k].p;
 		}
 		/* normalize */
@@ -1142,9 +1143,9 @@ class HaploData{
 	    }
 	
 	    data[num_indivs].nposs = num_poss;
-	    data[num_indivs].poss[0].h1=h1;
-	    data[num_indivs].poss[0].h2=h2;
-	    data[num_indivs].poss[0].p=0.0;
+	    data[num_indivs].poss[0].h1=(short)h1;
+	    data[num_indivs].poss[0].h2=(short)h2;
+	    data[num_indivs].poss[0].p=0.0f;
 	
 	/*    printf("h1=%s, ",haplo_str(h1));
 	      printf("h2=%s, dhet=%d%d%d%d%d, nposs=%d\n",haplo_str(h2),dhet[0],dhet[1],dhet[2],dhet[3],dhet[4],num_poss); */
@@ -1164,9 +1165,9 @@ class HaploData{
 			} else {
 			    //printf("error - attepmting to flip homozygous position\n");
 			}
-			data[num_indivs].poss[num_poss+j].h1=h1;
-			data[num_indivs].poss[num_poss+j].h2=h2;
-			data[num_indivs].poss[num_poss+j].p=0.0;
+			data[num_indivs].poss[num_poss+j].h1=(short)h1;
+			data[num_indivs].poss[num_poss+j].h2=(short)h2;
+			data[num_indivs].poss[num_poss+j].p=0.0f;
 		    }
 		    num_poss *= 2;
 		}
@@ -1182,9 +1183,9 @@ class HaploData{
 			} else {
 			    //printf("error - attempting to flip missing !=0\n");
 			}
-			data[num_indivs].poss[num_poss+j].h1=h1;
-			data[num_indivs].poss[num_poss+j].h2=h2;
-			data[num_indivs].poss[num_poss+j].p=0.0;
+			data[num_indivs].poss[num_poss+j].h1=(short)h1;
+			data[num_indivs].poss[num_poss+j].h2=(short)h2;
+			data[num_indivs].poss[num_poss+j].p=0.0f;
 		    }
 		    num_poss *= 2;
 		}
@@ -1200,9 +1201,9 @@ class HaploData{
 			} else {
 			    //printf("error - attempting to flip missing !=0\n");
 			}
-			data[num_indivs].poss[num_poss+j].h1=h1;
-			data[num_indivs].poss[num_poss+j].h2=h2;
-			data[num_indivs].poss[num_poss+j].p=0.0;
+			data[num_indivs].poss[num_poss+j].h1=(short)h1;
+			data[num_indivs].poss[num_poss+j].h2=(short)h2;
+			data[num_indivs].poss[num_poss+j].p=0.0f;
 		    }
 		    num_poss *= 2;
 		}
@@ -1242,8 +1243,8 @@ class HaploData{
 		    h1 = data[i].poss[j].h1;
 		    h2 = data[i].poss[j].h2;
 		    if (hint[h1] >= 0 && hint[h2] >= 0) {
-			superdata[i].poss[block][k].h1 = hint[h1];
-			superdata[i].poss[block][k].h2 = hint[h2];
+			superdata[i].poss[block][k].h1 = (short)hint[h1];
+			superdata[i].poss[block][k].h2 = (short)hint[h2];
 			k++;
 		    }
 		}
@@ -1306,8 +1307,8 @@ class HaploData{
 	int j, curr_prod, newh1, newh2;
 	
 	if (block == num_blocks) {
-	    superdata[indiv].superposs[superdata[indiv].nsuper].h1 = h1;
-	    superdata[indiv].superposs[superdata[indiv].nsuper].h2 = h2;
+	    superdata[indiv].superposs[superdata[indiv].nsuper].h1 = (short)h1;
+	    superdata[indiv].superposs[superdata[indiv].nsuper].h2 = (short)h2;
 	    superdata[indiv].nsuper++;
 	} else {
 	    curr_prod=1;
