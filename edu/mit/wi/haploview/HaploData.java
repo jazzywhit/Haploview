@@ -1899,7 +1899,7 @@ public class HaploData implements Constants{
     }
 
 
-    public static void saveMarkerAssocToText(Vector markerResults, String outputFileName) {
+    public static void saveMarkerAssocToText(Vector markerResults, File outputFile) {
         if(markerResults == null) {
             return;
         }
@@ -1910,7 +1910,7 @@ public class HaploData implements Constants{
 
         FileWriter fw;
         try {
-            fw = new FileWriter(outputFileName);
+            fw = new FileWriter(outputFile);
         } catch(IOException ioe) {
             System.err.println("An error occured while accessing the marker association output file");
             return;
@@ -1944,10 +1944,10 @@ public class HaploData implements Constants{
         }
     }
 
-    public static void saveHapAssocToText(Haplotype[][] haps, String outputFileName) {
+    public static void saveHapAssocToText(Haplotype[][] haps, File outputFile) {
         FileWriter fw;
         try {
-            fw = new FileWriter(outputFileName);
+            fw = new FileWriter(outputFile);
         } catch(IOException ioe) {
             System.err.println("An error occured while accessing the haplotype association output file");
             return;

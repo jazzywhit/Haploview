@@ -146,6 +146,7 @@ public class HaploText implements Constants{
                 else {
                     StringTokenizer str = new StringTokenizer(args[i],",");
                     try {
+                        if (!quietMode) System.out.print("Excluding markers: ");
                         while(str.hasMoreTokens()) {
                             String token = str.nextToken();
                             if(token.indexOf("..") != -1) {
@@ -153,12 +154,15 @@ public class HaploText implements Constants{
                                 int rangeStart = Integer.parseInt(token.substring(0,lastIndex));
                                 int rangeEnd = Integer.parseInt(token.substring(lastIndex+2,token.length()));
                                 for(int j=rangeStart;j<=rangeEnd;j++) {
+                                    if (!quietMode) System.out.print(j+" ");
                                     excludedMarkers.add(new Integer(j));
                                 }
                             } else {
+                                if (!quietMode) System.out.println(token+" ");
                                 excludedMarkers.add(new Integer(token));
                             }
                         }
+                        if (!quietMode) System.out.println();
                     } catch(NumberFormatException nfe) {
                         System.out.println("-excludeMarkers argument should be of the format: 1,3,5..8,12");
                         System.exit(1);
@@ -420,36 +424,45 @@ public class HaploText implements Constants{
         }
         if(maxDistance == -1){
             maxDistance = 500;
+        }else{
+            if (!quietMode) System.out.println("Max LD comparison distance = " +maxDistance);
         }
 
         Options.setMaxDistance(maxDistance);
 
         if(hapThresh != -1) {
             Options.setHaplotypeDisplayThreshold((int)(hapThresh*100));
+            if (!quietMode) System.out.println("Haplotype display threshold = " + hapThresh);
         }
         
         if(minimumMAF != -1) {
             CheckData.mafCut = minimumMAF;
+            if (!quietMode) System.out.println("Minimum MAF = " + minimumMAF);
         }
 
         if(minimumGenoPercent != -1) {
             CheckData.failedGenoCut = (int)(minimumGenoPercent*100);
+            if (!quietMode) System.out.println("Minimum SNP genotype % = " + minimumGenoPercent);
         }
 
         if(hwCutoff != -1) {
             CheckData.hwCut = hwCutoff;
+            if (!quietMode) System.out.println("Hardy Weinberg equilibrium p-value cutoff = " + hwCutoff);
         }
 
         if(maxMendel != -1) {
             CheckData.numMendErrCut = maxMendel;
+            if (!quietMode) System.out.println("Maximum number of Mendel errors = "+maxMendel);
         }
 
         if(spacingThresh != -1) {
             Options.setSpacingThreshold(spacingThresh);
+            if (!quietMode) System.out.println("LD display spacing value = "+spacingThresh);
         }
 
         if(missingCutoff != -1) {
             Options.setMissingThreshold(missingCutoff);
+            if (!quietMode) System.out.println("Maximum amount of missing data allowed per individual = "+missingCutoff);
         }
 
         if(assocTDT) {
@@ -481,6 +494,8 @@ public class HaploText implements Constants{
             System.out.println("batch file " + batchFileName + " does not exist");
             System.exit(1);
         }
+
+        if (!quietMode) System.out.println("Processing batch input file: " + batchFile);
 
         try {
             BufferedReader br = new BufferedReader(new FileReader(batchFile));
@@ -540,6 +555,7 @@ public class HaploText implements Constants{
         if (f.exists() && !quietMode){
             System.out.println("File " + f.getName() + " already exists and will be overwritten.");
         }
+        if (!quietMode) System.out.println("Writing output to "+f.getName());
         return f;
     }
 
@@ -577,7 +593,7 @@ public class HaploText implements Constants{
             File inputFile;
 
             if(!quietMode && fileName != null){
-                System.out.println("Using data file " + fileName);
+                System.out.println("Using data file: " + fileName);
             }
 
             inputFile = new File(fileName);
@@ -640,7 +656,7 @@ public class HaploText implements Constants{
             Chromosome.doFilter(markerResults);
 
             if(!quietMode && infoFile != null){
-                System.out.println("Using marker file " + infoFile.getName());
+                System.out.println("Using marker information file: " + infoFile.getName());
             }
             if(outputCheck && result != null){
                 CheckDataPanel cp = new CheckDataPanel(textData);
@@ -710,7 +726,7 @@ public class HaploText implements Constants{
                     if (blockOutputType == BLOX_ALL){
                         System.out.println("Haplotype association results cannot be used with block output \"ALL\"");
                     }else{
-                        HaploData.saveHapAssocToText(haplos, fileName + ".HAPASSOC");
+                        HaploData.saveHapAssocToText(haplos, validateOutputFile(fileName + ".HAPASSOC"));
                     }
                 }
             }
@@ -745,10 +761,10 @@ public class HaploText implements Constants{
 
             if(Options.getAssocTest() == ASSOC_TRIO){
                 Vector tdtResults = TDT.calcTrioTDT(textData.getPedFile());
-                HaploData.saveMarkerAssocToText(tdtResults, fileName + ".ASSOC");
+                HaploData.saveMarkerAssocToText(tdtResults, validateOutputFile(fileName + ".ASSOC"));
             } else if(Options.getAssocTest() == ASSOC_CC) {
                 Vector ccResults = TDT.calcCCTDT(textData.getPedFile());
-                HaploData.saveMarkerAssocToText(ccResults, fileName + ".ASSOC");
+                HaploData.saveMarkerAssocToText(ccResults, validateOutputFile(fileName + ".ASSOC"));
             }
 
         }
