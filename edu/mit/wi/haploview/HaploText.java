@@ -293,7 +293,7 @@ public class HaploText implements Constants{
             }
             else if(args[i].equalsIgnoreCase("-minMAF")) {
                 i++;
-                minimumMAF = getDoubleArg(args,i,"-minMAF",0,1);
+                minimumMAF = getDoubleArg(args,i,"-minMAF",0,0.5);
             }
             else if(args[i].equalsIgnoreCase("-minGenoPercent")) {
                 i++;
