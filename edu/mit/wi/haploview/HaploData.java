@@ -1234,7 +1234,7 @@ public class HaploData implements Constants{
                 for (int j = 0; j < thisBlock.length; j++){
                     if(markerNum == thisBlock[j]){
                         blocksChanged = true;
-                        if (newBlock.length < 2){
+                        if (newBlock.length < 1){
                             blocks.removeElementAt(i);
                             for (int k = 0; k < thisBlock.length; k++){
                                 this.isInBlock[thisBlock[k]] = false;
@@ -1287,7 +1287,8 @@ public class HaploData implements Constants{
         if (lastMarker >= Chromosome.realIndex.length){
             lastMarker = Chromosome.realIndex.length-1;
         }
-        if (lastMarker - firstMarker < 1){
+        if (lastMarker - firstMarker < 0){
+            //something wonky going on
             return;
         }
 
@@ -1869,10 +1870,7 @@ public class HaploData implements Constants{
             lineCount ++;
             StringTokenizer st = new StringTokenizer(currentLine);
 
-            if (st.countTokens() == 1){
-                //complain if we have only one col
-                throw new HaploViewException("File error on line " + lineCount + " in " + infile.getName());
-            }else if (st.countTokens() == 0){
+            if (st.countTokens() == 0){
                 //skip blank lines
                 continue;
             }
@@ -1902,7 +1900,7 @@ public class HaploData implements Constants{
                     }
                     highestYet = thisBlock[x];
                 }
-                if (thisBlock.length > 1){
+                if (thisBlock.length > 0){
                     cust.add(thisBlock);
                 }
             }catch (NumberFormatException nfe) {
