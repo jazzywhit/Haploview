@@ -39,7 +39,7 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
             tableColumnNames.add("Major Alleles");
             tableColumnNames.add("Case, Control Ratios");
         }
-        tableColumnNames.add("Chi Squared");
+        tableColumnNames.add("Chi Square");
         tableColumnNames.add("p value");
 
         refreshTable();

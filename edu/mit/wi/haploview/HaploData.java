@@ -1916,10 +1916,10 @@ public class HaploData implements Constants{
         StringBuffer result = new StringBuffer();
         //result.append("Marker Association Results\n-------------------------------\n");
         if(Options.getAssocTest() == ASSOC_TRIO) {
-            result.append("#\tName\tOvertransmitted\tT:U\tChi squared\tP value\n");
+            result.append("#\tName\tOvertransmitted\tT:U\tChi square\tP value\n");
 
         } else if(Options.getAssocTest() == ASSOC_CC) {
-            result.append("#\tName\tMajor Alleles\tCase,Control Ratios\tChi squared\tP value\n");
+            result.append("#\tName\tMajor Alleles\tCase,Control Ratios\tChi square\tP value\n");
         }
 
         //only output assoc results for markers which werent filtered
@@ -1953,9 +1953,9 @@ public class HaploData implements Constants{
 
         StringBuffer result = new StringBuffer();
         if(Options.getAssocTest() == ASSOC_TRIO) {
-            result.append("Block\tHaplotype\tFreq.\tT:U\tChi Squared\tP Value\n");
+            result.append("Block\tHaplotype\tFreq.\tT:U\tChi Square\tP Value\n");
         } else if(Options.getAssocTest() == ASSOC_CC) {
-            result.append("Block\tHaplotype\tFreq.\tCase, Control Ratios\tChi Squared\tP Value\n");
+            result.append("Block\tHaplotype\tFreq.\tCase, Control Ratios\tChi Square\tP Value\n");
         }
 
         String[] alleleCodes = new String[5];

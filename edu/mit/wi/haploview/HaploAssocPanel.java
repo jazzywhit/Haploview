@@ -42,7 +42,7 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         }else{
             colNames.add("Case, Control Ratios");
         }
-        colNames.add("Chi Squared");
+        colNames.add("Chi Square");
         colNames.add("p value");
 
         HaplotypeAssociationNode root = new HaplotypeAssociationNode("Haplotype Associations");
