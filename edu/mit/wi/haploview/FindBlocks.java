@@ -14,7 +14,7 @@ class FindBlocks {
 	float cutLowCI = 0.70f;
 	float recHighCI = 0.90f;
 	
-	int numStrong = 0; int numRec = 0; 
+	int numStrong = 0; int numRec = 0; int numInGroup = 0;
 	Vector blocks = new Vector();
 	Vector strongPairs = new Vector();
 	
@@ -68,11 +68,24 @@ class FindBlocks {
 		    float highCI = Float.parseFloat(st.nextToken());
 		    if (lod < -90) continue;   //monomorphic marker error
 		    if (lod == 0 && lowCI == 0 && highCI == 0) continue; //skip bad markers
-		    if (lowCI > cutLowCI && highCI > cutHighCI) numStrong++; //strong LD
+		    if (lowCI > cutLowCI && highCI > cutHighCI) {
+			//System.out.println(first + "\t" + last + "\t" + x + "\t" + y);
+			numStrong++; //strong LD
+		    }
 		    if (highCI < recHighCI) numRec++; //recombination
+		    numInGroup ++;
 		}
 	    }
-	    if (numStrong + numRec == 0) continue;
+
+	    //change the definition somewhat for small blocks
+	    if (numInGroup > 3){
+		if (numStrong + numRec < 6) continue;
+	    }else if (numInGroup > 2){
+		if (numStrong + numRec < 3) continue;
+	    }else{
+		if (numStrong + numRec < 1) continue;
+	    }
+	    
 	    if (numStrong/(numStrong + numRec) > 0.95){ //this qualifies as a block
 		//add to the block list, but in order by first marker number:		
 		if (blocks.size() == 0){ //put first block first
@@ -95,7 +108,7 @@ class FindBlocks {
 		    usedInBlock[used] = true;
 		}
 	    }
-	    numStrong = 0; numRec = 0;
+	    numStrong = 0; numRec = 0; numInGroup = 0;
 	}
 	return stringVec2intVec(blocks);
     }
