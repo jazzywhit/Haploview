@@ -394,31 +394,10 @@ public class HaplotypeDisplay extends JComponent {
             int above = top + markerDigits*MARKER_CHAR_WIDTH + TAG_SPAN +
                     (ROW_HEIGHT - CHAR_HEIGHT) / 2;
 
-            //figure out which allele is the major allele
-            double[][] alleleCounts = new double[filteredHaplos[i][0].getGeno().length][9];
-            //zero this out
-            for (int j = 0; j < alleleCounts.length; j++){
-                for (int k = 0; k < alleleCounts[j].length; k++){
-                    alleleCounts[j][k] = 0;
-                }
-            }
-            for (int j = 0; j < filteredHaplos[i].length; j++){
-                int curHapNum = lookupPos[i][j];
-                int[] theGeno = filteredHaplos[i][curHapNum].getGeno();
-                double theFreq = filteredHaplos[i][curHapNum].getPercentage();
-                for (int k = 0; k < theGeno.length; k++){
-                    alleleCounts[k][theGeno[k]] += theFreq;
-                }
-            }
+            //figure out which allele is the major allele for each marker
             int[] majorAllele = new int[filteredHaplos[i][0].getGeno().length];
             for (int k = 0; k < majorAllele.length; k++){
-                double maj = 0;
-                for (int z = 0; z < alleleCounts[k].length; z++){
-                    if (alleleCounts[k][z] > maj){
-                        majorAllele[k] = z;
-                        maj = alleleCounts[k][z];
-                    }
-                }
+                majorAllele[k] = Chromosome.getFilteredMarker(markerNums[k]).getMajor();
             }
 
             for (int j = 0; j < filteredHaplos[i].length; j++){

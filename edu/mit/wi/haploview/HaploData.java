@@ -187,7 +187,7 @@ public class HaploData implements Constants{
                                 if (a1==0){
                                     a1 = (byte)(thisAllele-4);
                                 }else if (a2 == 0){
-                                    if (!(thisAllele-5 == a1)){
+                                    if (!(thisAllele-4 == a1)){
                                         a2 = (byte)(thisAllele-4);
                                     }
                                 }
