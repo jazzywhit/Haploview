@@ -79,10 +79,7 @@ public class TDTResult {
 
     public double getPValue() {
         double pval = 0;
-        try {
-            pval= MathUtil.gammq(.5,.5*getChiSq());
-        }
-        catch(CheckDataException e) {}
+        pval= MathUtil.gammq(.5,.5*getChiSq());
         return Math.rint(pval*10000.0)/10000.0;
     }
 

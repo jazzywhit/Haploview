@@ -36,13 +36,8 @@ public class TDT {
                 TDTResult curRes = (TDTResult)results.get(j);
 
                 //System.out.println("marker "+ j + ":\t "  + allele1T + "\t" + allele1U + "\t" + allele2T + "\t" + allele2U);
-                if(!(allele1T == 5 && allele1U == 5 && allele2T !=5 && allele2U != 5) &&
-                        !(allele1T != 5 && allele1U != 5 && allele2T ==5 && allele2U == 5)) {
-                    //handling missing kid parent het case
-                    curRes.tallyInd(allele1T,allele1U);
-                    curRes.tallyInd(allele2T,allele2U);
-                }
-
+                curRes.tallyInd(allele1T,allele1U);
+                curRes.tallyInd(allele2T,allele2U);
             }
 
         }
