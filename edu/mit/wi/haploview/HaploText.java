@@ -486,7 +486,7 @@ public class HaploText {
 
             textData.guessBlocks(outputType);
             haplos = textData.generateHaplotypes(textData.blocks, 1);
-            new TextMethods().saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+            textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
         }
         catch(IOException e){}
         catch(HaploViewException e){
