@@ -724,19 +724,6 @@ public class HaploData implements Constants{
         }
     }
 
- /*   PairwiseLinkage[][] getFilteredTable(){
-        //make a filtered version which doesn't include unchecked markers
-        //from ped files. this is the version which needs to be handed off to all
-        //display methods etc.
-        PairwiseLinkage[][] filt = new PairwiseLinkage[Chromosome.getSize()][Chromosome.getSize()];
-        for (int j = 1; j < filt.length; j++){
-            for (int i = 0; i < j; i++){
-                filt[i][j] = dPrimeTable[Chromosome.realIndex[i]][Chromosome.realIndex[j]];
-            }
-        }
-        return filt;
-    }*/
-
     public Haplotype[][] generateBlockHaplotypes(Vector blocks) throws HaploViewException{
         Haplotype[][] rawHaplotypes = generateHaplotypes(blocks, true);
         Haplotype[][] tempHaplotypes = new Haplotype[rawHaplotypes.length][];
@@ -1193,6 +1180,7 @@ public class HaploData implements Constants{
     void guessBlocks(int method){
         guessBlocks(method, blocks);
     }
+
     void guessBlocks(int method, Vector custVec){
         Vector returnVec = new Vector();
         switch(method){
