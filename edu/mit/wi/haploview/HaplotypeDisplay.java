@@ -160,6 +160,11 @@ public class HaplotypeDisplay extends JComponent {
         //displayed, instead of directly repainting so that none of this math
         //is done when the screen repaints for other reasons (resizing, focus change, etc)
 
+
+        if (orderedHaplos == null){
+            filteredHaplos = null;
+            return;
+        }
         //first filter haps on displaythresh
         Haplotype[][] filts;
         filts = new Haplotype[orderedHaplos.length][];
