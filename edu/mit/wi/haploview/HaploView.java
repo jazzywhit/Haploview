@@ -18,7 +18,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     boolean DEBUG = false;
 
-    JMenuItem readMarkerItem;
+    JMenuItem readMarkerItem, analysisItem;
     String exportItems[] = {
         EXPORT_TEXT, EXPORT_PNG, EXPORT_OPTIONS
     };
@@ -101,7 +101,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         readMarkerItem.setEnabled(false);
         fileMenu.add(readMarkerItem);
 
-
+        analysisItem = new JMenuItem(READ_ANALYSIS_TRACK);
+        setAccelerator(analysisItem, 'A', false);
+        analysisItem.addActionListener(this);
+        analysisItem.setEnabled(false);
+        fileMenu.add(analysisItem);
 
         /*
         viewMarkerItem = new JMenuItem(VIEW_MARKERS);
@@ -254,6 +258,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 readMarkers(fc.getSelectedFile(),null);
             }
+        }else if (command == READ_ANALYSIS_TRACK){
+            fc.setSelectedFile(new File(""));
+            int returnVal = fc.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION){
+                readAnalysisFile(fc.getSelectedFile());
+            }
         }else if (command == CUST_BLOCKS){
             TweakBlockDefsDialog tweakDialog = new TweakBlockDefsDialog("Customize Blocks", this);
             tweakDialog.pack();
@@ -377,6 +387,25 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     void quit(){
         //any handling that might need to take place here
         System.exit(0);
+    }
+
+    void readAnalysisFile(File inFile){
+        try{
+            theData.readAnalysisTrack(inFile);
+        }catch (HaploViewException hve){
+            JOptionPane.showMessageDialog(this,
+                    hve.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }catch (IOException ioe){
+            JOptionPane.showMessageDialog(this,
+                    ioe.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
+            dPrimeDisplay.repaint();
+        }
     }
 
     void readGenotypes(String[] inputOptions, int type){
@@ -559,6 +588,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }
                         clearBlocksItem.setEnabled(true);
                         readMarkerItem.setEnabled(true);
+
                         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
                 }
@@ -584,9 +614,15 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
+
     void readMarkers(File inputFile, String[][] hminfo){
         try {
             theData.prepareMarkerInput(inputFile, maxCompDist, hminfo);
+            if (theData.infoKnown){
+                analysisItem.setEnabled(true);
+            }else{
+                analysisItem.setEnabled(false);
+            }
             if (checkPanel != null){
                 //this is triggered when loading markers after already loading genotypes
                 //it is dumb and sucks, but at least it works. bah.
@@ -625,9 +661,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }catch (PedFileException pfe){
-        }
-        if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
-            dPrimeDisplay.refresh();
         }
     }
 

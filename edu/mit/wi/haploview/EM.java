@@ -69,6 +69,7 @@ public class EM {
 
         num_poss = two_n[biggest_block_size];
         data = new OBS[num_haplos/2];
+        //todo: this is in a bad way. doesn't always allocate enough mem, but if you bump it up, slows everything down
         for (i=0; i<num_haplos/2; i++) data[i]= new OBS(num_poss*two_n[max_missing]);
         superdata = new SUPER_OBS[num_haplos/2];
         for (i=0; i<num_haplos/2; i++) superdata[i]= new SUPER_OBS(num_blocks);

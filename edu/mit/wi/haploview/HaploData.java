@@ -34,6 +34,9 @@ public class HaploData implements Constants{
     private double[] percentBadGenotypes;
     private double[] multidprimeArray;
     private long maxdist, negMaxdist;
+    Vector analysisPositions = new Vector();
+    Vector analysisValues = new Vector();
+    boolean trackExists = false;
 
     //stuff for computing d prime
     private int AA = 0;
@@ -1592,6 +1595,39 @@ public class HaploData implements Constants{
             }
         }
         saveDprimeWriter.close();
+    }
+
+    public void readAnalysisTrack(File inFile) throws HaploViewException, IOException{
+        if (!inFile.exists()){
+            throw new HaploViewException("File " + inFile.getName() + " doesn't exist!");
+        }
+
+        BufferedReader in = new BufferedReader(new FileReader(inFile));
+        String currentLine;
+        int lineCount = 0;
+        while ((currentLine = in.readLine()) != null){
+            lineCount ++;
+            StringTokenizer st = new StringTokenizer(currentLine);
+
+            if (st.countTokens() == 1){
+                //complain if we have only one col
+                throw new HaploViewException("File error on line " + lineCount + " in " + inFile.getName());
+            }else if (st.countTokens() == 0){
+                //skip blank lines
+                continue;
+            }
+            Double pos, val;
+            try{
+                pos = new Double(st.nextToken());
+                val = new Double(st.nextToken());
+            }catch (NumberFormatException nfe) {
+                throw new HaploViewException("Format error on line " + lineCount + " in " + inFile.getName());
+            }
+            analysisPositions.add(pos);
+            analysisValues.add(val);
+            trackExists = true;
+        }
+
     }
 
     //this whole method is broken at the very least because it doesn't check for zeroing

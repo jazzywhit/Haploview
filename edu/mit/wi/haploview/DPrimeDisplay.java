@@ -2,6 +2,7 @@ package edu.mit.wi.haploview;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.util.Vector;
@@ -21,6 +22,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private static final int BOX_RADII[] = {24, 11, 6};
     private static final int TICK_HEIGHT = 8;
     private static final int TICK_BOTTOM = 50;
+
+    private static final int TRACK_BUMPER = 3;
+    private static final int TRACK_PALETTE = 45;
+    private static final int TRACK_HEIGHT = TRACK_PALETTE + TRACK_BUMPER*2;
+    private static final int TRACK_GAP = 5;
 
     private int widestMarkerName = 80; //default size
     private int infoHeight = 0, blockDispHeight = 0;
@@ -331,17 +337,56 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             highY = exportStop;
         }
 
+        int lineSpan = (dPrimeTable.length-1) * boxSize;
+        long minpos = Chromosome.getMarker(0).getPosition();
+        long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
+        double spanpos = maxpos - minpos;
+
+        if (theData.trackExists){
+            //draw the analysis track above where the marker positions will be marked
+            g2.setColor(Color.white);
+            g2.fillRect(left, top, lineSpan, TRACK_HEIGHT);
+            g2.setColor(Color.black);
+            g2.drawRect(left, top, lineSpan, TRACK_HEIGHT);
+
+            //get the data into an easier format
+            double positions[] = new double[theData.analysisPositions.size()];
+            double values[] = new double[theData.analysisPositions.size()];
+            for (int x = 0; x < positions.length; x++){
+                positions[x] = ((Double)theData.analysisPositions.elementAt(x)).doubleValue();
+                values[x] = ((Double)theData.analysisValues.elementAt(x)).doubleValue();
+            }
+
+            g2.setColor(Color.black);
+            double min = Double.MAX_VALUE;
+            double max = -min;
+            for (int x = 0; x < positions.length; x++){
+                if(values[x] < min){
+                    min = values[x];
+                }
+                if (values[x] > max){
+                    max = values[x];
+                }
+            }
+            double range = max-min;
+            //todo: this is kinda hideous
+            for (int x = 0; x < positions.length - 1; x++){
+                if (positions[x] >= minpos && positions[x+1] <= maxpos){
+                    g2.draw(new Line2D.Double(lineSpan * Math.abs((positions[x] - minpos)/spanpos) + left,
+                            top + TRACK_PALETTE + TRACK_BUMPER - (TRACK_PALETTE * Math.abs((values[x] - min)/range)),
+                            lineSpan * Math.abs((positions[x+1] - minpos)/spanpos) + left,
+                            top + TRACK_PALETTE + TRACK_BUMPER - (TRACK_PALETTE * Math.abs((values[x+1] - min)/range))));
+                }
+            }
+            top += TRACK_HEIGHT + TRACK_GAP;
+        }
+
         if (theData.infoKnown) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
             //// draw the marker locations
 
-            int lineSpan = (dPrimeTable.length-1) * boxSize;
-
-            long minpos = Chromosome.getMarker(0).getPosition();
-            long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
-            double spanpos = maxpos - minpos;
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
             g2.fillRect(left+1, top+1, lineSpan-1, TICK_HEIGHT-1);
@@ -721,6 +766,12 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }else{
             infoHeight=0;
         }
+
+        if (theData.trackExists){
+            //make room for analysis track at top
+            high += TRACK_HEIGHT + TRACK_GAP;
+        }
+
         int wide = 2*H_BORDER + boxSize*(upLim-loLim-1);
         Rectangle visRect = getVisibleRect();
         //big datasets often scroll way offscreen in zoom-out mode

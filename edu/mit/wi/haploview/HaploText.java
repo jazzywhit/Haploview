@@ -98,7 +98,7 @@ public class HaploText implements Constants{
 
         for(int i =0; i < args.length; i++) {
             if(args[i].equals("-help") || args[i].equals("-h")) {
-                System.out.println("HaploView command line options\n" +
+                System.out.println(TITLE_STRING + " command line options\n" +
                         "-h, -help                     print this message\n" +
                         "-n                            command line output only\n" +
                         "-q                            quiet mode- doesnt print any warnings or information to screen\n" +
@@ -408,6 +408,7 @@ public class HaploText implements Constants{
      * @param infoFileName
      */
     private void processFile(String fileName,int fileType,String infoFileName){
+        System.out.println(TITLE_STRING);
         try {
             int outputType;
             long maxDistance;

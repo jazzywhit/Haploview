@@ -9,6 +9,7 @@ public interface Constants {
     public static final String TITLE_STRING = "Haploview v2.04";
     public static final String READ_GENOTYPES = "Open genotype data";
     public static final String READ_MARKERS = "Load marker data";
+    public static final String READ_ANALYSIS_TRACK = "Load analysis track";
 
     public static final String EXPORT_TEXT = "Export current tab to text";
     public static final String EXPORT_PNG = "Export current tab to PNG";
