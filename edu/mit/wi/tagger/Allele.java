@@ -5,11 +5,11 @@ public class Allele{
     private static final char[] alleleCodes = {'X','A','C','G','T'};
 
     private VariantSequence locus;
-    private String genotypeString;
+    private String numericGenotypeString;
 
     public Allele(VariantSequence locus, String genotypeString) {
         this.locus = locus;
-        this.genotypeString = genotypeString;
+        this.numericGenotypeString = genotypeString;
     }
 
     public VariantSequence getLocus() {
@@ -17,7 +17,7 @@ public class Allele{
     }
 
     public String getGenotypeString(){
-        String disp = new String(genotypeString);
+        String disp = new String(numericGenotypeString);
         for (int i = 0; i < alleleCodes.length; i++){
             disp = disp.replace(alleleNumChars[i],alleleCodes[i]);
         }
@@ -25,10 +25,19 @@ public class Allele{
         return disp;
     }
 
+    public String getTestFileFormat(){
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < numericGenotypeString.length()-1; i++){
+            sb.append(numericGenotypeString.charAt(i)).append(",");
+        }
+        sb.append(numericGenotypeString.charAt(numericGenotypeString.length()-1));
+        return sb.toString();
+    }
+
     public boolean equals(Object o) {
         if (o instanceof Allele){
             Allele a = (Allele)o;
-            if (a.locus.equals(locus) && a.genotypeString.equals(genotypeString)){
+            if (a.locus.equals(locus) && a.numericGenotypeString.equals(numericGenotypeString)){
                 return true;
             }
         }
@@ -36,6 +45,6 @@ public class Allele{
     }
 
     public int hashCode(){
-        return locus.hashCode() + genotypeString.hashCode();
+        return locus.hashCode() + numericGenotypeString.hashCode();
     }
 }
