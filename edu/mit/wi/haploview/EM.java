@@ -1,8 +1,6 @@
 package edu.mit.wi.haploview;
 
 import java.util.Vector;
-import java.util.Arrays;
-//import java.util.Enumeration;
 
 public class EM implements Constants {
     //results fields
@@ -23,7 +21,7 @@ public class EM implements Constants {
     int[][] ambighet;
     private Vector chromosomes;
     private int numTrios;
-    private int numFileteredTrios;
+    private int numFilteredTrios;
     private boolean[][][] kidConsistentCache;
     private Vector realAffectedStatus;
 
@@ -257,7 +255,7 @@ public class EM implements Constants {
                 }
             }
         }
-        numFileteredTrios  = inputHaploTrios.size() / 4;
+        numFilteredTrios  = inputHaploTrios.size() / 4;
         inputHaploTrios.addAll(inputHaploSingletons);
         affTrios.addAll(affSingletons);
 
@@ -498,8 +496,8 @@ return(-5);
         decoded to reveal the actual haplotypes they represent */
 
         if(Options.getAssocTest() == ASSOC_TRIO) {
-            kidConsistentCache = new boolean[numFileteredTrios][][];
-            for(int i=0;i<numFileteredTrios*2;i+=2) {
+            kidConsistentCache = new boolean[numFilteredTrios][][];
+            for(int i=0;i<numFilteredTrios*2;i+=2) {
                 if (((Integer)affStatus.elementAt(i)).intValue() == 2){
                     kidConsistentCache[i/2] = new boolean[superdata[i].nsuper][];
                     for (int n=0; n<superdata[i].nsuper; n++) {
@@ -565,7 +563,7 @@ return(-5);
         //return 0;
     }
 
-    public void doAssociationTests(Vector affStatus, boolean[] permuteInd) {
+    public void doAssociationTests(Vector affStatus, Vector permuteInd) {
         if(superprob == null || superdata == null || realAffectedStatus == null) {
             return;
         }
@@ -573,8 +571,10 @@ return(-5);
             affStatus = realAffectedStatus;
         }
         if(permuteInd == null) {
-            permuteInd = new boolean[superdata.length];
-            Arrays.fill(permuteInd, false);
+            permuteInd = new Vector();
+            for (int i = 0; i < superdata.length; i++){
+                permuteInd.add(new Boolean(false));
+            }
         }
 
 
@@ -587,7 +587,7 @@ return(-5);
             totalCase = new double[superprob.length];
             totalControl = new double[superprob.length];
             double tempnorm=0;
-            for (int i = numFileteredTrios*2; i < superdata.length; i++){
+            for (int i = numFilteredTrios*2; i < superdata.length; i++){
                 for (int n=0; n<superdata[i].nsuper; n++) {
                     if (((Integer)affStatus.elementAt(i)).intValue() == 1){
                         tempControl[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
@@ -628,7 +628,7 @@ return(-5);
             tempU = new double[superprob.length];
             totalU = new double[superprob.length];
 
-            for (int i=0; i<numFileteredTrios*2; i+=2) {
+            for (int i=0; i<numFilteredTrios*2; i+=2) {
                 if (((Integer)affStatus.elementAt(i)).intValue() == 2){
                     tempnorm=0.00;
                     for (int n=0; n<superdata[i].nsuper; n++) {
@@ -639,7 +639,7 @@ return(-5);
                                 /*if(i<5) {
                                     System.out.println(superdata[i+1].superposs[m].h1 + "\t" + product);
                                 } */
-                                if(permuteInd[i]) {
+                                if(((Boolean)permuteInd.get(i)).booleanValue()) {
                                     if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
                                         tempU[superdata[i].superposs[n].h1]+=product;
                                         tempT[superdata[i].superposs[n].h2]+=product;
