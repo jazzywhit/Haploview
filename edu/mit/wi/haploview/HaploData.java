@@ -8,7 +8,7 @@ import java.util.*;
 //import java.awt.*;
 //import java.awt.geom.*;
 
-class HaploData{
+public class HaploData{
     Vector chromosomes, blocks;
     int missingLimit = 5;
     Vector markerInfo = new Vector();
@@ -51,11 +51,6 @@ class HaploData{
         toBeCompleted = (((Chromosome)chromosomes.firstElement()).size()-1)*((Chromosome)chromosomes.firstElement()).size()/2;
     }
 
-    public void doMonitoredComputation(){
-        dPrimeTable = generateDPrimeTable(chromosomes);
-        blocks = guessBlocks(dPrimeTable, 0);
-        finished = true;
-    }
 
     Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh){
         Haplotype[][] results = new Haplotype[blocks.size()][];
@@ -296,14 +291,14 @@ class HaploData{
                     }
                 }
                 //thought i needed to fix these percentages, but the raw values are just as good.
-                /**		double percentageSum = 0;
+                /*		double percentageSum = 0;
                  double[] fixedCross = new double[crossPercentages.length];
                  for (int y = 0; y < crossPercentages.length; y++){
                  percentageSum += crossPercentages[y];
                  }
                  for (int y = 0; y < crossPercentages.length; y++){
                  fixedCross[y] = crossPercentages[y]/percentageSum;
-                 }**/
+                 }*/
                 haplos[gap][i].addCrossovers(crossPercentages);
                 multilocusTable[i] = crossPercentages;
             }
@@ -550,17 +545,17 @@ class HaploData{
         return chroms;
     }
 
-    Vector guessBlocks(PairwiseLinkage[][] dPrime, int method){
+    void guessBlocks(int method){
         Vector returnVec = new Vector();
         switch(method){
-            case 0: returnVec = new FindBlocks(dPrime, markerInfo).doSFS(); break;
-            case 1: returnVec = new FindBlocks(dPrime).do4Gamete(); break;
-            case 2: returnVec = new FindBlocks(dPrime).doMJD(); break;
+            case 0: returnVec = new FindBlocks(dPrimeTable, markerInfo).doSFS(); break;
+            case 1: returnVec = new FindBlocks(dPrimeTable).do4Gamete(); break;
+            case 2: returnVec = new FindBlocks(dPrimeTable).doMJD(); break;
         }
-        return returnVec;
+        blocks = returnVec;
     }
 
-    /**
+    /*
      old c version
 
      static {
@@ -569,7 +564,8 @@ class HaploData{
 
      private native String callComputeDPrime(int aa, int ab, int ba, int bb, int doublehet);
      private native String runEM(int num_haplos, int num_loci, String[] input_haplos, int num_blocks, int[] block_size);
-     **/
+     */
+
 
     public PairwiseLinkage computeDPrime(int a, int b, int c, int d, int e, double f){
         int i,j,k,count,itmp;
@@ -764,12 +760,12 @@ class HaploData{
         return toBeCompleted;
     }
 
-    PairwiseLinkage[][] generateDPrimeTable(final Vector chromosomes){
+    void generateDPrimeTable(){
         numCompleted = 0;
 
         //calculating D prime requires the number of each possible 2 marker
         //haplotype in the dataset
-        PairwiseLinkage[][] dPrimeTable = new PairwiseLinkage[((Chromosome) chromosomes.firstElement()).size()][((Chromosome) chromosomes.firstElement()).size()];
+        dPrimeTable = new PairwiseLinkage[((Chromosome) chromosomes.firstElement()).size()][((Chromosome) chromosomes.firstElement()).size()];
         int doublehet;
         int[][] twoMarkerHaplos = new int[3][3];
 
@@ -871,7 +867,6 @@ class HaploData{
                 dPrimeTable[pos1][pos2] = computeDPrime(twoMarkerHaplos[1][1], twoMarkerHaplos[1][2], twoMarkerHaplos[2][1], twoMarkerHaplos[2][2], doublehet, 0.1);
             }
         }
-        return dPrimeTable;
     }
 
     //everything below here is related to em phasing of haps
@@ -1049,6 +1044,7 @@ class HaploData{
 
         for (i=0; i<num_indivs; i++) {
             if (superdata[i].nsuper==1) {
+                //TODO: somehow fix this so that it doesn't break with weird trio hh00 stuff... maybe not fix here.
                 superprob[superdata[i].superposs[0].h1]+=1.0;
                 superprob[superdata[i].superposs[0].h2]+=1.0;
                 total+=2.0;
