@@ -1,5 +1,5 @@
 /*
- * $Id: MathUtil.java,v 1.1 2003/08/01 19:36:19 jmaller Exp $
+ * $Id: MathUtil.java,v 1.2 2003/08/13 20:53:28 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -26,10 +26,11 @@ public class MathUtil {
 	private static double EPS = 3.0e-7;
 	private static double FPMIN = 1.0e-30;
 
-	public static double gammq (double a, double x) throws CheckDataException {
+	public static double gammq (double a, double x) {
 		double gamser, gammcf; //, gln;
-		if ((x < 0.0 )|| (a <= 0.0 ))
-			throw new CheckDataException("Invalid arguments in routine gammq" );
+		//if ((x < 0.0 )|| (a <= 0.0 ))
+		//	throw new CheckDataException("Invalid arguments in routine gammq" );
+        try{
 		if (x < (a + 1.0) ) {
 			gamser = gser(a , x);
 			return (1.0 - gamser) ;
@@ -38,6 +39,10 @@ public class MathUtil {
 			gammcf = gcf (a , x);
 			return gammcf ;
 		}
+        }catch (CheckDataException e){
+           //TODO: fix this
+           return 0;
+        }
 	}
 
 	public static double gcf (double a, double x) throws CheckDataException {

@@ -155,6 +155,7 @@ public class HaploView extends JFrame implements ActionListener{
             viewMenuItems[i].setAccelerator(ks);
 
             displayMenu.add(viewMenuItems[i]);
+            viewMenuItems[i].setEnabled(false);
             group.add(viewMenuItems[i]);
         }
 
@@ -365,6 +366,7 @@ public class HaploView extends JFrame implements ActionListener{
                 dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
                 panel.add(dPrimeScroller);
                 tabs.addTab(viewItems[VIEW_D_NUM], panel);
+                viewMenuItems[VIEW_D_NUM].setEnabled(true);
 
                 //compute and show haps on next tab
                 panel = new JPanel();
@@ -383,6 +385,7 @@ public class HaploView extends JFrame implements ActionListener{
                 panel.add(hapScroller);
                 panel.add(hdc);
                 tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
+                viewMenuItems[VIEW_HAP_NUM].setEnabled(true);
 
                 //TDT panel
                 if(doTDT) {

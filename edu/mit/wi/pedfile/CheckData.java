@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.1 2003/08/01 19:36:19 jmaller Exp $
+ * $Id: CheckData.java,v 1.2 2003/08/13 20:53:28 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -56,8 +56,7 @@ public class CheckData {
 			MarkerResult markerResult;
 			if(withName) {
 				markerResult = checkMarker(i, (String)names.get(i));
-			}
-			else {
+			}else{
 				markerResult = checkMarker(i, new String("Marker " + (i+1)));
 			}
 			results.add(markerResult);
@@ -222,7 +221,12 @@ public class CheckData {
 	 * Gets observed heterozygosity
 	 */
 	private double getObsHET(int het, int hom){
-		double obsHET = het/(het+hom+0.0);
+        double obsHET;
+        if (het+hom == 0){
+            obsHET = 0;
+        }else{
+            obsHET = het/(het+hom+0.0);
+        }
 		return obsHET;
 	}
 
@@ -234,7 +238,12 @@ public class CheckData {
 			sumsq += num*num;
 			sum += num;
 		}
-		double preHet = 1.0 - (sumsq/((sum*sum)+0.0));
+		double preHet;
+        if (sum == 0){
+            preHet = 0;
+        }else{
+            preHet = 1.0 - (sumsq/((sum*sum)+0.0));
+        }
 		return preHet;
 	}
 
@@ -253,14 +262,8 @@ public class CheckData {
 		// using hw
 		//System.out.println("homA="+homA+" homB="+homB+" parentHet="+parentHet);
 		//HW hw = new HW((double)homA, (double)parentHet, (double)homB);
-		try{
 			//hw.caculate();
 			pvalue = hwCalculate((double)homA, (double)parentHet, (double)homB);
-		}
-		catch(CheckDataException e){
-			System.out.println("input data error in caculating p value");
-			System.out.println(e.getMessage());
-		}
 		return pvalue;
 	}
 
@@ -268,7 +271,7 @@ public class CheckData {
 	/**
 	 * Does the calculation
 	 */
-	private double hwCalculate(double obsAA, double obsAB, double obsBB) throws CheckDataException{
+	private double hwCalculate(double obsAA, double obsAB, double obsBB){
 		double obs[]={0.0, obsAA, obsAB, obsBB};
 		double expect[]={0.0, 0.0, 0.0, 0.0};
 		double sum_obs;
@@ -321,15 +324,17 @@ public class CheckData {
 	* This is converted from a numerical recipes class in c</p>
 	* @author Hui Gong
 	*/
-	public double chsoneCalculate(double[] bins, double[] ebins, int nbins, int knstrn) throws CheckDataException{
+	public double chsoneCalculate(double[] bins, double[] ebins, int nbins, int knstrn){
 		double prob, df, chsq, temp;
 		df = nbins - knstrn ;
 		chsq = 0.0 ;
 		for (int j = 1 ; j <= nbins ; j ++ ) {
-			if (ebins [j ]<= 0.0 )
-				throw new CheckDataException("Bad expected number in chsone" );
-			temp = bins[j]- ebins[j];
-			chsq += temp * temp / ebins [j];
+			if (ebins [j ]<= 0.0 ){
+                chsq=0;
+            }else{
+                temp = bins[j]- ebins[j];
+                chsq += temp * temp / ebins [j];
+            }
 		}
 		prob = MathUtil.gammq (0.5 * df, 0.5 * chsq );
 		return prob;
