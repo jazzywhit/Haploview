@@ -17,6 +17,7 @@
    <fileset dir="resources/">
        <include name="*.jar"/>
        <include name="*.zip"/>
+       <include name="jfreechart/*.jar"/>
      </fileset>
    <fileset dir="docs/">
        <include name="HaploHelp.jar"/>
@@ -84,6 +85,8 @@
      <zipfileset src="resources/jh.jar"/>
      <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
+     <zipfileset src="resources/jfreechart/jfreechart-0.9.21.jar"/>
+     <zipfileset src="resources/jfreechart/jcommon-0.9.6.jar"/>
    </jar>
 </target>
 
@@ -102,6 +105,8 @@
      <zipfileset src="resources/jh.jar"/>
      <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
+     <zipfileset src="resources/jfreechart/jfreechart-0.9.21.jar"/>
+     <zipfileset src="resources/jfreechart/jcommon-0.9.6.jar"/>
    </jar>
 </target>
 
@@ -118,6 +123,8 @@
      <zipfileset src="resources/jh.jar"/>
      <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
+     <zipfileset src="resources/jfreechart/jfreechart-0.9.21.jar"/>
+     <zipfileset src="resources/jfreechart/jcommon-0.9.6.jar"/>
    </jar>
 </target>
 
