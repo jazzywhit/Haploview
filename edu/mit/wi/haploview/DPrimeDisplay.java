@@ -28,7 +28,14 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private final int popupLeftMargin = 12;
 
 
-
+    BasicStroke thickerStroke = new BasicStroke(1);
+    BasicStroke thinnerStroke = new BasicStroke(0.35f);
+    BasicStroke fatStroke = new BasicStroke(2.5f);
+    float dash1[] = {5.0f};
+    BasicStroke dashedFatStroke = new BasicStroke(2.5f,
+            BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER,
+            5.0f, dash1, 0.0f);
     private Font boxFont = new Font("SansSerif", Font.PLAIN, 12);
     private Font markerNumFont = new Font("SansSerif", Font.BOLD, 12);
     private Font markerNameFont = new Font("Default", Font.PLAIN, 12);
@@ -117,7 +124,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
-        ((JViewport)this.getParent()).setViewSize(pref);
+
+        //did this for some reason but can't figure out why D'oh!
+        //((JViewport)this.getParent()).setViewSize(pref);
 
         //okay so this dumb if block is to prevent the ugly repainting
         //bug when loading markers after the data are already being displayed,
@@ -135,6 +144,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             clickXShift = left + (size.width-pref.width)/2;
             clickYShift = top;
         }
+        //System.out.println(size + " " + pref);
 
         FontMetrics boxFontMetrics = g2.getFontMetrics(boxFont);
 
@@ -152,20 +162,13 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         g2.fillRect(0,0,pref.width,pref.height);
         g2.setColor(Color.black);
 
-        BasicStroke thickerStroke = new BasicStroke(1);
-        BasicStroke thinnerStroke = new BasicStroke(0.35f);
-        BasicStroke fatStroke = new BasicStroke(2.5f);
 
-        float dash1[] = {5.0f};
-        BasicStroke dashedFatStroke = new BasicStroke(2.5f,
-                BasicStroke.CAP_BUTT,
-                BasicStroke.JOIN_MITER,
-                5.0f, dash1, 0.0f);
 
         g2.setFont(markerNameFont);
         metrics = g2.getFontMetrics();
         ascent = metrics.getAscent();
 
+        //TODO: finish implementing scaling gizmo
         /*//deal with adding some space to better display data with large gaps
         int cumulativeGap[] = new int[Chromosome.getFilteredSize()];
         for (int i = 0; i < cumulativeGap.length; i++){
@@ -191,7 +194,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             //// draw the marker locations
 
             int wide = (dPrimeTable.length-1) * boxSize;
-            //TODO: talk to kirby about locusview scaling gizmo
             int lineLeft = wide/20;
             int lineSpan = (wide/10)*9;
             long minpos = Chromosome.getMarker(0).getPosition();
@@ -199,7 +201,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             double spanpos = maxpos - minpos;
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
-            g2.fillRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
+            g2.fillRect(left + lineLeft+1, 6, lineSpan-1, TICK_HEIGHT-1);
             g2.setColor(Color.black);
             g2.drawRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
 
@@ -570,10 +572,10 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
         int wide = 2*H_BORDER + boxSize*(dPrimeTable.length-1);
         Rectangle visRect = getVisibleRect();
-        if (wide < visRect.width){
-            wide = visRect.width;
-        }
-        if (high < visRect.height){
+
+        //big datasets often scroll way offscreen in zoom-out mode
+        //but aren't the full height of the viewport
+        if (high < visRect.height && showWM){
             high = visRect.height;
         }
         return new Dimension(wide, high);
