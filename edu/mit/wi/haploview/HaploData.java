@@ -122,6 +122,8 @@ public class HaploData{
         }else{
             double numChroms = chromosomes.size();
             Vector markerInfo = new Vector();
+            numBadGenotypes = new double[Chromosome.getTrueSize()];
+            percentBadGenotypes = new double[Chromosome.getTrueSize()];
             for (int i = 0; i < Chromosome.getTrueSize(); i++){
                 //to compute maf, browse chrom list and count instances of each allele
                 byte a1 = 0;
@@ -139,6 +141,9 @@ public class HaploData{
                         }else{
                             numa2++;
                         }
+                    }
+                    else {
+                        numBadGenotypes[i]++;
                     }
                 }
                 double maf = numa1/(numa2+numa1);
@@ -160,7 +165,7 @@ public class HaploData{
 
         //read the file:
         BufferedReader in = new BufferedReader(new FileReader(infile));
-        boolean firstTime = true;
+
         while ((currentLine = in.readLine()) != null){
             //each line is expected to be of the format:
             //ped   indiv   geno   geno   geno   geno...
@@ -169,11 +174,8 @@ public class HaploData{
             ped = st.nextToken();
             indiv = st.nextToken();
             //all other tokens are loaded into a vector (they should all be genotypes)
-            //the first time through, count number of genotypes for marker quality statistics
-            if (firstTime){
-                numBadGenotypes = new double[st.countTokens()];
-                percentBadGenotypes = new double[st.countTokens()];
-            }
+
+
             genos = new byte[st.countTokens()];
             int q = 0;
             while (st.hasMoreTokens()){
@@ -183,13 +185,13 @@ public class HaploData{
                 }else{
                     genos[q] = Byte.parseByte(thisGenotype);
                 }
-                if (genos[q] == 0) numBadGenotypes[q] ++;
+
                 q++;
             }
             //a Chromosome is created and added to a vector of chromosomes.
             //this is what is evetually returned.
             chroms.add(new Chromosome(ped, indiv, genos, infile.getName()));
-            firstTime = false;
+
         }
         chromosomes = chroms;
 
