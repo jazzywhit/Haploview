@@ -70,7 +70,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     TDTPanel tdtPanel;    
     HaploAssocPanel hapAssocPanel;
     private TaggerConfigPanel taggerConfigPanel;
-
+    private HaploviewTab ldTab, hapsTab, checkTab, taggerTab, associationTab;
 
     public HaploView(){
         try{
@@ -386,9 +386,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             changeKey();
             //exporting clauses
         }else if (command.equals(EXPORT_PNG)){
-            export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getUnfilteredSize());
+            export((HaploviewTab)tabs.getSelectedComponent(), PNG_MODE, 0, Chromosome.getUnfilteredSize());
         }else if (command.equals(EXPORT_TEXT)){
-            export(tabs.getSelectedIndex(), TXT_MODE, 0, Chromosome.getUnfilteredSize());
+            export((HaploviewTab)tabs.getSelectedComponent(), TXT_MODE, 0, Chromosome.getUnfilteredSize());
         }else if (command.equals(EXPORT_OPTIONS)){
             ExportDialog exDialog = new ExportDialog(this);
             exDialog.pack();
@@ -596,7 +596,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     JOptionPane.ERROR_MESSAGE);
         }
         dPrimeDisplay.computePreferredSize();
-        if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
+        if (dPrimeDisplay != null && tabs.getSelectedComponent().equals(ldTab)){
             dPrimeDisplay.repaint();
         }
     }
@@ -687,6 +687,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             //let's start the math
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
+                    for (int i = 0; i < viewMenuItems.length; i++){
+                        viewMenuItems[i].setEnabled(false);
+                    }
                     dPrimeDisplay=null;
 
                     changeKey();
@@ -700,29 +703,22 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     Container contents = getContentPane();
                     contents.removeAll();
 
-                    int currentTab = VIEW_D_NUM;
-                    /*if (!(tabs == null)){
-                    currentTab = tabs.getSelectedIndex();
-                    } */
+                    HaploviewTab currentTab = ldTab;
 
                     tabs = new JTabbedPane();
                     tabs.addChangeListener(new TabChangeListener());
 
                     //first, draw the D' picture
-                    JPanel panel = new JPanel();
-                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
                     dPrimeDisplay = new DPrimeDisplay(window);
                     JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
                     dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
                     dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
                     dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
-                    panel.add(dPrimeScroller);
-                    tabs.addTab(viewItems[VIEW_D_NUM], panel);
+                    ldTab = new HaploviewTab(dPrimeScroller);
+                    tabs.addTab(VIEW_DPRIME, ldTab);
                     viewMenuItems[VIEW_D_NUM].setEnabled(true);
 
                     //compute and show haps on next tab
-                    panel = new JPanel();
-                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
                     try {
                         hapDisplay = new HaplotypeDisplay(theData);
                     } catch(HaploViewException e) {
@@ -736,48 +732,50 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     hapScroller = new JScrollPane(hapDisplay);
                     hapScroller.getVerticalScrollBar().setUnitIncrement(60);
                     hapScroller.getHorizontalScrollBar().setUnitIncrement(60);
-                    panel.add(hapScroller);
-                    panel.add(hdc);
-                    tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
+                    hapsTab = new HaploviewTab(hapScroller);
+                    hapsTab.add(hdc);
+                    tabs.addTab(VIEW_HAPLOTYPES, hapsTab);
                     viewMenuItems[VIEW_HAP_NUM].setEnabled(true);
                     displayMenu.setEnabled(true);
                     analysisMenu.setEnabled(true);
 
                     //check data panel
                     if (checkPanel != null){
-                        JPanel metaCheckPanel = new JPanel();
-                        metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
-                        metaCheckPanel.add(checkPanel);
+                        checkTab = new HaploviewTab(checkPanel);
                         cdc = new CheckDataController(window);
-                        metaCheckPanel.add(cdc);
+                        checkTab.add(cdc);
 
-                        tabs.addTab(viewItems[VIEW_CHECK_NUM], metaCheckPanel);
+                        tabs.addTab(VIEW_CHECK_PANEL, checkTab);
                         viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
-                        currentTab=VIEW_CHECK_NUM;
+                        currentTab=checkTab;
                     }
 
-                    //tagger display
-                    taggerConfigPanel = new TaggerConfigPanel(theData);
+                    //only show tagger if we have a .info file
+                    if (theData.infoKnown){
+                        //tagger display
+                        taggerConfigPanel = new TaggerConfigPanel(theData);
 
-                    JPanel metaTagPanel = new JPanel();
+                        JPanel metaTagPanel = new JPanel();
 
-                    metaTagPanel.setLayout(new BoxLayout(metaTagPanel,BoxLayout.Y_AXIS));
-                    metaTagPanel.add(taggerConfigPanel);
+                        metaTagPanel.setLayout(new BoxLayout(metaTagPanel,BoxLayout.Y_AXIS));
+                        metaTagPanel.add(taggerConfigPanel);
 
-                    JTabbedPane tagTabs = new JTabbedPane();
-                    tagTabs.add("Configuration",metaTagPanel);
+                        JTabbedPane tagTabs = new JTabbedPane();
+                        tagTabs.add("Configuration",metaTagPanel);
 
-                    JPanel resMetaPanel = new JPanel();
+                        JPanel resMetaPanel = new JPanel();
 
-                    resMetaPanel.setLayout(new BoxLayout(resMetaPanel,BoxLayout.Y_AXIS));
+                        resMetaPanel.setLayout(new BoxLayout(resMetaPanel,BoxLayout.Y_AXIS));
 
-                    TaggerResultsPanel tagResultsPanel = new TaggerResultsPanel();
-                    taggerConfigPanel.addActionListener(tagResultsPanel);
+                        TaggerResultsPanel tagResultsPanel = new TaggerResultsPanel();
+                        taggerConfigPanel.addActionListener(tagResultsPanel);
 
-                    resMetaPanel.add(tagResultsPanel);
-                    tagTabs.addTab("Results",resMetaPanel);
-                    tabs.addTab(VIEW_TAGGER,tagTabs);
-                    viewMenuItems[VIEW_TAGGER_NUM].setEnabled(true);
+                        resMetaPanel.add(tagResultsPanel);
+                        tagTabs.addTab("Results",resMetaPanel);
+                        taggerTab = new HaploviewTab(tagTabs);
+                        tabs.addTab(VIEW_TAGGER,taggerTab);
+                        viewMenuItems[VIEW_TAGGER_NUM].setEnabled(true);
+                    }
 
                     //Association panel
                     if(Options.getAssocTest() != ASSOC_NONE) {
@@ -828,15 +826,15 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                                 theData.getPedFile(),permSet), cust);
                         metaAssoc.add(permutationPanel,"Permutation Tests");
 
-
-                        tabs.addTab(VIEW_ASSOC, metaAssoc);
+                        associationTab = new HaploviewTab(metaAssoc);
+                        tabs.addTab(VIEW_ASSOC, associationTab);
                         viewMenuItems[VIEW_ASSOC_NUM].setEnabled(true);
 
                     }
 
 
 
-                    tabs.setSelectedIndex(currentTab);
+                    tabs.setSelectedComponent(currentTab);
                     contents.add(tabs);
 
                     repaint();
@@ -922,7 +920,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 //this is triggered when loading markers after already loading genotypes
                 //it is dumb and sucks, but at least it works. bah.
                 checkPanel = new CheckDataPanel(this);
-                Container checkTab = (Container)tabs.getComponentAt(VIEW_CHECK_NUM);
                 checkTab.removeAll();
 
                 JPanel metaCheckPanel = new JPanel();
@@ -970,7 +967,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         currentBlockDef = method;
 
         try{
-            if (tabs.getSelectedIndex() == VIEW_HAP_NUM){
+            if (tabs.getSelectedComponent().equals(hapsTab)){
                 hapDisplay.getHaps();
             }
         }catch(HaploViewException hve) {
@@ -997,11 +994,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (tabs.getSelectedIndex() != -1){
                 window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                int tabNum = tabs.getSelectedIndex();
-                if (tabNum == VIEW_D_NUM || tabNum == VIEW_HAP_NUM){
+                HaploviewTab tab = (HaploviewTab)tabs.getSelectedComponent();
+                if (tab.equals(ldTab) || tab.equals(hapsTab)){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(true);
-                }else if (tabNum == VIEW_ASSOC_NUM || tabNum == VIEW_CHECK_NUM || tabNum == VIEW_TAGGER_NUM){
+                }else if (tab.equals(associationTab) || tab.equals(checkTab) || tab.equals(taggerTab)){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(false);
                 }else{
@@ -1010,8 +1007,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }
 
                 //if we've adjusted the haps display thresh we need to change the haps ass panel
-                if (tabNum == VIEW_ASSOC_NUM){
-                    JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
+                if (tab.equals(associationTab)){
+                    JTabbedPane metaAssoc = (JTabbedPane)associationTab.getComponent(0);
                     //this is the haps ass tab inside the assoc super-tab
                     HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
                     if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
@@ -1027,7 +1024,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }
                 }
 
-                if (tabNum == VIEW_D_NUM){
+                if (tab.equals(ldTab)){
                     keyMenu.setEnabled(true);
                 }else{
                     keyMenu.setEnabled(false);
@@ -1138,13 +1135,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
-    void export(int tabNum, int format, int start, int stop){
+    void export(HaploviewTab tab, int format, int start, int stop){
         fc.setSelectedFile(new File(""));
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
             File outfile = fc.getSelectedFile();
             if (format == PNG_MODE || format == COMPRESSED_PNG_MODE){
                 BufferedImage image = null;
-                if (tabNum == VIEW_D_NUM){
+                if (tab.equals(ldTab)){
                     try {
                         if (format == PNG_MODE){
                             image = dPrimeDisplay.export(start, stop, false);
@@ -1157,7 +1154,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                                 "Export Error",
                                 JOptionPane.ERROR_MESSAGE);
                     }
-                }else if (tabNum == VIEW_HAP_NUM){
+                }else if (tab.equals(hapsTab)){
                     image = hapDisplay.export();
                 }else{
                     image = new BufferedImage(1,1,BufferedImage.TYPE_3BYTE_BGR);
@@ -1179,14 +1176,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }
             } else if (format == TXT_MODE){
                 try{
-                    if (tabNum == VIEW_D_NUM){
+                    if (tab.equals(ldTab)){
                         theData.saveDprimeToText(outfile, TABLE_TYPE, start, stop);
-                    }else if (tabNum == VIEW_HAP_NUM){
+                    }else if (tab.equals(hapsTab)){
                         theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray, outfile);
-                    }else if (tabNum == VIEW_CHECK_NUM){
+                    }else if (tab.equals(checkTab)){
                         checkPanel.printTable(outfile);
-                    }else if (tabNum == VIEW_ASSOC_NUM){
-                        Component selectedTab = ((JTabbedPane)tabs.getComponent(tabNum)).getSelectedComponent();
+                    }else if (tab.equals(associationTab)){
+                        Component selectedTab = ((JTabbedPane)associationTab.getComponent(0)).getSelectedComponent();
 
                         if(selectedTab == tdtPanel){
                             tdtPanel.getTestSet().saveSNPsToText(outfile);
@@ -1197,7 +1194,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }else if (selectedTab == custAssocPanel){
                             custAssocPanel.getTestSet().saveResultsToText(outfile);
                         }
-                    }else if (tabNum == VIEW_TAGGER_NUM){
+                    }else if (tab.equals(taggerTab)){
                         taggerConfigPanel.export(outfile);
                     }
                 }catch(IOException ioe){

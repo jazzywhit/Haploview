@@ -128,7 +128,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         aggressiveGroup.add(pairwiseButton);
         aggressiveGroup.add(dupleButton);
         aggressiveGroup.add(tripleButton);
-        pairwiseButton.setSelected(true);
+        tripleButton.setSelected(true);
 
         JPanel optsPanel = new JPanel();
         optsPanel.add(optsLeftPanel);
