@@ -18,6 +18,9 @@
        <include name="*.jar"/>
        <include name="*.zip"/>
      </fileset>
+   <fileset dir="docs/">
+       <include name="HaploHelp.jar"/>
+   </fileset>
 </path>
 
  <!-- =========================================================== -->
@@ -79,7 +82,7 @@
      </manifest>
      <zipfileset src="resources/JimiProClasses.zip"/>
      <zipfileset src="resources/jh.jar"/>
-     <zipfileset src="resources/haplohelp.jar"/>
+     <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
    </jar>
 </target>
@@ -97,7 +100,7 @@
      </manifest>
      <zipfileset src="resources/JimiProClasses.zip"/>
      <zipfileset src="resources/jh.jar"/>
-     <zipfileset src="resources/haplohelp.jar"/>
+     <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
    </jar>
 </target>
@@ -113,7 +116,7 @@
      </manifest>
      <zipfileset src="resources/JimiProClasses.zip"/>
      <zipfileset src="resources/jh.jar"/>
-     <zipfileset src="resources/haplohelp.jar"/>
+     <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
    </jar>
 </target>
