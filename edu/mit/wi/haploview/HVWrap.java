@@ -24,6 +24,9 @@ class StreamGobbler extends Thread{
 }
 
 public class HVWrap {
+    private static JTextArea errorTextArea;
+    private static JFrame contentFrame;
+
 
     HVWrap() {}
 
@@ -64,12 +67,38 @@ public class HVWrap {
             StringBuffer errorMsg = new StringBuffer("Fatal Error:\n");
             BufferedReader besr = new BufferedReader(new InputStreamReader(child.getErrorStream()));
             String line = null;
+
             while ( !dead  && (line = besr.readLine()) != null) {
                 if(line.lastIndexOf("Memory") != -1) {
                     errorMsg.append(line);
                     //if the child generated an "Out of Memory" error message, kill it
                     child.destroy();
                     dead = true;
+                }else {
+                    //for any other errors we show them to the user
+                    if(headless) {
+                        //if were in headless (command line) mode, then print the error text to command line
+                        System.err.println(line);
+                    } else {
+                        //otherwise print it to the error textarea
+                        if(errorTextArea == null) {
+                            //if this is the first error line then we need to create the JFrame with the
+                            //text area
+                            javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
+                                public void run() {
+                                    createAndShowGUI();
+                                }
+                            });
+                        }
+                        //if the user closed the contentFrame, then we want to reopen it when theres error text
+                        if(!contentFrame.isVisible()) {
+                            System.err.println("contentframe not visible");
+                            contentFrame.setVisible(true);
+                        }
+
+                        errorTextArea.append(line + "\n");
+                        errorTextArea.setCaretPosition(errorTextArea.getDocument().getLength());
+                    }
                 }
             }
             final String realErrorMsg = errorMsg.toString();
@@ -97,6 +126,30 @@ public class HVWrap {
             }
         }
         System.exit(exitValue);
+    }
+
+
+    private static void createAndShowGUI() {
+
+        contentFrame = new JFrame("Error Output");
+        contentFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+
+        JComponent newContentPane = new JPanel();
+        newContentPane.setOpaque(true); //content panes must be opaque
+
+        errorTextArea = new JTextArea(15,50);
+        errorTextArea.setEditable(false);
+        errorTextArea.setLineWrap(true);
+        JScrollPane scrollPane = new JScrollPane(errorTextArea,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        errorTextArea.append("Haploview error log. \nIf you are reporting a problem please include the contents of this log.\njcbarret@broad.mit.edu\n");
+
+        newContentPane.add(scrollPane);
+        contentFrame.setContentPane(newContentPane);
+        contentFrame.pack();
+        contentFrame.setVisible(true);
     }
 
 
