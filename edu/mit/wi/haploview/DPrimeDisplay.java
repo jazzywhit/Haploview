@@ -377,10 +377,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     public void paintComponent(Graphics g){
         DPrimeTable dPrimeTable = theData.dpTable;
         if (Chromosome.getSize() == 0){
-            //if there are no valid markers, but info is known we don't want
-            //to paint any of that stuff.
-            printDPrimeValues = false;
-            printMarkerNames = false;
+            //if there are no valid markers
+            return;
         }
         Vector blocks = theData.blocks;
         Rectangle visRect = getVisibleRect();
@@ -1056,6 +1054,12 @@ END OF HIS HACKS
     }
 
     public void computePreferredSize(Graphics g) {
+        if (Chromosome.getSize() == 0){
+            //no valid markers so return an empty size
+            setPreferredSize(new Dimension(0,0));
+            return;
+        }
+
         //setup marker positions
         double aligned = 0.0;
         long minpos = Chromosome.getMarker(0).getPosition();
@@ -1365,7 +1369,7 @@ END OF HIS HACKS
             }
         }
     }
-    
+
 
     public void mouseReleased(MouseEvent e) {
         //remove popped up window
