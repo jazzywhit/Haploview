@@ -32,7 +32,7 @@
     <property name="haploview.src" value="${haploview.root}"/>
     <property name="haloview.lib" value="${haploview.root}/lib"/>
     <property name="haploview.package" value="edu/mit/wi/haploview"/>
-    
+    <property name="pedfile.package" value="edu/mit/wi/pedfile"/>
     <tstamp>
       <format property="build.number" pattern="yyyyMMddHHmm"/>
     </tstamp>
@@ -48,9 +48,10 @@
 
 <target name="compile-haploview" depends="prepare-compile">
    <javac srcdir="${haploview.src}" destdir="${haploview.classes}"
-   includes="${haploview.package}/**">
+   includes="${haploview.package}/** ${pedfile.package}/**">
    <classpath refid="library.classpath"/>
    </javac>
+   
    <copy file="resources/orator.raw" todir="build/classes/edu/mit/wi/haploview/"/>
 </target>
 
@@ -59,7 +60,7 @@
 <target name="haploview" depends="compile-haploview">
    <jar jarfile="haploview.jar" manifest="${haploview.src}/resources/META-INF/MANIFEST.MF">
      <fileset dir="${haploview.classes}">
-       <include name="edu/mit/wi/haploview/**"/>
+       <include name="edu/mit/wi/**/**"/>
      </fileset>
    </jar>
 </target>
