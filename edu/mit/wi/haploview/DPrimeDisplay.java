@@ -554,8 +554,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             if (printDetails){
                 String labelString = new String ("Block " + (i+1));
                 if (theData.infoKnown){
-                    long blockSize = Chromosome.getMarker(last).getPosition() -
-                            Chromosome.getMarker(first).getPosition();
+                    long blockSize = Chromosome.getFilteredMarker(last).getPosition() -
+                            Chromosome.getFilteredMarker(first).getPosition();
                     labelString += " (" + blockSize/1000 + " kb)";
                 }
                 g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/3);
