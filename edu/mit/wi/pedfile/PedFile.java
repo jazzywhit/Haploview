@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.33 2004/10/05 14:54:44 jcbarret Exp $
+* $Id: PedFile.java,v 1.34 2004/10/05 15:17:22 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -481,9 +481,11 @@ public class PedFile {
                     //it doesnt exist, so create a new Family object
                     fam = new Family(ind.getFamilyID());
                 }
-                if (fam.getMember(ind.getIndividualID()) != null){
+
+                if (fam.getMembers().containsKey(ind.getIndividualID())){
                     throw new PedFileException("Individual "+ind.getIndividualID()+" in family "+ ind.getFamilyID()+" appears more than once.");
                 }
+
                 fam.addMember(ind);
                 this.families.put(ind.getFamilyID(),fam);
 
