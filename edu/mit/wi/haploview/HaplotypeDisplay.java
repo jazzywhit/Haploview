@@ -20,7 +20,9 @@ public class HaplotypeDisplay extends JComponent {
     int thinThresh = 1;
     int thickThresh = 10;
     private boolean forExport = false;
-    public boolean numAlls;
+    public int alleleDisp;
+    private Color dullRed = new Color(204,51,51);
+    private Color dullBlue = new Color(51,51,204);
 
 
     public HaplotypeDisplay(HaploData h) throws HaploViewException {
@@ -370,6 +372,33 @@ public class HaplotypeDisplay extends JComponent {
             int above = top + markerDigits*MARKER_CHAR_WIDTH + TAG_SPAN +
                     (ROW_HEIGHT - CHAR_HEIGHT) / 2;
 
+            //figure out which allele is the major allele
+            double[][] alleleCounts = new double[filteredHaplos[i][0].getGeno().length][9];
+            //zero this out
+            for (int j = 0; j < alleleCounts.length; j++){
+                for (int k = 0; k < alleleCounts[j].length; k++){
+                    alleleCounts[j][k] = 0;
+                }
+            }
+            for (int j = 0; j < filteredHaplos[i].length; j++){
+                int curHapNum = lookupPos[i][j];
+                int[] theGeno = filteredHaplos[i][curHapNum].getGeno();
+                double theFreq = filteredHaplos[i][curHapNum].getPercentage();
+                for (int k = 0; k < theGeno.length; k++){
+                    alleleCounts[k][theGeno[k]] += theFreq;
+                }
+            }
+            int[] majorAllele = new int[filteredHaplos[i][0].getGeno().length];
+            for (int k = 0; k < majorAllele.length; k++){
+                double maj = 0;
+                for (int z = 0; z < alleleCounts[k].length; z++){
+                    if (alleleCounts[k][z] > maj){
+                        majorAllele[k] = z;
+                        maj = alleleCounts[k][z];
+                    }
+                }
+            }
+
             for (int j = 0; j < filteredHaplos[i].length; j++){
                 int curHapNum = lookupPos[i][j];
                 //String theHap = new String();
@@ -379,12 +408,21 @@ public class HaplotypeDisplay extends JComponent {
                 // j is the row of haplotype
                 for (int k = 0; k < theGeno.length; k++) {
                     // theGeno[k] will be 1,2,3,4 (acgt) or 8 (for bad)
-                    if (!numAlls){
+                    if (alleleDisp == 0){
                         g.drawImage(charImages[theGeno[k] - 1],
                                 left + k*CHAR_WIDTH, above + j*ROW_HEIGHT, null);
-                    }else{
+                    }else if (alleleDisp == 1){
                         g.drawImage(blackNumImages[theGeno[k]],
                                 left + k*CHAR_WIDTH, above + j*ROW_HEIGHT, null);
+                    }else{
+                        if (theGeno[k] == majorAllele[k]){
+                            g.setColor(dullRed);
+                        }else{
+                            g.setColor(dullBlue);
+                        }
+                        g.fillRect(left + k*CHAR_WIDTH,
+                                above + j*ROW_HEIGHT + (ROW_HEIGHT - CHAR_WIDTH)/2,
+                                CHAR_WIDTH, CHAR_WIDTH);
                     }
                 }
 

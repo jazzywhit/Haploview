@@ -94,9 +94,6 @@ public class HaploView extends JFrame implements ActionListener{
     private String[] inputOptions;
     CheckDataController cdc;
 
-    //COMMAND LINE ARGUMENTS
-    private HaploText argParser;
-
 
     public HaploView(){
         try{
@@ -273,9 +270,7 @@ public class HaploView extends JFrame implements ActionListener{
 
     }
 
-    public void argHandler(String[] args) {
-      this.argParser = new HaploText(args);
-    }
+
 
 
     // function workaround for overdesigned, underthought swing api -fry
@@ -429,7 +424,7 @@ public class HaploView extends JFrame implements ActionListener{
     void readPedGenotypes(String[] f, int type){
         //input is a 3 element array with
         //inputOptions[0] = ped file
-        //inputOptions[1] = info file (null if none)
+        //inputOptions[1] = info file ("" if none)
         //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
         //type is either 3 or 4 for ped and hapmap files respectively
 
@@ -466,7 +461,7 @@ public class HaploView extends JFrame implements ActionListener{
     void readPhasedGenotypes(String[] f){
         //input is a 3 element array with
         //inputOptions[0] = haps file
-        //inputOptions[1] = info file (null if none)
+        //inputOptions[1] = info file ("" if none)
         //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
 
         //these are not available for non ped files
@@ -916,15 +911,13 @@ public class HaploView extends JFrame implements ActionListener{
         }
         if(nogui) {
             HaploText textOnly = new HaploText(args);
-        }
-        else {
+        } else {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) { }
             //System.setProperty("swing.disableFileChooserSpeedFix", "true");
 
             window  =  new HaploView();
-            window.argHandler(args);
 
             //setup view object
             window.setTitle(TITLE_STRING);
@@ -936,10 +929,30 @@ public class HaploView extends JFrame implements ActionListener{
                     (screen.height - window.getHeight()) / 2);
 
             window.setVisible(true);
-            ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
-            readDialog.pack();
-            readDialog.setVisible(true);
 
+            //parse command line stuff for input files or prompt data dialog
+            HaploText argParser = new HaploText(args);
+            String[] inputArray = new String[3];
+            if (argParser.getHapsFileName() != ""){
+                inputArray[0] = argParser.getHapsFileName();
+                inputArray[1] = argParser.getInfoFileName();
+                inputArray[2] = String.valueOf(argParser.getMaxDistance());
+                window.readPhasedGenotypes(inputArray);
+            }else if (argParser.getPedFileName() != ""){
+                inputArray[0] = argParser.getPedFileName();
+                inputArray[1] = argParser.getInfoFileName();
+                inputArray[2] = String.valueOf(argParser.getMaxDistance());
+                window.readPedGenotypes(inputArray, 3);
+            }else if (argParser.getHapmapFileName() != ""){
+                inputArray[0] = argParser.getHapmapFileName();
+                inputArray[1] = "";
+                inputArray[2] = String.valueOf(argParser.getMaxDistance());
+                window.readPedGenotypes(inputArray, 4);
+            }else{
+                ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
+                readDialog.pack();
+                readDialog.setVisible(true);
+            }
         }
     }
 

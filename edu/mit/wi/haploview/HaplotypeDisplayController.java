@@ -13,7 +13,7 @@ public class HaplotypeDisplayController extends JPanel {
     NumberTextField minDisplayField;
     NumberTextField minThickField;
     NumberTextField minThinField;
-    JCheckBox numericAlleles;
+    ButtonGroup alleleDisplayGroup;
     JButton goButton;
     Dimension fieldSize;
 
@@ -24,30 +24,57 @@ public class HaplotypeDisplayController extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+
         JPanel hapPercentPanel = new JPanel();
         hapPercentPanel.add(new JLabel("Examine haplotypes above "));
             hapPercentPanel.add(minDisplayField =
                     new NumberTextField(String.valueOf(parent.displayThresh), 3, false));
 
         hapPercentPanel.add(new JLabel("%"));
-        add(hapPercentPanel);
+        leftPanel.add(hapPercentPanel);
 
         JPanel thinPanel = new JPanel();
         thinPanel.add(new JLabel("Connect with thin lines if > "));
         thinPanel.add(minThinField =
                 new NumberTextField(String.valueOf(parent.thinThresh), 3, false));
         thinPanel.add(new JLabel("%"));
-        add(thinPanel);
+        leftPanel.add(thinPanel);
 
         JPanel thickPanel = new JPanel();
         thickPanel.add(new JLabel("Connect with thick lines if > "));
         thickPanel.add(minThickField =
                 new NumberTextField(String.valueOf(parent.thickThresh), 3, false));
         thickPanel.add(new JLabel("%"));
-        add(thickPanel);
+        leftPanel.add(thickPanel);
 
-        numericAlleles = new JCheckBox("Display alleles as numbers.");
-        add(numericAlleles);
+        //numericAlleles = new JCheckBox("Display alleles as numbers.");
+        //add(numericAlleles);
+        JLabel dispLab = new JLabel("Display alleles as:");
+        rightPanel.add(dispLab);
+
+        JRadioButton letBut = new JRadioButton("letters");
+        letBut.setActionCommand("0");
+        letBut.setSelected(true);
+        rightPanel.add(letBut);
+        JRadioButton numBut = new JRadioButton("numbers");
+        numBut.setActionCommand("1");
+        rightPanel.add(numBut);
+        JRadioButton sqBut = new JRadioButton("colored squares");
+        sqBut.setActionCommand("2");
+        rightPanel.add(sqBut);
+        alleleDisplayGroup = new ButtonGroup();
+        alleleDisplayGroup.add(letBut);
+        alleleDisplayGroup.add(numBut);
+        alleleDisplayGroup.add(sqBut);
+
+        JPanel optionPanel = new JPanel();
+        optionPanel.add(leftPanel);
+        optionPanel.add(rightPanel);
+        add(optionPanel);
 
         goButton = new JButton("Go");
         goButton.addActionListener(new ActionListener(){
@@ -55,7 +82,7 @@ public class HaplotypeDisplayController extends JPanel {
                 setDisplayThresh(Integer.parseInt(minDisplayField.getText()));
                 setThinThresh(Integer.parseInt(minThinField.getText()));
                 setThickThresh(Integer.parseInt(minThickField.getText()));
-                setNumericAlls(numericAlleles.isSelected());
+                setNumericAlls(alleleDisplayGroup.getSelection().getActionCommand());
                 paintIt();
             }
         });
@@ -64,8 +91,8 @@ public class HaplotypeDisplayController extends JPanel {
         fieldSize = minDisplayField.getPreferredSize();
     }
 
-    private void setNumericAlls(boolean selected) {
-        parent.numAlls = selected;
+    private void setNumericAlls(String selection) {
+        parent.alleleDisp = Integer.parseInt(selection);
     }
 
 

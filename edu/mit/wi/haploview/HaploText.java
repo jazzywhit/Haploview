@@ -1,12 +1,10 @@
 package edu.mit.wi.haploview;
 
-import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFileException;
 
 import java.io.*;
 import java.util.Vector;
-import java.util.StringTokenizer;
 
 public class HaploText {
 
@@ -15,6 +13,7 @@ public class HaploText {
     private String arg_hapsfile;
     private String arg_infoFileName;
     private String arg_pedfile;
+    private String arg_hapmapfile;
     private boolean arg_showCheck = false;
     private boolean arg_skipCheck = false;
     private Vector arg_ignoreMarkers = new Vector();
@@ -39,6 +38,14 @@ public class HaploText {
         return arg_pedfile;
     }
 
+    public String getInfoFileName(){
+        return arg_infoFileName;
+    }
+
+    public String getHapmapFileName(){
+        return arg_hapmapfile;
+    }
+
     public boolean isShowCheck() {
         return arg_showCheck;
     }
@@ -58,7 +65,7 @@ public class HaploText {
             this.doBatch();
         }
 
-        if(!(this.arg_pedfile).equals("") || !(this.arg_hapsfile).equals("") ){
+        if(!(this.arg_pedfile.equals("")) || !(this.arg_hapsfile.equals("")) || !(this.arg_hapmapfile.equals(""))){
             //System.out.println("pedfile!\t" + pedFileName);
             if(arg_nogui){
                 processTextOnly();
@@ -76,6 +83,7 @@ public class HaploText {
         String hapsFileName = "";
         String pedFileName = "";
         String infoFileName = "";
+        String hapmapFileName = "";
         boolean showCheck = false;
         boolean skipCheck = false;
         Vector ignoreMarkers = new Vector();
@@ -98,10 +106,11 @@ public class HaploText {
                         //"         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
                         //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
                         "-ha <hapsfile>                specify an input file in .haps format\n" +
+                        "-a <hapmapfile>               specify an input file in HapMap format\n" +
                         "-i <infofile>                 specify a marker info file\n" +
                         "-b <batchfile>                batch mode. batchfile should contain a list of files either all genotype or alternating genotype/info\n" +
-                        "--dprime                      outputs dprime to <inputfile>.DPRIME\n" +
-                        "             note: --dprime defaults to no blocks output. use -o to also output blocks\n" +
+                        "-d                      outputs dprime to <inputfile>.DPRIME\n" +
+                        "             note: -d defaults to no blocks output. use -o to also output blocks\n" +
                         "-o <SFS,GAM,MJD,ALL>          output type. SFS, 4 gamete, MJD output or all 3. default is SFS.\n" +
                         "-m <distance>                 maximum comparison distance in kilobases (integer). default is 500");
 
@@ -168,6 +177,18 @@ public class HaploText {
                     }
                     infoFileName = args[i];
                 }
+            } else if (args[i].equals("-a")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println("-a requires a filename");
+                    System.exit(1);
+                }
+                else{
+                    if(!hapmapFileName.equals("")){
+                        System.out.println("multiple -a arguments found. only last hapmap file listed will be used");
+                    }
+                    hapmapFileName = args[i];
+                }
             }
             else if(args[i].equals("-o")) {
                 i++;
@@ -195,7 +216,7 @@ public class HaploText {
                     i--;
                 }
             }
-            else if(args[i].equals("--dprime")) {
+            else if(args[i].equals("-d") || args[i].equals("--dprime")) {
                 outputDprime = true;
             }
             else if(args[i].equals("-m")) {
@@ -262,6 +283,7 @@ public class HaploText {
         arg_hapsfile = hapsFileName;
         arg_infoFileName = infoFileName;
         arg_pedfile = pedFileName;
+        arg_hapmapfile = hapmapFileName;
         arg_showCheck = showCheck;
         arg_skipCheck = skipCheck;
         arg_ignoreMarkers = ignoreMarkers;
@@ -313,10 +335,10 @@ public class HaploText {
                     }
 
                     if( name.substring(name.length()-4,name.length()).equals(".ped") ) {
-                        processFile(name,true,infoMaybe);
+                        processFile(name,1,infoMaybe);
                     }
                     else {
-                        processFile(name,false,infoMaybe);
+                        processFile(name,0,infoMaybe);
                     }
                 }
                 else {
@@ -341,14 +363,17 @@ public class HaploText {
      */
     private void processTextOnly(){
         String fileName;
-        boolean fileType;
+        int fileType;
         if(!this.arg_hapsfile.equals("")) {
             fileName = this.arg_hapsfile;
-            fileType = false;
+            fileType = 0;
         }
-        else {
+        else if (!this.arg_pedfile.equals("")){
             fileName = this.arg_pedfile;
-            fileType = true;
+            fileType = 1;
+        }else{
+            fileName = this.arg_hapmapfile;
+            fileType = 2;
         }
 
         processFile(fileName,fileType,this.arg_infoFileName);
@@ -360,7 +385,7 @@ public class HaploText {
      * @param fileType true means pedfilem false means hapsfile
      * @param infoFileName
      */
-    private void processFile(String fileName,boolean fileType,String infoFileName){
+    private void processFile(String fileName,int fileType,String infoFileName){
         try {
             int outputType;
             long maxDistance;
@@ -384,11 +409,11 @@ public class HaploText {
             textData = new HaploData();
             Vector result = null;
 
-            if(!fileType){
+            if(fileType == 0){
                 //read in haps file
                 textData.prepareHapsInput(inputFile);
             }
-            else {
+            else if (fileType == 1) {
                 //read in ped file
               /*  if(this.arg_ignoreMarkers.size()>0) {
                     for(int i=0;i<this.arg_ignoreMarkers.size();i++){
@@ -404,6 +429,9 @@ public class HaploText {
 
                 textData.linkageToChrom(inputFile, 3, arg_skipCheck);
 
+            }else{
+                //read in hapmapfile
+                textData.linkageToChrom(inputFile,4,arg_skipCheck);
             }
 
 
@@ -550,10 +578,10 @@ public class HaploText {
                     saveDprimeWriter.close();
                 }
             }
-            if(fileType){
+            //if(fileType){
                 //TDT.calcTrioTDT(textData.chromosomes);
                 //TODO: Deal with this.  why do we calc TDT? and make sure not to do it except when appropriate
-            }
+            //}
         }
         catch(IOException e){
             System.err.println("An error has occured. This probably has to do with file input or output");
