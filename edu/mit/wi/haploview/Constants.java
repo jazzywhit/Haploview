@@ -61,11 +61,12 @@ public interface Constants {
     public static final int BLOX_NONE = 5;
 
     //filetypes
-    static final int GENO = 0;
-    static final int INFO = 1;
-    static final int HAPS = 2;
-    static final int PED = 3;
-    static final int HMP = 4;
+    static final int GENO_FILE = 0;
+    static final int INFO_FILE = 1;
+    static final int HAPS_FILE = 2;
+    static final int PED_FILE = 3;
+    static final int HMP_FILE = 4;
+    static final int ASSOC_FILE = 5;
 
     //color modes
     static final int STD_SCHEME = 0;
