@@ -667,6 +667,8 @@ public class HaploData implements Constants{
                     if (sep <= maxdist){
                         dpTemp.add(computeDPrime(pos1,pos2));
                     }
+                }else{
+                    dpTemp.add(computeDPrime(pos1,pos2));
                 }
             }
             dpTable.addMarker(dpTemp,pos1);
