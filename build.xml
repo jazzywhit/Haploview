@@ -79,6 +79,7 @@
        <include name="edu/mit/wi/**/**"/>
      </fileset>
      <zipfileset src="resources/JimiProClasses.zip"/>
+     <zipfileset src="resources/commons-cli-2.0B1.jar"/>
    </jar>
 </target>
 
