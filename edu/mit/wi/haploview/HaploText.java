@@ -20,6 +20,7 @@ public class HaploText {
     private boolean arg_quiet = false;
     private int arg_output;
     private int arg_distance;
+    private boolean arg_dprime;
 
     public boolean isNoGui() {
         return arg_nogui;
@@ -68,6 +69,7 @@ public class HaploText {
     private void argHandler(String[] args){
 
         // TODO:-want to be able to output dprime  - in textmethods
+        //      -if dprime is specified, then by default shouldnt output blocks (explicit -o rquireD)
         //      -specify values from HaplotypeDisplayController (min hap percentage etc)
         //      -want to be able to output haps file from pedfile
         boolean nogui = false;
@@ -81,6 +83,7 @@ public class HaploText {
         int outputType = -1;
         int maxDistance = -1;
         boolean quietMode = false;
+        boolean outputDprime=false;
 
         for(int i =0; i < args.length; i++) {
             if(args[i].equals("-help") || args[i].equals("-h")) {
@@ -98,6 +101,8 @@ public class HaploText {
                         "-ha <hapsfile>                specify an input file in .haps format\n" +
                         "-i <infofile>                 specify a marker info file\n" +
                         "-b <batchfile>                batch mode. batchfile should contain a list of haps files\n" +
+                        "--dprime                      outputs dprime to <inputfile>.DPRIME\n" +
+                        "             note: --dprime defaults to no blocks output. use -o to also output blocks\n" +
                         "-o <SFS,GAM,MJD,ALL>          output type. SFS, 4 gamete, MJD output or all 3. default is SFS.\n" +
                         "-m <distance>                 maximum comparison distance in kilobases (integer). default is 200");
 
@@ -181,8 +186,8 @@ public class HaploText {
                     else if(args[i].equals("MJD")){
                         outputType = 2;
                     }
-                    else if(args[i].equals("MJD")) {
-                        outputType = 4;
+                    else if(args[i].equals("ALL")) {
+                        outputType = 3;
                     }
                 }
                 else {
@@ -190,6 +195,9 @@ public class HaploText {
                     outputType =0;
                     i--;
                 }
+            }
+            else if(args[i].equals("--dprime")) {
+                outputDprime = true;
             }
             else if(args[i].equals("-m")) {
                 i++;
@@ -234,7 +242,7 @@ public class HaploText {
 
         //mess with vars, set defaults, etc
 
-        if( outputType == -1 && ( !pedFileName.equals("") || !hapsFileName.equals("") || !batchMode.equals("")) ) {
+        if( outputType == -1 && ( !pedFileName.equals("") || !hapsFileName.equals("") || !batchMode.equals("")) && !outputDprime ) {
             outputType = 0;
             if(nogui && !quietMode) {
                 System.out.println("No output type specified. Default of SFS will be used");
@@ -262,6 +270,7 @@ public class HaploText {
         arg_distance = maxDistance;
         arg_batchMode = batchMode;
         arg_quiet = quietMode;
+        arg_dprime = outputDprime;
     }
 
 
@@ -369,17 +378,7 @@ public class HaploText {
             maxDistance = this.arg_distance * 1000;
             outputType = this.arg_output;
 
-            switch(outputType){
-                case 1:
-                    OutputFile = new File(fileName + ".4GAMblocks");
-                    break;
-                case 2:
-                    OutputFile = new File(fileName + ".MJDblocks");
-                    break;
-                default:
-                    OutputFile = new File(fileName + ".SFSblocks");
-                    break;
-            }
+
 
             textData = new HaploData();
 
@@ -484,10 +483,38 @@ public class HaploText {
 
             textData.generateDPrimeTable(maxDistance);
             Haplotype[][] haplos;
+            if(outputType != -1){
+                switch(outputType){
+                    case 0:
+                        OutputFile = new File(fileName + ".SFSblocks");
+                        break;
+                    case 1:
+                        OutputFile = new File(fileName + ".4GAMblocks");
+                        break;
+                    case 2:
+                        OutputFile = new File(fileName + ".MJDblocks");
+                        break;
+                    //case 3:
+                        //TODO: need to do all three here
+                    //    break;
+                    default:
+                        OutputFile = new File(fileName + ".SFSblocks");
+                        break;
 
-            textData.guessBlocks(outputType);
-            haplos = textData.generateHaplotypes(textData.blocks, 1);
-            textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+                }
+
+                textData.guessBlocks(outputType);
+                haplos = textData.generateHaplotypes(textData.blocks, 1);
+                textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
+            }
+            if(this.arg_dprime) {
+                OutputFile = new File(fileName + ".DPRIME");
+                textData.saveDprimeToText(textData.dPrimeTable,OutputFile,false,null);
+            }
+            //if(fileType){
+            //    TDT myTDT = new TDT();
+            //    myTDT.calcTDT(textData.chromosomes);
+            //}
         }
         catch(IOException e){}
         catch(HaploViewException e){
