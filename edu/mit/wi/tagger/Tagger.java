@@ -211,7 +211,6 @@ public class Tagger {
         }
 
         //loop until all snps are tagged
-        System.out.println("start");
         while(sitesToCapture.size() > 0) {
             potentialTags = new Vector(potentialTagHash.values());
             if(potentialTags.size() == 0) {
@@ -239,8 +238,8 @@ public class Tagger {
             untagged.addAll(sitesToCapture);
         }
 
-        System.out.println("tagged " + countTagged + " SNPS using " + tags.size() +" tags" );
-        System.out.println("# of SNPs that could not be tagged: " + untagged.size());
+        debugPrint("tagged " + countTagged + " SNPS using " + tags.size() +" tags" );
+        debugPrint("# of SNPs that could not be tagged: " + untagged.size());
 
         if (aggression != PAIRWISE_ONLY){
             //peelback starting with the worst tag (i.e. the one that tags the fewest other snps.
@@ -478,6 +477,10 @@ public class Tagger {
         return forceInclude;
     }
 
+    public int getUntaggableCount() {
+        return untagged.size();
+    }
+
     public void saveResultToFile(File outFile) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
 
@@ -558,7 +561,7 @@ public class Tagger {
         }
     }
 
-    boolean debug = true;
+    boolean debug = false;
 
     void debugPrint(String s) {
         if(debug) {
