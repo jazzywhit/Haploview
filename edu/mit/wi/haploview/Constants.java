@@ -51,4 +51,25 @@ public interface Constants {
     static final int HAPS = 2;
     static final int PED = 3;
     static final int DCC = 4;
+
+    static final String HELP_OUTPUT = TITLE_STRING + " command line options\n" +
+                        "-h, -help                     print this message\n" +
+                        "-n                            command line output only\n" +
+                        "-q                            quiet mode- doesnt print any warnings or information to screen\n" +
+                        "-p <pedfile>                  specify an input file in pedigree file format\n" +
+                        "         pedfile specific options (nogui mode only): \n" +
+                        "         --showcheck       displays the results of the various pedigree integrity checks\n" +
+                        "         --skipcheck       skips the various pedfile checks\n" +
+                        //"         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
+                        //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
+                        "-a <hapmapfile>               specify an input file in HapMap format\n" +
+                        "-l <hapsfile>                 specify an input file in .haps format\n" +
+                        "-i <infofile>                 specify a marker info file\n" +
+                        "-b <batchfile>                batch mode. batchfile should contain a list of files either all genotype or alternating genotype/info\n" +
+                        "-k <blockfile>                blocks file, one block per line, will force output for these blocks\n" +
+                        "-d                            outputs dprime to <inputfile>.DPRIME\n" +
+                        "-c                            outputs marker checks to <inputfile>.CHECK\n" +
+                        "                              note: -d  and -c default to no blocks output. use -o to also output blocks\n" +
+                        "-o <GAB,GAM,SPI,ALL>          output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
+                        "-m <distance>                 maximum comparison distance in kilobases (integer). default is 500";
 }

@@ -98,30 +98,8 @@ public class HaploText implements Constants{
 
         for(int i =0; i < args.length; i++) {
             if(args[i].equals("-help") || args[i].equals("-h")) {
-                System.out.println(TITLE_STRING + " command line options\n" +
-                        "-h, -help                     print this message\n" +
-                        "-n                            command line output only\n" +
-                        "-q                            quiet mode- doesnt print any warnings or information to screen\n" +
-                        "-p <pedfile>                  specify an input file in pedigree file format\n" +
-                        "         pedfile specific options (nogui mode only): \n" +
-                        "         --showcheck       displays the results of the various pedigree integrity checks\n" +
-                        "         --skipcheck       skips the various pedfile checks\n" +
-                        //TODO: fix ignoremarkers
-                        //"         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
-                        //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
-                        "-a <hapmapfile>               specify an input file in HapMap format\n" +
-                        "-l <hapsfile>                 specify an input file in .haps format\n" +
-                        "-i <infofile>                 specify a marker info file\n" +
-                        "-b <batchfile>                batch mode. batchfile should contain a list of files either all genotype or alternating genotype/info\n" +
-                        "-k <blockfile>                blocks file, one block per line, will force output for these blocks\n" +
-                        "-d                            outputs dprime to <inputfile>.DPRIME\n" +
-                        "-c                            outputs marker checks to <inputfile>.CHECK\n" +
-                        "                              note: -d  and -c default to no blocks output. use -o to also output blocks\n" +
-                        "-o <GAB,GAM,SPI,ALL>          output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
-                        "-m <distance>                 maximum comparison distance in kilobases (integer). default is 500");
-
+                System.out.println(HELP_OUTPUT);
                 System.exit(0);
-
             }
             else if(args[i].equals("-n")) {
                 nogui = true;
@@ -145,6 +123,7 @@ public class HaploText implements Constants{
             else if (args[i].equals("--skipcheck")){
                 skipCheck = true;
             }
+            //todo: fix ignoremarkers
            /* else if (args[i].equals("--ignoremarkers")){
                 i++;
                 if(i>=args.length || (args[i].charAt(0) == '-')){
@@ -462,7 +441,11 @@ public class HaploText implements Constants{
             }else{
                 infoFile = new File(infoFileName);
             }
-            textData.prepareMarkerInput(infoFile,maxDistance,textData.getPedFile().getHMInfo());
+            if (result != null){
+                textData.prepareMarkerInput(infoFile,maxDistance,textData.getPedFile().getHMInfo());
+            }else{
+                textData.prepareMarkerInput(infoFile,maxDistance,null);
+            }
             if(!arg_quiet && infoFile != null){
                 System.out.println("Using marker file " + infoFile.getName());
             }
