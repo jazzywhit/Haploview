@@ -12,6 +12,9 @@ import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
@@ -230,12 +233,45 @@ public class HaploView extends JFrame implements ActionListener, Constants{
          menuItem.addActionListener(this);
          helpMenu.add(menuItem);
          **/
+        /*
+        Configuration.readConfigFile();
+        if(Configuration.isCheckForUpdate()) {
+            Object[] options = {"Yes",
+                                "Not now",
+                                "Never ask again"};
+            int n = JOptionPane.showOptionDialog(this,
+                    "Would you like to check if a new version "
+                    + "of haploview is available?",
+                    "Check for update",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[1]);
+
+            if(n == JOptionPane.YES_OPTION) {
+                UpdateChecker uc = new UpdateChecker();
+                if(uc.checkForUpdate()) {
+                    JOptionPane.showMessageDialog(this,
+                            "A new version of Haploview is available!\n Visit http://www.broad.mit.edu/mpg/haploview/ to download the new version\n (current version: " + Constants.VERSION
+                            + "  newest version: " + uc.getNewVersion() + ")" ,
+                            "Update Available",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+            else if(n == JOptionPane.CANCEL_OPTION) {
+                Configuration.setCheckForUpdate(false);
+                Configuration.writeConfigFile();
+            }
+        }           */
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e){
                 quit();
             }
         });
+
+
 
     }
 
@@ -446,6 +482,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     void quit(){
         //any handling that might need to take place here
+        Configuration.writeConfigFile();
         System.exit(0);
     }
 
@@ -704,7 +741,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     void readMarkers(File inputFile, String[][] hminfo){
         try {
-            theData.prepareMarkerInput(inputFile, maxCompDist, hminfo);
+            theData.prepareMarkerInput(inputFile, hminfo);
             if (theData.infoKnown){
                 analysisItem.setEnabled(true);
             }else{
@@ -1019,20 +1056,20 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             //parse command line stuff for input files or prompt data dialog
             HaploText argParser = new HaploText(args);
             String[] inputArray = new String[3];
-            if (argParser.getHapsFileName() != ""){
+            if (argParser.getHapsFileName() != null){
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
-                inputArray[2] = String.valueOf(argParser.getMaxDistance());
+                inputArray[2] = String.valueOf(Options.getMaxDistance());
                 window.readGenotypes(inputArray, HAPS);
-            }else if (argParser.getPedFileName() != ""){
+            }else if (argParser.getPedFileName() != null){
                 inputArray[0] = argParser.getPedFileName();
                 inputArray[1] = argParser.getInfoFileName();
-                inputArray[2] = String.valueOf(argParser.getMaxDistance());
+                inputArray[2] = String.valueOf(Options.getMaxDistance());
                 window.readGenotypes(inputArray, PED);
-            }else if (argParser.getHapmapFileName() != ""){
+            }else if (argParser.getHapmapFileName() != null){
                 inputArray[0] = argParser.getHapmapFileName();
                 inputArray[1] = "";
-                inputArray[2] = String.valueOf(argParser.getMaxDistance());
+                inputArray[2] = String.valueOf(Options.getMaxDistance());
                 window.readGenotypes(inputArray, HMP);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);

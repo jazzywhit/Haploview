@@ -6,6 +6,7 @@ public interface Constants {
     //main jframe setup stuff & labels.
     public static final double VERSION = 2.05;
     public static final String TITLE_STRING = "Haploview "+VERSION;
+
     public static final String READ_GENOTYPES = "Open genotype data";
     public static final String READ_MARKERS = "Load marker data";
     public static final String READ_ANALYSIS_TRACK = "Load analysis track";

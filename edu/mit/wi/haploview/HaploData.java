@@ -29,7 +29,7 @@ public class HaploData implements Constants{
     public boolean finished = false;
     private double[] percentBadGenotypes;
     private double[] multidprimeArray;
-    private long maxdist;
+    //private long maxdist;
     Vector analysisPositions = new Vector();
     Vector analysisValues = new Vector();
     boolean trackExists = false;
@@ -82,7 +82,7 @@ public class HaploData implements Constants{
         return this.pedFile;
     }
 
-    void prepareMarkerInput(File infile, long md, String[][] hapmapGoodies) throws IOException, HaploViewException{
+    void prepareMarkerInput(File infile, String[][] hapmapGoodies) throws IOException, HaploViewException{
         //this method is called to gather data about the markers used.
         //It is assumed that the input file is two columns, the first being
         //the name and the second the absolute position. the maxdist is
@@ -97,8 +97,6 @@ public class HaploData implements Constants{
         Vector names = new Vector();
         Vector positions = new Vector();
         Vector extras = new Vector();
-
-        maxdist = md;
 
         try{
             if (infile != null){
@@ -702,6 +700,7 @@ public class HaploData implements Constants{
 
         totalComps = (Chromosome.getUnfilteredSize()*(Chromosome.getUnfilteredSize()-1))/2;
         compsDone =0;
+        int maxdist = Options.getMaxDistance();
 
         //loop through all marker pairs
         for (int pos1 = 0; pos1 < Chromosome.getUnfilteredSize()-1; pos1++){
@@ -1363,12 +1362,7 @@ public class HaploData implements Constants{
     }
 
     public PairwiseLinkage computeDPrime(int pos1, int pos2){
-        long sep = Chromosome.getUnfilteredMarker(pos2).getPosition() - Chromosome.getUnfilteredMarker(pos1).getPosition();
-        if (maxdist > 0){
-            if (sep > maxdist){
-                return null;
-            }
-        }
+
 
         compsDone++;
         int doublehet = 0;
