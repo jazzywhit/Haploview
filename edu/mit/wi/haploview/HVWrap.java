@@ -55,7 +55,7 @@ public class HVWrap {
 
         try {
             //if the nogui flag is present we force it into headless mode
-            String runString = "java -Xmx1024m -classpath " + jarfile;
+            String runString = "java -Xmx1024m -classpath \"" + jarfile + "\"";
             if (headless){
                 runString += " -Djava.awt.headless=true";
             }

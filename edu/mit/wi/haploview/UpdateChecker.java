@@ -48,6 +48,7 @@ public class UpdateChecker {
 
             if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
                 //if something went wrong
+                throw new IOException("Could not connect to update server.");
             }
             else {
                 //all is well
