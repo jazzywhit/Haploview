@@ -786,17 +786,15 @@ public class HaploData implements Constants{
                     double genoPC = 1.0;
                     for (int y = 0; y < equivClass.length; y++){
                         if (equivClass[y] == x+1){
-                            //int[]tossed = new int[3];
-                            if (percentBadGenotypes[preFiltBlock[y]] < genoPC){
+                            if (percentBadGenotypes[Chromosome.realIndex[preFiltBlock[y]]] <= genoPC){
                                 selectedMarkers[x] = preFiltBlock[y];
-                                genoPC = percentBadGenotypes[preFiltBlock[y]];
+                                genoPC = percentBadGenotypes[Chromosome.realIndex[preFiltBlock[y]]];
                             }
                         }
                     }
                 }
 
                 theBlock = selectedMarkers;
-                //System.out.println("Block " + k + " " + theBlock.length + "/" + preFiltBlock.length);
             }else{
                 theBlock = preFiltBlock;
             }
@@ -1103,13 +1101,13 @@ public class HaploData implements Constants{
         Vector genoSuccessRank = new Vector();
         Vector genoNumberRank = new Vector();
         int[] myMarkers = thisBlock[0].getMarkers();
-        genoSuccessRank.add(new Double(percentBadGenotypes[myMarkers[0]]));
+        genoSuccessRank.add(new Double(percentBadGenotypes[Chromosome.realIndex[myMarkers[0]]]));
         genoNumberRank.add(new Integer(0));
         for (int i = 1; i < myMarkers.length; i++){
             boolean inserted = false;
             for (int j = 0; j < genoSuccessRank.size(); j++){
-                if (percentBadGenotypes[myMarkers[i]] < ((Double)(genoSuccessRank.elementAt(j))).doubleValue()){
-                    genoSuccessRank.insertElementAt(new Double(percentBadGenotypes[myMarkers[i]]), j);
+                if (percentBadGenotypes[Chromosome.realIndex[myMarkers[i]]] < ((Double)(genoSuccessRank.elementAt(j))).doubleValue()){
+                    genoSuccessRank.insertElementAt(new Double(percentBadGenotypes[Chromosome.realIndex[myMarkers[i]]]), j);
                     genoNumberRank.insertElementAt(new Integer(i), j);
                     inserted = true;
                     break;
@@ -1117,7 +1115,7 @@ public class HaploData implements Constants{
             }
             if (!(inserted)) {
                 genoNumberRank.add(new Integer(i));
-                genoSuccessRank.add(new Double(percentBadGenotypes[myMarkers[i]]));
+                genoSuccessRank.add(new Double(percentBadGenotypes[Chromosome.realIndex[myMarkers[i]]]));
             }
         }
 
