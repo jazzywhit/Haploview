@@ -51,6 +51,7 @@
    includes="${haploview.package}/**">
    <classpath refid="library.classpath"/>
    </javac>
+   <copy file="resources/orator.raw" todir="build/classes/edu/mit/wi/haploview/"/>
 </target>
 
 
