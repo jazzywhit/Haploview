@@ -196,10 +196,10 @@ public class HaploText implements Constants{
                     System.exit(1);
                 }
             }
-            else if (args[i].equals("-png")){
+            else if (args[i].equalsIgnoreCase("-png")){
                 outputPNG = true;
             }
-            else if (args[i].equals("-smallpng")){
+            else if (args[i].equals("-smallpng") || args[i].equals("-smallPNG")){
                 outputSmallPNG = true;
             }
             else if (args[i].equals("-track")){
@@ -218,16 +218,16 @@ public class HaploText implements Constants{
                         System.out.println("only one output argument is allowed");
                         System.exit(1);
                     }
-                    if(args[i].equals("SFS") || args[i].equals("GAB")){
+                    if(args[i].equalsIgnoreCase("SFS") || args[i].equalsIgnoreCase("GAB")){
                         outputType = BLOX_GABRIEL;
                     }
-                    else if(args[i].equals("GAM")){
+                    else if(args[i].equalsIgnoreCase("GAM")){
                         outputType = BLOX_4GAM;
                     }
-                    else if(args[i].equals("MJD") || args[i].equals("SPI")){
+                    else if(args[i].equalsIgnoreCase("MJD") || args[i].equalsIgnoreCase("SPI")){
                         outputType = BLOX_SPINE;
                     }
-                    else if(args[i].equals("ALL")) {
+                    else if(args[i].equalsIgnoreCase("ALL")) {
                         outputType = BLOX_ALL;
                     }
                 }
