@@ -37,7 +37,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     };
     JRadioButtonMenuItem zoomMenuItems[];
     String colorItems[] = {
-        "Standard", "Confidence bounds", "4 Gamete"
+        "Standard", "R-squared", "D' / LOD (alt)", "Confidence bounds", "4 Gamete"
     };
     JRadioButtonMenuItem colorMenuItems[];
     JRadioButtonMenuItem blockMenuItems[];
@@ -76,6 +76,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }catch(Exception e){
             }
         }
+
         //menu setup
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -219,7 +220,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         menuBar.add(Box.createHorizontalGlue());
         menuBar.add(keyMenu);
 
-
         /** NEEDS FIXING
          helpMenu = new JMenu("Help");
          menuBar.add(Box.createHorizontalGlue());
@@ -280,6 +280,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             //blockdef clauses
         }else if (command.startsWith("block")){
             int method = Integer.valueOf(command.substring(5)).intValue();
+
             changeBlocks(method);
             /*for (int i = 1; i < colorMenuItems.length; i++){
             if (method+1 == i){
@@ -352,7 +353,60 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     private void changeKey(int scheme) {
         keyMenu.removeAll();
-        if (scheme == STD_SCHEME){
+        if (scheme == WMF_SCHEME){
+            JMenuItem keyItem = new JMenuItem("High D' / High LOD");
+            Dimension size = keyItem.getPreferredSize();
+            keyItem.setBackground(Color.black);
+            keyItem.setForeground(Color.white);
+            keyMenu.add(keyItem);
+            for (int i = 1; i < 5; i++){
+                double gr = i * (255.0 / 6.0);
+                keyItem = new JMenuItem("");
+                keyItem.setPreferredSize(size);
+                keyItem.setBackground(new Color((int)gr, (int)gr, (int)gr));
+                keyMenu.add(keyItem);
+            }
+            keyItem = new JMenuItem("Low D' / Low LOD");
+            keyItem.setBackground(Color.white);
+            keyMenu.add(keyItem);
+
+            keyItem = new JMenuItem("High D' / High LOD");
+            keyItem.setBackground(Color.black);
+            keyItem.setForeground(Color.white);
+            keyMenu.add(keyItem);
+            for (int i = 1; i < 5; i++){
+                double r = i * (255.0 / 6.0);
+                double gb = i * (200.0 / 6.0);
+                keyItem = new JMenuItem("");
+                keyItem.setPreferredSize(size);
+                keyItem.setBackground(new Color((int)r, (int)gb, (int)gb));
+                keyMenu.add(keyItem);
+            }
+            keyItem = new JMenuItem("High D' / Low LOD");
+            keyItem.setBackground(new Color(255, 200, 200));
+            keyMenu.add(keyItem);
+	} else if (scheme == RSQ_SCHEME){
+            JMenuItem keyItem = new JMenuItem("High R-squared");
+            Dimension size = keyItem.getPreferredSize();
+            keyItem.setBackground(Color.black);
+            keyItem.setForeground(Color.white);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("");
+	    keyItem.setPreferredSize(size);
+            keyItem.setBackground(Color.darkGray);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("");
+	    keyItem.setPreferredSize(size);
+            keyItem.setBackground(Color.gray);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("");
+	    keyItem.setPreferredSize(size);
+            keyItem.setBackground(Color.lightGray);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("Low R-squared");
+            keyItem.setBackground(Color.white);
+            keyMenu.add(keyItem);
+	} else if (scheme == STD_SCHEME){
             JMenuItem keyItem = new JMenuItem("High D'");
             Dimension size = keyItem.getPreferredSize();
             keyItem.setBackground(Color.red);
@@ -740,6 +794,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
 
             viewMenuItems[tabs.getSelectedIndex()].setSelected(true);
+
             if (checkPanel != null && checkPanel.changed){
                 //first store up the current blocks
                 Vector currentBlocks = new Vector();
