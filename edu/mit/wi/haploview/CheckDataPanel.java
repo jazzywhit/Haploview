@@ -61,7 +61,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             tempVect.add(new Double(currentResult.getGenoPercent()));
             tempVect.add(new Integer(currentResult.getFamTrioNum()));
             tempVect.add(new Integer(currentResult.getMendErrNum()));
-            tempVect.add(new Double(currentResult.getMAF()));
+	    tempVect.add(new Double(currentResult.getMAF()));
 
             if (currentResult.getRating() > 0){
                 tempVect.add(new Boolean(true));
@@ -155,24 +155,21 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         for (int i = 0; i < table.getRowCount(); i++){
             table.setValueAt(new Boolean(true), i, STATUS_COL);
         }
+	changed = true;
     }
 
     public void redoRatings(){
         try{
             Vector result = pedfile.check();
-            int[] ratings = new int[table.getRowCount()];
             for (int i = 0; i < table.getRowCount(); i++){
                 MarkerResult cur = (MarkerResult)result.get(i);
-                int rating = cur.getRating();
-                if (rating > 0){
+                if (cur.getRating() > 0){
                     table.setValueAt(new Boolean(true),i,STATUS_COL);
                 }else{
                     table.setValueAt(new Boolean(false),i,STATUS_COL);
                 }
-                ratings[i] = rating;
             }
-            ((CheckDataTableModel)table.getModel()).ratings = ratings;
-            table.repaint();
+	    changed = true;
         }catch (Exception e){
             e.printStackTrace();
         }
