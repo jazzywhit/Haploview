@@ -44,6 +44,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private Font boldMarkerNameFont = new Font("Default", Font.BOLD, 12);
 
     private boolean printDetails = true;
+    private boolean forExport = false;
     private boolean showWM = false;
     private int zoomLevel = 0;
     private boolean noImage = true;
@@ -69,6 +70,13 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     public void refresh(){
         noImage = true;
         repaint();
+    }
+
+    public Image export(Image i){
+        forExport = true;
+        paintComponent(i.getGraphics());
+        forExport = false;
+        return i;
     }
 
     public void zoom(int type){
@@ -127,8 +135,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
 
-        //did this for some reason but can't figure out why D'oh!
-        //((JViewport)this.getParent()).setViewSize(pref);
+        //after editing the filtered marker list, needs to be prodded into
+        //resizing correctly
+        if (size.width > pref.width && size.width > visRect.width){
+            ((JViewport)this.getParent()).setViewSize(pref);
+        }
 
         //okay so this dumb if block is to prevent the ugly repainting
         //bug when loading markers after the data are already being displayed,
@@ -289,6 +300,13 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             highY = dPrimeTable.length;
         }
 
+        if (forExport){
+            lowX = 0;
+            lowY = 0;
+            highX = dPrimeTable.length;
+            highY = dPrimeTable.length;
+        }
+
         // draw table column by column
         for (int x = lowX; x < highX; x++) {
 
@@ -418,7 +436,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }
         }
 
-        if (showWM){
+        if (showWM && !forExport){
             //dataset is big enough to require worldmap
             if (noImage){
                 //first time through draw a worldmap if dataset is big:

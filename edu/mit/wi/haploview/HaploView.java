@@ -6,11 +6,12 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.awt.event.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+
+import com.sun.jimi.core.Jimi;
+import com.sun.jimi.core.JimiException;
 
 public class HaploView extends JFrame implements ActionListener{
 
@@ -271,7 +272,8 @@ public class HaploView extends JFrame implements ActionListener{
             if (dPrimeDisplay != null){
                 dPrimeDisplay.zoom(2);
             }
-        }else if (command == "Export to PNG"){
+        }else if (command == EXPORT_PNG){
+            export();
         }else if (command == "Tutorial"){
             showHelp();
         } else if (command == QUIT){
@@ -383,8 +385,7 @@ public class HaploView extends JFrame implements ActionListener{
                 }
                 theData.generateDPrimeTable(maxCompDist);
                 theData.guessBlocks(0);
-                //drawPicture(theData);
-                //void drawPicture(HaploData theData) {
+                theData.blocksChanged = false;
                 Container contents = getContentPane();
                 contents.removeAll();
 
@@ -482,6 +483,7 @@ public class HaploView extends JFrame implements ActionListener{
                     defineBlocksItem.setEnabled(true);
                     clearBlocksItem.setEnabled(true);
                     readMarkerItem.setEnabled(true);
+                    exportMenuItems[1].setEnabled(true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
             }
@@ -594,25 +596,30 @@ public class HaploView extends JFrame implements ActionListener{
 
     }
 
-    //TODO: investigate export options
-    /*void doExportDPrime(){
-     fc.setSelectedFile(null);
-     int returnVal = fc.showSaveDialog(this);
-     if (returnVal == JFileChooser.APPROVE_OPTION){
-     try {
-     DrawingMethods dm = new DrawingMethods();
-     Dimension theSize = dm.dPrimeGetPreferredSize(theData.dPrimeTable.length, infoKnown);
-     BufferedImage image = new BufferedImage((int)theSize.getWidth(), (int)theSize.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-     dm.dPrimeDraw(theData.dPrimeTable, infoKnown, theData.markerInfo, image.getGraphics());
-     dm.saveImage(image, fc.getSelectedFile().getPath());
-     } catch (IOException ioexec){
-     JOptionPane.showMessageDialog(this,
-     ioexec.getMessage(),
-     "File Error",
-     JOptionPane.ERROR_MESSAGE);
-     }
-     }
-     }*/
+    void export(){
+        JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+            if (tabs.getSelectedIndex() == VIEW_D_NUM){
+                Dimension size = dPrimeDisplay.getSize();
+                Dimension pref = dPrimeDisplay.getPreferredSize();
+                BufferedImage image = new BufferedImage(pref.width, pref.height,
+                        BufferedImage.TYPE_3BYTE_BGR);
+                dPrimeDisplay.export(image);
+                try{
+                    String filename = fc.getSelectedFile().getPath();
+                    if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
+                        filename += ".png";
+                    }
+                    Jimi.putImage("image/png", image, filename);
+                }catch(JimiException je){
+                    JOptionPane.showMessageDialog(this,
+                            je.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        }
+    }
 
     void showHelp(){
 
