@@ -1581,8 +1581,6 @@ public class HaploData implements Constants{
 
     public void saveDprimeToText(File dumpDprimeFile, int source, int start, int stop) throws IOException{
         FileWriter saveDprimeWriter = new FileWriter(dumpDprimeFile);
-
-        System.out.println("save dprime to text!");
         //we use this LinkedList to store the dprime computations for a window of 5 markers
         //in either direction in the for loop farther down.
         //a tInt value is calculated for each marker which requires the dprime calculations
