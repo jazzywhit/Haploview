@@ -5,14 +5,13 @@ import java.text.*;
 
 class TextMethods {
 
-    public void saveHapsToText(Haplotype[][] finishedHaplos, String saveName) throws IOException{
+    public void saveHapsToText(Haplotype[][] finishedHaplos, File saveHapsFile) throws IOException{
 
 	NumberFormat nf = NumberFormat.getInstance();
 	nf.setMinimumFractionDigits(3);
 	nf.setMaximumFractionDigits(3);
 	
 	//open file for saving haps text
-	File saveHapsFile = new File(saveName);
 	FileWriter saveHapsWriter = new FileWriter(saveHapsFile);
 	
 	int[][]lookupPos = new int[finishedHaplos.length][];
@@ -57,8 +56,7 @@ class TextMethods {
 	saveHapsWriter.close();
     }
 
-    public void saveDprimeToText(String[][] dPrimeTable, String infile) throws IOException{
-	File dumpDprimeFile = new File(infile);
+    public void saveDprimeToText(String[][] dPrimeTable, File dumpDprimeFile) throws IOException{
 	FileWriter saveDprimeWriter = new FileWriter(dumpDprimeFile);
 
 	saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\n");

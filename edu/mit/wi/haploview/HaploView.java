@@ -151,6 +151,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void doExportDPrime(){
+	fc.setSelectedFile(null);
 	int returnVal = fc.showSaveDialog(this);
 	if (returnVal == JFileChooser.APPROVE_OPTION){
 	    try {
@@ -365,6 +366,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void saveHapsPic(){
+	fc.setSelectedFile(null);
 	int returnVal = fc.showSaveDialog(this);
 	if (returnVal == JFileChooser.APPROVE_OPTION){
 	    try {
@@ -387,8 +389,11 @@ public class HaploView extends JFrame implements ActionListener{
 
     void saveDprimeToText(){
 	try{
-	    String saveDprimeName = infileName + ".LDout";
-	    new TextMethods().saveDprimeToText(theData.dPrimeTable, saveDprimeName);
+	    fc.setSelectedFile(null);
+	    int returnVal = fc.showSaveDialog(this);
+	    if (returnVal == JFileChooser.APPROVE_OPTION) {
+		new TextMethods().saveDprimeToText(theData.dPrimeTable, fc.getSelectedFile());
+	    }
 	}catch (IOException ioexec){
 	    JOptionPane.showMessageDialog(this, 
 					  ioexec.getMessage(), 
@@ -398,29 +403,12 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void saveHapsToText(){
-	//first we see what files are in this directory
-	File currentDir = new File(System.getProperty("user.dir"));
-	int highCount = 0;
-	String[] filez = currentDir.list();
-	for (int i = 0; i < filez.length; i++){
-	    if (filez[i].startsWith("haptxt")){
-		if (filez[i].endsWith(infileName)){
-		    //get counter number for this file
-		    int thisInt = Integer.parseInt(filez[i].substring(6,8));
-		    if (thisInt > highCount){
-			highCount = thisInt;
-		    }
-		}
-	    }
-	}
-	//put together various pieces to create filename for output
-	String saveName = "haptxt";
-	if (highCount < 9) saveName += "0";
-	saveName += (highCount+1);
-	saveName += ".";
-	saveName += infileName;
 	try{
-	    new TextMethods().saveHapsToText(finishedHaplos, saveName);
+	    fc.setSelectedFile(null);
+	    int returnVal = fc.showSaveDialog(this);
+	    if (returnVal == JFileChooser.APPROVE_OPTION) {
+		new TextMethods().saveHapsToText(finishedHaplos, fc.getSelectedFile());
+	    }
 	}catch (IOException ioexec){
 	    JOptionPane.showMessageDialog(this, 
 					  ioexec.getMessage(), 
