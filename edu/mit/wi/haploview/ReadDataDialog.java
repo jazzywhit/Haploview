@@ -140,15 +140,15 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         JPanel topFilePanel = new JPanel();
         JPanel botFilePanel = new JPanel();
         genoFileField = new JTextField("",20);
-
-        //workaround for stupid java problem where focus can't be granted until window is displayed
-        //TODO: appears to throw an exception in Linux
-        SwingUtilities.invokeLater( new Runnable(){
-            public void run()
-            {
-                genoFileField.requestFocus();
-            }
-        });
+        //workaround for dumb Swing can't requestfocus until shown bug
+        genoFileField.requestFocus();
+        genoFileField.dispatchEvent(
+                new FocusEvent(
+                        genoFileField,
+                        FocusEvent.FOCUS_GAINED,
+                        false
+                )
+        );
 
         infoFileField = new JTextField("",20);
         JButton browseGenoButton = new JButton("Browse");
