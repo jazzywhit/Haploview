@@ -141,6 +141,15 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         JPanel topFilePanel = new JPanel();
         JPanel botFilePanel = new JPanel();
         genoFileField = new JTextField("",20);
+
+        //workaround for stupid java problem where focus can't be granted until window is displayed
+        SwingUtilities.invokeLater( new Runnable(){
+            public void run()
+            {
+                genoFileField.requestFocusInWindow();
+            }
+        });
+
         infoFileField = new JTextField("",20);
         JButton browseGenoButton = new JButton("Browse");
         browseGenoButton.setActionCommand(BROWSE_GENO);
@@ -168,6 +177,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
 
         JPanel choicePanel = new JPanel();
         JButton okButton = new JButton("OK");
+        this.getRootPane().setDefaultButton(okButton);
         okButton.addActionListener(this);
         JButton cancelButton = new JButton("Cancel");
         cancelButton.addActionListener(this);
