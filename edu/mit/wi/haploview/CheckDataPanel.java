@@ -48,8 +48,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             Vector tempVect = new Vector();
             MarkerResult currentResult = (MarkerResult)result.get(i);
             tempVect.add(currentResult.getName());
-            tempVect.add(new Double(currentResult.getObsHet()));
-            tempVect.add(new Double(currentResult.getPredHet()));
+//            tempVect.add(new Double(currentResult.getObsHet()));
+            tempVect.add(new Double(45));
+            tempVect.add(new Double(45));
+//            tempVect.add(new Double(currentResult.getPredHet()));
             tempVect.add(new Double(currentResult.getHWpvalue()));
             tempVect.add(new Double(currentResult.getGenoPercent()));
             tempVect.add(new Integer(currentResult.getFamTrioNum()));

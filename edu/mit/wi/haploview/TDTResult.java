@@ -28,11 +28,11 @@ public class TDTResult {
             if(tallyHet){
                 counts[0][0]++;
                 counts[1][1]++;
+                counts[0][1]++;
+                counts[1][0]++;
                 this.tallyHet = false;
             }
             else {
-                counts[0][1]++;
-                counts[1][0]++;
                 this.tallyHet = true;
             }
         }

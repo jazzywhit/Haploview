@@ -277,48 +277,25 @@ public class HaploView extends JFrame implements ActionListener{
         //checkWindow = new JFrame();
         try {
             checkPanel = new CheckDataPanel(pedFile);
+            checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            theData = new HaploData();
+            JTable table = checkPanel.getTable();
+            boolean[] markerResultArray = new boolean[table.getRowCount()];
+            for (int i = 0; i < table.getRowCount(); i++){
+                markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
+            }
+
+            theData.linkageToChrom(markerResultArray,checkPanel.getPedFile());
+            this.doTDT = true;
+            processData();
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-        //checkWindow.setTitle("Checking markers..." + pedFile.getName());
-        //JPanel metaCheckPanel = new JPanel();
-        //metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
-        //JButton checkContinueButton = new JButton("Continue");
-        //checkContinueButton.addActionListener(this);
-        checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        //metaCheckPanel.add(checkPanel);
-        //checkContinueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        //metaCheckPanel.add(checkContinueButton);
-        //JLabel infoLabel = new JLabel("(this will create a haplotype file named " + pedFile.getName() + ".haps)");
-        //infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        //metaCheckPanel.add(infoLabel);
-        //checkWindow.setContentPane(metaCheckPanel);
-        //checkWindow.pack();
-        //checkWindow.setVisible(true);
 
-        theData = new HaploData();
-        JTable table = checkPanel.getTable();
-        //checkWindow.dispose();
-        boolean[] markerResultArray = new boolean[table.getRowCount()];
-        for (int i = 0; i < table.getRowCount(); i++){
-            markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
-        }
-            /*
-            try{
-            new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),inputOptions[0]+".haps");
-            }catch (IOException ioexec){
-            JOptionPane.showMessageDialog(this,
-            ioexec.getMessage(),
-            "File Error",
-            JOptionPane.ERROR_MESSAGE);
-            } */
-        theData.linkageToChrom(markerResultArray,checkPanel.getPedFile());
-        this.doTDT = true;
-        processData();
-            //processInput(new File(hapInputFileName+".haps"));
     }
 
     void readPhasedGenotypes(String[] f){

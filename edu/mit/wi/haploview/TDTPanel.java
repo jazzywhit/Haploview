@@ -16,6 +16,8 @@ public class TDTPanel extends JPanel {
         tableColumnNames.add("Chi Squared");
         tableColumnNames.add("T/U Ratio");
         tableColumnNames.add("p value");
+
+        refreshTable();
     }
 
     public void refreshTable(){
