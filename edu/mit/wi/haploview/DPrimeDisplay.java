@@ -30,7 +30,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private int left = H_BORDER;
     private int top = V_BORDER;
     private int clickXShift, clickYShift;
-    private String[] displayStrings = new String[5];
+    private String[] displayStrings;
     private final int popupLeftMargin = 12;
 
 
@@ -105,12 +105,12 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     if (l > 2) {
                         if (d < 0.5) {
                             //high LOD, low D'
-                            boxColor = new Color(255, 224, 224);
+                            boxColor = new Color(224, 224, 224);
                         } else {
                             //high LOD, high D' shades of red
                             double blgr = (255-32)*2*(1-d);
-                            //boxColor = new Color(255, (int) blgr, (int) blgr);
-                            boxColor = new Color(224, (int) blgr, (int) blgr);
+                            boxColor = new Color(255, (int) blgr, (int) blgr);
+                            //boxColor = new Color(224, (int) blgr, (int) blgr);
                         }
                     } else if (d > 0.99) {
                         //high D', low LOD blueish color
@@ -429,19 +429,15 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 diamond = new Polygon(diamondX, diamondY, 4);
                 g2.setColor(boxColor);
                 g2.fillPolygon(diamond);
-                if (boxColor == Color.white) {
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                            RenderingHints.VALUE_ANTIALIAS_ON);
-                    g2.setColor(Color.lightGray);
-                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                            RenderingHints.VALUE_ANTIALIAS_OFF);
-                }
 
                 if(printDetails){
                     g2.setFont(boxFont);
                     ascent = boxFontMetrics.getAscent();
                     int val = (int) (d * 100);
                     g2.setColor((val < 50) ? Color.gray : Color.black);
+                    if (boxColor == Color.darkGray){
+                        g2.setColor(Color.white);
+                    }
                     if (val != 100) {
                         String valu = String.valueOf(val);
                         int widf = boxFontMetrics.stringWidth(valu);
@@ -524,7 +520,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     popupDrawRect.width,
                     popupDrawRect.height);
 
-            for (int x = 0; x < 5; x++){
+            for (int x = 0; x < displayStrings.length; x++){
                 g.drawString(displayStrings[x],popupDrawRect.x + popupLeftMargin-smallDatasetSlopH,
                         popupDrawRect.y+((x+1)*metrics.getHeight())-smallDatasetSlopV);
             }
@@ -752,11 +748,15 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     }
 
     public void mousePressed (MouseEvent e) {
+        Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
+                (Chromosome.getFilteredSize()*boxSize), boxSize);
 
         //if users right clicks & holds, pop up the info
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
                 InputEvent.BUTTON3_MASK){
-
+            Graphics g = getGraphics();
+            g.setFont(boxFont);
+            FontMetrics metrics = g.getFontMetrics();
             PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
             final int clickX = e.getX();
             final int clickY = e.getY();
@@ -777,6 +777,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     (boxY > boxX && boxY < highY) &&
                     !(worldmapRect.contains(clickX,clickY))){
                 if (dPrimeTable[boxX][boxY] != null){
+                    displayStrings = new String[5];
                     if (theData.infoKnown){
                         displayStrings[0] = new String ("(" +Chromosome.getFilteredMarker(boxX).getName() +
                                 ", " + Chromosome.getFilteredMarker(boxY).getName() + ")");
@@ -790,39 +791,45 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     displayStrings[4] = new String ("D' conf. bounds: " +
                             dPrimeTable[boxX][boxY].getConfidenceLow() + "-" +
                             dPrimeTable[boxX][boxY].getConfidenceHigh());
-                    Graphics g = getGraphics();
-                    g.setFont(boxFont);
-                    FontMetrics metrics = g.getFontMetrics();
-                    int strlen = 0;
-                    for (int x = 0; x < 5; x++){
-                        if (strlen < metrics.stringWidth(displayStrings[x])){
-                            strlen = metrics.stringWidth(displayStrings[x]);
-                        }
-                    }
-
-                    //edge shifts prevent window from popping up partially offscreen
-                    int visRightBound = (int)(getVisibleRect().getWidth() + getVisibleRect().getX());
-                    int visBotBound = (int)(getVisibleRect().getHeight() + getVisibleRect().getY());
-                    int rightEdgeShift = 0;
-                    if (clickX + strlen + popupLeftMargin +5 > visRightBound){
-                        rightEdgeShift = clickX + strlen + popupLeftMargin + 10 - visRightBound;
-                    }
-                    int botEdgeShift = 0;
-                    if (clickY + 5*metrics.getHeight()+10 > visBotBound){
-                        botEdgeShift = clickY + 5*metrics.getHeight()+15 - visBotBound;
-                    }
-                    popupDrawRect = new Rectangle(clickX-rightEdgeShift,
-                            clickY-botEdgeShift,
-                            strlen+popupLeftMargin+5,
-                            5*metrics.getHeight()+10);
                     popupExists = true;
-                    repaint();
                 }
+            } else if (blockselector.contains(clickX, clickY)){
+                int marker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
+                displayStrings = new String[2];
+                if (theData.infoKnown){
+                    displayStrings[0] = new String (Chromosome.getFilteredMarker(marker).getName());
+                }else{
+                    displayStrings[0] = new String("Marker " + (Chromosome.realIndex[marker]+1));
+                }
+                displayStrings[1] = new String ("MAF: " + Chromosome.getFilteredMarker(marker).getMAF());
+                popupExists = true;
+            }
+            if (popupExists){
+                int strlen = 0;
+                for (int x = 0; x < displayStrings.length; x++){
+                    if (strlen < metrics.stringWidth(displayStrings[x])){
+                        strlen = metrics.stringWidth(displayStrings[x]);
+                    }
+                }
+                //edge shifts prevent window from popping up partially offscreen
+                int visRightBound = (int)(getVisibleRect().getWidth() + getVisibleRect().getX());
+                int visBotBound = (int)(getVisibleRect().getHeight() + getVisibleRect().getY());
+                int rightEdgeShift = 0;
+                if (clickX + strlen + popupLeftMargin +5 > visRightBound){
+                    rightEdgeShift = clickX + strlen + popupLeftMargin + 10 - visRightBound;
+                }
+                int botEdgeShift = 0;
+                if (clickY + 5*metrics.getHeight()+10 > visBotBound){
+                    botEdgeShift = clickY + 5*metrics.getHeight()+15 - visBotBound;
+                }
+                popupDrawRect = new Rectangle(clickX-rightEdgeShift,
+                        clickY-botEdgeShift,
+                        strlen+popupLeftMargin+5,
+                        displayStrings.length*metrics.getHeight()+10);
+                repaint();
             }
         }else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
                 InputEvent.BUTTON1_MASK){
-            Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
-                    (Chromosome.getFilteredSize()*boxSize), boxSize);
             int x = e.getX();
             int y = e.getY();
             if (blockselector.contains(x,y)){
