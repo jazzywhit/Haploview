@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 1.4 2004/04/09 14:41:40 jcbarret Exp $
+ * $Id: MarkerResult.java,v 1.5 2004/07/20 17:45:18 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -133,7 +133,7 @@ public class MarkerResult {
 	 * Gets percent of individuals genotyped
 	 */
 	public double getGenoPercent(){
-		return new Double(nf.format(this._genoPercent/100)).doubleValue();
+        return new Double(nf.format(this._genoPercent/100)).doubleValue();
 	}
 
 	/**

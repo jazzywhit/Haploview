@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.11 2004/07/14 18:21:27 jcbarret Exp $
+ * $Id: CheckData.java,v 1.12 2004/07/20 17:45:18 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -403,8 +403,11 @@ public class CheckData {
     }
 
 	private double getGenoPercent(int het, int hom, int missing){
-		double genoPct = 100.0*(het+hom)/(het+hom+missing);
-		return genoPct;
+        if (het+hom+missing == 0){
+            return 0;
+        }else{
+            return 100.0*(het+hom)/(het+hom+missing);
+        }
 	}
 
 	private int getNumOfFamTrio(Hashtable numindivs, Hashtable parentgeno, Hashtable kidgeno){

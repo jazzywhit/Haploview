@@ -118,7 +118,6 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 for (int i = 0; i < numPieces; i++){
                     baseName = baseName.concat(".").concat(st.nextToken());
                 }
-                System.out.println(baseName);
 
                 //check for info file for original file sample.haps
                 //either sample.haps.info or sample.info
