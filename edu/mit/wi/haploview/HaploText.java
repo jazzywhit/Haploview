@@ -594,6 +594,10 @@ public class HaploText implements Constants{
 
                 result = textData.linkageToChrom(inputFile, 3, skipCheck);
 
+                if(textData.getPedFile().isBogusParents()) {
+                    System.out.println("Error: One or more individuals in the file reference non-existent parents.\nThese references have been ignored.");
+                }
+
             }else{
                 //read in hapmapfile
                 result = textData.linkageToChrom(inputFile,4,skipCheck);

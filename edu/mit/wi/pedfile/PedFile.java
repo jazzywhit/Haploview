@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.29 2004/09/24 19:50:55 jmaller Exp $
+* $Id: PedFile.java,v 1.30 2004/09/24 20:43:23 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -40,6 +40,8 @@ public class PedFile {
     private Vector order;
     private Vector results = null;
     private String[][] hminfo;
+    //bogusParents is true if someone in the file referenced a parent not in the file
+    private boolean bogusParents = false;
 
     private static Hashtable hapMapTranslate;
 
@@ -489,6 +491,22 @@ public class PedFile {
 
             }
         }
+
+        //now we check if anyone has a reference to a parent who isnt in the file, and if so, we remove the reference
+        for(int i=0;i<order.size();i++) {
+            Individual currentInd = (Individual) order.get(i);
+            Hashtable curFam = ((Family)(families.get(currentInd.getFamilyID())) ).getMembers();
+            if( ! (curFam.containsKey(currentInd.getDadID()))) {
+                currentInd.setDadID("0");
+                bogusParents = true;
+            }
+            if(! (curFam.containsKey(currentInd.getMomID()))) {
+                currentInd.setMomID("0");
+                bogusParents = true;
+            }
+        }
+
+
     }
 
     public void parseHapMap(Vector rawLines) throws PedFileException {
@@ -801,6 +819,10 @@ public class PedFile {
 
     public Vector getAxedFamilies() {
         return axedFamilies;
+    }
+
+    public boolean isBogusParents() {
+        return bogusParents;
     }
 
 }

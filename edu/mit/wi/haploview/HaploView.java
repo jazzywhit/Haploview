@@ -589,6 +589,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 theData.linkageToChrom(inFile, type);
             }
 
+            if(theData.getPedFile().isBogusParents()) {
+                JOptionPane.showMessageDialog(this,
+                        "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
+                        "File Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+
             //deal with marker information
             theData.infoKnown = false;
             File markerFile;
