@@ -326,7 +326,6 @@ public class HaploText implements Constants{
 
 
     private void doBatch() {
-        //TODO: batch files should contain lines of either <hapsfile> or <hapsfile infofile>  or <pedfile> or <pedfile infofile>
         Vector files;
         File batchFile;
         File dataFile;
@@ -361,12 +360,20 @@ public class HaploText implements Constants{
 
                     if(dataFile.exists()) {
                         String name = dataFile.getName();
-
                         if( name.substring(name.length()-4,name.length()).equals(".ped") ) {
-                            processFile(name,1,infoMaybe);
+                            processFile(name,PED,infoMaybe);
                         }
-                        else {
-                            processFile(name,0,infoMaybe);
+                        else if(name.substring(name.length()-5,name.length()).equals(".haps")) {
+                            processFile(name,HAPS,infoMaybe);
+                        }
+                        else if(name.substring(name.length()-4,name.length()).equals(".hmp")){
+                            processFile(name,HMP,"");
+                        }
+                        else{
+                            if (!arg_quiet){
+                                System.out.println("Filenames in batch file must end in .ped, .haps or .hmp\n" +
+                                        name + " is not properly formatted.");
+                            }
                         }
                     }
                     else {
@@ -395,14 +402,14 @@ public class HaploText implements Constants{
         int fileType;
         if(!this.arg_hapsfile.equals("")) {
             fileName = this.arg_hapsfile;
-            fileType = 0;
+            fileType = HAPS;
         }
         else if (!this.arg_pedfile.equals("")){
             fileName = this.arg_pedfile;
-            fileType = 1;
+            fileType = PED;
         }else{
             fileName = this.arg_hapmapfile;
-            fileType = 2;
+            fileType = HMP;
         }
 
         processFile(fileName,fileType,this.arg_infoFileName);
@@ -421,6 +428,10 @@ public class HaploText implements Constants{
             File OutputFile;
             File inputFile;
 
+            if(!arg_quiet && fileName != null){
+                System.out.println("Using data file " + fileName);
+            }
+
             inputFile = new File(fileName);
             if(!inputFile.exists()){
                 System.out.println("input file: " + fileName + " does not exist");
@@ -436,11 +447,11 @@ public class HaploText implements Constants{
             Vector result = null;
 
 
-            if(fileType == 0){
+            if(fileType == HAPS){
                 //read in haps file
                 textData.prepareHapsInput(inputFile);
             }
-            else if (fileType == 1) {
+            else if (fileType == PED) {
                 //read in ped file
               /*  if(this.arg_ignoreMarkers.size()>0) {
                     for(int i=0;i<this.arg_ignoreMarkers.size();i++){
