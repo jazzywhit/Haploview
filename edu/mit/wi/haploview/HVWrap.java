@@ -2,6 +2,7 @@ package edu.mit.wi.haploview;
 
 import javax.swing.*;
 import java.io.*;
+import java.util.StringTokenizer;
 
 class StreamGobbler extends Thread{
     InputStream is;
@@ -37,7 +38,10 @@ public class HVWrap {
         String sep = System.getProperty("file.separator");
         String ver = System.getProperty("java.version");
         //TODO:do some version checking and bitch at people with old JVMs
-        //System.out.println(ver);
+        /*StringTokenizer st = new StringTokenizer(ver, ".");
+        while (st.hasMoreTokens()){
+            System.out.println(st.nextToken());
+        } */
         String jarfile = System.getProperty("java.class.path");
 
         String argsToBePassed = new String();
@@ -51,7 +55,7 @@ public class HVWrap {
 
         try {
             //if the nogui flag is present we force it into headless mode
-            String runString = "java -Xmx650m -classpath " + jarfile;
+            String runString = "java -Xmx1024m -classpath " + jarfile;
             if (headless){
                 runString += " -Djava.awt.headless=true";
             }
