@@ -511,10 +511,10 @@ public class HaploText {
                 OutputFile = new File(fileName + ".DPRIME");
                 textData.saveDprimeToText(textData.filteredDPrimeTable,OutputFile,false,null);
             }
-            //if(fileType){
-            //    TDT myTDT = new TDT();
-            //    myTDT.calcTDT(textData.chromosomes);
-            //}
+            if(fileType){
+                TDT myTDT = new TDT();
+                myTDT.calcTDT(textData.chromosomes);
+            }
         }
         catch(IOException e){}
         catch(HaploViewException e){

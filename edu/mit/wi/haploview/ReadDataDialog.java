@@ -17,7 +17,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     static final String PHASED_DATA = "Load phased haplotypes";
     static final String MARKER_DATA_EXT = ".info";
     static final String BROWSE_GENO = "browse for geno files";
-    static final String BROWSE_INFO = "browse for info files";    
+    static final String BROWSE_INFO = "browse for info files";
     static final int GENO = 0;
     static final int INFO = 1;
     static final int HAPS = 2;

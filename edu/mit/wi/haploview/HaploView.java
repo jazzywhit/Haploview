@@ -49,13 +49,15 @@ public class HaploView extends JFrame implements ActionListener{
     static final String VIEW_GENOTYPES = "Genotype Data";
     static final String VIEW_MARKERS = "Marker Data";
     static final String VIEW_CHECK_PANEL = "Check Markers";
+    static final String VIEW_TDT = "TDT";
 
     static final int VIEW_D_NUM = 0;
     static final int VIEW_HAP_NUM = 1;
-    static final int VIEW_CHECK_NUM = 2;
+    static final int VIEW_TDT_NUM = 2;
+    static final int VIEW_CHECK_NUM = 3;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL
+        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TDT
     };
     JRadioButtonMenuItem viewMenuItems[];
 
@@ -68,6 +70,8 @@ public class HaploView extends JFrame implements ActionListener{
     HaploData theData;
     //JFrame checkWindow;
     private CheckDataPanel checkPanel;
+    private TDTPanel tdtPanel;
+    private boolean doTDT = false;
     //private String hapInputFileName;
     //private BlockDisplay theBlocks;
     //private boolean infoKnown = false;
@@ -299,7 +303,7 @@ public class HaploView extends JFrame implements ActionListener{
 
         theData = new HaploData();
         JTable table = checkPanel.getTable();
-//        checkWindow.dispose();
+        //checkWindow.dispose();
         boolean[] markerResultArray = new boolean[table.getRowCount()];
         for (int i = 0; i < table.getRowCount(); i++){
             markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
@@ -314,6 +318,7 @@ public class HaploView extends JFrame implements ActionListener{
             JOptionPane.ERROR_MESSAGE);
             } */
         theData.linkageToChrom(markerResultArray,checkPanel.getPedFile());
+        this.doTDT = true;
         processData();
             //processInput(new File(hapInputFileName+".haps"));
     }
@@ -405,6 +410,11 @@ public class HaploView extends JFrame implements ActionListener{
                         tabs.addTab(viewItems[VIEW_CHECK_NUM], checkPanel);
                         viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
                         currentTab=VIEW_CHECK_NUM;
+                    }
+
+                    if(doTDT) {
+                        tdtPanel = new TDTPanel(theData.chromosomes);
+                        tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
                     }
 
                     tabs.setSelectedIndex(currentTab);
