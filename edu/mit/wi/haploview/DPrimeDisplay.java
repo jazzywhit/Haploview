@@ -42,7 +42,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     private final Color BG_GREY = new Color(212,208,200);
 
-    //private int currentScheme;
+    private Image gBrowseImage;
 
     BasicStroke thickerStroke = new BasicStroke(1);
     BasicStroke thinnerStroke = new BasicStroke(0.35f);
@@ -85,6 +85,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
 
     DPrimeDisplay(HaploView h){
+        //called when in gui mode
         theData=h.theData;
         theHV = h;
         this.computePreferredSize(theHV.getGraphics());
@@ -96,6 +97,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     }
 
     DPrimeDisplay(HaploData hd){
+        //called when in cmd line mode, used to dump pngs
         theData = hd;
         this.computePreferredSize();
         this.colorDPrime();
@@ -455,70 +457,18 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         double lineSpan = alignedPositions[alignedPositions.length-1] - alignedPositions[0];
         long minpos = Chromosome.getMarker(0).getPosition();
         long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
-
         double spanpos = maxpos - minpos;
 
-        //System.out.println(Chromosome.dataChrom + " " + Chromosome.getMarker(0).getPosition() + " " +
-        //        Chromosome.getMarker(Chromosome.getSize()-1).getPosition());
-        /*
-#################
-START OF SIMON'S HACKS
-#################
 
-
-See http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img
-for more info on GBrowse img.
-            */
-
-
-        URL imgUrl;
+        //See http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img
+        //for more info on GBrowse img.
         int imgHeight = 0;
-
-        try {
-            imgUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=chr5:" + minpos +
-                    ".." + maxpos + ";width=" + lineSpan + ";type=genotyped_SNPs+LocusLink_genes");
-
-// fake the real region, actual file coordinates are not in actual genomic bp
-         //   imgUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=chr5:131856314..131999887;width=" + gbLineSpan + ";type=genotyped_SNPs+LocusLink+RefSeq_mRNA");
-
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            Image gbrowse_img = toolkit.getImage(imgUrl); // get from the URL
-            MediaTracker mediaTracker = new MediaTracker(this);
-            mediaTracker.addImage(gbrowse_img, 0);
-            try
-            {
-                mediaTracker.waitForID(0);
-            }
-            catch (InterruptedException ie)
-            {
-                System.err.println(ie);
-                System.exit(1);
-            }
-
-
-
-
-            g2.drawImage(gbrowse_img, H_BORDER,0,this); // not sure if this is an imageObserver, however
-
-
-            imgHeight = gbrowse_img.getHeight(this); // get height so we can shift everything down
-
+        if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null){
+            g2.drawImage(gBrowseImage, H_BORDER,V_BORDER,this); // not sure if this is an imageObserver, however
+            imgHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
         }
-        catch(MalformedURLException mue) {
-            System.err.println(mue);
-            System.exit(1);
-        }
-
-
         left = H_BORDER;
-        top = V_BORDER;// + imgHeight; // push the haplotype display down to make room for gbrowse image.
-
-
-/*
-###############
-END OF HIS HACKS
-###############
-*/
+        top = V_BORDER + imgHeight; // push the haplotype display down to make room for gbrowse image.
 
 
         if (forExport){
@@ -1055,6 +1005,19 @@ END OF HIS HACKS
         return spp;
     }
 
+    public void updateGBrowseImage(String dataChrom, long minpos, long maxpos, double lineSpan){
+        try{
+            URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
+                    dataChrom + ":" + minpos + ".." + (maxpos+1) + ";width=" + lineSpan +
+                    ";type=genotyped_SNPs+LocusLink_genes");
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            //getImage() caches by default so it will only download an image when the URL changes
+            gBrowseImage = toolkit.getImage(imageUrl);
+        }catch (MalformedURLException mue){
+            //this exception sucks walnuts, so I refuse to handle it on principle
+        }
+    }
+
     public void computePreferredSize(){
         this.computePreferredSize(this.getGraphics());
     }
@@ -1093,6 +1056,31 @@ END OF HIS HACKS
             //if we haven't finished yet we want to try again with a longer line...
             lineSpan += 0.05 * lineSpan;
         }
+        double gblineSpan = alignedPositions[alignedPositions.length-1] - alignedPositions[0];
+
+        //generate gbrowse image if appropriate
+        int gbImageHeight = 0;
+        if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null){
+            try{
+                URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
+                        Chromosome.getDataChrom() + ":" + minpos + ".." + (maxpos+1) + ";width=" + gblineSpan +
+                        ";type=genotyped_SNPs+LocusLink_genes");
+                Toolkit toolkit = Toolkit.getDefaultToolkit();
+                //getImage() caches by default so it will only download an image when the URL changes
+                gBrowseImage = toolkit.getImage(imageUrl);
+                MediaTracker mt = new MediaTracker(this);
+                mt.addImage(gBrowseImage,0);
+                mt.waitForID(0);
+                gbImageHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
+            }catch (MalformedURLException mue){
+                //this exception sucks walnuts, so I refuse to handle it on principle
+            }catch (InterruptedException e){
+                //just in case something awful happens
+                gBrowseImage = null;
+            }
+        }
+
+
 
         //loop through table to find deepest non-null comparison
         DPrimeTable dPrimeTable = theData.dpTable;
@@ -1128,7 +1116,7 @@ END OF HIS HACKS
             }
         }
 
-        int high = 2*V_BORDER + (int)(sep/2) + blockDispHeight;
+        int high = 2*V_BORDER + (int)(sep/2) + blockDispHeight + gbImageHeight;
 
         //this dimension is just the area taken up by the dprime chart
         //it is used in drawing the worldmap
@@ -1392,7 +1380,6 @@ END OF HIS HACKS
             }
         }
     }
-
 
     public void mouseReleased(MouseEvent e) {
         //remove popped up window
