@@ -144,8 +144,16 @@ public abstract class AssociationResult implements Constants{
         return Util.formatPValue(((Double)pValues.get(i)).doubleValue());
     }
 
-    public double getFreq(int j) {
-        return ((Haplotype)alleles.get(j)).getPercentage();
+    public String getFreq(int j) {
+        double freq = ((Haplotype)alleles.get(j)).getPercentage();
+
+        if (freq < 0){
+            return ("");
+        }else{
+            nf.setMinimumFractionDigits(3);
+            nf.setMaximumFractionDigits(3);
+            return nf.format(freq);
+        }
     }
 
     protected static class TallyTrio {

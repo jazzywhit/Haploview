@@ -1,5 +1,7 @@
 package edu.mit.wi.haploview;
 
+import java.util.Vector;
+
 
 public class Chromosome{
 
@@ -15,8 +17,8 @@ public class Chromosome{
 
     private static String dataChrom = null;
     public static int[] realIndex;
-    static int[] filterIndex;
-    static Object[] markers;
+    public static int[] filterIndex;
+    static Vector markers;
     static int trueSize;
 
     Chromosome(String p, String i, byte[] g, String o, int a) throws HaploViewException{
@@ -107,12 +109,16 @@ public class Chromosome{
 
     public static SNP getUnfilteredMarker(int i){
         //get SNP at unfiltered position i
-        return (SNP)markers[i];
+        return (SNP)markers.get(i);
     }
 
     public static SNP getMarker(int i){
         //get SNP at filtered position i
-        return (SNP)markers[realIndex[i]];
+        return (SNP)markers.get(realIndex[i]);
+    }
+
+    public static Vector getMarkers(){
+        return markers;
     }
 
     public String getPed(){

@@ -1,6 +1,8 @@
 package edu.mit.wi.haploview;
 
-class Haplotype{
+
+public class Haplotype{
+    private static final String[] alleleCodes = {"X","A","C","G","T"};
 
     private int[] genotypes;
     private int[] markers;
@@ -10,10 +12,10 @@ class Haplotype{
     private double[] crossovers;
     private double transCount;
     private double untransCount;
-    private double caseFreq;
-    private double controlFreq;
+    private double caseCount;
+    private double controlCount;
 
-    Haplotype(int[] g, double p, int[] m){
+    public Haplotype(int[] g, double p, int[] m){
         genotypes=g;
         percentage = p;
         markers = m;
@@ -87,19 +89,28 @@ class Haplotype{
         this.untransCount = untransCount;
     }
 
-    public double getCaseFreq() {
-        return caseFreq;
+    public double getCaseCount() {
+        return caseCount;
     }
 
-    public void setCaseFreq(double caseFreq) {
-        this.caseFreq = caseFreq;
+    public void setCaseCount(double caseCount) {
+        this.caseCount = caseCount;
     }
 
-    public double getControlFreq() {
-        return controlFreq;
+    public double getControlCount() {
+        return controlCount;
     }
 
-    public void setControlFreq(double controlFreq) {
-        this.controlFreq = controlFreq;
+    public void setControlCount(double controlCount) {
+        this.controlCount = controlCount;
+    }
+
+    public String toString(){
+        StringBuffer curHap = new StringBuffer(genotypes.length);
+        for(int k=0;k<genotypes.length;k++) {
+            curHap.append(alleleCodes[genotypes[k]]);
+        }
+
+        return curHap.toString();
     }
 }

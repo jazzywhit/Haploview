@@ -11,6 +11,13 @@ import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.util.Vector;
 
+import org.jfree.data.statistics.HistogramDataset;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+
 public class PermutationTestPanel extends JPanel implements Constants,ActionListener {
     private JLabel bestPermutationValueLabel;
     private JLabel blocksChangedLabel;
@@ -29,7 +36,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
 
     private JLabel scoreBoardNumPassLabel;
     private JLabel scoreBoardNumTotalLabel;
-    private JPanel scoreboardPanel;
+    private JPanel scoreBoardPanel;
 
     public PermutationTestPanel(PermutationTestSet pts) {
         if(pts == null) {
@@ -75,16 +82,16 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         bestPermPanel.add(bestPermutationValueLabel);
         this.add(bestPermPanel);
 
-        scoreboardPanel = new JPanel();
+        scoreBoardPanel = new JPanel();
         scoreBoardNumPassLabel = new JLabel();
         scoreBoardNumTotalLabel = new JLabel();
-        scoreboardPanel.add(scoreBoardNumPassLabel);
-        scoreboardPanel.add(new JLabel(" permutations out of "));
-        scoreboardPanel.add(scoreBoardNumTotalLabel);
-        scoreboardPanel.add(new JLabel(" exceed highest observed chi square."));
-        scoreboardPanel.setMaximumSize(new Dimension(600,30));
-        scoreboardPanel.setVisible(false);
-        add(scoreboardPanel);
+        scoreBoardPanel.add(scoreBoardNumPassLabel);
+        scoreBoardPanel.add(new JLabel(" permutations out of "));
+        scoreBoardPanel.add(scoreBoardNumTotalLabel);
+        scoreBoardPanel.add(new JLabel(" exceed highest observed chi square."));
+        scoreBoardPanel.setMaximumSize(new Dimension(600,30));
+        scoreBoardPanel.setVisible(false);
+        add(scoreBoardPanel);
 
         colNames = new Vector();
         colNames.add("Name");
@@ -107,8 +114,12 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         }
     }
 
+    public void setTestSet(PermutationTestSet pts){
+        testSet = pts;
+    }
+
     public void startPerms() {
-        scoreboardPanel.setVisible(true);
+        scoreBoardPanel.setVisible(true);
 
         if (resultsPanel != null){
             remove(resultsPanel);
@@ -166,6 +177,20 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         resultsPanel.setLayout(new BoxLayout(resultsPanel,BoxLayout.Y_AXIS));
         resultsPanel.add(sigAssocLabel);
         resultsPanel.add(tableScroller);
+
+        resultsPanel.add(Box.createRigidArea(new Dimension(0,5)));
+
+        HistogramDataset resHist = new HistogramDataset();
+        resHist.addSeries("Chi Squares", testSet.getPermBestChiSq(),100);
+        JFreeChart jfc =  ChartFactory.createHistogram(null,
+                "Chi Square",
+                "Number Permutations",resHist,PlotOrientation.VERTICAL,false,false,false);
+        jfc.setBorderVisible(true);
+        XYPlot xyp = jfc.getXYPlot();
+        xyp.getRenderer().setPaint(Color.blue);
+        ChartPanel cp = new ChartPanel(jfc);
+        cp.setMaximumSize(new Dimension(400, cp.getPreferredSize().height));
+        resultsPanel.add(cp);
         add(resultsPanel);
     }
 
@@ -186,6 +211,10 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
             testSet.doPermutations();
             finishedPerms();
         }
+    }
+
+    public PermutationTestSet getTestSet() {
+        return testSet;
     }
 
     private class ProgressBarUpdater extends Thread{

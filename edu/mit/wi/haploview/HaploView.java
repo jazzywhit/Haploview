@@ -5,6 +5,7 @@ import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.haploview.TreeTable.*;
+import edu.mit.wi.haploview.association.*;
 
 import javax.help.*;
 import javax.swing.*;
@@ -14,9 +15,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.io.*;
-import java.util.Vector;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.net.URL;
 
 import com.sun.jimi.core.Jimi;
@@ -53,7 +52,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                            "Custom"};
 
     HaploData theData;
-    CheckDataPanel checkPanel;
 
     private int currentBlockDef = BLOX_GABRIEL;
     private TDTPanel tdtPanel;
@@ -66,6 +64,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private HaplotypeDisplay hapDisplay;
     JTabbedPane tabs;
     CheckDataController cdc;
+    PermutationTestPanel permutationPanel;
+    CheckDataPanel checkPanel;
+    private CustomAssocPanel custAssocPanel;
+    private HaploAssocPanel hapAssocPanel;
 
     public HaploView(){
         try{
@@ -600,8 +602,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         //input is a 2 element array with
         //inputOptions[0] = ped file
         //inputOptions[1] = info file (null if none)
+        //inputOptions[2] = custom association test list file (null if none)
         //type is either 3 or 4 for ped and hapmap files respectively
         final File inFile = new File(inputOptions[0]);
+        final AssociationTestSet customAssocSet;
 
         try {
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -609,7 +613,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
             }
 
-            if (type == HAPS){
+            if (type == HAPS_FILE){
                 //these are not available for non ped files
                 viewMenuItems[VIEW_CHECK_NUM].setEnabled(false);
                 viewMenuItems[VIEW_TDT_NUM].setEnabled(false);
@@ -617,13 +621,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
             theData = new HaploData();
 
-            if (type == HAPS){
+            if (type == HAPS_FILE){
                 theData.prepareHapsInput(new File(inputOptions[0]));
             }else{
                 theData.linkageToChrom(inFile, type);
             }
 
-            if(type != HAPS && theData.getPedFile().isBogusParents()) {
+            if(type != HAPS_FILE && theData.getPedFile().isBogusParents()) {
                 JOptionPane.showMessageDialog(this,
                         "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
                         "File Error",
@@ -648,27 +652,29 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
 
             checkPanel = null;
-            if (type == HAPS){
+            if (type == HAPS_FILE){
                 readMarkers(markerFile, null);
 
                 //initialize realIndex
                 Chromosome.doFilter(Chromosome.getUnfilteredSize());
+                customAssocSet = null;
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
+                //we read the file in first, so we can whitelist all the markers in the custom test set
+                HashSet whiteListedCustomMarkers = new HashSet();
+                if (inputOptions[2] != null){
+                    customAssocSet = new AssociationTestSet(inputOptions[2]);
+                    whiteListedCustomMarkers = customAssocSet.getWhitelist();
+                }else{
+                    customAssocSet = null;
+                }
+                theData.setWhiteList(whiteListedCustomMarkers);
+
                 checkPanel = new CheckDataPanel(this);
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-                Vector result = theData.getPedFile().getResults();
-                boolean[] markerResults = new boolean[result.size()];
-                for (int i = 0; i < result.size(); i++){
-                    if (((MarkerResult)result.get(i)).getRating() > 0 && Chromosome.getUnfilteredMarker(i).getDupStatus() != 2){
-                        markerResults[i] = true;
-                    }else{
-                        markerResults[i] = false;
-                    }
-                }
                 //set up the indexing to take into account skipped markers.
-                Chromosome.doFilter(markerResults);
+                Chromosome.doFilter(checkPanel.getMarkerResults());
             }
 
 
@@ -731,24 +737,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     displayMenu.setEnabled(true);
                     analysisMenu.setEnabled(true);
 
-                    //LOD panel
-                    /*panel = new JPanel();
-                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                    LODDisplay ld = new LODDisplay(theData);
-                    JScrollPane lodScroller = new JScrollPane(ld);
-                    panel.add(lodScroller);
-                    tabs.addTab(viewItems[VIEW_LOD_NUM], panel);
-                    viewMenuItems[VIEW_LOD_NUM].setEnabled(true);*/
-
-                    //int optionalTabCount = 1;
-
-
-
                     //check data panel
                     if (checkPanel != null){
-                        //optionalTabCount++;
-                        //VIEW_CHECK_NUM = optionalTabCount;
-                        //viewItems[VIEW_CHECK_NUM] = VIEW_CHECK_PANEL;
                         JPanel metaCheckPanel = new JPanel();
                         metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
                         metaCheckPanel.add(checkPanel);
@@ -760,27 +750,57 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         currentTab=VIEW_CHECK_NUM;
                     }
 
-                    //TDT panel
+                    //Association panel
                     if(Options.getAssocTest() != ASSOC_NONE) {
-                        //optionalTabCount++;
-                        //VIEW_TDT_NUM = optionalTabCount;
-                        //viewItems[VIEW_TDT_NUM] = VIEW_TDT;
                         JTabbedPane metaAssoc = new JTabbedPane();
                         try{
-                            tdtPanel = new TDTPanel(theData.getPedFile());
+                            tdtPanel = new TDTPanel(new AssociationTestSet(theData.getPedFile(), null, Chromosome.getMarkers()));
                         } catch(PedFileException e) {
                             JOptionPane.showMessageDialog(window,
                                     e.getMessage(),
                                     "Error",
                                     JOptionPane.ERROR_MESSAGE);
                         }
+
+
                         metaAssoc.add("Single Marker", tdtPanel);
 
-                        HaploAssocPanel htp = new HaploAssocPanel(theData.getHaplotypes());
-                        metaAssoc.add("Haplotypes", htp);
+                        hapAssocPanel = new HaploAssocPanel(new AssociationTestSet(theData.getHaplotypes(), null));
+                        metaAssoc.add("Haplotypes", hapAssocPanel);
+
+                        //custom association tests
+                        custAssocPanel = null;
+                        if(customAssocSet != null) {
+                            try {
+                                customAssocSet.runFileTests(theData, tdtPanel.getTestSet().getMarkerAssociationResults());
+                                custAssocPanel = new CustomAssocPanel(customAssocSet);
+                                metaAssoc.addTab("Custom",custAssocPanel);
+                                metaAssoc.setSelectedComponent(custAssocPanel);
+                            } catch (HaploViewException e) {
+                                JOptionPane.showMessageDialog(window,
+                                    e.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+
+                        AssociationTestSet permSet;
+                        if (custAssocPanel != null){
+                            permSet = custAssocPanel.getTestSet();
+                        }else{
+                            permSet = new AssociationTestSet();
+                            permSet.cat(tdtPanel.getTestSet());
+                            permSet.cat(hapAssocPanel.getTestSet());
+                        }
+
+                        permutationPanel = new PermutationTestPanel(new PermutationTestSet(0,theData.getSavedEMs(),
+                                theData.getPedFile(),permSet));
+                        metaAssoc.add(permutationPanel,"Permutation Tests");
+
 
                         tabs.addTab("Association Results", metaAssoc);
                         viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
+
                     }
 
                     tabs.setSelectedIndex(currentTab);
@@ -959,7 +979,15 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     //this is the haps ass tab inside the assoc super-tab
                     HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
                     if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
-                        htp.makeTable(theData.getHaplotypes());
+                        htp.makeTable(new AssociationTestSet(theData.getHaplotypes(), null));
+                        permutationPanel.setBlocksChanged();
+                        if (custAssocPanel == null){
+                            //change tests if we don't have a custom set
+                            AssociationTestSet permSet = new AssociationTestSet();
+                            permSet.cat(tdtPanel.getTestSet());
+                            permSet.cat(hapAssocPanel.getTestSet());
+                            permutationPanel.setTestSet(new PermutationTestSet(0,theData.getSavedEMs(),theData.getPedFile(),permSet));
+                        }
                     }
                 }
 
@@ -984,14 +1012,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }
 
                     window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    JTable table = checkPanel.getTable();
-                    boolean[] markerResults = new boolean[table.getRowCount()];
-                    for (int i = 0; i < table.getRowCount(); i++){
-                        markerResults[i] = ((Boolean)table.getValueAt(i,CheckDataPanel.STATUS_COL)).booleanValue();
-                    }
 
-                    Chromosome.doFilter(markerResults);
-
+                    Chromosome.doFilter(checkPanel.getMarkerResults());
 
                     //after editing the filtered marker list, needs to be prodded into
                     //resizing correctly
@@ -1032,6 +1054,18 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     if (tdtPanel != null){
                         tdtPanel.refreshTable();
                     }
+
+                    if(permutationPanel != null) {
+                        permutationPanel.setBlocksChanged();
+                        if (custAssocPanel == null){
+                            //change tests if we don't have a custom set
+                            AssociationTestSet permSet = new AssociationTestSet();
+                            permSet.cat(tdtPanel.getTestSet());
+                            permSet.cat(hapAssocPanel.getTestSet());
+                            permutationPanel.setTestSet(new PermutationTestSet(0,theData.getSavedEMs(),theData.getPedFile(),permSet));
+                        }
+                    }
+
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     checkPanel.changed=false;
                 }
@@ -1041,10 +1075,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     try{
                         hapDisplay.getHaps();
                         if(Options.getAssocTest() != ASSOC_NONE) {
-                            JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(VIEW_TDT_NUM);
                             //this is the haps ass tab inside the assoc super-tab
-                            HaploAssocPanel hasp = (HaploAssocPanel)metaAssoc.getComponent(1);
-                            hasp.makeTable(theData.getHaplotypes());
+                            hapAssocPanel.makeTable(new AssociationTestSet(theData.getHaplotypes(), null));
+
+                            permutationPanel.setBlocksChanged();
+                            if (custAssocPanel == null){
+                                //change tests if we don't have a custom set
+                                AssociationTestSet permSet = new AssociationTestSet();
+                                permSet.cat(tdtPanel.getTestSet());
+                                permSet.cat(hapAssocPanel.getTestSet());
+                                permutationPanel.setTestSet(new PermutationTestSet(0,theData.getSavedEMs(),theData.getPedFile(),permSet));
+                            }
                         }
                     }catch(HaploViewException hv){
                         JOptionPane.showMessageDialog(window,
@@ -1237,7 +1278,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                             jlp.add(udp, JLayeredPane.POPUP_LAYER);
 
-                            java.util.Timer updateTimer = new Timer();
+                            java.util.Timer updateTimer = new java.util.Timer();
                             //show this update message for 6.5 seconds
                             updateTimer.schedule(new TimerTask() {
                                 public void run() {
@@ -1267,15 +1308,15 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (argParser.getHapsFileName() != null){
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
-                window.readGenotypes(inputArray, HAPS);
+                window.readGenotypes(inputArray, HAPS_FILE);
             }else if (argParser.getPedFileName() != null){
                 inputArray[0] = argParser.getPedFileName();
                 inputArray[1] = argParser.getInfoFileName();
-                window.readGenotypes(inputArray, PED);
+                window.readGenotypes(inputArray, PED_FILE);
             }else if (argParser.getHapmapFileName() != null){
                 inputArray[0] = argParser.getHapmapFileName();
                 inputArray[1] = null;
-                window.readGenotypes(inputArray, HMP);
+                window.readGenotypes(inputArray, HMP_FILE);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
                 readDialog.pack();

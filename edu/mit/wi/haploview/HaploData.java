@@ -2,7 +2,8 @@ package edu.mit.wi.haploview;
 
 
 import edu.mit.wi.pedfile.*;
-import edu.mit.wi.haploview.TreeTable.HaplotypeAssociationNode;
+import edu.mit.wi.haploview.association.MarkerAssociationResult;
+import edu.mit.wi.haploview.association.HaplotypeAssociationResult;
 
 import java.io.*;
 import java.util.*;
@@ -19,6 +20,8 @@ public class HaploData implements Constants{
 
     private Vector chromosomes;
     private Haplotype[][] haplotypes;
+    private Haplotype[][] rawHaplotypes;
+    private Vector savedEMs;
     Vector blocks;
     boolean[] isInBlock;
     boolean infoKnown = false;
@@ -46,35 +49,9 @@ public class HaploData implements Constants{
     double[] numHaps = new double[4];
     double[] probHaps = new double[4];
 
-    //these are for the progress bars
-    //these 3 are for the dprime and dprime display progress bars
-    private int totalComps = 0;
-    private int compsDone = 0;
-    private int realCompsDone =0;
-    //these are for the haplotype calcs progress bar
-    private int totalBlocks = 0;
-    private int blocksDone = 0;
-    int numTrios, numSingletons,numPeds;
 
-    int getTotalComps(){
-        return this.totalComps;
-    }
-
-    int getCompsDone() {
-        return this.compsDone;
-    }
-
-    int getRealCompsDone() {
-        return this.realCompsDone;
-    }
-
-    int getTotalBlocks() {
-        return this.totalBlocks;
-    }
-
-    int getBlocksDone() {
-        return this.blocksDone;
-    }
+    public int numTrios, numSingletons,numPeds;
+    private HashSet whitelist;
 
     public PedFile getPedFile(){
         return this.pedFile;
@@ -260,6 +237,7 @@ public class HaploData implements Constants{
             }
             long prevPosition = Long.MIN_VALUE;
             SNP prevMarker = null;
+            MarkerResult pmr = null;
             for (int i = 0; i < Chromosome.getUnfilteredSize(); i++){
                 MarkerResult mr = null;
                 if (results != null){
@@ -327,7 +305,7 @@ public class HaploData implements Constants{
                             //only do this for markers 2..N, since we're comparing to the previous location
                             if (pos == prevPosition){
                                 dupsToBeFlagged = true;
-                                if (genoPC >= mr.getGenoPercent()){
+                                if (genoPC >= pmr.getGenoPercent()){
                                     //use this one because it has more genotypes
                                     thisMarker.setDup(1);
                                     prevMarker.setDup(2);
@@ -340,13 +318,14 @@ public class HaploData implements Constants{
                         }
                         prevPosition = pos;
                         prevMarker = thisMarker;
+                        pmr = mr;
                     }
                 }else{
                     markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), maf,a1,a2));
                 }
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
-            Chromosome.markers = markerInfo.toArray();
+            Chromosome.markers = markerInfo;
         }
     }
 
@@ -451,7 +430,7 @@ public class HaploData implements Constants{
         }
         pedFile = new PedFile();
 
-        if (type == PED){
+        if (type == PED_FILE){
             pedFile.parseLinkage(pedFileStrings);
         }else{
             pedFile.parseHapMap(pedFileStrings);
@@ -679,8 +658,6 @@ public class HaploData implements Constants{
 
         dpTable = new DPrimeTable(Chromosome.getUnfilteredSize());
 
-        totalComps = (Chromosome.getUnfilteredSize()*(Chromosome.getUnfilteredSize()-1))/2;
-        compsDone =0;
         int maxdist = Options.getMaxDistance();
 
         //loop through all marker pairs
@@ -715,16 +692,48 @@ public class HaploData implements Constants{
         return filt;
     }*/
 
-    Haplotype[][] generateHaplotypes(Vector blocks, boolean crossover) throws HaploViewException{
+    public Haplotype[][] generateBlockHaplotypes(Vector blocks) throws HaploViewException{
+        Haplotype[][] rawHaplotypes = generateHaplotypes(blocks, true);
+        Haplotype[][] tempHaplotypes = new Haplotype[rawHaplotypes.length][];
+
+        for (int i = 0; i < rawHaplotypes.length; i++) {
+            Vector orderedHaps = new Vector();
+            //step through each haplotype in this block
+            for (int hapCount = 0; hapCount < rawHaplotypes[i].length; hapCount++) {
+                if (orderedHaps.size() == 0) {
+                    orderedHaps.add(rawHaplotypes[i][hapCount]);
+                } else {
+                    for (int j = 0; j < orderedHaps.size(); j++) {
+                        if (((Haplotype)(orderedHaps.elementAt(j))).getPercentage() <
+                                rawHaplotypes[i][hapCount].getPercentage()) {
+                            orderedHaps.add(j, rawHaplotypes[i][hapCount]);
+                            break;
+                        }
+                        if ((j+1) == orderedHaps.size()) {
+                            orderedHaps.add(rawHaplotypes[i][hapCount]);
+                            break;
+                        }
+                    }
+                }
+            }
+            tempHaplotypes[i] = new Haplotype[orderedHaps.size()];
+            orderedHaps.copyInto(tempHaplotypes[i]);
+        }
+        tempHaplotypes = generateCrossovers(tempHaplotypes);
+        haplotypes = tempHaplotypes;
+        this.rawHaplotypes = rawHaplotypes;
+        return tempHaplotypes;
+    }
+
+    public  Haplotype[][] generateHaplotypes(Vector blocks, boolean storeEMs) throws HaploViewException{
         //TODO: output indiv hap estimates
         Haplotype[][] rawHaplotypes = new Haplotype[blocks.size()][];
-        //String raw = new String();
-        //String currentLine;
-        this.totalBlocks = blocks.size();
-        this.blocksDone = 0;
+
+        if(storeEMs) {
+            savedEMs = new Vector();
+        }
 
         for (int k = 0; k < blocks.size(); k++){
-            this.blocksDone++;
             int[] preFiltBlock = (int[])blocks.elementAt(k);
             int[] theBlock;
 
@@ -783,6 +792,10 @@ public class HaploData implements Constants{
             //kirby patch
             EM theEM = new EM(chromosomes,numTrios);
             theEM.doEM(theBlock);
+
+            if(storeEMs) {
+                savedEMs.add(theEM);
+            }
 
             //int p = 0;
             Haplotype[] tempArray = new Haplotype[theEM.numHaplos()];
@@ -863,8 +876,8 @@ public class HaploData implements Constants{
                     tempArray[i].setTransCount(theEM.getTransCount(i));
                     tempArray[i].setUntransCount(theEM.getUntransCount(i));
                 }else if (Options.getAssocTest() == ASSOC_CC){
-                    tempArray[i].setCaseFreq(theEM.getCaseFreq(i));
-                    tempArray[i].setControlFreq(theEM.getControlFreq(i));
+                    tempArray[i].setCaseCount(theEM.getCaseCount(i));
+                    tempArray[i].setControlCount(theEM.getControlCount(i));
                 }
                 //p++;
                 //}
@@ -876,37 +889,9 @@ public class HaploData implements Constants{
                 rawHaplotypes[k][z] = tempArray[z];
             }
         }
-        if (!crossover){
-            haplotypes = new Haplotype[rawHaplotypes.length][];
-            for (int i = 0; i < rawHaplotypes.length; i++) {
-                Vector orderedHaps = new Vector();
-                //step through each haplotype in this block
-                for (int hapCount = 0; hapCount < rawHaplotypes[i].length; hapCount++) {
-                    if (orderedHaps.size() == 0) {
-                        orderedHaps.add(rawHaplotypes[i][hapCount]);
-                    } else {
-                        for (int j = 0; j < orderedHaps.size(); j++) {
-                            if (((Haplotype)(orderedHaps.elementAt(j))).getPercentage() <
-                                    rawHaplotypes[i][hapCount].getPercentage()) {
-                                orderedHaps.add(j, rawHaplotypes[i][hapCount]);
-                                break;
-                            }
-                            if ((j+1) == orderedHaps.size()) {
-                                orderedHaps.add(rawHaplotypes[i][hapCount]);
-                                break;
-                            }
-                        }
-                    }
-                }
-                haplotypes[i] = new Haplotype[orderedHaps.size()];
-                orderedHaps.copyInto(haplotypes[i]);
-            }
-            haplotypes = generateCrossovers(haplotypes);
-            return haplotypes;
-        }
+
         return rawHaplotypes;
     }
-
 
     public double[] computeMultiDprime(Haplotype[][] haplos){
         double[] multidprimeArray = new double[haplos.length];
@@ -1065,7 +1050,7 @@ public class HaploData implements Constants{
             }
             inputVector.add(intArray);
 
-            Haplotype[] crossHaplos = generateHaplotypes(inputVector,true)[0];  //get haplos of gap
+            Haplotype[] crossHaplos = generateHaplotypes(inputVector, false)[0];  //get haplos of gap
 
 
             for (int i = 0; i < haplos[gap].length; i++){
@@ -1296,7 +1281,6 @@ public class HaploData implements Constants{
     //between them is less than maximum distance).
     //NOTE: the values of pos1,pos2 should be unfiltered marker numbers.
     public PairwiseLinkage computeDPrime(int pos1, int pos2){
-        compsDone++;
         int doublehet = 0;
         int[][] twoMarkerHaplos = new int[3][3];
 
@@ -1359,8 +1343,6 @@ public class HaploData implements Constants{
 
         //compute D Prime for this pair of markers.
         //return is a tab delimited string of d', lod, r^2, CI(low), CI(high)
-        this.realCompsDone++;
-
 
         int i,count;
         //int j,k,itmp;
@@ -1556,6 +1538,7 @@ public class HaploData implements Constants{
         if (finishedHaplos == null) return;
 
         NumberFormat nf = NumberFormat.getInstance(Locale.US);
+        nf.setGroupingUsed(false);
         nf.setMinimumFractionDigits(3);
         nf.setMaximumFractionDigits(3);
 
@@ -1878,141 +1861,17 @@ public class HaploData implements Constants{
         return haplotypes;
     }
 
-
-    public static void saveMarkerAssocToText(Vector markerResults, File outputFile) {
-        if(markerResults == null) {
-            return;
-        }
-
-        if(Options.getAssocTest() != ASSOC_TRIO && Options.getAssocTest() != ASSOC_CC) {
-            return ;
-        }
-
-        FileWriter fw;
-        try {
-            fw = new FileWriter(outputFile);
-        } catch(IOException ioe) {
-            System.err.println("An error occured while accessing the marker association output file");
-            return;
-        }
-
-        StringBuffer result = new StringBuffer();
-        //result.append("Marker Association Results\n-------------------------------\n");
-        if(Options.getAssocTest() == ASSOC_TRIO) {
-            result.append("#\tName\tOvertransmitted\tT:U\tChi square\tP value\n");
-
-        } else if(Options.getAssocTest() == ASSOC_CC) {
-            result.append("#\tName\tMajor Alleles\tCase,Control Ratios\tChi square\tP value\n");
-        }
-
-        //only output assoc results for markers which werent filtered
-        for(int i=0;i<Chromosome.getSize();i++) {
-            TDTResult currentResult = (TDTResult) markerResults.get(Chromosome.realIndex[i]);
-            result.append((Chromosome.realIndex[i] + 1)).append("\t");
-            result.append(currentResult.getName()).append("\t");
-            result.append(currentResult.getOverTransmittedAllele(Options.getAssocTest())).append("\t");
-            result.append(currentResult.getTURatio(Options.getAssocTest())).append("\t");
-            result.append(currentResult.getChiSq(Options.getAssocTest())).append("\t");
-            result.append(currentResult.getPValue()).append("\n");
-        }
-
-        try {
-            fw.write(result.toString().toCharArray());
-            fw.close();
-        } catch(IOException ioe) {
-            System.err.println("An error occured while writing to the marker association output file.");
-        }
+    public Vector getChromosomes() {
+        return chromosomes;
     }
 
-    public static void saveHapAssocToText(Haplotype[][] haps, File outputFile) {
-        FileWriter fw;
-        try {
-            fw = new FileWriter(outputFile);
-        } catch(IOException ioe) {
-            System.err.println("An error occured while accessing the haplotype association output file");
-            return;
-        }
-
-
-        StringBuffer result = new StringBuffer();
-        if(Options.getAssocTest() == ASSOC_TRIO) {
-            result.append("Block\tHaplotype\tFreq.\tT:U\tChi Square\tP Value\n");
-        } else if(Options.getAssocTest() == ASSOC_CC) {
-            result.append("Block\tHaplotype\tFreq.\tCase, Control Ratios\tChi Square\tP Value\n");
-        }
-
-        String[] alleleCodes = new String[5];
-        alleleCodes[0] = "X";
-        alleleCodes[1] = "A";
-        alleleCodes[2] = "C";
-        alleleCodes[3] = "G";
-        alleleCodes[4] = "T";
-
-        HaplotypeAssociationNode han;
-        for(int i=0;i< haps.length;i++){
-            Haplotype[] curBlock = haps[i];
-            double chisq;
-
-            result.append("Block " + (i+1)).append("\n");
-
-            for(int j=0;j< curBlock.length; j++) {
-                if (curBlock[j].getPercentage()*100 >= Options.getHaplotypeDisplayThreshold()){
-                    int[] genotypes = curBlock[j].getGeno();
-                    StringBuffer curHap = new StringBuffer(genotypes.length);
-                    for(int k=0;k<genotypes.length;k++) {
-                        curHap.append(alleleCodes[genotypes[k]]);
-                    }
-
-                    double[][] counts;
-                    if(Options.getAssocTest() == ASSOC_TRIO) {
-                        counts = new double[1][2];
-                        counts[0][0] = curBlock[j].getTransCount();
-                        counts[0][1] = curBlock[j].getUntransCount();
-                    }
-                    else {
-                        counts = new double[2][2];
-                        counts[0][0] = curBlock[j].getCaseFreq();
-                        counts[1][0] = curBlock[j].getControlFreq();
-                        double caseSum=0;
-                        double controlSum=0;
-                        for (int k=0; k < curBlock.length; k++){
-                            if (j!=k){
-                                caseSum += curBlock[k].getCaseFreq();
-                                controlSum += curBlock[k].getControlFreq();
-                            }
-                        }
-                        counts[0][1] = caseSum;
-                        counts[1][1] = controlSum;
-                    }
-                    chisq = HaploAssocPanel.getChiSq(counts);
-                    han =new HaplotypeAssociationNode(curHap.toString(),
-                            curBlock[j].getPercentage(),
-                            counts,
-                            chisq,
-                            HaploAssocPanel.getPValue(chisq));
-
-                    result.append("\t");
-                    result.append(han.getName()).append("\t");
-                    result.append(han.getFreq()).append("\t");
-                    result.append(han.getCounts()).append("\t");
-                    result.append(han.getChiSq()).append("\t");
-                    result.append(han.getPVal()).append("\n");
-
-                }
-            }
-        }
-
-        try {
-            fw.write(result.toString().toCharArray());
-            fw.close();
-        } catch(IOException ioe) {
-            System.err.println("An error occured while writing to the haplotype association output file.");
-        }
-
+    public Vector getSavedEMs() {
+        return savedEMs;
     }
 
-
-
+    public Haplotype[][] getRawHaplotypes() {
+        return rawHaplotypes;
+    }
 
     //this whole method is broken at the very least because it doesn't check for zeroing
     //out of mendel errors correctly. on the other hand we may never want to
@@ -2164,4 +2023,11 @@ public class HaploData implements Constants{
 
     }*/
 
+    public void setWhiteList(HashSet whiteListedCustomMarkers) {
+        whitelist = whiteListedCustomMarkers;
+    }
+
+    public boolean isWhiteListed(SNP snp){
+        return whitelist.contains(snp);
+    }
 }

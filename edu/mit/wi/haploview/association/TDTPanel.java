@@ -1,35 +1,28 @@
 package edu.mit.wi.haploview.association;
 
-import edu.mit.wi.pedfile.PedFile;
-import edu.mit.wi.pedfile.PedFileException;
-import edu.mit.wi.haploview.Constants;
-import edu.mit.wi.haploview.Options;
-import edu.mit.wi.haploview.Chromosome;
-import edu.mit.wi.haploview.BasicTableModel;
+import edu.mit.wi.haploview.*;
 
 import javax.swing.*;
 import java.util.Vector;
+import java.util.Iterator;
+import java.util.Hashtable;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 public class TDTPanel extends JPanel implements Constants, ActionListener {
 
-    public Vector result;
-    JTable table;
-    Vector tableColumnNames = new Vector();
+    private AssociationTestSet assocSet;
+    private JTable table;
+    private Vector tableColumnNames = new Vector();
     //countsorfreqs stores the users current choice for displaying counts or frequencies.
     //values are SHOW_SINGLE_COUNTS or SHOW_SINGLE_FREQS
     //default is counts
     private int countsOrFreqs;
 
-    public TDTPanel(PedFile pf) throws PedFileException{
+    public TDTPanel(AssociationTestSet ats){
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
-        if (Options.getAssocTest() == ASSOC_TRIO){
-            result = MarkerAssociationResult.getTDTAssociationResults(pf, null);
-        }else{
-            result = MarkerAssociationResult.getCCAssociationResults(pf,null);
-        }
+        assocSet = ats;
 
         tableColumnNames.add("#");
         tableColumnNames.add("Name");
@@ -48,7 +41,7 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
 
     public void refreshNames() {
         for (int i = 0; i < table.getRowCount(); i++){
-            table.setValueAt(Chromosome.getUnfilteredMarker(i).getName(),i,1);
+            table.setValueAt(Chromosome.getMarker(i).getName(),i,1);
         }
     }
 
@@ -59,11 +52,17 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
     public void refreshTable(){
         this.removeAll();
         Vector tableData = new Vector();
+        Iterator itr = assocSet.getMarkerAssociationResults().iterator();
+        Hashtable markerResultHash = new Hashtable();
+        while (itr.hasNext()){
+            MarkerAssociationResult m = (MarkerAssociationResult) itr.next();
+            markerResultHash.put(m.getSnp(), m);
+        }
 
-        int numRes = Chromosome.getSize();
-        for (int i = 0; i < numRes; i++){
+        for (int i = 0; i < Chromosome.getSize(); i++){
             Vector tempVect = new Vector();
-            MarkerAssociationResult currentResult = (MarkerAssociationResult)result.get(Chromosome.realIndex[i]);
+            SNP currentMarker = Chromosome.getMarker(i);
+            MarkerAssociationResult currentResult = (MarkerAssociationResult)markerResultHash.get(currentMarker);
             tempVect.add(new Integer(Chromosome.realIndex[i]+1));
             tempVect.add(currentResult.getName());
             tempVect.add(currentResult.getOverTransmittedAllele());
@@ -116,6 +115,10 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
         }
 
 
+    }
+
+    public AssociationTestSet getTestSet() {
+        return assocSet;
     }
 
     public void actionPerformed(ActionEvent e) {

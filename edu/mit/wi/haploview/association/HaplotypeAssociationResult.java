@@ -3,10 +3,9 @@ package edu.mit.wi.haploview.association;
 import edu.mit.wi.haploview.Haplotype;
 import edu.mit.wi.haploview.Options;
 
-import java.util.Vector;
-import java.util.Iterator;
-
 public class HaplotypeAssociationResult extends AssociationResult{
+
+    Haplotype[] haps;
 
     public HaplotypeAssociationResult(Haplotype[] locusHaplos, int freqCutoff, String n) {
         nf.setGroupingUsed(false);
@@ -16,6 +15,7 @@ public class HaplotypeAssociationResult extends AssociationResult{
         }
         setFrequencyCutoff(((double)freqCutoff)/100);
         name = n;
+        haps = locusHaplos;
     }
 
     public String getDisplayName(int i) {
@@ -66,14 +66,7 @@ public class HaplotypeAssociationResult extends AssociationResult{
         return countSB.toString();
     }
 
-    public static Vector getAssociationResults(Haplotype[][] haplos){
-        Vector results = new Vector();
-        for (int i = 0; i < haplos.length; i++){
-            String blockname = "Block " + (i+1);
-            results.add(new HaplotypeAssociationResult(haplos[i], Options.getHaplotypeDisplayThreshold(),blockname));
-        }
-
-        return results;
+    public Haplotype[] getHaps() {
+        return haps;
     }
-
 }

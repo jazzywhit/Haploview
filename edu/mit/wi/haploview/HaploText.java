@@ -3,7 +3,7 @@ package edu.mit.wi.haploview;
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
-import edu.mit.wi.haploview.TreeTable.HaplotypeAssociationNode;
+import edu.mit.wi.haploview.association.AssociationTestSet;
 
 import java.io.*;
 import java.util.Vector;
@@ -134,6 +134,10 @@ public class HaploText implements Constants{
                     }
                     pedFileName = args[i];
                 }
+            }
+            else if (args[i].equalsIgnoreCase("-pcloadletter")){
+                System.err.println("PC LOADLETTER?! What the fuck does that mean?!");
+                System.exit(31337);
             }
             else if (args[i].equalsIgnoreCase("-skipcheck") || args[i].equalsIgnoreCase("--skipcheck")){
                 skipCheck = true;
@@ -518,13 +522,13 @@ public class HaploText implements Constants{
                     if(dataFile.exists()) {
                         String name = dataFile.getName();
                         if( name.substring(name.length()-4,name.length()).equalsIgnoreCase(".ped") ) {
-                            processFile(name,PED,infoMaybe);
+                            processFile(name,PED_FILE,infoMaybe);
                         }
                         else if(name.substring(name.length()-5,name.length()).equalsIgnoreCase(".haps")) {
-                            processFile(name,HAPS,infoMaybe);
+                            processFile(name,HAPS_FILE,infoMaybe);
                         }
                         else if(name.substring(name.length()-4,name.length()).equalsIgnoreCase(".hmp")){
-                            processFile(name,HMP,"");
+                            processFile(name,HMP_FILE,"");
                         }
                         else{
                             if (!quietMode){
@@ -569,14 +573,14 @@ public class HaploText implements Constants{
         int fileType;
         if(hapsFileName != null) {
             fileName = hapsFileName;
-            fileType = HAPS;
+            fileType = HAPS_FILE;
         }
         else if (pedFileName != null){
             fileName = pedFileName;
-            fileType = PED;
+            fileType = PED_FILE;
         }else{
             fileName = hapmapFileName;
-            fileType = HMP;
+            fileType = HMP_FILE;
         }
 
         processFile(fileName,fileType,infoFileName);
@@ -606,20 +610,20 @@ public class HaploText implements Constants{
             textData = new HaploData();
             //Vector result = null;
 
-            if(fileType == HAPS){
+            if(fileType == HAPS_FILE){
                 //read in haps file
                 textData.prepareHapsInput(inputFile);
             }
-            else if (fileType == PED) {
+            else if (fileType == PED_FILE) {
                 //read in ped file
-                textData.linkageToChrom(inputFile, PED);
+                textData.linkageToChrom(inputFile, PED_FILE);
 
                 if(textData.getPedFile().isBogusParents()) {
                     System.out.println("Error: One or more individuals in the file reference non-existent parents.\nThese references have been ignored.");
                 }
             }else{
                 //read in hapmapfile
-                textData.linkageToChrom(inputFile,HMP);
+                textData.linkageToChrom(inputFile,HMP_FILE);
             }
 
 
@@ -627,7 +631,7 @@ public class HaploText implements Constants{
             if (infoFileName != null){
                 infoFile = new File(infoFileName);
             }
-            if (fileType != HAPS){
+            if (fileType != HAPS_FILE){
                 textData.prepareMarkerInput(infoFile,textData.getPedFile().getHMInfo());
             }else{
                 textData.prepareMarkerInput(infoFile,null);
@@ -635,12 +639,13 @@ public class HaploText implements Constants{
 
             boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
             Vector result = null;
-            if (fileType != HAPS){
+            if (fileType != HAPS_FILE){
                 result = textData.getPedFile().getResults();
                 //once check has been run we can filter the markers
                 for (int i = 0; i < result.size(); i++){
-                    if ((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&
-                            Chromosome.getUnfilteredMarker(i).getDupStatus() != 2){
+                    if (((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&
+                            Chromosome.getUnfilteredMarker(i).getDupStatus() != 2)||
+                            textData.isWhiteListed(Chromosome.getUnfilteredMarker(i))){
                         markerResults[i] = true;
                     }else{
                         markerResults[i] = false;
@@ -706,7 +711,8 @@ public class HaploText implements Constants{
                 if(blockOutputType == BLOX_ALL) {
                     OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
-                    haplos = textData.generateHaplotypes(textData.blocks, false);
+
+                    haplos = textData.generateBlockHaplotypes(textData.blocks);
                     if (haplos != null){
                         filtHaplos = filterHaplos(haplos);
                         textData.pickTags(filtHaplos);
@@ -714,9 +720,11 @@ public class HaploText implements Constants{
                     }else if (!quietMode){
                         System.out.println("Skipping block output: no valid Gabriel blocks.");
                     }
+
                     OutputFile = validateOutputFile(fileName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
-                    haplos = textData.generateHaplotypes(textData.blocks, false);
+
+                    haplos = textData.generateBlockHaplotypes(textData.blocks);
                     if (haplos != null){
                         filtHaplos = filterHaplos(haplos);
                         textData.pickTags(filtHaplos);
@@ -724,9 +732,11 @@ public class HaploText implements Constants{
                     }else if (!quietMode){
                         System.out.println("Skipping block output: no valid 4 Gamete blocks.");
                     }
+
                     OutputFile = validateOutputFile(fileName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
-                    haplos = textData.generateHaplotypes(textData.blocks, false);
+
+                    haplos = textData.generateBlockHaplotypes(textData.blocks);
                     if (haplos != null){
                         filtHaplos = filterHaplos(haplos);
                         textData.pickTags(filtHaplos);
@@ -734,14 +744,17 @@ public class HaploText implements Constants{
                     }else if (!quietMode){
                         System.out.println("Skipping block output: no valid LD Spine blocks.");
                     }
+
                 }else{
                     //guesses blocks based on output type determined above.
                     textData.guessBlocks(blockOutputType, cust);
-                    haplos = textData.generateHaplotypes(textData.blocks, false);
+
+                    haplos = textData.generateBlockHaplotypes(textData.blocks);
                     if (haplos != null){
-                    filtHaplos = filterHaplos(haplos);
-                    textData.pickTags(filtHaplos);
-                    textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
+
+                        filtHaplos = filterHaplos(haplos);
+                        textData.pickTags(filtHaplos);
+                        textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
                     }else if (!quietMode){
                         System.out.println("Skipping block output: no valid blocks.");
                     }
@@ -752,7 +765,7 @@ public class HaploText implements Constants{
                         System.out.println("Haplotype association results cannot be used with block output \"ALL\"");
                     }else{
                         if (haplos != null){
-                        HaploData.saveHapAssocToText(haplos, validateOutputFile(fileName + ".HAPASSOC"));
+                            new AssociationTestSet(haplos,null).saveHapsToText(validateOutputFile(fileName + ".HAPASSOC"));
                         }else if (!quietMode){
                             System.out.println("Skipping block association output: no valid blocks.");
                         }
@@ -787,13 +800,8 @@ public class HaploText implements Constants{
                 }
             }
 
-
-            if(Options.getAssocTest() == ASSOC_TRIO){
-                Vector tdtResults = TDT.calcTrioTDT(textData.getPedFile());
-                HaploData.saveMarkerAssocToText(tdtResults, validateOutputFile(fileName + ".ASSOC"));
-            } else if(Options.getAssocTest() == ASSOC_CC) {
-                Vector ccResults = TDT.calcCCTDT(textData.getPedFile());
-                HaploData.saveMarkerAssocToText(ccResults, validateOutputFile(fileName + ".ASSOC"));
+            if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC){
+                new AssociationTestSet(textData.getPedFile(),null,Chromosome.getMarkers()).saveSNPsToText(validateOutputFile(fileName + ".ASSOC"));
             }
 
         }

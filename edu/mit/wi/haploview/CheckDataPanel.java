@@ -125,7 +125,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             tempVect.add(new Double(currentResult.getMAF()));
 
             int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
-            if (currentResult.getRating() > 0 && dupStatus != 2){
+            if ((currentResult.getRating() > 0 && dupStatus != 2) ||
+                    theData.isWhiteListed(Chromosome.getUnfilteredMarker(i))){
                 tempVect.add(new Boolean(true));
             }else{
                 tempVect.add(new Boolean(false));
@@ -214,7 +215,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
                 //use this marker as long as it has a good (i.e. positive) rating and is not an "unused" dup (==2)
                 int curRating = cur.getRating();
                 int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
-                if (curRating > 0 && dupStatus != 2){
+                if ((curRating > 0 && dupStatus != 2) || 
+                    theData.isWhiteListed(Chromosome.getUnfilteredMarker(i))){
                     table.setValueAt(new Boolean(true),i,STATUS_COL);
                 }else{
                     table.setValueAt(new Boolean(false),i,STATUS_COL);
@@ -225,6 +227,15 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    public boolean[] getMarkerResults(){
+        boolean[] markerResults = new boolean[table.getRowCount()];
+        for (int i = 0; i < table.getRowCount(); i++){
+            markerResults[i] = ((Boolean)table.getValueAt(i,CheckDataPanel.STATUS_COL)).booleanValue();
+        }
+
+        return markerResults;
     }
 
     public void actionPerformed(ActionEvent e) {

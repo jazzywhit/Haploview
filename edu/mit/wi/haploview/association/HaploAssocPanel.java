@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 
 import edu.mit.wi.haploview.TreeTable.*;
 import edu.mit.wi.haploview.Constants;
-import edu.mit.wi.haploview.Haplotype;
 import edu.mit.wi.haploview.Options;
 
 import javax.swing.*;
@@ -16,24 +15,29 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
     public int initialHaplotypeDisplayThreshold;
-    public Vector results;
+    private AssociationTestSet testSet;
+    //public Vector results;
     public JTreeTable jtt;
 
 
-    public HaploAssocPanel(Haplotype[][] haps){
+    public HaploAssocPanel(AssociationTestSet ats){
+        testSet = ats;
+
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
-        makeTable(haps);
+        makeTable(ats);
     }
 
-    public void makeTable(Haplotype[][] haps) {
+    public void makeTable(AssociationTestSet ats) {
+        testSet = ats;
+
         this.removeAll();
 
-        if(haps == null) {
+        if(ats == null) {
             return ;
         }
 
-        results = HaplotypeAssociationResult.getAssociationResults(haps);
+        Vector results = ats.getResults();
 
         initialHaplotypeDisplayThreshold = Options.getHaplotypeDisplayThreshold();
         Vector colNames = new Vector();
@@ -124,8 +128,6 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         }
     }
 
-
-
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if(command.equals("Show CC counts")) {
@@ -140,5 +142,9 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         }
 
 
+    }
+
+    public AssociationTestSet getTestSet() {
+        return testSet;
     }
 }

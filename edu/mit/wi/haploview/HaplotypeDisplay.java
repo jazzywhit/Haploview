@@ -52,7 +52,7 @@ public class HaplotypeDisplay extends JComponent {
     public void getHaps() throws HaploViewException{
         if (theData.blocks == null) {return;}
 
-        orderedHaplos = theData.generateHaplotypes(theData.blocks,false, true);
+        orderedHaplos = theData.generateBlockHaplotypes(theData.blocks);
 
         adjustDisplay();
     }
