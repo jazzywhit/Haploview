@@ -22,7 +22,7 @@ public class HaplotypeDisplay extends JComponent {
     int thickThresh = 10;
 
 
-    public HaplotypeDisplay(HaploData h) {
+    public HaplotypeDisplay(HaploData h) throws HaploViewException {
 
         theData=h;
         if (blackNumImages == null) loadFontImages();
@@ -36,7 +36,7 @@ public class HaplotypeDisplay extends JComponent {
     }
 
 
-    public void getHaps(){
+    public void getHaps() throws HaploViewException{
         if (theData.blocks == null) {return;}
 
         Haplotype[][] haplos = theData.generateHaplotypes(theData.blocks, 0);
@@ -167,7 +167,7 @@ public class HaplotypeDisplay extends JComponent {
         }
     }
 
-    public void adjustDisplay() {
+    public void adjustDisplay() throws HaploViewException {
         //this is called when the controller wants to change the haps
         //displayed, instead of directly repainting so that none of this math
         //is done when the screen repaints for other reasons (resizing, focus change, etc)

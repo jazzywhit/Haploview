@@ -489,11 +489,13 @@ public class HaploText {
             new TextMethods().saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
         }
         catch(IOException e){}
-        catch(InputConflictException e){}
+        catch(HaploViewException e){
+            System.out.println(e.getMessage());
+        }
     }
 
 
-    public static Haplotype[][] orderHaps (Haplotype[][] haplos, HaploData theData){
+    public static Haplotype[][] orderHaps (Haplotype[][] haplos, HaploData theData) throws HaploViewException{
         Haplotype[][] orderedHaplos = new Haplotype[haplos.length][];
         for (int i = 0; i < haplos.length; i++){
             Vector orderedHaps = new Vector();

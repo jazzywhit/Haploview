@@ -249,7 +249,14 @@ public class HaploView extends JFrame implements ActionListener{
         }else if (command == "Clear All Blocks"){
             //theBlocks.clearBlocks();
         }else if (command == DEFINE_BLOCKS){
+            try {
             defineBlocks();
+            }catch(HaploViewException hve) {
+                JOptionPane.showMessageDialog(this,
+                        hve.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }else if (command == "Tutorial"){
             showHelp();
         } else if (command == QUIT){
@@ -317,7 +324,7 @@ public class HaploView extends JFrame implements ActionListener{
 
     }
 
-    void processData(){
+    void processData() {
         maxCompDist = Long.parseLong(inputOptions[2])*1000;
         try{
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -362,9 +369,10 @@ public class HaploView extends JFrame implements ActionListener{
     void readMarkers(File inputFile){
         try {
             theData.prepareMarkerInput(inputFile,maxCompDist);
-        }catch (InputConflictException e){
+        }catch (HaploViewException e){
             JOptionPane.showMessageDialog(this,
-                    "Number of markers in info file does not match number of markers in dataset.",
+                    //"Number of markers in info file does not match number of markers in dataset.",
+                    e.getMessage(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }catch (IOException ioexec){
@@ -385,7 +393,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
 
-    void drawPicture(HaploData theData){
+    void drawPicture(HaploData theData) {
         Container contents = getContentPane();
         contents.removeAll();
 
@@ -412,7 +420,15 @@ public class HaploView extends JFrame implements ActionListener{
         //compute and show haps on next tab
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        hapDisplay = new HaplotypeDisplay(theData);
+        try {
+            hapDisplay = new HaplotypeDisplay(theData);
+        } catch(HaploViewException e) {
+             JOptionPane.showMessageDialog(this,
+                    //"Number of markers in info file does not match number of markers in dataset.",
+                    e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
         HaplotypeDisplayController hdc =
                 new HaplotypeDisplayController(hapDisplay);
         hapScroller = new JScrollPane(hapDisplay);
@@ -513,7 +529,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
 
-    void defineBlocks(){
+    void defineBlocks() throws HaploViewException{
         String[] methodStrings = {"95% of informative pairwise comparisons show strong LD via confidence intervals (SFS)",
                                   "Four Gamete Rule",
                                   "Solid block of strong LD via D prime (MJD)"};

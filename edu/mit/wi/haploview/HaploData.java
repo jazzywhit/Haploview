@@ -55,7 +55,7 @@ public class HaploData{
     double[] prob;
 
 
-    void prepareMarkerInput(File infile, long maxdist) throws IOException, InputConflictException{
+    void prepareMarkerInput(File infile, long maxdist) throws IOException, HaploViewException{
         //this method is called to gather data about the markers used.
         //It is assumed that the input file is two columns, the first being
         //the name and the second the absolute position. the maxdist is
@@ -117,7 +117,7 @@ public class HaploData{
                     }
                 }
             }else{
-                throw(new InputConflictException("Wrong number of markers"));
+                throw(new HaploViewException("Wrong number of markers"));
             }
         }else{
             double numChroms = chromosomes.size();
@@ -200,7 +200,7 @@ public class HaploData{
         }
         try{
             prepareMarkerInput(null,0);
-        }catch(InputConflictException e){
+        }catch(HaploViewException e){
         }
     }
 
@@ -419,12 +419,12 @@ public class HaploData{
         chromosomes = chrom;
         try{
             prepareMarkerInput(null,0);
-        }catch(InputConflictException e){
+        }catch(HaploViewException e){
         }catch(IOException e){
         }
     }
 
-    Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh){
+    Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh) throws HaploViewException{
         //TODO: output indiv hap estimates
         Haplotype[][] results = new Haplotype[blocks.size()][];
         String raw = new String();
@@ -542,7 +542,8 @@ public class HaploData{
             }
 
             //kirby patch
-            full_em_breakup(input_haplos.length, theBlock.length, input_haplos2, 4, num_haplos_present, haplos_present, haplo_freq, block_size.length, block_size, 0);
+
+            full_em_breakup(input_haplos2, 4, num_haplos_present, haplos_present, haplo_freq, block_size, 0);
             for (int j = 0; j < haplos_present.size(); j++){
                 EMreturn += (String)haplos_present.elementAt(j)+"\t"+(String)haplo_freq.elementAt(j)+"\t";
             }
@@ -578,7 +579,7 @@ public class HaploData{
         return multidprimeArray;
     }
 
-    Haplotype[][] generateCrossovers(Haplotype[][] haplos){
+    Haplotype[][] generateCrossovers(Haplotype[][] haplos) throws HaploViewException{
         Vector crossBlock = new Vector();
         double CROSSOVER_THRESHOLD = 0.01;   //to what percentage do we want to consider crossings?
 
@@ -1145,14 +1146,21 @@ public class HaploData{
         }
     }
 
-    public int full_em_breakup(int num_haplos, int num_loci, char[][] input_haplos, int max_missing, int[] num_haplos_present, Vector haplos_present, Vector haplo_freq, int num_blocks, int[] block_size, int dump_phased_haplos){
+    public void full_em_breakup( char[][] input_haplos, int max_missing, int[] num_haplos_present, Vector haplos_present, Vector haplo_freq, int[] block_size, int dump_phased_haplos) throws HaploViewException{
         int i, j, k, num_poss, iter, maxk, numk;
         double total, maxprob;
         int block, start_locus, end_locus, biggest_block_size;
         int poss_full, best, h1, h2;
         int num_indivs=0;
 
-        if (num_loci > MAXLOCI) return(-1);
+        int num_blocks = block_size.length;
+        int num_haplos = input_haplos.length;
+        int num_loci = input_haplos[0].length;
+
+        if (num_loci > MAXLOCI){
+            throw new HaploViewException("Too many loci");
+        }
+
         biggest_block_size=block_size[0];
         for (i=1; i<num_blocks; i++) {
             if (block_size[i] > biggest_block_size) biggest_block_size=block_size[i];
@@ -1180,7 +1188,7 @@ public class HaploData{
             end_locus=start_locus+block_size[block]-1;
             num_poss=two_n[block_size[block]];
 
-            if ((num_indivs=read_observations(num_haplos,num_loci,input_haplos,start_locus,end_locus)) <= 0) return(-1);
+            num_indivs=read_observations(num_haplos,num_loci,input_haplos,start_locus,end_locus);
 
             /* start prob array with probabilities from full observations */
             for (j=0; j<num_poss; j++) { prob[j]=PSEUDOCOUNT; }
@@ -1264,12 +1272,12 @@ public class HaploData{
 
         /* LIGATE and finish this mess :) */
 
-        if (poss_full > 1000000) {
+/*        if (poss_full > 1000000) {
             /* what we really need to do is go through and pare back
-            to using a smaller number (e.g., > .002, .005) */
+            to using a smaller number (e.g., > .002, .005)
             //printf("too many possibilities: %d\n",poss_full);
             return(-5);
-        }
+        }*/
         double[] superprob = new double[poss_full];
 
         create_super_haplos(num_indivs,num_blocks,num_hlist);
@@ -1371,12 +1379,13 @@ public class HaploData{
         }
         }
         */
-        return 0;
+        //return 0;
     }
 
 
 
-    public int read_observations(int num_haplos, int num_loci, char[][] haplo, int start_locus, int end_locus) {
+    public int read_observations(int num_haplos, int num_loci, char[][] haplo, int start_locus, int end_locus) throws HaploViewException {
+        //TODO: this should return something useful
         int i, j, a1, a2, h1, h2, two_n, num_poss, loc, ind;
         char c1, c2;
         int num_indivs = 0;
@@ -1412,7 +1421,8 @@ public class HaploData{
                     //for 1, 2, 3 or 4
                     if (c1 < '0' || c1 > '4' || c2 < '0' || c2 > '4') {
                         //    printf("bad allele in data file (%s,%s)\n",ln1,ln2);
-                        return(-1);
+                        //return(-1);
+                        throw new HaploViewException("bad allele in data file");
                     }
                 }
 
