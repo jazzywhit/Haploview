@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.5 2005/02/03 19:50:16 jcbarret Exp $
+* $Id: PedFile.java,v 3.6 2005/03/13 22:10:27 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -98,7 +98,7 @@ public class PedFile {
         hapMapTranslate.put("NA10860", "1362 NA10860 NA11992 NA11993 1 0" );
         hapMapTranslate.put("NA11992", "1362 NA11992 0 0 1 0");
         hapMapTranslate.put("NA11993", "1362 NA11993 0 0 2 0");
-       // hapMapTranslate.put("NA11993.dup", "dup NA11993.dup 0 0 2 0");
+        // hapMapTranslate.put("NA11993.dup", "dup NA11993.dup 0 0 2 0");
         hapMapTranslate.put("NA10861", "1362a NA10861 NA11994 NA11995 2 0" );
         hapMapTranslate.put("NA11994", "1362a NA11994 0 0 1 0");
         hapMapTranslate.put("NA11995", "1362a NA11995 0 0 2 0");
@@ -114,7 +114,7 @@ public class PedFile {
         //hapMapTranslate.put("NA12156.dup", "dup NA12156.dup 0 0 2 0");
         hapMapTranslate.put("NA10835", "1416 NA10835 NA12248 NA12249 1 0" );
         hapMapTranslate.put("NA12248", "1416 NA12248 0 0 1 0");
-       // hapMapTranslate.put("NA12248.dup", "dup NA1248.dup 0 0 1 0");
+        // hapMapTranslate.put("NA12248.dup", "dup NA1248.dup 0 0 1 0");
         hapMapTranslate.put("NA12249", "1416 NA12249 0 0 2 0");
         hapMapTranslate.put("NA10838", "1420 NA10838 NA12003 NA12004 1 0" );
         hapMapTranslate.put("NA12003", "1420 NA12003 0 0 1 0");
@@ -206,11 +206,11 @@ public class PedFile {
         hapMapTranslate.put("NA18995", "jap29 NA18995 0 0 1 0");
         hapMapTranslate.put("NA18621", "chi29 NA18621 0 0 1 0");
         hapMapTranslate.put("NA18594", "chi30 NA18594 0 0 2 0");
-      //  hapMapTranslate.put("NA18594.dup", "dup 0 0 0 0 0");
-      //  hapMapTranslate.put("NA18603.dup", "dup 0 0 0 0 0");
-      //  hapMapTranslate.put("NA18609.dup", "dup 0 0 0 0 0");
-      //  hapMapTranslate.put("NA18951.dup", "dup 0 0 0 0 0");
-      //  hapMapTranslate.put("NA18995.dup", "dup 0 0 0 0 0");
+        //  hapMapTranslate.put("NA18594.dup", "dup 0 0 0 0 0");
+        //  hapMapTranslate.put("NA18603.dup", "dup 0 0 0 0 0");
+        //  hapMapTranslate.put("NA18609.dup", "dup 0 0 0 0 0");
+        //  hapMapTranslate.put("NA18951.dup", "dup 0 0 0 0 0");
+        //  hapMapTranslate.put("NA18995.dup", "dup 0 0 0 0 0");
         hapMapTranslate.put("NA18622", "chi31 NA18622 0 0 1 0");
         hapMapTranslate.put("NA18573", "chi32 NA18573 0 0 2 0");
         hapMapTranslate.put("NA18623", "chi33 NA18623 0 0 1 0");
@@ -332,6 +332,70 @@ public class PedFile {
         hapMapTranslate.put("NA19240", "Yoruba117 NA19240 NA19239 NA19238 2 0");
         hapMapTranslate.put("NA19239", "Yoruba117 NA19239 0 0 1 0");
         hapMapTranslate.put("NA19238", "Yoruba117 NA19238 0 0 2 0");
+
+        // data entered for the additional perlegen samples
+        hapMapTranslate.put("NA10844", "NA10844 NA10844 0 0 2 0");
+        hapMapTranslate.put("NA17134", "NA17134 NA17134 0 0 2 0");
+        hapMapTranslate.put("NA17115", "NA17115 NA17115 0 0 1 0");
+        hapMapTranslate.put("NA12560", "NA12560 NA12560 0 0 1 0");
+        hapMapTranslate.put("NA17137", "NA17137 NA17137 0 0 2 0");
+        hapMapTranslate.put("NA17747", "NA17747 NA17747 0 0 2 0");
+        hapMapTranslate.put("NA12547", "NA12547 NA12547 0 0 1 0");
+        hapMapTranslate.put("NA17138", "NA17138 NA17138 0 0 2 0");
+        hapMapTranslate.put("NA17116", "NA17116 NA17116 0 0 2 0");
+        hapMapTranslate.put("NA17753", "NA17753 NA17753 0 0 1 0");
+        hapMapTranslate.put("NA17102", "NA17102 NA17102 0 0 1 0");
+        hapMapTranslate.put("NA10858", "NA10858 NA10858 0 0 1 0");
+        hapMapTranslate.put("NA17106", "NA17106 NA17106 0 0 1 0");
+        hapMapTranslate.put("NA17114", "NA17114 NA17114 0 0 1 0");
+        hapMapTranslate.put("NA12548", "NA12548 NA12548 0 0 2 0");
+        hapMapTranslate.put("NA17109", "NA17109 NA17109 0 0 1 0");
+        hapMapTranslate.put("NA17740", "NA17740 NA17740 0 0 2 0");
+        hapMapTranslate.put("NA17139", "NA17139 NA17139 0 0 2 0");
+        hapMapTranslate.put("NA07349", "NA07349 NA07349 0 0 1 0");
+        hapMapTranslate.put("NA17761", "NA17761 NA17761 0 0 2 0");
+        hapMapTranslate.put("NA10853", "NA10853 NA10853 0 0 2 0");
+        hapMapTranslate.put("NA17737", "NA17737 NA17737 0 0 1 0");
+        hapMapTranslate.put("NA17744", "NA17744 NA17744 0 0 2 0");
+        hapMapTranslate.put("NA10845", "NA10845 NA10845 0 0 1 0");
+        hapMapTranslate.put("NA17140", "NA17140 NA17140 0 0 2 0");
+        hapMapTranslate.put("NA17105", "NA17105 NA17105 0 0 1 0");
+        hapMapTranslate.put("NA17752", "NA17752 NA17752 0 0 2 0");
+        hapMapTranslate.put("NA17746", "NA17746 NA17746 0 0 2 0");
+        hapMapTranslate.put("NA17135", "NA17135 NA17135 0 0 2 0");
+        hapMapTranslate.put("NA17742", "NA17742 NA17742 0 0 1 0");
+        hapMapTranslate.put("NA17104", "NA17104 NA17104 0 0 1 0");
+        hapMapTranslate.put("NA17741", "NA17741 NA17741 0 0 2 0");
+        hapMapTranslate.put("NA17738", "NA17738 NA17738 0 0 2 0");
+        hapMapTranslate.put("NA17201", "NA17201 NA17201 0 0 1 0");
+        hapMapTranslate.put("NA17745", "NA17745 NA17745 0 0 2 0");
+        hapMapTranslate.put("NA17749", "NA17749 NA17749 0 0 1 0");
+        hapMapTranslate.put("NA17133", "NA17133 NA17133 0 0 2 0");
+        hapMapTranslate.put("NA10842", "NA10842 NA10842 0 0 1 0");
+        hapMapTranslate.put("NA17736", "NA17736 NA17736 0 0 1 0");
+        hapMapTranslate.put("NA17107", "NA17107 NA17107 0 0 1 0");
+        hapMapTranslate.put("NA10852", "NA10852 NA10852 0 0 2 0");
+        hapMapTranslate.put("NA17756", "NA17756 NA17756 0 0 2 0");
+        hapMapTranslate.put("NA17735", "NA17735 NA17735 0 0 2 0");
+        hapMapTranslate.put("NA10848", "NA10848 NA10848 0 0 1 0");
+        hapMapTranslate.put("NA10850", "NA10850 NA10850 0 0 2 0");
+        hapMapTranslate.put("NA17110", "NA17110 NA17110 0 0 2 0");
+        hapMapTranslate.put("NA17111", "NA17111 NA17111 0 0 1 0");
+        hapMapTranslate.put("NA17136", "NA17136 NA17136 0 0 2 0");
+        hapMapTranslate.put("NA17755", "NA17755 NA17755 0 0 1 0");
+        hapMapTranslate.put("NA06990", "NA06990 NA06990 0 0 2 0");
+        hapMapTranslate.put("NA17733", "NA17733 NA17733 0 0 2 0");
+        hapMapTranslate.put("NA17103", "NA17103 NA17103 0 0 1 0");
+        hapMapTranslate.put("NA17739", "NA17739 NA17739 0 0 2 0");
+        hapMapTranslate.put("NA17108", "NA17108 NA17108 0 0 1 0");
+        hapMapTranslate.put("NA17759", "NA17759 NA17759 0 0 1 0");
+        hapMapTranslate.put("NA17112", "NA17112 NA17112 0 0 2 0");
+        hapMapTranslate.put("NA17113", "NA17113 NA17113 0 0 2 0");
+        hapMapTranslate.put("NA10843", "NA10843 NA10843 0 0 2 0");
+        hapMapTranslate.put("NA17743", "NA17743 NA17743 0 0 1 0");
+        hapMapTranslate.put("NA17757", "NA17757 NA17757 0 0 2 0");
+        hapMapTranslate.put("NA17754", "NA17754 NA17754 0 0 2 0");
+        hapMapTranslate.put("NA17734", "NA17734 NA17734 0 0 2 0");
     }
 
     /**
@@ -521,7 +585,7 @@ public class PedFile {
         int colNum = -1;
         int numLines = rawLines.size();
         if (numLines < 2){
-             throw new PedFileException("Hapmap data format error: empty file");
+            throw new PedFileException("Hapmap data format error: empty file");
         }
         Individual ind;
 
