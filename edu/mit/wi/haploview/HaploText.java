@@ -107,6 +107,7 @@ public class HaploText implements Constants{
         double spacingThresh = -1;
         double minimumGenoPercent = -1;
         double hwCutoff = -1;
+        double missingCutoff = -1;
         int maxMendel = -1;
         boolean assocTDT = false;
         boolean assocCC = false;
@@ -321,6 +322,10 @@ public class HaploText implements Constants{
                     }
                 }
             }
+            else if(args[i].equalsIgnoreCase("-missingcutoff")) {
+                i++;
+                missingCutoff = getDoubleArg(args,i,"-missingCutoff",0,1);
+            }
             else if(args[i].equalsIgnoreCase("-assoctdt")) {
                 assocTDT = true;
             }
@@ -426,6 +431,10 @@ public class HaploText implements Constants{
 
         if(spacingThresh != -1) {
             Options.setSpacingThreshold(spacingThresh);
+        }
+
+        if(missingCutoff != -1) {
+            Options.setMissingThreshold(missingCutoff);
         }
 
         if(assocTDT) {

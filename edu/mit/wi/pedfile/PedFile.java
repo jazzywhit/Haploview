@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.27 2004/09/23 16:48:47 jmaller Exp $
+* $Id: PedFile.java,v 1.28 2004/09/23 21:55:54 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -659,13 +659,16 @@ public class PedFile {
     public Vector check() throws PedFileException{
         //before we perform the check we want to prune out individuals with too much missing data
         //or trios which contain individuals with too much missing data
-        Vector indList = getOrder();
+        Vector indList = (Vector)order.clone();
         Individual currentInd;
         Family currentFamily;
 
         //deal with individuals who are missing too much data
         for(int x=0; x < indList.size(); x++){
             currentInd = (Individual)indList.elementAt(x);
+            if(axedPeople.contains(currentInd)){
+                continue;
+            }
             currentFamily = getFamily(currentInd.getFamilyID());
             double numMissing = 0;
             int numMarkers = currentInd.getNumMarkers();
@@ -679,7 +682,7 @@ public class PedFile {
                 //this person is missing too much data so remove him and then deal
                 //with his family connections
                 order.removeElement(currentInd);
-                axedPeople.add(currentInd.getIndividualID());
+                axedPeople.add(currentInd);
                 if (currentFamily.getNumMembers() > 1){
                     //there are more people in this family so deal with relatives appropriately
                     if (currentInd.hasEitherParent()){
@@ -690,6 +693,7 @@ public class PedFile {
                             if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
                                     nextMember.getMomID().equals(currentInd.getIndividualID())){
                                 order.removeElement(nextMember);
+                                axedPeople.add(nextMember);
                                 currentFamily.removeMember(nextMember.getIndividualID());
                             }
                         }
@@ -713,6 +717,7 @@ public class PedFile {
                                     if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
                                             nextMember.getMomID().equals(currentInd.getIndividualID())){
                                         order.removeElement(nextMember);
+                                        axedPeople.add(nextMember);
                                         currentFamily.removeMember(nextMember.getIndividualID());
                                     }
                                 }
@@ -720,6 +725,7 @@ public class PedFile {
                                 //knock off my spouse and make my first kid a founder (i.e. "0" for parents)
                                 //and remove any other kids
                                 order.removeElement(currentFamily.getMember(spouseID));
+                                axedPeople.add(currentFamily.getMember(spouseID));
                                 currentFamily.removeMember(spouseID);
                                 peopleinFam = currentFamily.getMemberList();
                                 boolean oneFound = false;
@@ -729,6 +735,7 @@ public class PedFile {
                                             nextMember.getMomID().equals(currentInd.getIndividualID())){
                                         if (oneFound){
                                             order.removeElement(nextMember);
+                                            axedPeople.add(nextMember);
                                             currentFamily.removeMember(nextMember.getIndividualID());
                                         }else{
                                             nextMember.setDadID("0");

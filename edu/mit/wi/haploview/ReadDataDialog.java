@@ -21,6 +21,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
     JCheckBox doTDT, doGB;
     JRadioButton trioButton, ccButton;
     NumberTextField maxComparisonDistField;
+    NumberTextField missingCutoffField;
 
     public ReadDataDialog(String title, HaploView h){
         super(h, title);
@@ -66,6 +67,19 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             browse(INFO);
         }else if (command.equals("OK")){
             HaploView caller = (HaploView)this.getParent();
+            if(missingCutoffField.getText().equals("")) {
+                Options.setMissingThreshold(1);
+            } else {
+                double missingThreshold = (double)(Integer.parseInt(missingCutoffField.getText())) / 100;
+                if(missingThreshold > 1) {
+                    JOptionPane.showMessageDialog(caller,
+                                    "Missing cutoff must be between 0 and 100",
+                                    "Invalid value",
+                                    JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                Options.setMissingThreshold(missingThreshold);
+            }
 
             if (doTDT.isSelected()){
                 if (trioButton.isSelected()){
@@ -91,7 +105,9 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             }else{
                 Options.setMaxDistance(Integer.parseInt(maxComparisonDistField.getText()));
             }
-            
+
+
+
             String[] returnStrings = {genoFileField.getText(), infoFileField.getText()};
             if (returnStrings[1].equals("")) returnStrings[1] = null;
 
@@ -213,6 +229,13 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         compDistPanel.add(maxComparisonDistField);
         compDistPanel.add(new JLabel("kb apart."));
         contents.add(compDistPanel);
+
+        JPanel missingCutoffPanel = new JPanel();
+        missingCutoffField = new NumberTextField("25",3, false);
+        missingCutoffPanel.add(new JLabel("Exclude individuals with >"));
+        missingCutoffPanel.add(missingCutoffField);
+        missingCutoffPanel.add(new JLabel("% missing genotypes."));
+        contents.add(missingCutoffPanel);
 
         doGB = new JCheckBox();//show gbrowse pic from hapmap website?
         doGB.setSelected(false);
