@@ -45,6 +45,14 @@ public class TagSequence implements Tag {
         }
     }
 
+    public String getTestName(){
+        if (allele == null){
+            return sequence.getName();
+        }else{
+            return sequence.getName() + "\t" + allele.getTestFileFormat();
+        }
+    }
+
     public Vector getBestTagged() {
         Vector result = new Vector();
 

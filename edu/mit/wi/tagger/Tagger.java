@@ -415,6 +415,15 @@ public class Tagger {
         return newlyTagged;
     }
 
+    public void dumpTests(File outFile) throws IOException{
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
+        for (int i = 0; i < tags.size(); i++){
+            bw.write(((TagSequence)tags.get(i)).getTestName());
+            bw.newLine();
+        }
+        bw.close();
+    }
+
     class PotentialTag {
         VariantSequence sequence;
         // tagged contains the sequences which this sequence can tag, which are not yet tagged

@@ -40,7 +40,7 @@ public class Block extends VariantSequence{
     public String getName() {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < snps.size()-1; i++){
-            sb.append(((SNP)snps.get(i)).getName()).append(", ");
+            sb.append(((SNP)snps.get(i)).getName()).append(",");
         }
         sb.append(((SNP)snps.get(snps.size()-1)).getName());
 
