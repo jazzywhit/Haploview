@@ -267,14 +267,14 @@ class DPrimeDisplay extends JComponent{
                     top + (last - first) * boxSize/2 + boxRadius,
                     left + (2*last - 1) * boxSize/2+boxRadius,
                     top + boxSize/2);
-            for (int j = 0; j < theBlock.length-1; j++){
+            for (int j = 0; j < theBlock.length; j++){
                 g.drawLine(left + (2*theBlock[j]+1) * boxSize/2 - boxRadius,
                         top + boxSize/2,
                         left + (2*theBlock[j]+1) * boxSize/2,
                         top + boxSize/2 - boxRadius);
-                g.drawLine (left + (2*theBlock[j]+1) * boxSize/2,
+                g.drawLine (left + (2*theBlock[j]) * boxSize/2 - boxRadius,
                         top + boxSize/2 - boxRadius,
-                        left + (2*theBlock[j]+1) * boxSize/2 +boxRadius,
+                        left + (2*theBlock[j]) * boxSize/2,
                         top + boxSize/2);
             }
         }
