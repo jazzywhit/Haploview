@@ -178,19 +178,40 @@ public class HaploData implements Constants{
 
                 int numLines = names.size();
 
-                Hashtable sortHelp = new Hashtable(numLines-1,1.0f);
-                long[] pos = new long[numLines];
-                boolean needSort = false;
+                class SortingHelper implements Comparable{
+                    String name;
+                    long pos;
+                    String extra;
+                    int orderInFile;
 
-                //this loop stores the positions of each marker in an array (pos[]) in the order they appear in the file.
-                //it also creates a hashtable with the positions as keys and their index in the pos[] array as the value
+                    public SortingHelper(String name, String extra, long pos, int order){
+                        this.name = name;
+                        this.extra = extra;
+                        this.pos = pos;
+                        this.orderInFile = order;
+                    }
+
+                    public int compareTo(Object o) {
+                        SortingHelper sh = (SortingHelper)o;
+                        if (sh.pos > pos){
+                            return -1;
+                        }else if (sh.pos < pos){
+                            return 1;
+                        }else{
+                            return 0;
+                        }
+                    }
+                }
+
+                boolean needSort = false;
+                Vector sortHelpers = new Vector();
+
                 for (int k = 0; k < (numLines); k++){
-                    pos[k] = new Long((String)(positions.get(k))).longValue();
-                    sortHelp.put(new Long(pos[k]),new Integer(k));
+                    sortHelpers.add(new SortingHelper((String)names.get(k),(String)extras.get(k),Long.parseLong((String)positions.get(k)),k));
                 }
                 //loop through and check if any markers are out of order
                 for (int k = 1; k < (numLines); k++){
-                    if(pos[k] < pos[k-1]) {
+                    if(((SortingHelper)sortHelpers.get(k)).compareTo(sortHelpers.get(k-1)) < 0) {
                         needSort = true;
                         break;
                     }
@@ -199,15 +220,15 @@ public class HaploData implements Constants{
                 if(needSort)
                 {
                     //sort the positions
-                    Arrays.sort(pos);
+                    Collections.sort(sortHelpers);
                     Vector newNames = new Vector();
                     Vector newExtras = new Vector();
                     Vector newPositions = new Vector();
                     int[] realPos = new int[numLines];
 
                     //reorder the vectors names and extras so that they have the same order as the sorted markers
-                    for (int i = 0; i < pos.length; i++){
-                        realPos[i] = ((Integer)(sortHelp.get(new Long(pos[i])))).intValue();
+                    for (int i = 0; i < sortHelpers.size(); i++){
+                        realPos[i] = ((SortingHelper)sortHelpers.get(i)).orderInFile;
                         newNames.add(names.get(realPos[i]));
                         newPositions.add(positions.get(realPos[i]));
                         newExtras.add(extras.get(realPos[i]));
@@ -217,15 +238,14 @@ public class HaploData implements Constants{
                     extras = newExtras;
                     positions = newPositions;
 
-                    byte[] tempGenotype = new byte[pos.length];
+                    byte[] tempGenotype = new byte[sortHelpers.size()];
                     //now we reorder all the individuals genotypes according to the sorted marker order
                     for(int j=0;j<chromosomes.size();j++){
                         Chromosome tempChrom = (Chromosome)chromosomes.elementAt(j);
-                        for(int i =0;i<pos.length;i++){
+                        for(int i =0;i<sortHelpers.size();i++){
                             tempGenotype[i] = tempChrom.getUnfilteredGenotype(realPos[i]);
                         }
-                        for(int i=0;i<pos.length;i++)
-                        {
+                        for(int i=0;i<sortHelpers.size();i++){
                             tempChrom.setGenotype(tempGenotype[i],i);
                         }
                     }
