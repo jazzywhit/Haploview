@@ -38,6 +38,14 @@ class DPrimeDisplay extends JComponent {
         markers = v;
     }
 
+    public void loadMarkers(Vector v){
+        markersLoaded = true;
+        alreadyPainted = false;
+        markers = v;
+        repaint();
+
+    }
+
     public void paintComponent(Graphics gComponent){
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
@@ -192,19 +200,28 @@ class DPrimeDisplay extends JComponent {
             alreadyPainted=true;
         }
         Graphics2D gComponent2 = (Graphics2D)gComponent;
-        gComponent2.translate((size.width - pref.width) / 2,
-                (size.height - pref.height) / 2);
+        //okay so this dumb if block is to prevent the ugly
+        //repainting bug when loading markers after the data are already
+        //being displayed, results in a little off-centering for small
+        //datasets, but not too bad.
+        if (!(markersLoaded)){
+            gComponent2.translate((size.width - pref.width) / 2,
+                    (size.height - pref.height) / 2);
+        } else {
+            gComponent2.translate((size.width - pref.width) / 2,
+                    0);
+        }
         gComponent2.drawImage(buffIm,0,0,this);
     }
 
 
     public Dimension getPreferredSize() {
         int count = dPrimeTable.length;
-        int high = V_BORDER+2 + count*BOX_SIZE/2;
+        int high = 2*V_BORDER + count*BOX_SIZE/2;
         if (markersLoaded){
             high += TICK_BOTTOM + widestMarkerName + TEXT_NUMBER_GAP;
         }
-        return new Dimension(H_BORDER+2 + BOX_SIZE*(count-1), high);
+        return new Dimension(2*H_BORDER + BOX_SIZE*(count-1), high);
     }
 
     int[] centerString(String s, FontMetrics fm) {
