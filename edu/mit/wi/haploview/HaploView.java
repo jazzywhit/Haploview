@@ -679,7 +679,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }
                         metaAssoc.add(viewItems[VIEW_TDT_NUM], tdtPanel);
 
-                        HaploTDTPanel htp = new HaploTDTPanel(theData.getHaplotypes());
+                        HaploAssocPanel htp = new HaploAssocPanel(theData.getHaplotypes());
                         metaAssoc.add("Haplotypes", htp);
 
                         tabs.addTab("Association Results", metaAssoc);
@@ -851,10 +851,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (tabNum == VIEW_TDT_NUM){
                 JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
                 //this is the haps ass tab inside the assoc super-tab
-                HaploTDTPanel htp = (HaploTDTPanel) metaAssoc.getComponent(1);
+                HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
                 if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
                     metaAssoc.remove(1);
-                    metaAssoc.add("Haplotypes", new HaploTDTPanel(theData.getHaplotypes()));
+                    metaAssoc.add("Haplotypes", new HaploAssocPanel(theData.getHaplotypes()));
                 }
             }
 
