@@ -225,7 +225,7 @@ public class FindBlocks {
             for (int z = 0; z < thisBlock.size(); z++){
                 blockArray[z] = ((Integer)thisBlock.elementAt(z)).intValue();
             }
-            //	    System.out.println(first + " " + last + " " + numStrong + " " + numRec);
+            //System.out.println(first + " " + last + " " + numStrong + " " + numRec);
             if ((double)numStrong/(double)(numStrong + numRec) > informFrac){ //this qualifies as a block
                 //add to the block list, but in order by first marker number:
                 if (blocks.size() == 0){ //put first block first

@@ -135,9 +135,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     double highCI = thisPair.getConfidenceHigh();
 
                     //color in squares
-                    if (lowCI > FindBlocks.cutLowCI && highCI >= FindBlocks.cutHighCI) {
+                    if (lowCI >= FindBlocks.cutLowCI && highCI >= FindBlocks.cutHighCI) {
                         thisPair.setColor(Color.darkGray);  //strong LD
-                    }else if (highCI > FindBlocks.recHighCI) {
+                    }else if (highCI >= FindBlocks.recHighCI) {
                         thisPair.setColor(Color.lightGray); //uninformative
                     } else {
                         thisPair.setColor(Color.white); //recomb
