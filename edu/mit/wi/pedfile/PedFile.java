@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.3 2003/08/15 14:31:31 jmaller Exp $
+* $Id: PedFile.java,v 1.4 2003/09/26 21:11:05 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -94,8 +94,12 @@ public class PedFile {
         while (famList.hasMoreElements()) {
             Family fam = (Family) famList.nextElement();
             Enumeration indList = fam.getMemberList();
+            Individual ind = new Individual();
             while(indList.hasMoreElements()){
-                Individual ind = fam.getMember((String)indList.nextElement());
+                try{
+                    ind = fam.getMember((String)indList.nextElement());
+                }catch(PedFileException pfe){
+                }
                 numMarkers = ind.getNumMarkers();
                 if(numMarkers > 0){
                     return numMarkers;
@@ -194,7 +198,7 @@ public class PedFile {
         }
     }
 
-    public Vector check() {
+    public Vector check() throws PedFileException{
         CheckData cd = new CheckData(this);
         Vector results = cd.check();
         /*int size = results.size();

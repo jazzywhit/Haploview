@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.3 2003/09/02 14:58:39 jcbarret Exp $
+ * $Id: CheckData.java,v 1.4 2003/09/26 21:11:05 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -25,6 +25,10 @@ import java.util.*;
 
 public class CheckData {
 	private PedFile _pedFile;
+
+    static public double hwCut = 0.001;
+    static public double failedGenoCut = 75;
+    static public int numMendErrCut = 1;
 	//private int _size;
 	//private Vector _pedFileEntries;
 	//private Hashtable pedFileHash;
@@ -39,7 +43,7 @@ public class CheckData {
 	 * predicted heterozygosity, Hardy-Weinberg test p-value, genotyped percent,
 	 * number of families with a fully genotyped trio and number of Mendelian inheritance errors.
 	 */
-	public Vector check(){
+	public Vector check() throws PedFileException{
 		Vector results = new Vector();
 		//_size = _pedFile.getNumIndividuals();
 
@@ -64,7 +68,7 @@ public class CheckData {
 		return results;
 	}
 
-	private MarkerResult checkMarker(int loc, String name){
+	private MarkerResult checkMarker(int loc, String name)throws PedFileException{
 		MarkerResult result = new MarkerResult();
 		Individual currentInd;
 		//int indivgeno=0,
@@ -396,23 +400,27 @@ public class CheckData {
 			Object kGeno = kidgeno.get(key);
 			if(pGeno != null) parentGeno = Integer.parseInt((String)pGeno);
 			if(kGeno != null) kidsGeno = Integer.parseInt((String)kGeno);
-			if(parentGeno>=2 && kidsGeno>=1) tdtfams++;
+			if(parentGeno>=2 && kidsGeno>=1) tdtfams += parentGeno/2;
 		}
 		return tdtfams;
 	}
 
 	private int getRating(double genopct, double pval, double obsHet, int menderr){
-		int rating;
+		int rating = 0;
 		if (obsHet < 0.01){
-			rating = -1;
-		}else if (genopct < 75.00){
-			rating = -2;
-		}else if (pval < 0.001){
-			rating=-3;
-		}else if (menderr > 1){
-			rating=-4;
-		}else{
-			rating=1;
+			rating -= 1;
+		}
+        if (genopct < failedGenoCut){
+			rating -= 2;
+		}
+        if (pval < hwCut){
+			rating -= 4;
+		}
+        if (menderr > numMendErrCut){
+			rating -= 8;
+		}
+        if (rating == 0){
+			rating = 1;
 		}
 
 		return rating;

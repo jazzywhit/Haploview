@@ -1,5 +1,5 @@
 /*
-* $Id: Family.java,v 1.1 2003/08/01 19:36:19 jmaller Exp $
+* $Id: Family.java,v 1.2 2003/09/26 21:11:05 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -96,7 +96,11 @@ public class Family {
      * @param individualID the individualID of the individual we want
      * @return the individual with matching individualID
      */
-    public Individual getMember(String individualID){
+    public Individual getMember(String individualID) throws PedFileException{
+        if (!(this.members.containsKey(individualID))){
+            throw new PedFileException("Individual " + individualID +
+                    " in family " + familyName + " is referenced, but appears to be missing.");
+        }
         return (Individual)this.members.get(individualID);
     }
 
