@@ -15,7 +15,7 @@ public class UpdateDisplayDialog extends JDialog  implements ActionListener, Con
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
 
-        Font bigguns = new Font("Default", Font.BOLD, 14);
+        Font bigguns = new Font("Default", Font.PLAIN, 14);
 
 
         JLabel announceLabel = new JLabel("A newer version of Haploview is available: " + uc.getNewVersion());
@@ -30,8 +30,9 @@ public class UpdateDisplayDialog extends JDialog  implements ActionListener, Con
             JEditorPane changePane = new JEditorPane();
             changePane.setEditable(false);
             changePane.setPage(new URL("http://18.157.34.100:8080/hapchanges.html"));
+            changePane.setOpaque(false);
             changeScroller = new JScrollPane(changePane);
-            changeScroller.setPreferredSize(new Dimension(150,150));
+            changeScroller.setPreferredSize(new Dimension(250,150));
         } catch(IOException ioe) {
             //if were here then we were able to check for an update, so well just show them a dialog
             //without listing the changes
@@ -41,7 +42,9 @@ public class UpdateDisplayDialog extends JDialog  implements ActionListener, Con
         contents.add(urlLabel);
         if(changeScroller != null) {
             changeScroller.setAlignmentX(Component.CENTER_ALIGNMENT);
-            contents.add(changeScroller);
+            JPanel scrollHolder = new JPanel();
+            scrollHolder.add(changeScroller);
+            contents.add(scrollHolder);
         }
 
 
@@ -49,6 +52,7 @@ public class UpdateDisplayDialog extends JDialog  implements ActionListener, Con
         okButton.addActionListener(this);
         okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         contents.add(okButton);
+
 
 
         this.setContentPane(contents);

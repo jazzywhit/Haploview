@@ -1187,7 +1187,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             final JPanel udp = new JPanel();
                             udp.setLayout(new BoxLayout(udp, BoxLayout.Y_AXIS));
                             double version = uc.getNewVersion();
-                            Font detailsFont = new Font("Default", Font.BOLD, 12);
+                            Font detailsFont = new Font("Default", Font.PLAIN, 14);
                             JLabel announceLabel = new JLabel("A newer version of Haploview (" +version+") is available.");
                             announceLabel.setFont(detailsFont);
                             JLabel detailsLabel = new JLabel("See \"Check for update\" in the file menu for details.");

@@ -92,6 +92,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             table.getColumnModel().getColumn(0).setMinWidth(30);
             if (theData.infoKnown){
                 table.getColumnModel().getColumn(1).setMinWidth(100);
+                table.getColumnModel().getColumn(2).setMinWidth(60);
             }
             JScrollPane tableScroller = new JScrollPane(table);
             tableScroller.setMaximumSize(new Dimension(600, tableScroller.getPreferredSize().height));
