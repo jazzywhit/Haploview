@@ -1399,7 +1399,7 @@ public class HaploData implements Constants{
         do {
             oldloglike=loglike;
             count_haps(count);
-            loglike = (known[AA]*Math.log(probHaps[AA]) + known[AB]*Math.log(probHaps[AB]) + known[BA]*Math.log(probHaps[BA]) + known[BB]*Math.log(probHaps[BB]) + (double)unknownDH*Math.log(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]))/LN10;
+            loglike = (known[AA]*Math.log(probHaps[AA]) + known[AB]*Math.log(probHaps[AB]) + known[BA]*Math.log(probHaps[BA]) + known[BB]*Math.log(probHaps[BB]))/LN10 + ((double)unknownDH*Math.log(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]))/LN10;
             if (Math.abs(loglike-oldloglike) < TOLERANCE) break;
             estimate_p();
             count++;
@@ -1407,8 +1407,8 @@ public class HaploData implements Constants{
         /* in reality I've never seen it need more than 10 or so iterations
         to converge so this is really here just to keep it from running off into eternity */
 
-        loglike1 = known[AA]*Math.log(probHaps[AA]) + known[AB]*Math.log(probHaps[AB]) + known[BA]*Math.log(probHaps[BA]) + known[BB]*Math.log(probHaps[BB]) + (double)unknownDH*Math.log(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]);
-        loglike0 = known[AA]*Math.log(pA1*pA2) + known[AB]*Math.log(pA1*pB2) + known[BA]*Math.log(pB1*pA2) + known[BB]*Math.log(pB1*pB2) + (double)unknownDH*Math.log(2*pA1*pA2*pB1*pB2);
+        loglike1 = (known[AA]*Math.log(probHaps[AA]) + known[AB]*Math.log(probHaps[AB]) + known[BA]*Math.log(probHaps[BA]) + known[BB]*Math.log(probHaps[BB]) + (double)unknownDH*Math.log(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]))/LN10;
+        loglike0 = (known[AA]*Math.log(pA1*pA2) + known[AB]*Math.log(pA1*pB2) + known[BA]*Math.log(pB1*pA2) + known[BB]*Math.log(pB1*pB2) + (double)unknownDH*Math.log(2*pA1*pA2*pB1*pB2))/LN10;
 
         num = probHaps[AA]*probHaps[BB] - probHaps[AB]*probHaps[BA];
 
