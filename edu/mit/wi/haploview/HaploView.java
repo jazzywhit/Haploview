@@ -404,7 +404,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void saveHapsToText(){
-	fc.setSelctedFile(null);
+	fc.setSelectedFile(null);
 	try{
 	    fc.setSelectedFile(null);
 	    int returnVal = fc.showSaveDialog(this);
