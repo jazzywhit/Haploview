@@ -21,7 +21,7 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
         JLabel announceLabel = new JLabel("A newer version of Haploview is available: " + uc.getNewVersion());
         announceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         announceLabel.setFont(bigguns);
-        JLabel urlLabel = new JLabel("http://www.broad.mit.edu/mpg/haploview/");
+        JLabel urlLabel = new JLabel(WEBSITE_STRING);
         urlLabel.setFont(bigguns);
         urlLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         JScrollPane changeScroller = null;
