@@ -7,7 +7,6 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.io.*;
 import java.util.Vector;
-import java.util.Locale;
 
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
@@ -19,31 +18,11 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 	PedFile pedfile;
 
     boolean changed;
+    private static int STATUS_COL = 8;
 
-    public CheckDataPanel(File file, int type) throws IOException, PedFileException{
+    public CheckDataPanel(PedFile pf) throws IOException, PedFileException{
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
-        //okay, for now we're going to assume the ped file has no header
-        Vector pedFileStrings = new Vector();
-        BufferedReader reader = new BufferedReader(new FileReader(file));
-        String line;
-        while((line = reader.readLine())!=null){
-            if (line.length() == 0){
-                //skip blank lines
-                continue;
-            }
-            if (line.startsWith("#")){
-                //skip comments
-                continue;
-            }
-            pedFileStrings.add(line);
-        }
-        pedfile = new PedFile();
-
-        if (type == 3){
-            pedfile.parseLinkage(pedFileStrings);
-        }else{
-            pedfile.parseHapMap(pedFileStrings);
-        }
+        pedfile = pf;
         Vector result = pedfile.check();
 
         int numResults = result.size();
@@ -56,10 +35,11 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         tableColumnNames.add("%Geno");
         tableColumnNames.add("FamTrio");
         tableColumnNames.add("MendErr");
+        tableColumnNames.add("MAF");
         tableColumnNames.add("Rating");
 
         Vector tableData = new Vector();
-        int[] ratingArray = new int[numResults];
+        int[] markerRatings = new int[numResults];
         for (int i = 0; i < numResults; i++){
             Vector tempVect = new Vector();
             MarkerResult currentResult = (MarkerResult)result.get(i);
@@ -70,6 +50,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             tempVect.add(new Double(currentResult.getGenoPercent()));
             tempVect.add(new Integer(currentResult.getFamTrioNum()));
             tempVect.add(new Integer(currentResult.getMendErrNum()));
+            tempVect.add(new Double(currentResult.getMAF()));
 
             if (currentResult.getRating() > 0){
                 tempVect.add(new Boolean(true));
@@ -78,12 +59,12 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             }
 
             //this value is never displayed, just kept for bookkeeping
-            ratingArray[i] = currentResult.getRating();
+            markerRatings[i] = currentResult.getRating();
 
             tableData.add(tempVect.clone());
         }
 
-        final CheckDataTableModel tableModel = new CheckDataTableModel(tableColumnNames, tableData, ratingArray);
+        final CheckDataTableModel tableModel = new CheckDataTableModel(tableColumnNames, tableData, markerRatings);
         tableModel.addTableModelListener(this);
         table = new JTable(tableModel);
         final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
@@ -107,7 +88,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 	}
 
     public void tableChanged(TableModelEvent e) {
-        if (e.getColumn() == 7){
+        if (e.getColumn() == STATUS_COL){
             changed = true;
         }
     }
@@ -120,23 +101,28 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 
     public void selectAll(){
         for (int i = 0; i < table.getRowCount(); i++){
-            table.setValueAt(new Boolean(true), i, 7);
+            table.setValueAt(new Boolean(true), i, STATUS_COL);
         }
     }
 
     public void redoRatings(){
         try{
             Vector result = pedfile.check();
+            int[] ratings = new int[table.getRowCount()];
             for (int i = 0; i < table.getRowCount(); i++){
                 MarkerResult cur = (MarkerResult)result.get(i);
                 int rating = cur.getRating();
                 if (rating > 0){
-                    table.setValueAt(new Boolean(true),i,7);
+                    table.setValueAt(new Boolean(true),i,STATUS_COL);
                 }else{
-                    table.setValueAt(new Boolean(false),i,7);
+                    table.setValueAt(new Boolean(false),i,STATUS_COL);
                 }
+                ratings[i] = rating;
             }
-        }catch (PedFileException pfe){
+            ((CheckDataTableModel)table.getModel()).ratings = ratings;
+            table.repaint();
+        }catch (Exception e){
+            e.printStackTrace();
         }
     }
 
@@ -146,7 +132,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 		public CheckDataTableModel(Vector c, Vector d, int[] r){
 			columnNames=c;
 			data=d;
-			ratings = r;
+            ratings = r;
 		}
 
 		public int getColumnCount(){
@@ -199,28 +185,32 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             cell.setForeground(Color.black);
             //bitmasking to decode the status bits
             if (myRating < 0){
-                if (myRating%(-2) != 0){
-                    myRating++;
+                myRating *= -1;
+                if ((myRating & 1) != 0){
                     if(thisColumnName.equals("ObsHET")){
                         cell.setForeground(Color.red);
                     }
                 }
-                if (myRating%(-4) != 0){
-                    myRating += 2;
+                if ((myRating & 2) != 0){
                     if (thisColumnName.equals("%Geno")){
                         cell.setForeground(Color.red);
                     }
                 }
-                if (myRating%(-8) != 0){
-                    myRating += 4;
+                if ((myRating & 4) != 0){
                     if (thisColumnName.equals("HWpval")){
                         cell.setForeground(Color.red);
                     }
                 }
-                if (myRating < -7 && thisColumnName.equals("MendErr")){
-                    cell.setForeground(Color.red);
+                if ((myRating & 8) != 0){
+                    if (thisColumnName.equals("MendErr")){
+                        cell.setForeground(Color.red);
+                    }
                 }
-
+                if ((myRating & 16) != 0){
+                    if (thisColumnName.equals("MAF")){
+                        cell.setForeground(Color.red);
+                    }
+                }
             }
 			return cell;
 		}

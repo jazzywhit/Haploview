@@ -19,6 +19,7 @@ public class HaploView extends JFrame implements ActionListener{
     boolean DEBUG = false;
 
     //some constants etc.
+    private static final String TITLE_STRING = "Haploview v2.03";
     private static final String READ_GENOTYPES = "Open genotype data";
     private static final String READ_MARKERS = "Load marker data";
     JMenuItem readMarkerItem;
@@ -91,7 +92,7 @@ public class HaploView extends JFrame implements ActionListener{
     private HaplotypeDisplay hapDisplay;
     private JTabbedPane tabs;
     private String[] inputOptions;
-    NumberTextField hwcut, genocut, mendcut;
+    CheckDataController cdc;
 
     //COMMAND LINE ARGUMENTS
     private HaploText argParser;
@@ -342,23 +343,29 @@ public class HaploView extends JFrame implements ActionListener{
         }else if (command == "Select All"){
             checkPanel.selectAll();
         }else if (command == "Rescore Markers"){
-            String cut = hwcut.getText();
+            String cut = cdc.hwcut.getText();
             if (cut.equals("")){
                 cut = "0";
             }
             CheckData.hwCut = Double.parseDouble(cut);
 
-            cut = genocut.getText();
+            cut = cdc.genocut.getText();
             if (cut.equals("")){
                 cut="0";
             }
             CheckData.failedGenoCut = Integer.parseInt(cut);
 
-            cut = mendcut.getText();
+            cut = cdc.mendcut.getText();
             if (cut.equals("")){
                 cut="0";
             }
             CheckData.numMendErrCut = Integer.parseInt(cut);
+
+            cut = cdc.mafcut.getText();
+            if (cut.equals("")){
+                cut="0";
+            }
+            CheckData.mafCut = Double.parseDouble(cut);
 
             checkPanel.redoRatings();
         }else if (command == "Tutorial"){
@@ -427,24 +434,18 @@ public class HaploView extends JFrame implements ActionListener{
         //type is either 3 or 4 for ped and hapmap files respectively
 
         inputOptions = f;
-        File pedFile = new File(inputOptions[0]);
+        File inFile = new File(inputOptions[0]);
         try {
-            if (pedFile.length() < 1){
-                throw new HaploViewException("Pedfile is empty or nonexistent: " + pedFile.getName());
+            if (inFile.length() < 1){
+                throw new HaploViewException("Pedfile is empty or nonexistent: " + inFile.getName());
             }
+            theData = new HaploData(assocTest);
+            theData.linkageToChrom(inFile, type);
+            processData(theData.getPedFile().getHMInfo());
 
-            checkPanel = new CheckDataPanel(pedFile, type);
+            checkPanel = new CheckDataPanel(theData.getPedFile());
             checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            theData = new HaploData(assocTest);
-            JTable table = checkPanel.getTable();
-            boolean[] markerResultArray = new boolean[table.getRowCount()];
-            for (int i = 0; i < table.getRowCount(); i++){
-                markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
-            }
-
-            theData.linkageToChrom(markerResultArray,checkPanel.getPedFile(),checkPanel.getPedFile().getHMInfo());
-            processData(checkPanel.getPedFile().getHMInfo());
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
@@ -505,14 +506,15 @@ public class HaploView extends JFrame implements ActionListener{
         final SwingWorker worker = new SwingWorker(){
             public Object construct(){
                 dPrimeDisplay=null;
+
                 theData.infoKnown = false;
                 if (!(inputOptions[1].equals(""))){
                     readMarkers(new File(inputOptions[1]), null);
                 }
-
                 if (hminfo != null){
                     readMarkers(null,hminfo);
                 }
+
                 theData.generateDPrimeTable(maxCompDist);
                 theData.guessBlocks(0);
                 colorMenuItems[0].setSelected(true);
@@ -591,35 +593,8 @@ public class HaploView extends JFrame implements ActionListener{
                     countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
                     metaCheckPanel.add(countsLabel);
                     metaCheckPanel.add(checkPanel);
-
-                    JPanel failPanel = new JPanel();
-                    failPanel.setLayout(new BoxLayout(failPanel,BoxLayout.Y_AXIS));
-                    JPanel holdPanel = new JPanel();
-                    holdPanel.add(new JLabel("HW p-value cutoff: "));
-                    hwcut = new NumberTextField(String.valueOf(CheckData.hwCut),6,true);
-                    holdPanel.add(hwcut);
-                    failPanel.add(holdPanel);
-                    holdPanel = new JPanel();
-                    holdPanel.add(new JLabel("Min genotype %: "));
-                    genocut = new NumberTextField(String.valueOf(CheckData.failedGenoCut),2, false);
-                    holdPanel.add(genocut);
-                    failPanel.add(holdPanel);
-                    holdPanel = new JPanel();
-                    holdPanel.add(new JLabel("Max # mendel errors: "));
-                    mendcut = new NumberTextField(String.valueOf(CheckData.numMendErrCut),2,false);
-                    holdPanel.add(mendcut);
-                    failPanel.add(holdPanel);
-                    JButton rescore = new JButton("Rescore Markers");
-                    rescore.addActionListener(window);
-                    failPanel.add(rescore);
-
-                    JButton selAll = new JButton("Select All");
-                    selAll.addActionListener(window);
-
-                    JPanel ctrlPanel = new JPanel();
-                    ctrlPanel.add(failPanel);
-                    ctrlPanel.add(selAll);
-                    checkPanel.add(ctrlPanel);
+                    cdc = new CheckDataController(window);
+                    metaCheckPanel.add(cdc);
 
                     tabs.addTab(viewItems[VIEW_CHECK_NUM], metaCheckPanel);
                     viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
@@ -739,7 +714,7 @@ public class HaploView extends JFrame implements ActionListener{
                 JTable table = checkPanel.getTable();
                 boolean[] markerResults = new boolean[table.getRowCount()];
                 for (int i = 0; i < table.getRowCount(); i++){
-                    markerResults[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
+                    markerResults[i] = ((Boolean)table.getValueAt(i,8)).booleanValue();
                 }
                 int count = 0;
                 for (int i = 0; i < Chromosome.getSize(); i++){
@@ -953,7 +928,7 @@ public class HaploView extends JFrame implements ActionListener{
             window.argHandler(args);
 
             //setup view object
-            window.setTitle("HaploView beta");
+            window.setTitle(TITLE_STRING);
             window.setSize(800,600);
 
             //center the window on the screen

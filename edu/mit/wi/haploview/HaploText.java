@@ -99,7 +99,7 @@ public class HaploText {
                         //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
                         "-ha <hapsfile>                specify an input file in .haps format\n" +
                         "-i <infofile>                 specify a marker info file\n" +
-                        "-b <batchfile>                batch mode. batchfile should contain a list of haps files\n" +
+                        "-b <batchfile>                batch mode. batchfile should contain a list of files either all genotype or alternating genotype/info\n" +
                         "--dprime                      outputs dprime to <inputfile>.DPRIME\n" +
                         "             note: --dprime defaults to no blocks output. use -o to also output blocks\n" +
                         "-o <SFS,GAM,MJD,ALL>          output type. SFS, 4 gamete, MJD output or all 3. default is SFS.\n" +
@@ -390,40 +390,6 @@ public class HaploText {
             }
             else {
                 //read in ped file
-                PedFile ped;
-                Vector pedFileStrings;
-                BufferedReader reader;
-                String line;
-                boolean[] markerResultArray;
-
-                ped = new PedFile();
-                pedFileStrings = new Vector();
-                reader = new BufferedReader(new FileReader(inputFile));
-                result = new Vector();
-
-                while((line = reader.readLine())!=null){
-                    pedFileStrings.add(line);
-                }
-
-                ped.parseLinkage(pedFileStrings);
-
-                if(!arg_skipCheck) {
-                    result = ped.check();
-                }
-
-                markerResultArray = new boolean[ped.getNumMarkers()];
-                for (int i = 0; i < markerResultArray.length; i++){
-                    if(this.arg_skipCheck) {
-                        markerResultArray[i] = true;
-                    }
-                    else if(((MarkerResult)result.get(i)).getRating() > 0) {
-                        markerResultArray[i] = true;
-                    }
-                    else {
-                        markerResultArray[i] = false;
-                    }
-                }
-
               /*  if(this.arg_ignoreMarkers.size()>0) {
                     for(int i=0;i<this.arg_ignoreMarkers.size();i++){
                         int index = Integer.parseInt((String)this.arg_ignoreMarkers.get(i));
@@ -436,7 +402,7 @@ public class HaploText {
                     }
                 }*/
 
-                textData.linkageToChrom(markerResultArray,ped,null);
+                textData.linkageToChrom(inputFile, 3, arg_skipCheck);
 
             }
 

@@ -1,10 +1,7 @@
 package edu.mit.wi.haploview;
 
 
-import edu.mit.wi.pedfile.PedFile;
-import edu.mit.wi.pedfile.Individual;
-import edu.mit.wi.pedfile.Family;
-import edu.mit.wi.pedfile.PedFileException;
+import edu.mit.wi.pedfile.*;
 
 import java.io.*;
 //import java.lang.*;
@@ -30,6 +27,7 @@ public class HaploData{
     boolean blocksChanged = false;
     int missingLimit = 5;
     private PairwiseLinkage[][] dPrimeTable;
+    private PedFile pedFile;
     PairwiseLinkage[][] filteredDPrimeTable;
     public boolean finished = false;
     private double[] numBadGenotypes;
@@ -86,6 +84,10 @@ public class HaploData{
 
     int getBlocksDone() {
         return this.blocksDone;
+    }
+
+    PedFile getPedFile(){
+        return this.pedFile;
     }
 
     void prepareMarkerInput(File infile, long maxdist, String[][] hapmapGoodies) throws IOException, HaploViewException{
@@ -307,8 +309,48 @@ public class HaploData{
         }
     }
 
-    public void linkageToChrom(boolean[] markerResults, PedFile pedFile, String[][] hmInfo)
-            throws IllegalArgumentException, HaploViewException, PedFileException{
+    public void linkageToChrom(File infile, int type)
+            throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
+        this.linkageToChrom(infile, type, false);
+    }
+
+    public void linkageToChrom(File infile, int type, boolean skipCheck)
+            throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
+
+        //okay, for now we're going to assume the ped file has no header
+        Vector pedFileStrings = new Vector();
+        BufferedReader reader = new BufferedReader(new FileReader(infile));
+        String line;
+        while((line = reader.readLine())!=null){
+            if (line.length() == 0){
+                //skip blank lines
+                continue;
+            }
+            if (line.startsWith("#")){
+                //skip comments
+                continue;
+            }
+            pedFileStrings.add(line);
+        }
+        pedFile = new PedFile();
+
+        if (type == 3){
+            pedFile.parseLinkage(pedFileStrings);
+        }else{
+            pedFile.parseHapMap(pedFileStrings);
+        }
+
+        Vector result = pedFile.check();
+
+        boolean[] markerResults = new boolean[result.size()];
+        for (int i = 0; i < result.size(); i++){
+            if (((MarkerResult)result.get(i)).getRating() > 0 || skipCheck){
+                markerResults[i] = true;
+            }else{
+                markerResults[i] = false;
+            }
+        }
+
 
         if(markerResults == null){
             throw new IllegalArgumentException();
@@ -330,6 +372,7 @@ public class HaploData{
             currentFamily = pedFile.getFamily(indAndFamID[0]);
             currentInd = currentFamily.getMember(indAndFamID[1]);
 
+            byte[] zeroArray = {0,0};
             if(currentInd.getIsTyped()){
                 //singleton
                 //if only one indiv in fam AND no assoc test OR this is case control (assocTest=2)
@@ -338,7 +381,12 @@ public class HaploData{
                     byte[] chrom1 = new byte[numMarkers];
                     byte[] chrom2 = new byte[numMarkers];
                     for (int i = 0; i < numMarkers; i++){
-                        byte[] thisMarker = currentInd.getMarker(i);
+                        byte[] thisMarker;
+                        if (currentInd.getZeroed(i)){
+                            thisMarker = zeroArray;
+                        }else{
+                            thisMarker = currentInd.getMarker(i);
+                        }
                         if (thisMarker[0] == thisMarker[1]){
                             chrom1[i] = thisMarker[0];
                             chrom2[i] = thisMarker[1];
@@ -364,14 +412,28 @@ public class HaploData{
                         boolean[] kidMissing = new boolean[numMarkers];
 
                         for (int i = 0; i < numMarkers; i++){
-                            byte[] thisMarker = currentInd.getMarker(i);
+                            byte[] thisMarker;
+                            if (currentInd.getZeroed(i)){
+                                thisMarker = zeroArray;
+                            }else{
+                                thisMarker = currentInd.getMarker(i);
+                            }
                             byte kid1 = thisMarker[0];
                             byte kid2 = thisMarker[1];
 
-                            thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
+                            if (currentFamily.getMember(currentInd.getMomID()).getZeroed(i)){
+                                thisMarker = zeroArray;
+                            }else{
+                                thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
+                            }
                             byte mom1 = thisMarker[0];
                             byte mom2 = thisMarker[1];
-                            thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
+
+                            if (currentFamily.getMember(currentInd.getDadID()).getZeroed(i)){
+                                thisMarker = zeroArray;
+                            }else{
+                                thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
+                            }
                             byte dad1 = thisMarker[0];
                             byte dad2 = thisMarker[1];
 
@@ -526,7 +588,7 @@ public class HaploData{
         }
         chromosomes = chrom;
         try{
-            prepareMarkerInput(null,0,hmInfo);
+            prepareMarkerInput(null,0,pedFile.getHMInfo());
         }catch(HaploViewException e){
         }catch(IOException e){
         }
@@ -1469,16 +1531,12 @@ public class HaploData{
                             if (i == j-1){
                                 //this belongs somewhere else really...
                                 //these are adjacent markers so we'll put in the t-int stat
-                                int numGaps = filteredDPrimeTable.length;
-                                double prev = 0;
-                                for (int gap = 0; gap < numGaps; gap++){
-                                    for (int x = 0; x < 5; x++){
-                                        for (int y = 1; y < 6; y++){
-                                            if (gap-x < 0 || gap+y >= numGaps){
-                                                continue;
-                                            }
-                                            LODSum += filteredDPrimeTable[gap-x][gap+y].getLOD();
+                                for (int x = 0; x < 5; x++){
+                                    for (int y = 1; y < 6; y++){
+                                        if (i-x < 0 || i+y >= filteredDPrimeTable.length){
+                                            continue;
                                         }
+                                        LODSum += filteredDPrimeTable[i-x][i+y].getLOD();
                                     }
                                 }
                                 tInt = String.valueOf(roundDouble(LODSum));
@@ -1493,7 +1551,10 @@ public class HaploData{
         saveDprimeWriter.close();
     }
 
-    public void linkageToHapsFormat(boolean[] markerResults, PedFile pedFile,
+    //this whole method is broken at the very least because it doesn't check for zeroing
+    //out of mendel errors correctly. on the other hand we may never want to
+    //resurrect this format, so who cares...
+   /* public void linkageToHapsFormat(boolean[] markerResults, PedFile pedFile,
                                     String hapFileName)throws IOException, PedFileException{
         FileWriter linkageToHapsWriter = new FileWriter(new File(hapFileName));
 
@@ -1638,5 +1699,6 @@ public class HaploData{
         }
         linkageToHapsWriter.close();
 
-    }
+    }*/
+
 }
