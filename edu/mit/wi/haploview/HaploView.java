@@ -14,44 +14,17 @@ import java.io.*;
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 
-public class HaploView extends JFrame implements ActionListener{
+public class HaploView extends JFrame implements ActionListener, Constants{
 
     boolean DEBUG = false;
 
-    //some constants etc.
-    private static final String TITLE_STRING = "Haploview v2.04";
-    private static final String READ_GENOTYPES = "Open genotype data";
-    private static final String READ_MARKERS = "Load marker data";
     JMenuItem readMarkerItem;
-
-    private static final String EXPORT_TEXT = "Export current tab to text";
-    private static final String EXPORT_PNG = "Export current tab to PNG";
     String exportItems[] = {
-        EXPORT_TEXT, EXPORT_PNG
+        EXPORT_TEXT, EXPORT_PNG, EXPORT_OPTIONS
     };
     JMenuItem exportMenuItems[];
     JMenu keyMenu;
-
-    private static final String CLEAR_BLOCKS = "Clear all blocks";
-    private static final String CUST_BLOCKS = "Customize Block Definitions";
     JMenuItem clearBlocksItem;
-
-    static final String QUIT = "Quit";
-
-    static final String VIEW_DPRIME = "D Prime Plot";
-    static final String VIEW_HAPLOTYPES = "Haplotypes";
-    static final String VIEW_LOD = "Genotyping completeness";
-    static final String VIEW_CHECK_PANEL = "Check Markers";
-    static final String VIEW_TDT = "Association";
-
-    //these three are always 1st and 2nd in the tabs
-    static final int VIEW_D_NUM = 0;
-    static final int VIEW_HAP_NUM = 1;
-    //static final int VIEW_LOD_NUM = 2;
-    //these are "optional" tabs so we don't force them into an order
-    //static int VIEW_CHECK_NUM, VIEW_TDT_NUM;
-    static final int VIEW_CHECK_NUM = 2;
-    static final int VIEW_TDT_NUM = 3;
 
     String viewItems[] = {
         VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TDT
@@ -70,16 +43,10 @@ public class HaploView extends JFrame implements ActionListener{
                                   "Four Gamete Rule",
                                   "Solid spine of LD"};
 
-    static final int PNG_MODE = 0;
-    static final int TXT_MODE = 1;
-
-    //static final String DISPLAY_OPTIONS = "Display Options";
-    //JMenuItem displayOptionsItem;
-
     HaploData theData;
-    private CheckDataPanel checkPanel;
+    CheckDataPanel checkPanel;
 
-    private int currentBlockDef = 0;
+    private int currentBlockDef = BLOX_GABRIEL;
     private TDTPanel tdtPanel;
     int assocTest = 0;
     private javax.swing.Timer timer;
@@ -90,8 +57,7 @@ public class HaploView extends JFrame implements ActionListener{
     DPrimeDisplay dPrimeDisplay;
     private JScrollPane hapScroller;
     private HaplotypeDisplay hapDisplay;
-    private JTabbedPane tabs;
-    private String[] inputOptions;
+    JTabbedPane tabs;
     CheckDataController cdc;
 
 
@@ -149,11 +115,12 @@ public class HaploView extends JFrame implements ActionListener{
             exportMenuItems[i].setEnabled(false);
             fileMenu.add(exportMenuItems[i]);
         }
+        exportMenuItems[2].setEnabled(true);
 
         fileMenu.addSeparator();
         fileMenu.setMnemonic(KeyEvent.VK_F);
 
-        menuItem = new JMenuItem(QUIT);
+        menuItem = new JMenuItem("Quit");
         setAccelerator(menuItem, 'Q', false);
         menuItem.addActionListener(this);
         fileMenu.add(menuItem);
@@ -217,7 +184,7 @@ public class HaploView extends JFrame implements ActionListener{
         for (int i = 0; i < blockItems.length; i++){
             blockMenuItems[i] = new JRadioButtonMenuItem(blockItems[i], i==0);
             blockMenuItems[i].addActionListener(this);
-            blockMenuItems[i].setActionCommand("block" + i);
+            blockMenuItems[i].setActionCommand("block" + (i+1));
             blockMenu.add(blockMenuItems[i]);
             bg.add(blockMenuItems[i]);
             if (i != 0){
@@ -293,7 +260,7 @@ public class HaploView extends JFrame implements ActionListener{
             tweakDialog.pack();
             tweakDialog.setVisible(true);
         }else if (command == CLEAR_BLOCKS){
-            changeBlocks(3);
+            changeBlocks(BLOX_NONE);
 
         //blockdef clauses
         }else if (command.startsWith("block")){
@@ -319,15 +286,13 @@ public class HaploView extends JFrame implements ActionListener{
 
         //exporting clauses
         }else if (command == EXPORT_PNG){
-            fc.setSelectedFile(new File(""));
-            if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
-                export(tabs.getSelectedIndex(), PNG_MODE, fc.getSelectedFile());
-            }
+            export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getSize());
         }else if (command == EXPORT_TEXT){
-            fc.setSelectedFile(new File(""));
-            if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
-                export(tabs.getSelectedIndex(), TXT_MODE, fc.getSelectedFile());
-            }
+            export(tabs.getSelectedIndex(), TXT_MODE, 0, Chromosome.getSize());
+        }else if (command == EXPORT_OPTIONS){
+            ExportDialog exDialog = new ExportDialog(this);
+            exDialog.pack();
+            exDialog.setVisible(true);
         }else if (command == "Select All"){
             checkPanel.selectAll();
         }else if (command == "Rescore Markers"){
@@ -358,7 +323,7 @@ public class HaploView extends JFrame implements ActionListener{
             checkPanel.redoRatings();
         }else if (command == "Tutorial"){
             showHelp();
-        } else if (command == QUIT){
+        } else if (command == "Quit"){
             quit();
         } else {
             for (int i = 0; i < viewItems.length; i++) {
@@ -421,8 +386,7 @@ public class HaploView extends JFrame implements ActionListener{
         //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
         //type is either 3 or 4 for ped and hapmap files respectively
 
-        inputOptions = f;
-        File inFile = new File(inputOptions[0]);
+        File inFile = new File(f[0]);
         try {
             if (inFile.length() < 1){
                 throw new HaploViewException("Pedfile is empty or nonexistent: " + inFile.getName());
@@ -432,7 +396,7 @@ public class HaploView extends JFrame implements ActionListener{
             checkPanel = new CheckDataPanel(theData.getPedFile());
             checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            processData(theData.getPedFile().getHMInfo());
+            processData(theData.getPedFile().getHMInfo(),f);
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
@@ -464,11 +428,10 @@ public class HaploView extends JFrame implements ActionListener{
         assocTest = 0;
 
 
-        inputOptions = f;
         theData = new HaploData();
         try{
-            theData.prepareHapsInput(new File(inputOptions[0]));
-            processData(null);
+            theData.prepareHapsInput(new File(f[0]));
+            processData(null, f);
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
@@ -483,7 +446,8 @@ public class HaploView extends JFrame implements ActionListener{
 
     }
 
-    void processData(final String[][] hminfo) {
+    void processData(final String[][] hminfo, String[] in) {
+        final String[] inputOptions = in;
         if (inputOptions[2].equals("")){
             inputOptions[2] = "0";
         }
@@ -503,7 +467,8 @@ public class HaploView extends JFrame implements ActionListener{
                 }
 
                 theData.generateDPrimeTable(maxCompDist);
-                theData.guessBlocks(0);
+                theData.guessBlocks(BLOX_GABRIEL);
+                //theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
                 colorMenuItems[0].setSelected(true);
                 blockMenuItems[0].setSelected(true);
                 zoomMenuItems[0].setSelected(true);
@@ -701,7 +666,7 @@ public class HaploView extends JFrame implements ActionListener{
                 JTable table = checkPanel.getTable();
                 boolean[] markerResults = new boolean[table.getRowCount()];
                 for (int i = 0; i < table.getRowCount(); i++){
-                    markerResults[i] = ((Boolean)table.getValueAt(i,8)).booleanValue();
+                    markerResults[i] = ((Boolean)table.getValueAt(i,9)).booleanValue();
                 }
                 int count = 0;
                 for (int i = 0; i < Chromosome.getSize(); i++){
@@ -775,92 +740,90 @@ public class HaploView extends JFrame implements ActionListener{
 
     }
 
-    void export(int tabNum, int format, File outfile){
-        if (format == PNG_MODE){
-            BufferedImage image;
-            if (tabNum == VIEW_D_NUM){
-                Dimension pref = dPrimeDisplay.getPreferredSize();
-                image = new BufferedImage(pref.width, pref.height,
-                        BufferedImage.TYPE_3BYTE_BGR);
-                dPrimeDisplay.export(image);
-            }else if (tabNum == VIEW_HAP_NUM){
-                Dimension size = hapDisplay.getPreferredSize();
-                image = new BufferedImage(size.width, size.height,
-                        BufferedImage.TYPE_3BYTE_BGR);
-                hapDisplay.export(image);
-            }else{
-                image = new BufferedImage(1,1,BufferedImage.TYPE_3BYTE_BGR);
-            }
-
-            try{
-                String filename = outfile.getPath();
-                if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
-                    filename += ".png";
-                }
-                Jimi.putImage("image/png", image, filename);
-            }catch(JimiException je){
-                JOptionPane.showMessageDialog(this,
-                        je.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        } else if (format == TXT_MODE){
-            try{
+    void export(int tabNum, int format, int start, int stop){
+        fc.setSelectedFile(new File(""));
+        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+            File outfile = fc.getSelectedFile();
+            if (format == PNG_MODE){
+                BufferedImage image;
                 if (tabNum == VIEW_D_NUM){
-                    theData.saveDprimeToText(outfile);
+                    image = dPrimeDisplay.export(start, stop);
                 }else if (tabNum == VIEW_HAP_NUM){
-                    theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray, outfile);
-                }else if (tabNum == VIEW_CHECK_NUM){
-                    JTable table = checkPanel.getTable();
-
-                    FileWriter checkWriter = new FileWriter(outfile);
-                    int numCols = table.getColumnCount();
-                    StringBuffer header = new StringBuffer();
-                    for (int i = 0; i < numCols; i++){
-                        header.append(table.getColumnName(i)).append("\t");
-                    }
-                    header.append("\n");
-                    checkWriter.write(header.toString());
-                    for (int i = 0; i < table.getRowCount(); i++){
-                        StringBuffer sb = new StringBuffer();
-                        //don't print the true/false vals in last column
-                        for (int j = 0; j < numCols-1; j++){
-                            sb.append(table.getValueAt(i,j)).append("\t");
-                        }
-                        //print BAD if last column is false
-                        if (((Boolean)table.getValueAt(i, numCols-1)).booleanValue()){
-                            sb.append("\n");
-                        }else{
-                            sb.append("BAD\n");
-                        }
-                        checkWriter.write(sb.toString());
-                    }
-                    checkWriter.close();
-                }else if (tabNum == VIEW_TDT_NUM){
-                    JTable table = tdtPanel.getTable();
-                    FileWriter checkWriter = new FileWriter(outfile);
-                    int numCols = table.getColumnCount();
-                    StringBuffer header = new StringBuffer();
-                    for (int i = 0; i < numCols; i++){
-                        header.append(table.getColumnName(i)).append("\t");
-                    }
-                    header.append("\n");
-                    checkWriter.write(header.toString());
-                    for (int i = 0; i < table.getRowCount(); i++){
-                        StringBuffer sb = new StringBuffer();
-                        for (int j = 0; j < numCols; j++){
-                            sb.append(table.getValueAt(i,j)).append("\t");
-                        }
-                        sb.append("\n");
-                        checkWriter.write(sb.toString());
-                    }
-                    checkWriter.close();
+                    image = hapDisplay.export();
+                }else{
+                    image = new BufferedImage(1,1,BufferedImage.TYPE_3BYTE_BGR);
                 }
-            }catch(IOException ioe){
-                JOptionPane.showMessageDialog(this,
-                        ioe.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
+
+                try{
+                    String filename = outfile.getPath();
+                    if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
+                        filename += ".png";
+                    }
+                    Jimi.putImage("image/png", image, filename);
+                }catch(JimiException je){
+                    JOptionPane.showMessageDialog(this,
+                            je.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } else if (format == TXT_MODE){
+                try{
+                    if (tabNum == VIEW_D_NUM){
+                        theData.saveDprimeToText(outfile, TABLE_TYPE, start, stop);
+                    }else if (tabNum == VIEW_HAP_NUM){
+                        theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray, outfile);
+                    }else if (tabNum == VIEW_CHECK_NUM){
+                        JTable table = checkPanel.getTable();
+
+                        FileWriter checkWriter = new FileWriter(outfile);
+                        int numCols = table.getColumnCount();
+                        StringBuffer header = new StringBuffer();
+                        for (int i = 0; i < numCols; i++){
+                            header.append(table.getColumnName(i)).append("\t");
+                        }
+                        header.append("\n");
+                        checkWriter.write(header.toString());
+                        for (int i = 0; i < table.getRowCount(); i++){
+                            StringBuffer sb = new StringBuffer();
+                            //don't print the true/false vals in last column
+                            for (int j = 0; j < numCols-1; j++){
+                                sb.append(table.getValueAt(i,j)).append("\t");
+                            }
+                            //print BAD if last column is false
+                            if (((Boolean)table.getValueAt(i, numCols-1)).booleanValue()){
+                                sb.append("\n");
+                            }else{
+                                sb.append("BAD\n");
+                            }
+                            checkWriter.write(sb.toString());
+                        }
+                        checkWriter.close();
+                    }else if (tabNum == VIEW_TDT_NUM){
+                        JTable table = tdtPanel.getTable();
+                        FileWriter checkWriter = new FileWriter(outfile);
+                        int numCols = table.getColumnCount();
+                        StringBuffer header = new StringBuffer();
+                        for (int i = 0; i < numCols; i++){
+                            header.append(table.getColumnName(i)).append("\t");
+                        }
+                        header.append("\n");
+                        checkWriter.write(header.toString());
+                        for (int i = 0; i < table.getRowCount(); i++){
+                            StringBuffer sb = new StringBuffer();
+                            for (int j = 0; j < numCols; j++){
+                                sb.append(table.getValueAt(i,j)).append("\t");
+                            }
+                            sb.append("\n");
+                            checkWriter.write(sb.toString());
+                        }
+                        checkWriter.close();
+                    }
+                }catch(IOException ioe){
+                    JOptionPane.showMessageDialog(this,
+                            ioe.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }

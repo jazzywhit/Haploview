@@ -6,7 +6,7 @@ import edu.mit.wi.pedfile.PedFileException;
 import java.io.*;
 import java.util.Vector;
 
-public class HaploText {
+public class HaploText implements Constants{
 
     private boolean arg_nogui = false;
     private String arg_batchMode;
@@ -114,7 +114,7 @@ public class HaploText {
                         "-d                            outputs dprime to <inputfile>.DPRIME\n" +
                         "-c                            outputs marker checks to <inputfile>.CHECK\n" +
                         "                              note: -d  and -c default to no blocks output. use -o to also output blocks\n" +
-                        "-o <SFS,GAM,MJD,ALL>          output type. SFS, 4 gamete, MJD output or all 3. default is SFS.\n" +
+                        "-o <GAB,GAM,SPI,ALL>          output type. Gabriel, 4 gamete, spine output or all 3. default is SFS.\n" +
                         "-m <distance>                 maximum comparison distance in kilobases (integer). default is 500");
 
                 System.exit(0);
@@ -200,22 +200,22 @@ public class HaploText {
                         System.out.println("only one -o argument is allowed");
                         System.exit(1);
                     }
-                    if(args[i].equals("SFS")){
-                        outputType = 0;
+                    if(args[i].equals("SFS") || args[i].equals("GAB")){
+                        outputType = BLOX_GABRIEL;
                     }
                     else if(args[i].equals("GAM")){
-                        outputType = 1;
+                        outputType = BLOX_4GAM;
                     }
-                    else if(args[i].equals("MJD")){
-                        outputType = 2;
+                    else if(args[i].equals("MJD") || args[i].equals("SPI")){
+                        outputType = BLOX_SPINE;
                     }
                     else if(args[i].equals("ALL")) {
-                        outputType = 3;
+                        outputType = BLOX_ALL;
                     }
                 }
                 else {
                     //defaults to SFS output
-                    outputType =0;
+                    outputType = BLOX_GABRIEL;
                     i--;
                 }
             }
@@ -269,7 +269,7 @@ public class HaploText {
         //mess with vars, set defaults, etc
 
         if( outputType == -1 && ( !pedFileName.equals("") || !hapsFileName.equals("") || !batchMode.equals("")) && !outputDprime && !outputCheck) {
-            outputType = 0;
+            outputType = BLOX_GABRIEL;
             if(nogui && !quietMode) {
                 System.out.println("No output type specified. Default of SFS will be used");
             }
@@ -496,33 +496,35 @@ public class HaploText {
                 textData.generateDPrimeTable(maxDistance);
                 Haplotype[][] haplos;
                 switch(outputType){
-                    case 0:
-                        OutputFile = new File(fileName + ".SFSblocks");
+                    case BLOX_GABRIEL:
+                        OutputFile = new File(fileName + ".GABRIELblocks");
                         break;
-                    case 1:
+                    case BLOX_4GAM:
                         OutputFile = new File(fileName + ".4GAMblocks");
                         break;
-                    case 2:
-                        OutputFile = new File(fileName + ".MJDblocks");
+                    case BLOX_SPINE:
+                        OutputFile = new File(fileName + ".SPINEblocks");
                         break;
                     default:
-                        OutputFile = new File(fileName + ".SFSblocks");
+                        OutputFile = new File(fileName + ".GABRIELblocks");
                         break;
 
                 }
 
                 //this handles output type ALL
-                if(outputType == 3) {
-                    OutputFile = new File(fileName + ".SFSblocks");
-                    textData.guessBlocks(0);
+                int start = 0;
+                int stop = Chromosome.getFilteredSize();
+                if(outputType == BLOX_ALL) {
+                    OutputFile = new File(fileName + ".GABRIELblocks");
+                    textData.guessBlocks(BLOX_GABRIEL);
                     haplos = textData.generateHaplotypes(textData.blocks, 1);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                     OutputFile = new File(fileName + ".4GAMblocks");
-                    textData.guessBlocks(1);
+                    textData.guessBlocks(BLOX_4GAM);
                     haplos = textData.generateHaplotypes(textData.blocks, 1);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
-                    OutputFile = new File(fileName + ".MJDblocks");
-                    textData.guessBlocks(2);
+                    OutputFile = new File(fileName + ".SPINEblocks");
+                    textData.guessBlocks(BLOX_SPINE);
                     haplos = textData.generateHaplotypes(textData.blocks, 1);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }else{
@@ -534,61 +536,12 @@ public class HaploText {
             if(this.arg_dprime) {
                 OutputFile = new File(fileName + ".DPRIME");
                 if (textData.filteredDPrimeTable != null){
-                    textData.saveDprimeToText(OutputFile);
+                    textData.saveDprimeToText(OutputFile, TABLE_TYPE, 0, Chromosome.getFilteredSize());
                 }else{
-                    //this means that we're just writing dprime so we won't
-                    //keep the (potentially huge) dprime table in memory but instead
-                    //write out one line at a time forget
-                    FileWriter saveDprimeWriter = new FileWriter(OutputFile);
-                    if (textData.infoKnown){
-                        saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tDist\n");
-                        long dist;
-                        PairwiseLinkage linkageResult;
-
-                        for (int i = 0; i < Chromosome.getFilteredSize(); i++){
-                            for (int j = 0; j < Chromosome.getFilteredSize(); j++){
-                                //many "slots" in table aren't filled in because it is a 1/2 matrix
-                                if (i < j){
-                                    dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
-                                    if (maxDistance > 0){
-                                        if ((dist > maxDistance || dist < negMaxDistance)){
-                                            continue;
-                                        }
-                                    }
-                                    linkageResult = textData.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
-                                    if(linkageResult != null) {
-                                        saveDprimeWriter.write(Chromosome.getFilteredMarker(i).getName() +
-                                                "\t" + Chromosome.getFilteredMarker(j).getName() +
-                                                "\t" + linkageResult.toString() + "\t" + dist + "\n");
-                                    }
-                                }
-                            }
-                        }
-                    }else{
-                        saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\n");
-                        long dist;
-                        PairwiseLinkage linkageResult;
-                        for (int i = 0; i < Chromosome.getFilteredSize(); i++){
-                            for (int j = 0; j < Chromosome.getFilteredSize(); j++){
-                                //many "slots" in table aren't filled in because it is a 1/2 matrix
-                                if (i < j){
-                                    dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
-                                    if (maxDistance > 0){
-                                        if ((dist > maxDistance || dist < negMaxDistance)){
-                                            continue;
-                                        }
-                                    }
-                                    linkageResult = textData.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
-                                    if(linkageResult != null) {
-                                        saveDprimeWriter.write((Chromosome.realIndex[i]+1) + "\t" + (Chromosome.realIndex[j]+1) + "\t" + linkageResult + "\n");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    saveDprimeWriter.close();
+                    textData.saveDprimeToText(OutputFile, LIVE_TYPE, 0, Chromosome.getFilteredSize());
                 }
             }
+
             //if(fileType){
                 //TDT.calcTrioTDT(textData.chromosomes);
                 //TODO: Deal with this.  why do we calc TDT? and make sure not to do it except when appropriate
