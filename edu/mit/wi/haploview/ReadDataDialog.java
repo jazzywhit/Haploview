@@ -111,7 +111,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         String name;
         String markerInfoName = "";
         HaploView h = (HaploView) this.getParent();
-        h.fc.setSelectedFile(null);
+        h.fc.setSelectedFile(new File(""));
         int returned = h.fc.showOpenDialog(this);
         if (returned != JFileChooser.APPROVE_OPTION) return;
         File file = h.fc.getSelectedFile();

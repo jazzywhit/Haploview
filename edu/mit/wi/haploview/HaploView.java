@@ -287,7 +287,7 @@ public class HaploView extends JFrame implements ActionListener{
             readDialog.setVisible(true);
         } else if (command == READ_MARKERS){
             //JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-            fc.setSelectedFile(null);
+            fc.setSelectedFile(new File(""));
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 readMarkers(fc.getSelectedFile());
@@ -327,12 +327,12 @@ public class HaploView extends JFrame implements ActionListener{
 
         //exporting clauses
         }else if (command == EXPORT_PNG){
-            fc.setSelectedFile(null);
+            fc.setSelectedFile(new File(""));
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                 export(tabs.getSelectedIndex(), PNG_MODE, fc.getSelectedFile());
             }
         }else if (command == EXPORT_TEXT){
-            fc.setSelectedFile(null);
+            fc.setSelectedFile(new File(""));
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                 export(tabs.getSelectedIndex(), TXT_MODE, fc.getSelectedFile());
             }
