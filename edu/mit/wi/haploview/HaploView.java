@@ -857,31 +857,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }else if (tabNum == VIEW_HAP_NUM){
                         theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray, outfile);
                     }else if (tabNum == VIEW_CHECK_NUM){
-                        JTable table = checkPanel.getTable();
-
-                        FileWriter checkWriter = new FileWriter(outfile);
-                        int numCols = table.getColumnCount();
-                        StringBuffer header = new StringBuffer();
-                        for (int i = 0; i < numCols; i++){
-                            header.append(table.getColumnName(i)).append("\t");
-                        }
-                        header.append("\n");
-                        checkWriter.write(header.toString());
-                        for (int i = 0; i < table.getRowCount(); i++){
-                            StringBuffer sb = new StringBuffer();
-                            //don't print the true/false vals in last column
-                            for (int j = 0; j < numCols-1; j++){
-                                sb.append(table.getValueAt(i,j)).append("\t");
-                            }
-                            //print BAD if last column is false
-                            if (((Boolean)table.getValueAt(i, numCols-1)).booleanValue()){
-                                sb.append("\n");
-                            }else{
-                                sb.append("BAD\n");
-                            }
-                            checkWriter.write(sb.toString());
-                        }
-                        checkWriter.close();
+                        checkPanel.printTable(outfile);
                     }else if (tabNum == VIEW_TDT_NUM){
                         JTable table = tdtPanel.getTable();
                         FileWriter checkWriter = new FileWriter(outfile);

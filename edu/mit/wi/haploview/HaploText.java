@@ -470,38 +470,13 @@ public class HaploText implements Constants{
 
 
             if(this.arg_showCheck && result != null) {
-                System.out.println("Data check results:\n" +
-                        "Name\tObsHET\tPredHET\tHWpval\t%Geno\tFamTrio\tMendErr");
-                for(int i=0;i<result.size();i++){
-                    MarkerResult currentResult = (MarkerResult)result.get(i);
-                    System.out.println(
-                            Chromosome.getMarker(i).getName()        +"\t"+
-                            currentResult.getObsHet()      +"\t"+
-                            currentResult.getPredHet()     +"\t"+
-                            currentResult.getHWpvalue()    +"\t"+
-                            currentResult.getGenoPercent() +"\t"+
-                            currentResult.getFamTrioNum()  +"\t"+
-                            currentResult.getMendErrNum());
-                }
-
+                CheckDataPanel cp = new CheckDataPanel(textData);
+                cp.printTable(null);
             }
 
             if(this.arg_check && result != null){
-                OutputFile = new File (fileName + ".CHECK");
-                FileWriter saveCheckWriter = new FileWriter(OutputFile);
-                saveCheckWriter.write("Name\tObsHET\tPredHET\tHWpval\t%Geno\tFamTrio\tMendErr\n");
-                for(int i=0;i<result.size();i++){
-                    MarkerResult currentResult = (MarkerResult)result.get(i);
-                    saveCheckWriter.write(
-                            Chromosome.getMarker(i).getName()        +"\t"+
-                            currentResult.getObsHet()      +"\t"+
-                            currentResult.getPredHet()     +"\t"+
-                            currentResult.getHWpvalue()    +"\t"+
-                            currentResult.getGenoPercent() +"\t"+
-                            currentResult.getFamTrioNum()  +"\t"+
-                            currentResult.getMendErrNum()  +"\n");
-                }
-                saveCheckWriter.close();
+                CheckDataPanel cp = new CheckDataPanel(textData);
+                cp.printTable(new File (fileName + ".CHECK"));
             }
 
             Vector cust = new Vector();

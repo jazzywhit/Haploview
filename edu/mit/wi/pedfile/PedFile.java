@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.13 2004/04/27 17:20:40 jcbarret Exp $
+* $Id: PedFile.java,v 1.14 2004/04/28 20:16:45 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -350,7 +350,7 @@ public class PedFile {
             String name = st.nextToken();
             String details = (String)hapMapTranslate.get(name);
             if (details == null){
-                throw new PedFileException("Hapmap data format error.");
+                throw new PedFileException("Hapmap data format error: " + name);
             }
             dt = new StringTokenizer(details, "\n\t\" \"");
             ind.setFamilyID(dt.nextToken().trim());

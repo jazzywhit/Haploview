@@ -106,7 +106,46 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         }
     }
 
+    public void printTable(File outfile) throws IOException{
+        FileWriter checkWriter = null;
+        if (outfile != null){
+            checkWriter = new FileWriter(outfile);
+        }
 
+        int numCols = table.getColumnCount();
+        StringBuffer header = new StringBuffer();
+        for (int i = 0; i < numCols; i++){
+            header.append(table.getColumnName(i)).append("\t");
+        }
+        header.append("\n");
+
+        if (outfile != null){
+            checkWriter.write(header.toString());
+        }else{
+            System.out.print(header.toString());
+        }
+        for (int i = 0; i < table.getRowCount(); i++){
+            StringBuffer sb = new StringBuffer();
+            //don't print the true/false vals in last column
+            for (int j = 0; j < numCols-1; j++){
+                sb.append(table.getValueAt(i,j)).append("\t");
+            }
+            //print BAD if last column is false
+            if (((Boolean)table.getValueAt(i, numCols-1)).booleanValue()){
+                sb.append("\n");
+            }else{
+                sb.append("BAD\n");
+            }
+            if (outfile != null){
+                checkWriter.write(sb.toString());
+            }else{
+                System.out.print(sb.toString());
+            }
+        }
+        if (outfile != null){
+            checkWriter.close();
+        }
+    }
 
     public void selectAll(){
         for (int i = 0; i < table.getRowCount(); i++){
