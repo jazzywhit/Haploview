@@ -233,8 +233,10 @@ public class HaploData implements Constants{
             Vector markerInfo = new Vector();
             double[] numBadGenotypes = new double[Chromosome.getUnfilteredSize()];
             percentBadGenotypes = new double[Chromosome.getUnfilteredSize()];
+            Vector results = pedFile.getResults();
             for (int i = 0; i < Chromosome.getUnfilteredSize(); i++){
-                //to compute maf, browse chrom list and count instances of each allele
+                MarkerResult mr = (MarkerResult)results.elementAt(i);
+                //to compute minor/major alleles, browse chrom list and count instances of each allele
                 byte a1 = 0; byte a2 = 0;
                 double numa1 = 0; double numa2 = 0;
                 for (int j = 0; j < chromosomes.size(); j++){
@@ -270,15 +272,13 @@ public class HaploData implements Constants{
                     a1 = a2;
                     a2 = temp;
                 }
-                double maf = numa1/(numa2+numa1);
-                if (maf > 0.5) maf = 1.0-maf;
                 if (infoKnown){
                     markerInfo.add(new SNP((String)names.elementAt(i),
                             Long.parseLong((String)positions.elementAt(i)),
-                            Math.rint(maf*100.0)/100.0, a1, a2,
+                            Math.rint(mr.getMAF()*100.0)/100.0, a1, a2,
                             (String)extras.elementAt(i)));
                 }else{
-                    markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), Math.rint(maf*100.0)/100.0,a1,a2));
+                    markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), Math.rint(mr.getMAF()*100.0)/100.0,a1,a2));
                 }
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
