@@ -7,19 +7,30 @@ import java.text.DecimalFormatSymbols;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 import edu.mit.wi.haploview.TreeTable.*;
 import edu.mit.wi.pedfile.MathUtil;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeModel;
 
 
-public class HaploAssocPanel extends JPanel implements Constants{
+public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
     int initialHaplotypeDisplayThreshold;
+    JTreeTable jtt;
 
 
     public HaploAssocPanel(Haplotype[][] haps){
+        //this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+        makeTable(haps);
+    }
+
+    public void makeTable(Haplotype[][] haps) {
+        this.removeAll();
+
         initialHaplotypeDisplayThreshold = Options.getHaplotypeDisplayThreshold();
         Vector colNames = new Vector();
 
@@ -82,14 +93,30 @@ public class HaploAssocPanel extends JPanel implements Constants{
             }
             root.add(han);
         }
-        JTreeTable jtt = new JTreeTable(new HaplotypeAssociationModel(colNames, root));
+        int countsOrRatios = SHOW_COUNTS;
+        if(jtt != null) {
+            //if were just updating the table, then we want to retain the current status of countsOrRatios
+            HaplotypeAssociationModel ham = (HaplotypeAssociationModel) jtt.getTree().getModel();
+            countsOrRatios = ham.getCountsOrRatios();
+        }
+
+        jtt = new JTreeTable(new HaplotypeAssociationModel(colNames, root));
+
+        ((HaplotypeAssociationModel)(jtt.getTree().getModel())).setCountsOrRatios(countsOrRatios);
 
         jtt.getColumnModel().getColumn(0).setPreferredWidth(200);
         jtt.getColumnModel().getColumn(1).setPreferredWidth(50);
-        jtt.getColumnModel().getColumn(2).setPreferredWidth(100);
-        jtt.getColumnModel().getColumn(3).setPreferredWidth(100);
-        jtt.getColumnModel().getColumn(4).setPreferredWidth(100);
 
+        //we need more space for the CC counts in the third column
+        if(Options.getAssocTest() == ASSOC_CC) {
+            jtt.getColumnModel().getColumn(2).setPreferredWidth(200);
+            jtt.getColumnModel().getColumn(3).setPreferredWidth(75);
+            jtt.getColumnModel().getColumn(4).setPreferredWidth(75);
+        } else {
+            jtt.getColumnModel().getColumn(2).setPreferredWidth(150);
+            jtt.getColumnModel().getColumn(3).setPreferredWidth(100);
+            jtt.getColumnModel().getColumn(4).setPreferredWidth(100);
+        }
         jtt.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         Font monoFont = new Font("Monospaced",Font.PLAIN,12);
@@ -103,10 +130,31 @@ public class HaploAssocPanel extends JPanel implements Constants{
         r.setClosedIcon(null);
         theTree.setCellRenderer(r);
 
-        jtt.setPreferredScrollableViewportSize(new Dimension(550,jtt.getPreferredScrollableViewportSize().height));
+        jtt.setPreferredScrollableViewportSize(new Dimension(600,jtt.getPreferredScrollableViewportSize().height));
 
         JScrollPane treeScroller = new JScrollPane(jtt);
         add(treeScroller);
+
+        if(Options.getAssocTest() == ASSOC_CC) {
+            JRadioButton countsButton = new JRadioButton("Show CC counts");
+            JRadioButton ratiosButton = new JRadioButton("Show CC ratios");
+
+            ButtonGroup bg = new ButtonGroup();
+
+            bg.add(countsButton);
+            bg.add(ratiosButton);
+            countsButton.addActionListener(this);
+            ratiosButton.addActionListener(this);
+            JPanel butPan = new JPanel();
+            butPan.add(countsButton);
+            butPan.add(ratiosButton);
+            add(butPan);
+            if(countsOrRatios == SHOW_RATIOS) {
+                ratiosButton.setSelected(true);
+            }else{
+                countsButton.setSelected(true);
+            }
+        }
     }
 
     public double getChiSq(double[][] counts) {
@@ -141,4 +189,22 @@ public class HaploAssocPanel extends JPanel implements Constants{
         return formattedNumber;
     }
 
+
+
+
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+        if(command.equals("Show CC counts")) {
+            HaplotypeAssociationModel ham = (HaplotypeAssociationModel)jtt.getTree().getModel();
+            ham.setCountsOrRatios(SHOW_COUNTS);
+            jtt.repaint();
+        }
+        else if (command.equals("Show CC ratios")) {
+            HaplotypeAssociationModel ham = (HaplotypeAssociationModel)jtt.getTree().getModel();
+            ham.setCountsOrRatios(SHOW_RATIOS);
+            jtt.repaint();
+        }
+
+
+    }
 }

@@ -62,7 +62,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     JFileChooser fc;
     DPrimeDisplay dPrimeDisplay;
     private JScrollPane hapScroller;
-    HaplotypeDisplay hapDisplay;
+    private HaplotypeDisplay hapDisplay;
     JTabbedPane tabs;
     CheckDataController cdc;
 
@@ -833,6 +833,21 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         hapScroller.setViewportView(hapDisplay);
     }
 
+    public void clearDisplays() {
+        if (dPrimeDisplay != null){
+            dPrimeDisplay.setVisible(false);
+            dPrimeDisplay = null;
+        }
+        if (hapDisplay != null){
+            hapDisplay.setVisible(false);
+            hapDisplay = null;
+        }
+        if (tdtPanel != null){
+            tdtPanel.setVisible(false);
+            tdtPanel = null;
+        }
+    }
+
     class TabChangeListener implements ChangeListener{
         public void stateChanged(ChangeEvent e) {
             int tabNum = tabs.getSelectedIndex();
@@ -853,8 +868,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 //this is the haps ass tab inside the assoc super-tab
                 HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
                 if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
-                    metaAssoc.remove(1);
-                    metaAssoc.add("Haplotypes", new HaploAssocPanel(theData.getHaplotypes()));
+                    htp.makeTable(theData.getHaplotypes());
                 }
             }
 
@@ -935,6 +949,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 try{
                     hapDisplay.getHaps();
+                    if(Options.getAssocTest() != ASSOC_NONE) {
+                        JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(VIEW_TDT_NUM);
+                        //this is the haps ass tab inside the assoc super-tab
+                        HaploAssocPanel hasp = (HaploAssocPanel)metaAssoc.getComponent(1);
+                        hasp.makeTable(theData.getHaplotypes());
+                    }
                 }catch(HaploViewException hv){
                     JOptionPane.showMessageDialog(window,
                             hv.getMessage(),

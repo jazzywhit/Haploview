@@ -65,6 +65,10 @@ public interface Constants {
     static final int ASSOC_TRIO = 1;
     static final int ASSOC_CC = 2;
 
+    //haplotype association stuff
+    static final int SHOW_COUNTS = 0;
+    static final int SHOW_RATIOS = 1;
+
 
     static final String HELP_OUTPUT = TITLE_STRING + " command line options\n" +
                         "-h, -help                     print this message\n" +

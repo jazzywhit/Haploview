@@ -49,7 +49,19 @@ public class HaplotypeAssociationNode {
         }
     }
 
+
     public String getRatios() {
+        //this will only be called if we're doing case control
+        if(counts == null || counts.length == 1) {
+            //counts.length==1 should never happen,since that means it's Trio
+            return "";
+        }
+        return nf.format(this.counts[0][0] / this.counts[0][1]) + ", "
+                + nf.format(this.counts[1][0] / this.counts[1][1]) ;
+
+    }
+
+    public String getCounts() {
         //if the array is null this is a block-title node, not an actual hap
         if (counts == null){
             return ("");
@@ -57,38 +69,13 @@ public class HaplotypeAssociationNode {
         nf.setMinimumFractionDigits(1);
         nf.setMaximumFractionDigits(1);
 
-        for(int i= 0;i<counts.length;i++) {
-            for(int j= 0;j<counts[i].length;j++) {
-                counts[i][j] = (new Double(nf.format(counts[i][j]))).doubleValue();
-            }
-        }
-
         if (counts.length == 1){
             //TDT
-            if (this.counts[0][0] > this.counts[0][1]){
-                return this.counts[0][0] + " : " + this.counts[0][1];
-            }else{
-                return this.counts[0][1] + " : " + this.counts[0][0];
-            }
+            return nf.format(this.counts[0][0]) + " : " + nf.format(this.counts[0][1]);
         }else{
             //case-control
-            if (this.counts[0][0] > this.counts[0][1]){
-                if (this.counts[1][0] > this.counts[1][1]){
-                    return this.counts[0][0] + " : " + this.counts[0][1] +
-                            ", " + this.counts[1][0] + " : " + this.counts[1][1];
-                }else{
-                    return this.counts[0][0] + " : " + this.counts[0][1] +
-                            "," + this.counts[1][1] + " : " + this.counts[1][0];
-                }
-            }else{
-                if (this.counts[1][0] > this.counts[1][1]){
-                    return this.counts[0][1] + " : " + this.counts[0][0] +
-                            ", " + this.counts[1][0] + " : " + this.counts[1][1];
-                }else{
-                    return this.counts[0][1] + " : " + this.counts[0][0] +
-                            "," + this.counts[1][1] + " : " + this.counts[1][0];
-                }
-            }
+            return nf.format(this.counts[0][0]) + " : " + nf.format(this.counts[0][1]) +
+                    ", " + nf.format(this.counts[1][0]) + " : " + nf.format(this.counts[1][1]);
         }
     }
 

@@ -1,5 +1,7 @@
 package edu.mit.wi.haploview.TreeTable;
 
+import edu.mit.wi.haploview.Constants;
+
 import java.util.Vector;
 
 /**
@@ -11,9 +13,12 @@ import java.util.Vector;
  */
 
 public class HaplotypeAssociationModel extends AbstractTreeTableModel
-                             implements TreeTableModel {
+                             implements TreeTableModel, Constants {
     // Names of the columns.
     Vector colNames;
+    //this int is 0 to show ratios, 1 to show counts
+    private int countsOrRatios;
+
 
     public HaplotypeAssociationModel(Vector colNames, HaplotypeAssociationNode han) {
         super(han);
@@ -45,7 +50,11 @@ public class HaplotypeAssociationModel extends AbstractTreeTableModel
             case 1:
                 return n.getFreq();
             case 2:
-                return n.getRatios();
+                if(this.countsOrRatios == SHOW_COUNTS) {
+                    return n.getCounts();
+                } else if(this.countsOrRatios == SHOW_RATIOS) {
+                    return n.getRatios();
+                }
             case 3:
                 return n.getChiSq();
             case 4:
@@ -61,6 +70,14 @@ public class HaplotypeAssociationModel extends AbstractTreeTableModel
     public Object getChild(Object parent,
                            int index) {
         return ((HaplotypeAssociationNode) parent).children.elementAt(index);
+    }
+
+    public int getCountsOrRatios() {
+        return countsOrRatios;
+    }
+
+    public void setCountsOrRatios(int countsOrRatios) {
+        this.countsOrRatios = countsOrRatios;
     }
 }
 

@@ -201,6 +201,8 @@ public class EM implements Constants {
             }
         }
 
+        //we only want to add an affected status every other chromosome, so we flip this boolean each time
+        boolean addAff = true;
         for (int i = 0; i < chromosomes.size(); i++){
             Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
 
@@ -224,24 +226,34 @@ public class EM implements Constants {
                 }
                 if(whichVector[i] == 1) {
                     inputHaploSingletons.add(thisHap);
-                    affSingletons.add(new Integer(thisChrom.getAffected()));
+                    if(addAff) {
+                        affSingletons.add(new Integer(thisChrom.getAffected()));
+                    }
                 }
                 else if(whichVector[i] ==2) {
                     inputHaploTrios.add(thisHap);
-                    affTrios.add(new Integer(thisChrom.getAffected()));
+                    if(addAff) {
+                        affTrios.add(new Integer(thisChrom.getAffected()));
+                    }
                 }else if (whichVector[i] == 3){
                     inputHaploSingletons.add(thisHap);
-                    affSingletons.add(new Integer(0));
+                    if(addAff) {
+                        affSingletons.add(new Integer(0));
+                    }
+                }
+                if(addAff) {
+                    addAff = false;
+                }
+                else {
+                    addAff =true;
                 }
             }
         }
         int trioCount  = inputHaploTrios.size() / 4;
         inputHaploTrios.addAll(inputHaploSingletons);
         affTrios.addAll(affSingletons);
+
         byte[][] input_haplos = (byte[][])inputHaploTrios.toArray(new byte[0][0]);
-
-
-
 
         full_em_breakup(input_haplos, block_size, trioCount, affTrios);
 
@@ -417,7 +429,6 @@ return(-5);
         }
         total=(double)poss_full;
         total *= PSEUDOCOUNT;
-        //System.out.println("made it to 232");
         /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
         i.e., flat when nothing is known, close to phase known if a great deal is known */
 
@@ -475,7 +486,6 @@ return(-5);
             iter++;
         }
 
-        //System.out.println("made it to 290");
         /* we're done - the indices of superprob now have to be
         decoded to reveal the actual haplotypes they represent */
 
@@ -555,7 +565,11 @@ return(-5);
 
                                 product=superdata[i].superposs[n].p*superdata[i+1].superposs[m].p;
 
+                                /*if(i<5) {
+                                    System.out.println(superdata[i+1].superposs[m].h1 + "\t" + product);
+                                } */
                                 if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
+
                                     tempT[superdata[i].superposs[n].h1]+=product;
                                     tempU[superdata[i].superposs[n].h2]+=product;
                                 }
@@ -952,19 +966,16 @@ return(s.toString());
         int[] temp1 = decode_haplo_str(chap1,num_blocks,block_size,hlist,num_hlist);
         int[] temp2 = decode_haplo_str(chap2,num_blocks,block_size,hlist,num_hlist);
 
-        retval=false;
+        retval=true;
         for (i=0; i<num_loci; i++) {
-            if (ambighet[this_trio][i] == 0) {
-                //TODO:ask mark if this if statement should break out this way
-                //is this what this method should be doing?
+            if (ambighet[this_trio][i] !=0) {
                 if (temp1[i] == temp2[i])
                 {
-                    retval=true;
+                    retval=false;
                     break;
                 }
             }
         }
-
         return(retval);
     }
 
