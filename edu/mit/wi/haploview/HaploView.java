@@ -34,7 +34,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     JMenuItem clearBlocksItem;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_ASSOC
+        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TAGGER, VIEW_ASSOC
     };
     JRadioButtonMenuItem viewMenuItems[];
     String zoomItems[] = {
@@ -755,6 +755,29 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         currentTab=VIEW_CHECK_NUM;
                     }
 
+                    //tagger display
+                    taggerConfigPanel = new TaggerConfigPanel(theData);
+
+                    JPanel metaTagPanel = new JPanel();
+
+                    metaTagPanel.setLayout(new BoxLayout(metaTagPanel,BoxLayout.Y_AXIS));
+                    metaTagPanel.add(taggerConfigPanel);
+
+                    JTabbedPane tagTabs = new JTabbedPane();
+                    tagTabs.add("Configuration",metaTagPanel);
+
+                    JPanel resMetaPanel = new JPanel();
+
+                    resMetaPanel.setLayout(new BoxLayout(resMetaPanel,BoxLayout.Y_AXIS));
+
+                    TaggerResultsPanel tagResultsPanel = new TaggerResultsPanel();
+                    taggerConfigPanel.addActionListener(tagResultsPanel);
+
+                    resMetaPanel.add(tagResultsPanel);
+                    tagTabs.addTab("Results",resMetaPanel);
+                    tabs.addTab(VIEW_TAGGER,tagTabs);
+                    viewMenuItems[VIEW_TAGGER_NUM].setEnabled(true);
+
                     //Association panel
                     if(Options.getAssocTest() != ASSOC_NONE) {
                         JTabbedPane metaAssoc = new JTabbedPane();
@@ -808,32 +831,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     }
 
-                                        //tagger display
-                    //if(Options.isUseTagger()) {
-                        //TaggerController tagControl = new TaggerController(theData,null,null,null);
 
-                    taggerConfigPanel = new TaggerConfigPanel(theData);
-
-                    JPanel metaTagPanel = new JPanel();
-
-                    metaTagPanel.setLayout(new BoxLayout(metaTagPanel,BoxLayout.Y_AXIS));
-                    metaTagPanel.add(taggerConfigPanel);
-
-                    JTabbedPane tagTabs = new JTabbedPane();
-                    tagTabs.add("Configuration",metaTagPanel);
-
-                    JPanel resMetaPanel = new JPanel();
-
-                    resMetaPanel.setLayout(new BoxLayout(resMetaPanel,BoxLayout.Y_AXIS));
-
-                    TaggerResultsPanel tagResultsPanel = new TaggerResultsPanel();
-                    taggerConfigPanel.addActionListener(tagResultsPanel);
-
-                    resMetaPanel.add(tagResultsPanel);
-                    tagTabs.addTab("Results",resMetaPanel);
-
-                    tabs.addTab("Tagger",tagTabs);
-                    //}
 
                     tabs.setSelectedIndex(currentTab);
                     contents.add(tabs);
@@ -936,6 +934,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (tdtPanel != null){
                 tdtPanel.refreshNames();
             }
+
+            if (taggerConfigPanel != null){
+                taggerConfigPanel.refreshTable();
+            }
             if (dPrimeDisplay != null){
                 dPrimeDisplay.computePreferredSize();
             }
@@ -1009,8 +1011,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                 //if we've adjusted the haps display thresh we need to change the haps ass panel
                 if (tabNum == VIEW_ASSOC_NUM){
-                    //todo: this is borken
-                   /* JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
+                    JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
                     //this is the haps ass tab inside the assoc super-tab
                     HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
                     if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
@@ -1023,7 +1024,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             permSet.cat(hapAssocPanel.getTestSet());
                             permutationPanel.setTestSet(new PermutationTestSet(0,theData.getSavedEMs(),theData.getPedFile(),permSet));
                         }
-                    }*/
+                    }
                 }
 
                 if (tabNum == VIEW_D_NUM){
@@ -1185,7 +1186,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }else if (tabNum == VIEW_CHECK_NUM){
                         checkPanel.printTable(outfile);
                     }else if (tabNum == VIEW_ASSOC_NUM){
-                        StringBuffer header = new StringBuffer();
                         Component selectedTab = ((JTabbedPane)tabs.getComponent(tabNum)).getSelectedComponent();
 
                         if(selectedTab == tdtPanel){

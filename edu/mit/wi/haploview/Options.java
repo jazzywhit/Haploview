@@ -1,12 +1,5 @@
 package edu.mit.wi.haploview;
 
-/**
- * Created by IntelliJ IDEA.
- * User: julian
- * Date: Aug 18, 2004
- * Time: 11:09:25 AM
- * To change this template use File | Settings | File Templates.
- */
 public class Options {
     private static int maxDistance;
     private static int genoFileType;
