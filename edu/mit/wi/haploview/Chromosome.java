@@ -15,6 +15,7 @@ public class Chromosome{
 
     public static String dataChrom = null;
     static int[] realIndex;
+    static int[] filterIndex;
     static Object[] markers;
     static int trueSize;
 
@@ -44,6 +45,40 @@ public class Chromosome{
         origin = "unknown";
         trueSize = genotypes.length;
         kidMissing = isKidMissing;
+    }
+
+
+    public static void doFilter(boolean[] markerResults) {
+        //set up the indexing to take into account skipped markers. Need
+        //to loop through twice because first time we just count number of
+        //unskipped markers
+        int count = 0;
+        for (int i = 0; i < markerResults.length; i++){
+            if (markerResults[i]){
+                count++;
+            }
+        }
+        Chromosome.filterIndex = new int[markerResults.length];
+        Chromosome.realIndex = new int[count];
+        int k = 0;
+        for (int i =0; i < markerResults.length; i++){
+            if (markerResults[i]){
+                realIndex[k] = i;
+                filterIndex[i] = k;
+                k++;
+            }else{
+                filterIndex[i] = -1;
+            }
+        }
+    }
+
+    public static void doFilter(int size){
+        realIndex = new int[size];
+        filterIndex = new int[size];
+        for (int i = 0; i < size; i++){
+            realIndex[i] = i;
+            filterIndex[i] = i;
+        }
     }
 
 
