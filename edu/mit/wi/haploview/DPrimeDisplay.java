@@ -642,9 +642,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             g2.drawImage(worldmap,visRect.x,
                     visRect.y + visRect.height - worldmap.getHeight(),
                     this);
-            wmInteriorRect.x = visRect.x + (worldmap.getWidth() - wmInteriorRect.width);
+            wmInteriorRect.x = visRect.x + (worldmap.getWidth() - wmInteriorRect.width)/2;
             wmInteriorRect.y = visRect.y+visRect.height-worldmap.getHeight() +
-                    (worldmap.getHeight() - wmInteriorRect.height);
+                    (worldmap.getHeight() - wmInteriorRect.height)/2;
 
             //draw the outline of the viewport
             g2.setColor(Color.black);
