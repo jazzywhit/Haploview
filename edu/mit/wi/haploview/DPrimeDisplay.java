@@ -9,9 +9,9 @@ import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
 class DPrimeDisplay extends JComponent{
-    private static final int H_BORDER = 15;
+    private static final int H_BORDER = 30;
     private static final int V_BORDER = 15;
-    private static final int TEXT_NUMBER_GAP = 3;
+    private static final int TEXT_GAP = 3;
 
     private static final int DEFAULT_BOX_SIZE = 50;
     private static final int DEFAULT_BOX_RADIUS = 24;
@@ -19,7 +19,7 @@ class DPrimeDisplay extends JComponent{
     private static final int TICK_BOTTOM = 50;
 
     private int widestMarkerName = 80; //default size
-    private int infoHeight = 0;
+    private int infoHeight = 0, blockDispHeight = 0;
     private int boxSize = DEFAULT_BOX_SIZE;
     private int boxRadius = DEFAULT_BOX_RADIUS;
     private int lowX, highX, lowY, highY;
@@ -105,7 +105,11 @@ class DPrimeDisplay extends JComponent{
 
         BasicStroke thickerStroke = new BasicStroke(1);
         BasicStroke thinnerStroke = new BasicStroke(0.25f);
-        BasicStroke fatStroke = new BasicStroke(3.0f);
+        BasicStroke fatStroke = new BasicStroke(2.0f);
+
+        g.setFont(markerNameFont);
+        metrics = g.getFontMetrics();
+        ascent = metrics.getAscent();
 
         if (markersLoaded) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -136,12 +140,9 @@ class DPrimeDisplay extends JComponent{
                         left + i*boxSize, TICK_BOTTOM);
             }
             top += TICK_BOTTOM;
+
             //// draw the marker names
             if (printDetails){
-                g.setFont(markerNameFont);
-                metrics = g.getFontMetrics();
-                ascent = metrics.getAscent();
-
                 widestMarkerName = metrics.stringWidth(Chromosome.getFilteredMarker(0).getName());
                 for (int x = 1; x < dPrimeTable.length; x++) {
                     int thiswide = metrics.stringWidth(Chromosome.getFilteredMarker(x).getName());
@@ -151,18 +152,21 @@ class DPrimeDisplay extends JComponent{
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
                 for (int x = 0; x < dPrimeTable.length; x++) {
-                    g2.drawString(Chromosome.getFilteredMarker(x).getName(),TEXT_NUMBER_GAP, x*boxSize + ascent/3);
+                    g2.drawString(Chromosome.getFilteredMarker(x).getName(),TEXT_GAP, x*boxSize + ascent/3);
                 }
 
                 g2.rotate(Math.PI / 2.0);
                 g2.translate(-left, -(top + widestMarkerName));
 
                 // move everybody down
-                top += widestMarkerName + TEXT_NUMBER_GAP;
+                top += widestMarkerName + TEXT_GAP;
             }
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_OFF);
         }
+
+        blockDispHeight = ascent+boxSize/2;
+        top  += blockDispHeight;
 
         //// draw the marker numbers
         if (printDetails){
@@ -201,6 +205,7 @@ class DPrimeDisplay extends JComponent{
         }
 
         // draw table column by column
+
         for (int x = lowX; x < highX; x++) {
 
             //always draw the fewest possible boxes
@@ -252,32 +257,64 @@ class DPrimeDisplay extends JComponent{
 
         //highlight blocks
         boolean even = true;
+        g2.setFont(markerNameFont);
+        ascent = g2.getFontMetrics().getAscent();
         //g.setColor(new Color(153,255,153));
-        g.setColor(Color.black);
+        g2.setColor(Color.black);
         //g.setColor(new Color(51,153,51));
         g2.setStroke(fatStroke);
         for (int i = 0; i < blocks.size(); i++){
             int[] theBlock = (int[])blocks.elementAt(i);
             int first = theBlock[0];
             int last = theBlock[theBlock.length-1];
-            g.drawLine(left + (2*first + 1) * boxSize/2 - boxRadius,
-                    top + boxSize/2,
+
+            //big vee around whole thing
+            g2.drawLine(left + (2*first) * boxSize/2 - boxRadius,
+                    top,
                     left + (first + last) * boxSize/2,
                     top + (last - first) * boxSize/2 + boxRadius);
-            g.drawLine(left + (first + last) * boxSize/2,
+            g2.drawLine(left + (first + last) * boxSize/2,
                     top + (last - first) * boxSize/2 + boxRadius,
-                    left + (2*last - 1) * boxSize/2+boxRadius,
-                    top + boxSize/2);
-            for (int j = 0; j < theBlock.length; j++){
-                g.drawLine(left + (2*theBlock[j]) * boxSize/2,
-                        top + boxRadius,
-                        left + (2*theBlock[j]) * boxSize/2 + boxRadius,
+                    left + (2*last) * boxSize/2+boxRadius,
+                    top);
+
+            //little vees on top of each marker
+            for (int j = 0; j < theBlock.length-2; j++){
+                g2.drawLine(left + (2*theBlock[j+1]) * boxSize/2,
+                        top + boxSize/2,
+                        left + (2*theBlock[j+1]) * boxSize/2 + boxRadius,
+                        top+1);
+                g2.drawLine (left + (2*theBlock[j+1]) * boxSize/2,
+                        top + boxSize/2,
+                        left + (2*theBlock[j+1]-1) * boxSize/2,
                         top);
-                g.drawLine (left + (2*theBlock[j]) * boxSize/2,
-                        top + boxRadius,
-                        left + (2*theBlock[j]-1) * boxSize/2,
-                        top-1);
             }
+
+            //special lines for fencepost markers
+            g2.drawLine(left+first*boxSize+1,
+                    top+boxRadius,
+                    left+first*boxSize+boxRadius,
+                    top+1);
+            g2.drawLine(left+last*boxSize-1,
+                    top+boxRadius,
+                    left+last*boxSize-boxRadius,
+                    top+1);
+
+            //lines to connect to block display
+            g2.drawLine(left + first*boxSize-boxSize/2,
+                    top-1,
+                    left+first*boxSize-boxSize/2,
+                    top-blockDispHeight);
+            g2.drawLine(left+last*boxSize+boxSize/2,
+                    top-1,
+                    left+last*boxSize+boxSize/2,
+                    top-blockDispHeight);
+            g2.drawLine(left+first*boxSize-boxSize/2,
+                    top-blockDispHeight,
+                    left+last*boxSize+boxSize/2,
+                    top-blockDispHeight);
+            String labelString = new String ("Block " + (i+1));
+            g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/2);
         }
         g2.setStroke(thickerStroke);
 
@@ -337,7 +374,7 @@ class DPrimeDisplay extends JComponent{
                 }
                 noImage = false;
             }
-            g.drawImage(worldmap,visRect.x,
+            g2.drawImage(worldmap,visRect.x,
                     visRect.y + visRect.height - worldmap.getHeight(),
                     this);
             worldmapRect = new Rectangle(visRect.x,
@@ -346,13 +383,13 @@ class DPrimeDisplay extends JComponent{
                     worldmap.getHeight());
 
             //draw the outline of the viewport
-            g.setColor(Color.BLACK);
+            g2.setColor(Color.BLACK);
             double hRatio = ir.getWidth()/pref.getWidth();
             double vRatio = ir.getHeight()/pref.getHeight();
             int hBump = worldmap.getWidth()-ir.width;
             int vBump = worldmap.getHeight()-ir.height;
             //bump a few pixels to avoid drawing on the border
-            g.drawRect((int)(visRect.x*hRatio)+hBump/2+visRect.x,
+            g2.drawRect((int)(visRect.x*hRatio)+hBump/2+visRect.x,
                     (int)(visRect.y*vRatio)+vBump/2+(visRect.y + visRect.height - worldmap.getHeight()),
                     (int)(visRect.width*hRatio),
                     (int)(visRect.height*vRatio));
@@ -381,7 +418,7 @@ class DPrimeDisplay extends JComponent{
         //it is used in drawing the worldmap
 
         if (markersLoaded){
-            infoHeight = TICK_BOTTOM + widestMarkerName + TEXT_NUMBER_GAP;
+            infoHeight = TICK_BOTTOM + widestMarkerName + TEXT_GAP;
             high += infoHeight;
         }else{
             infoHeight=0;
