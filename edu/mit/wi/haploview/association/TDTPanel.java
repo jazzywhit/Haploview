@@ -1,19 +1,20 @@
-package edu.mit.wi.haploview;
+package edu.mit.wi.haploview.association;
 
 import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.PedFileException;
-import edu.mit.wi.haploview.TreeTable.HaplotypeAssociationModel;
+import edu.mit.wi.haploview.Constants;
+import edu.mit.wi.haploview.Options;
+import edu.mit.wi.haploview.Chromosome;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.Vector;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.*;
 
 public class TDTPanel extends JPanel implements Constants, ActionListener {
 
-    Vector result;
+    public Vector result;
     JTable table;
     Vector tableColumnNames = new Vector();
     //countsorfreqs stores the users current choice for displaying counts or frequencies.
@@ -25,9 +26,9 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
         if (Options.getAssocTest() == ASSOC_TRIO){
-            result = TDT.calcTrioTDT(pf);
+            result = MarkerAssociationResult.getTDTAssociationResults(pf, null);
         }else{
-            result = TDT.calcCCTDT(pf);
+            result = MarkerAssociationResult.getCCAssociationResults(pf,null);
         }
 
         tableColumnNames.add("#");
@@ -62,18 +63,18 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
         int numRes = Chromosome.getSize();
         for (int i = 0; i < numRes; i++){
             Vector tempVect = new Vector();
-            TDTResult currentResult = (TDTResult)result.get(Chromosome.realIndex[i]);
+            MarkerAssociationResult currentResult = (MarkerAssociationResult)result.get(Chromosome.realIndex[i]);
             tempVect.add(new Integer(Chromosome.realIndex[i]+1));
             tempVect.add(currentResult.getName());
-            tempVect.add(currentResult.getOverTransmittedAllele(Options.getAssocTest()));
+            tempVect.add(currentResult.getOverTransmittedAllele());
             if(this.countsOrFreqs == SHOW_SINGLE_FREQS) {
-                tempVect.add(currentResult.getFreqs(Options.getAssocTest()));
+                tempVect.add(currentResult.getFreqString());
             } else if (this.countsOrFreqs == SHOW_SINGLE_COUNTS) {
-                tempVect.add(currentResult.getTURatio(Options.getAssocTest()));
+                tempVect.add(currentResult.getCountString());
             }
 
-            tempVect.add(new Double(currentResult.getChiSq(Options.getAssocTest())));
-            tempVect.add(currentResult.getPValue());
+            tempVect.add(new Double(currentResult.getChiSquare(0)));
+            tempVect.add(currentResult.getPValue(0));
 
             tableData.add(tempVect.clone());
         }
