@@ -105,7 +105,7 @@ public class FindBlocks {
         return stringVec2intVec(blocks);
     }
 
-    static Vector doSFS(PairwiseLinkage[][] dPrime){
+    static Vector doGabriel(PairwiseLinkage[][] dPrime){
         int numStrong = 0; int numRec = 0; int numInGroup = 0;
         Vector blocks = new Vector();
         Vector strongPairs = new Vector();
@@ -251,7 +251,7 @@ public class FindBlocks {
         return blocks;
     }
 
-    static Vector  doMJD(PairwiseLinkage[][] dPrime){
+    static Vector  doSpine(PairwiseLinkage[][] dPrime){
         // find blocks by searching for stretches between two markers A,B where
         // D prime is > a threshold for all informative combinations of A, (A+1...B)
 
