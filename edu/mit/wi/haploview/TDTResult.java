@@ -126,10 +126,29 @@ public class TDTResult {
 
     public String getTURatio(int type) {
         if (type == 1){
-            return this.counts[0][0] + ":" + this.counts[0][1];
+            if (this.counts[0][0] > this.counts[0][1]){
+                return this.counts[0][0] + ":" + this.counts[0][1];
+            }else{
+                return this.counts[0][1] + ":" + this.counts[0][0];
+            }
         }else{
-            return this.counts[0][0] + ":" + this.counts[0][1] +
-                    ", " + this.counts[1][0] + ":" + this.counts[1][1];
+            if (this.counts[0][0] > this.counts[0][1]){
+                if (this.counts[1][0] > this.counts[1][1]){
+                    return this.counts[0][0] + ":" + this.counts[0][1] +
+                            ", " + this.counts[1][0] + ":" + this.counts[1][1];
+                }else{
+                    return this.counts[0][0] + ":" + this.counts[0][1] +
+                            "," + this.counts[1][1] + ":" + this.counts[1][0];
+                }
+            }else{
+                if (this.counts[1][0] > this.counts[1][1]){
+                    return this.counts[0][1] + ":" + this.counts[0][0] +
+                            ", " + this.counts[1][0] + ":" + this.counts[1][1];
+                }else{
+                    return this.counts[0][1] + ":" + this.counts[0][0] +
+                            "," + this.counts[1][1] + ":" + this.counts[1][0];
+                }
+            }
         }
     }
 

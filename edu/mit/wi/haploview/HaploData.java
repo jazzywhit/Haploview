@@ -1402,7 +1402,7 @@ public class HaploData implements Constants{
         double pA1, pB1, pA2, pB2, loglike1, loglike0, rsq;
         double tmpAA, tmpAB, tmpBA, tmpBB, dpr;// tmp2AA, tmp2AB, tmp2BA, tmp2BB;
         double total_prob, sum_prob;
-        double lsurface[] = new double[105];
+        double lsurface[] = new double[101];
 
         /* store arguments in externals and compute allele frequencies */
 
