@@ -1,5 +1,7 @@
 package edu.mit.wi.haploview.TreeTable;
 
+import edu.mit.wi.haploview.association.AssociationResult;
+
 import java.util.Vector;
 import java.util.Locale;
 import java.text.NumberFormat;
@@ -8,23 +10,24 @@ import java.text.NumberFormat;
 public class HaplotypeAssociationNode {
     String name, pval;
     Vector children = new Vector();
-    double[][] counts;
     double freq, chisq;
     NumberFormat nf = NumberFormat.getInstance(Locale.US);
+    String freqStr = "", countStr = "";
 
     public HaplotypeAssociationNode(String name) {
-         this(name,-1,null,-1,"");
+        this.name = name;
+        this.freq = -1;
+        this.chisq = -1;
+        this.pval = "";
     }
 
-    public HaplotypeAssociationNode(String name, double freq, double[][] counts, double chisq, String pval) {
-        this.name = name;
-        //counts is a 2D array with the following format:
-        //TDT -- counts[0][0] = trans, counts[0][1] = untrans
-        //CC -- counts[0][0], counts[0][1] case ratio inputs, [1][0] & [1][1] control ratio inputs.
-        this.counts = counts;
-        this.chisq = chisq;
-        this.pval = pval;
-        this.freq = freq;
+    public HaplotypeAssociationNode(AssociationResult ar, int index) {
+        this.name = ar.getAlleleName(index);
+        this.chisq = ar.getChiSquare(index);
+        this.pval = ar.getPValue(index);
+        this.freq = ar.getFreq(index);
+        this.freqStr = ar.getHapFreqString(index);
+        this.countStr = ar.getHapCountString(index);
     }
 
     public void add(HaplotypeAssociationNode child){
@@ -51,37 +54,11 @@ public class HaplotypeAssociationNode {
 
 
     public String getCCFreqs() {
-        //this will only be called if we're doing case control
-        if(counts == null || counts.length == 1) {
-            //counts.length==1 should never happen,since that means it's Trio
-            return "";
-        }
-        nf.setMinimumFractionDigits(3);
-        nf.setMaximumFractionDigits(3);
-        //we divide by the sum of the two numbers since we really want the frequency of this haplotype
-        //for cases/controls
-        return nf.format(this.counts[0][0] / ( this.counts[0][0] + this.counts[0][1])) + ", "
-                + nf.format(this.counts[1][0] / (this.counts[1][0] + this.counts[1][1])) ;
-
+        return freqStr;
     }
 
     public String getCounts() {
-        //if the array is null this is a block-title node, not an actual hap
-        if (counts == null){
-            return ("");
-        }
-
-        nf.setMinimumFractionDigits(1);
-        nf.setMaximumFractionDigits(1);
-
-        if (counts.length == 1){
-            //TDT
-            return nf.format(this.counts[0][0]) + " : " + nf.format(this.counts[0][1]);
-        }else{
-            //case-control
-            return nf.format(this.counts[0][0]) + " : " + nf.format(this.counts[0][1]) +
-                    ", " + nf.format(this.counts[1][0]) + " : " + nf.format(this.counts[1][1]);
-        }
+        return countStr;
     }
 
     public String getChiSq() {
