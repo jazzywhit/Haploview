@@ -87,6 +87,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         this.setDoubleBuffered(true);
         addMouseListener(this);
         addMouseMotionListener(this);
+        this.setAutoscrolls(true);
     }
 
     public void refresh(){
@@ -959,6 +960,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     firstMarker = lastMarker;
                     lastMarker = temp;
                 }
+                theHV.blockMenuItems[BLOX_CUSTOM].setSelected(true);
                 theData.addBlock(firstMarker, lastMarker);
                 repaint();
             }
@@ -982,13 +984,20 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 resizeRectExists = true;
                 repaint();
             }else if (getCursor() == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)){
-                theHV.blockMenuItems[BLOX_CUSTOM].setSelected(true);
+                Rectangle r = getVisibleRect();
+
                 int xcorner,width;
                 if (e.getX() < blockStartX){
+                    if (e.getX() < r.x +2){
+                        scrollRectToVisible(new Rectangle(r.x -25, r.y, r.width, 1));
+                    }
                     //we're dragging right to left, so flip it.
                     xcorner = e.getX() - clickXShift + left;
                     width =  blockStartX - e.getX();
                 }else{
+                    if (e.getX() > r.x + r.width - 2){
+                        scrollRectToVisible(new Rectangle(r.x+25,r.y,r.width,1));
+                    }
                     xcorner = blockStartX - clickXShift + left;
                     width = e.getX() - blockStartX;
                 }
