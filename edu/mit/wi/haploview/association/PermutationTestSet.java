@@ -13,6 +13,9 @@ import java.util.Comparator;
 
 public class PermutationTestSet implements Constants{
     private int permutationCount;
+    private int bestExceededCount;
+    private double bestObsChiSq;
+    private String bestObsName;
 
     private HaploData theData;
     private PedFile pedFile;
@@ -45,6 +48,20 @@ public class PermutationTestSet implements Constants{
         theData = hd;
         pedFile = theData.getPedFile();
         observedResults = obsResults;
+
+        double curBest = 0;
+        String curName = "";
+        for(int i=0;i<observedResults.size();i++) {
+            AssociationResult tmpRes = (AssociationResult) observedResults.get(i);
+            for (int j = 0; j < tmpRes.getAlleleCount(); j++){
+                if (tmpRes.getChiSquare(j) > curBest){
+                    curName = tmpRes.getDisplayName(j);
+                    curBest = tmpRes.getChiSquare(j);
+                }
+            }
+        }
+        bestObsChiSq = curBest;
+        bestObsName = curName;
     }
 
     public void doPermutations() {
@@ -80,6 +97,7 @@ public class PermutationTestSet implements Constants{
         boolean[] permuteInd = new boolean[pedFile.getAllIndividuals().size()];
 
         permutationsPerformed = 0;
+        bestExceededCount = 0;
         permBestChiSq = new double[permutationCount];
         permBestOverallChiSq = 0;
         //start the permuting!
@@ -155,6 +173,10 @@ public class PermutationTestSet implements Constants{
 
             permBestChiSq[i] = tempBestChiSquare;
 
+            if (permBestChiSq[i] >= bestObsChiSq){
+                bestExceededCount++;
+            }
+
             if(permBestChiSq[i] > permBestOverallChiSq){
                 permBestOverallChiSq = permBestChiSq[i];
             }
@@ -164,7 +186,7 @@ public class PermutationTestSet implements Constants{
         Arrays.sort(permBestChiSq);
     }
 
-    public double getBestChiSquare() {
+    public double getBestPermChiSquare() {
         return permBestOverallChiSq;
     }
 
@@ -197,20 +219,12 @@ public class PermutationTestSet implements Constants{
         return permutationCount;
     }
 
-    public AssociationResult getBestObsChiSq(){
-        double curBest = 0;
-        AssociationResult best = null;
-        for(int i=0;i<observedResults.size();i++) {
-            AssociationResult tmpRes = (AssociationResult) observedResults.get(i);
-            for (int j = 0; j < tmpRes.getAlleleCount(); j++){
-                if (tmpRes.getChiSquare(j) > curBest){
-                    best = tmpRes;
-                    curBest = tmpRes.getChiSquare(j);
-                }
-            }
-        }
+    public double getBestObsChiSq(){
+        return bestObsChiSq;
+    }
 
-        return best;
+    public String getBestObsName(){
+        return bestObsName;
     }
 
     public Vector getResults() {
@@ -232,6 +246,10 @@ public class PermutationTestSet implements Constants{
 
         Collections.sort(results,new SigResComparator());
         return results;
+    }
+
+    public int getBestExceededCount() {
+        return bestExceededCount;
     }
 
     class SigResComparator implements Comparator{
