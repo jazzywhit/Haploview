@@ -60,6 +60,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private Font markerNumFont = new Font("SansSerif", Font.BOLD, 12);
     private Font markerNameFont = new Font("Default", Font.PLAIN, 12);
     private Font boldMarkerNameFont = new Font("Default", Font.BOLD, 12);
+    private Font popupFont = new Font("Monospaced", Font.PLAIN, 12);
 
     private boolean printDPrimeValues = true;
     private boolean printMarkerNames = true;
@@ -791,6 +792,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     popupDrawRect.width,
                     popupDrawRect.height);
 
+            g.setFont(popupFont);
             for (int x = 0; x < displayStrings.size(); x++){
                 g.drawString((String)displayStrings.elementAt(x),popupDrawRect.x + popupLeftMargin-smallDatasetSlopH,
                         popupDrawRect.y+((x+1)*metrics.getHeight())-smallDatasetSlopV);
@@ -1252,7 +1254,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
                 InputEvent.BUTTON3_MASK){
             Graphics g = getGraphics();
-            g.setFont(boxFont);
+            g.setFont(popupFont);
             FontMetrics metrics = g.getFontMetrics();
             DPrimeTable dPrimeTable = theData.dpTable;
             final int clickX = e.getX();
