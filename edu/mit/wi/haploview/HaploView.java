@@ -68,7 +68,11 @@ public class HaploView extends JFrame implements ActionListener{
 	helpMenu.add(menuItem);
 	**/
 	
-	menuItem = new JMenuItem("Open");
+	menuItem = new JMenuItem("Open Linkage File");
+	menuItem.addActionListener(this);
+	fileMenu.add(menuItem);
+
+	menuItem = new JMenuItem("Open Haplotype File");
 	menuItem.addActionListener(this);
 	fileMenu.add(menuItem);
 
@@ -433,13 +437,24 @@ public class HaploView extends JFrame implements ActionListener{
 	
     public void actionPerformed(ActionEvent e) {
 	String command = e.getActionCommand();
-	if (command == "Open"){
+	if (command == "Open Haplotype File" || command == "Open Linkage File"){
 	    fc.setSelectedFile(null);
 	    int returnVal = fc.showOpenDialog(this);
 	    if (returnVal == JFileChooser.APPROVE_OPTION) {
+		File inputFile = fc.getSelectedFile();
+		if (command == "Open Linkage File"){
+		    //pop open checkdata window
+		    JFrame checkWindow = new JFrame();
+		    CheckDataPanel checkPanel = new CheckDataPanel(inputFile);
+		    checkWindow.setTitle("Checking markers...");
+		    checkWindow.add(checkPanel);
+		    checkWindow.add(new JButton("FOO"));
+		    checkWindow.pack();
+		    checkWindow.setVisible(true);
+		}
 		try{
-		    theData = new HaploData(fc.getSelectedFile());
-		    infileName = fc.getSelectedFile().getName();
+		    theData = new HaploData(inputFile);
+		    infileName = inputFile.getName();
 		    
 		    //compute D primes and monitor progress
 		    progressMonitor = new ProgressMonitor(this, "Computing " + theData.getToBeCompleted() + " values of D prime","", 0, theData.getToBeCompleted());

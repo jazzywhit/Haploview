@@ -70,7 +70,7 @@ class TextMethods {
 		    //many "slots" in table aren't filled in because it is a 1/2 matrix
 		    if (i < j){
 			dist = ((SNP)markerinfo.elementAt(j)).getPosition() - ((SNP)markerinfo.elementAt(i)).getPosition();
-			saveDprimeWriter.write(i + "\t" + j + "\t" + dPrimeTable[i][j] + "\t" + dist + "\n");
+			saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j] + "\t" + dist + "\n");
 		    }
 		}
 	    }
@@ -82,7 +82,7 @@ class TextMethods {
 		for (int j = 0; j < dPrimeTable[i].length; j++){
 		    //many "slots" in table aren't filled in because it is a 1/2 matrix
 		    if (i < j){
-			saveDprimeWriter.write(i + "\t" + j + "\t" + dPrimeTable[i][j] + "\n");
+			saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j] + "\n");
 		    }
 		}
 	    }
