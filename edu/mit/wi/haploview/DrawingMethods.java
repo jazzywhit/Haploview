@@ -14,7 +14,7 @@ import com.sun.jimi.core.component.JimiCanvas;
 
 class DrawingMethods {
 
-    int labeloffset = 80;
+    int labeloffset = 90;
     
     public Dimension haploGetPreferredSize(Haplotype[][] hapsInBlocks, Graphics tg){
 	int windowX = 10;
@@ -225,17 +225,23 @@ class DrawingMethods {
 	shifts = centerString("1", boldfm);
 	g.drawString("1", activeOffset + shifts[0], shifts[1]);
 
-	//if we know the marker names, print them down the side
+	//if we know the marker names, print them down the side, along with MAF
 	if (info){
+	    NumberFormat nf = NumberFormat.getInstance();
+	    nf.setMinimumFractionDigits(2);
+	    nf.setMaximumFractionDigits(2);
 	    g.setFont(regFont);
 	    for (int y = 0; y < table.length; y++){
 		String name = ((SNP)snps.elementAt(y)).getName();
+		name += " (";
+		name += nf.format(((SNP)snps.elementAt(y)).getMAF());
+		name += ")";
 		g.drawString(name, labeloffset-3-regfm.stringWidth(name), y*30 + shifts[1]);
 	    }
 
 	    //now draw a diagonal bar showing marker spacings
 	    if (table.length > 3){
-		g.drawLine(labeloffset+90,5,labeloffset+scale-5,scale-90);
+		g.drawLine(labeloffset+95,0,labeloffset+scale,scale-95);
 		double lineLength = Math.sqrt((scale-95)*(scale-95)*2);
 		double start = ((SNP)snps.elementAt(0)).getPosition();
 		double totalLength = ((SNP)snps.elementAt(table.length-1)).getPosition() - start;

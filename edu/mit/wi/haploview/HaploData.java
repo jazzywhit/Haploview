@@ -438,9 +438,32 @@ class HaploData{
 	//read the file:
 	BufferedReader in = new BufferedReader(new FileReader(infile));
 	// a vector of SNP's is created and returned.
+	int snpcount = 0;
 	while ((currentLine = in.readLine()) != null){
+	    //to compute maf, browse chrom list and count instances of each allele
+	    String a1 = "";
+	    double numa1 = 0; double numa2 = 0;
+	    for (int i = 0; i < chromosomes.size(); i++){
+		//if there is a data point for this marker on this chromosome
+		String thisAllele = (String)((Chromosome)chromosomes.elementAt(i)).elementAt(snpcount);
+		if (!(thisAllele.equals("0"))){
+		    if (thisAllele.equals("h")){
+			numa1+=0.5; numa2+=0.5;
+		    }else if (a1.equals("")){
+			a1 = thisAllele; numa1++;
+		    }else if (thisAllele.equals(a1)){
+			numa1++;
+		    }else{
+			numa2++;
+		    }
+		}
+	    }
+	    System.out.println(numa1 + " " + numa2);
+	    double maf = numa1/(numa2+numa1);
+	    if (maf > 0.5) maf = 1.0-maf;
 	    StringTokenizer st = new StringTokenizer(currentLine);
-	    markers.add(new SNP(st.nextToken(), Long.parseLong(st.nextToken()), infile.getName()));
+	    markers.add(new SNP(st.nextToken(), Long.parseLong(st.nextToken()), infile.getName(), maf));
+	    snpcount ++;
 	}
 	if (markerInfo.size() == markers.size()){
 	    markerInfo = markers;

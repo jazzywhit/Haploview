@@ -5,17 +5,20 @@ class SNP{
     private String name;
     private long position;
     private String origin;
+    private double MAF;
 
-    SNP(String n, long p, String o){
+    SNP(String n, long p, String o, double m){
 	name = n;
 	position = p;
 	origin = o;
+	MAF = m;
     }
 
     SNP(String n, long p){
 	name = n;
 	position = p;
 	origin = "unknown";
+	MAF = 0.0;
     }
 
     public String getName(){
@@ -29,5 +32,8 @@ class SNP{
     public String getOrigin(){
 	return origin;
     }
-    
+
+    public double getMAF(){
+	return MAF;
+    }
 }
