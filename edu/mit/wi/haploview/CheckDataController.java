@@ -14,7 +14,7 @@ public class CheckDataController extends JPanel{
         failPanel.setLayout(new BoxLayout(failPanel,BoxLayout.Y_AXIS));
         JPanel holdPanel = new JPanel();
         holdPanel.add(new JLabel("HW p-value cutoff: "));
-        hwcut = new NumberTextField(String.valueOf(CheckData.hwCut),6,true);
+        hwcut = new NumberTextField(String.valueOf(CheckData.hwCut),8,true);
         holdPanel.add(hwcut);
         failPanel.add(holdPanel);
         holdPanel = new JPanel();
@@ -24,12 +24,12 @@ public class CheckDataController extends JPanel{
         failPanel.add(holdPanel);
         holdPanel = new JPanel();
         holdPanel.add(new JLabel("Max # mendel errors: "));
-        mendcut = new NumberTextField(String.valueOf(CheckData.numMendErrCut),2,false);
+        mendcut = new NumberTextField(String.valueOf(CheckData.numMendErrCut),4,false);
         holdPanel.add(mendcut);
         failPanel.add(holdPanel);
         holdPanel = new JPanel();
         holdPanel.add(new JLabel("Minimum minor allele freq."));
-        mafcut = new NumberTextField(String.valueOf(CheckData.mafCut),6,true);
+        mafcut = new NumberTextField(String.valueOf(CheckData.mafCut),8,true);
         holdPanel.add(mafcut);
         failPanel.add(holdPanel);
         JButton rescore = new JButton("Rescore Markers");
