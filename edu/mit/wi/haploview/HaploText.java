@@ -4,6 +4,7 @@ import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
 import edu.mit.wi.haploview.association.*;
+import edu.mit.wi.haploview.tagger.TaggerController;
 
 import java.io.*;
 import java.util.Vector;
@@ -36,6 +37,10 @@ public class HaploText implements Constants{
     private boolean outputCompressedPNG;
     private boolean doPermutationTest;
     private int permutationCount;
+    private boolean doTagging;
+    private double tagRSquaredCutOff = -1;
+    private Vector forceIncludeTags;
+    private Vector forceExcludeTags;
 
 
     public boolean isNogui() {
@@ -418,6 +423,39 @@ public class HaploText implements Constants{
                     System.exit(1);
                 }
             }
+            else if(args[i].equalsIgnoreCase("-doTagging")) {
+                doTagging = true;
+            }
+            else if(args[i].equalsIgnoreCase("-tagrSqCutoff")) {
+                i++;
+                tagRSquaredCutOff = getDoubleArg(args,i,"-tagrSqCutoff",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-includeTags")) {
+                i++; 
+                if(i>=args.length || args[i].charAt(0) == '-') {
+                    System.out.println("-includeTags requires a list of marker names.");
+                    System.exit(1);
+                }
+                StringTokenizer str = new StringTokenizer(args[i],",");
+                forceIncludeTags = new Vector();
+                while(str.hasMoreTokens()) {
+                    forceIncludeTags.add(str.nextToken());
+                }
+
+            }
+            else if(args[i].equalsIgnoreCase("-excludeTags")) {
+                i++;
+                if(i>=args.length || args[i].charAt(0) == '-') {
+                    System.out.println("-excludeTags requires a list of marker names.");
+                    System.exit(1);
+                }
+                StringTokenizer str = new StringTokenizer(args[i],",");
+                forceExcludeTags = new Vector();
+                while(str.hasMoreTokens()) {
+                    forceExcludeTags.add(str.nextToken());
+                }
+
+            }
             else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
             }
@@ -528,6 +566,27 @@ public class HaploText implements Constants{
                 System.out.println("A marker info file must be specified when using a custom association test file.");
                 System.exit(1);
             }
+        }
+
+        if(doTagging) {
+            if(infoFileName == null) {
+                System.out.println("A marker info file must be specified when using -doTagging");
+                System.exit(1);
+            }
+            if(forceExcludeTags == null) {
+                forceExcludeTags = new Vector();
+            }
+            if(forceIncludeTags == null ) {
+                forceIncludeTags = new Vector();
+            }
+
+            if(tagRSquaredCutOff != -1) {
+                Options.setTaggerRsqCutoff(tagRSquaredCutOff);
+            }
+
+        } else if(forceExcludeTags != null || forceIncludeTags != null || tagRSquaredCutOff != -1) {
+            System.out.println("-tagrSqCutoff, -excludeTags and -includeTags cannot be used without -doTagging");
+            System.exit(1);
         }
 
     }
@@ -932,6 +991,70 @@ public class HaploText implements Constants{
                     System.out.println("An error occured while writing the permutation test results to file.");
                 }
             }
+
+
+            if(doTagging) {
+                Vector snps = Chromosome.getAllMarkers();
+                HashSet names = new HashSet();
+                for (int i = 0; i < snps.size(); i++) {
+                    SNP snp = (SNP) snps.elementAt(i);
+                    names.add(snp.getName());
+                }
+
+                Vector sitesToCapture = new Vector();
+                HashSet filteredNames = new HashSet();
+                for(int i=0;i<Chromosome.getSize();i++) {
+                    SNP snp = Chromosome.getMarker(i);
+                    filteredNames.add(snp.getName());
+                    sitesToCapture.add(snp);
+                }
+
+                Vector toRemove = new Vector();
+                for (int i = 0; i < forceIncludeTags.size(); i++) {
+                    String s = (String) forceIncludeTags.elementAt(i);
+                    if(!names.contains(s)) {
+                        System.out.println("Marker " + s + " in the list of forced included tags does not appear in the marker info file.");
+                        System.exit(1);
+                    }else if(!filteredNames.contains(s)) {
+                        System.out.println("Marker " + s + " in the list of forced included tags has been filtered out, so it will not be used as a tag.");
+                        toRemove.add(s);
+                    }
+                }
+
+                forceIncludeTags.removeAll(toRemove);
+                toRemove = new Vector();
+
+                for (int i = 0; i < forceExcludeTags.size(); i++) {
+                    String s = (String) forceExcludeTags.elementAt(i);
+                    if(!names.contains(s)) {
+                        System.out.println("Marker " + s + " in the list of forced excluded tags does not appear in the marker info file.");
+                        System.exit(1);
+                    }else if(!filteredNames.contains(s)) {
+                        System.out.println("Marker " + s + " in the list of forced excluded tags has been filtered out.");
+                        toRemove.add(s);
+                    }
+                }
+
+                forceIncludeTags.removeAll(toRemove);
+
+                if(!quietMode) {
+                    System.out.println("Starting tagging.");
+                }
+
+                TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture);
+                tc.runTagger();
+
+                while(!tc.isTaggingCompleted()) {
+                    try {
+                        Thread.sleep(100);
+                    }catch(InterruptedException ie) {}
+                }
+
+                tc.saveResultsToFile(validateOutputFile(fileName + ".TAGS"));
+            }
+
+
+
         }
         catch(IOException e){
             System.err.println("An error has occured. This probably has to do with file input or output");

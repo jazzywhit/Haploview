@@ -385,6 +385,8 @@ public class Tagger {
 
         bw.newLine();
 
+        bw.write("Tag\tMarkers Tagged");
+        bw.newLine();
         for(int i=0;i<tags.size();i++) {
             StringBuffer line = new StringBuffer();
             TagSequence theTag = (TagSequence) tags.get(i);

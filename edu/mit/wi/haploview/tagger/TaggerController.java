@@ -5,6 +5,8 @@ import edu.mit.wi.haploview.*;
 
 import java.util.Vector;
 import java.util.Hashtable;
+import java.io.File;
+import java.io.IOException;
 
 
 public class TaggerController {
@@ -132,6 +134,12 @@ public class TaggerController {
 
     public Vector getResults() {
         return results;
+    }
+
+    public void saveResultsToFile(File outFile) throws IOException {
+        if(taggingCompleted) {
+            tagger.saveResultToFile(outFile);
+        }
     }
 
     public void newTagger(Vector excluded, Vector included, Vector sitesToCapture){
