@@ -93,11 +93,18 @@ public class HaploData implements Constants{
         //used to determine beyond what distance comparisons will not be
         //made. if the infile param is null, loads up "dummy info" for
         //situation where no info file exists
+        //An optional third column is supported which is designed to hold
+        //association study data.  If there is a third column there will be
+        //a visual indicator in the D' display that there is additional data
+        //and the detailed data can be viewed with a mouse press.
 
         Vector names = new Vector();
         Vector positions = new Vector();
+        Vector extras = new Vector();
+
         maxdist = md;
         negMaxdist = -1 * maxdist;
+
         try{
             if (infile != null){
                 if (infile.length() < 1){
@@ -124,10 +131,13 @@ public class HaploData implements Constants{
                         continue;
                     }
 
-                    String name = st.nextToken(); String l = st.nextToken();
+                    String name = st.nextToken();
+                    String l = st.nextToken();
+                    String extra = null;
+                    if (st.hasMoreTokens()) extra = st.nextToken();
                     long loc;
                     try{
-                       loc = Long.parseLong(l);
+                        loc = Long.parseLong(l);
                     }catch (NumberFormatException nfe){
                         throw new HaploViewException("Info file format error on line "+lineCount+
                                 ":\n\"" + l + "\" should be of type long." +
@@ -141,6 +151,7 @@ public class HaploData implements Constants{
                     prevloc = loc;
                     names.add(name);
                     positions.add(l);
+                    extras.add(extra);
                 }
 
                 if (lineCount > Chromosome.getSize()){
@@ -157,6 +168,7 @@ public class HaploData implements Constants{
                 for (int x=0; x < hapmapGoodies.length; x++){
                     names.add(hapmapGoodies[x][0]);
                     positions.add(hapmapGoodies[x][1]);
+                    extras.add(null);
                 }
                 infoKnown = true;
             }
@@ -196,7 +208,7 @@ public class HaploData implements Constants{
                         }
                     }
                     else {
-                       numBadGenotypes[i]++;
+                        numBadGenotypes[i]++;
                     }
                 }
                 if (numa2 > numa1){
@@ -209,7 +221,8 @@ public class HaploData implements Constants{
                 if (infoKnown){
                     markerInfo.add(new SNP((String)names.elementAt(i),
                             Long.parseLong((String)positions.elementAt(i)),
-                            Math.rint(maf*100.0)/100.0, a1, a2));
+                            Math.rint(maf*100.0)/100.0, a1, a2,
+                            (String)extras.elementAt(i)));
                 }else{
                     markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), Math.rint(maf*100.0)/100.0,a1,a2));
                 }
@@ -252,7 +265,7 @@ public class HaploData implements Constants{
                 indiv = st.nextToken();
             }else{
                 throw new HaploViewException("Genotype file error:\nLine " + lineCount +
-                        " appears to have an incorrect number of entries");
+                        " appears to have fewer than 2 columns.");
             }
 
             //all other tokens are loaded into a vector (they should all be genotypes)
@@ -274,8 +287,8 @@ public class HaploData implements Constants{
                     try{
                         genos[q] = Byte.parseByte(thisGenotype);
                     }catch (NumberFormatException nfe){
-                            throw new HaploViewException("Genotype file input error:\ngenotype value \""
-                                    + thisGenotype + "\" on line " + lineCount + " not allowed.");
+                        throw new HaploViewException("Genotype file input error:\ngenotype value \""
+                                + thisGenotype + "\" on line " + lineCount + " not allowed.");
                     }
                 }
                 if (genos[q] < 0 || genos[q] > 9){
@@ -608,7 +621,7 @@ public class HaploData implements Constants{
         PairwiseLinkage[][] filt = new PairwiseLinkage[Chromosome.getFilteredSize()][Chromosome.getFilteredSize()];
         for (int j = 1; j < filt.length; j++){
             for (int i = 0; i < j; i++){
-               filt[i][j] = dPrimeTable[Chromosome.realIndex[i]][Chromosome.realIndex[j]];
+                filt[i][j] = dPrimeTable[Chromosome.realIndex[i]][Chromosome.realIndex[j]];
             }
         }
         return filt;
@@ -1107,7 +1120,7 @@ public class HaploData implements Constants{
             case BLOX_4GAM: returnVec = FindBlocks.do4Gamete(filteredDPrimeTable); break;
             case BLOX_SPINE: returnVec = FindBlocks.doSpine(filteredDPrimeTable); break;
             case BLOX_CUSTOM: returnVec = custVec; break;
-            //todo: bad! doesn't check if vector is out of bounds and stuff or blocks out of order
+                //todo: bad! doesn't check if vector is out of bounds and stuff or blocks out of order
             default: returnVec = new Vector(); break;
         }
         blocks = returnVec;
@@ -1127,34 +1140,34 @@ public class HaploData implements Constants{
     }
 
     public void removeFromBlock(int markerNum) {
-      if (blocks != null){
-          OUTER: for (int i = 0; i < blocks.size(); i ++){
-              int thisBlock[] = (int[])blocks.elementAt(i);
-              int newBlock[] = new int[thisBlock.length-1];
-              int count = 0;
-              for (int j = 0; j < thisBlock.length; j++){
-                  if(markerNum == thisBlock[j]){
-                      blocksChanged = true;
-                      if (newBlock.length < 2){
-                          blocks.removeElementAt(i);
-                          for (int k = 0; k < thisBlock.length; k++){
-                              this.isInBlock[thisBlock[k]] = false;
-                          }
-                          break OUTER;
-                      }
-                      this.isInBlock[markerNum] = false;
-                      for (int k = 0; k < thisBlock.length; k++){
-                          if (!(k==j)){
-                              newBlock[count] = thisBlock[k];
-                              count++;
-                          }
-                      }
-                      blocks.setElementAt(newBlock, i);
-                      break OUTER;
-                  }
-              }
-          }
-      }
+        if (blocks != null){
+            OUTER: for (int i = 0; i < blocks.size(); i ++){
+                int thisBlock[] = (int[])blocks.elementAt(i);
+                int newBlock[] = new int[thisBlock.length-1];
+                int count = 0;
+                for (int j = 0; j < thisBlock.length; j++){
+                    if(markerNum == thisBlock[j]){
+                        blocksChanged = true;
+                        if (newBlock.length < 2){
+                            blocks.removeElementAt(i);
+                            for (int k = 0; k < thisBlock.length; k++){
+                                this.isInBlock[thisBlock[k]] = false;
+                            }
+                            break OUTER;
+                        }
+                        this.isInBlock[markerNum] = false;
+                        for (int k = 0; k < thisBlock.length; k++){
+                            if (!(k==j)){
+                                newBlock[count] = thisBlock[k];
+                                count++;
+                            }
+                        }
+                        blocks.setElementAt(newBlock, i);
+                        break OUTER;
+                    }
+                }
+            }
+        }
     }
 
     public void addMarkerIntoSurroundingBlock(int markerNum) {
@@ -1453,6 +1466,7 @@ public class HaploData implements Constants{
 
 
         double[] freqarray = {probHaps[AA], probHaps[AB], probHaps[BB], probHaps[BA]};
+
         return new PairwiseLinkage(roundDouble(dprime), roundDouble((loglike1-loglike0)), roundDouble(rsq), ((double)low_i/100.0), ((double)high_i/100.0), freqarray);
     }
 
@@ -1710,150 +1724,150 @@ public class HaploData implements Constants{
     //this whole method is broken at the very least because it doesn't check for zeroing
     //out of mendel errors correctly. on the other hand we may never want to
     //resurrect this format, so who cares...
-   /* public void linkageToHapsFormat(boolean[] markerResults, PedFile pedFile,
-                                    String hapFileName)throws IOException, PedFileException{
-        FileWriter linkageToHapsWriter = new FileWriter(new File(hapFileName));
+    /* public void linkageToHapsFormat(boolean[] markerResults, PedFile pedFile,
+    String hapFileName)throws IOException, PedFileException{
+    FileWriter linkageToHapsWriter = new FileWriter(new File(hapFileName));
 
-        Vector indList = pedFile.getOrder();
-        int numMarkers = 0;
-        Vector usedParents = new Vector();
-        Individual currentInd;
-        Family currentFamily;
+    Vector indList = pedFile.getOrder();
+    int numMarkers = 0;
+    Vector usedParents = new Vector();
+    Individual currentInd;
+    Family currentFamily;
 
 
-        for(int x=0; x < indList.size(); x++){
+    for(int x=0; x < indList.size(); x++){
 
-            String[] indAndFamID = (String[])indList.elementAt(x);
-            currentFamily = pedFile.getFamily(indAndFamID[0]);
-            currentInd = currentFamily.getMember(indAndFamID[1]);
+    String[] indAndFamID = (String[])indList.elementAt(x);
+    currentFamily = pedFile.getFamily(indAndFamID[0]);
+    currentInd = currentFamily.getMember(indAndFamID[1]);
 
-            boolean begin = false;
+    boolean begin = false;
 
-            if(currentInd.getIsTyped()){
-                //singleton
-                if(currentFamily.getNumMembers() == 1){
-                    StringBuffer hap1 = new StringBuffer(numMarkers);
-                    StringBuffer hap2 = new StringBuffer(numMarkers);
-                    hap1.append(currentInd.getFamilyID()).append("\t").append(currentInd.getIndividualID()).append("\t");
-                    hap2.append(currentInd.getFamilyID()).append("\t").append(currentInd.getIndividualID()).append("\t");
-                    numMarkers = currentInd.getNumMarkers();
-                    for (int i = 0; i < numMarkers; i++){
-                        if (markerResults[i]){
-                            if (begin){
-                                hap1.append(" "); hap2.append(" ");
-                            }
-                            byte[] thisMarker = currentInd.getMarker(i);
-                            if (thisMarker[0] == thisMarker[1]){
-                                hap1.append(thisMarker[0]);
-                                hap2.append(thisMarker[1]);
-                            }else{
-                                hap1.append("h");
-                                hap2.append("h");
-                            }
-                            begin=true;
-                        }
-                    }
-                    hap1.append("\n"); hap2.append("\n");
-                    hap1.append(hap2);
-                    linkageToHapsWriter.write(hap1.toString());
-                }
-               else{
-                    //skip if indiv is parent in trio or unaffected
-                    if (!(currentInd.getMomID().equals("0") || currentInd.getDadID().equals("0") || currentInd.getAffectedStatus() != 2)){
-                        //trio
-                        String dadT = new String("");
-                        String dadU = new String("");
-                        String momT = new String("");
-                        String momU = new String("");
-                        if (!(usedParents.contains( currentInd.getFamilyID() + " " + currentInd.getMomID()) ||
-                                usedParents.contains(currentInd.getFamilyID() + " " + currentInd.getDadID()))){
-                            //add 4 phased haps provided that we haven't used this trio already
-                            numMarkers = currentInd.getNumMarkers();
-                            for (int i = 0; i < numMarkers; i++){
-                                if (markerResults[i]){
-                                    if (begin){
-                                        dadT+=" ";dadU+=" ";momT+=" ";momU+=" ";
-                                    }
-                                    byte[] thisMarker = currentInd.getMarker(i);
-                                    int kid1 = thisMarker[0];
-                                    int kid2 = thisMarker[1];
+    if(currentInd.getIsTyped()){
+    //singleton
+    if(currentFamily.getNumMembers() == 1){
+    StringBuffer hap1 = new StringBuffer(numMarkers);
+    StringBuffer hap2 = new StringBuffer(numMarkers);
+    hap1.append(currentInd.getFamilyID()).append("\t").append(currentInd.getIndividualID()).append("\t");
+    hap2.append(currentInd.getFamilyID()).append("\t").append(currentInd.getIndividualID()).append("\t");
+    numMarkers = currentInd.getNumMarkers();
+    for (int i = 0; i < numMarkers; i++){
+    if (markerResults[i]){
+    if (begin){
+    hap1.append(" "); hap2.append(" ");
+    }
+    byte[] thisMarker = currentInd.getMarker(i);
+    if (thisMarker[0] == thisMarker[1]){
+    hap1.append(thisMarker[0]);
+    hap2.append(thisMarker[1]);
+    }else{
+    hap1.append("h");
+    hap2.append("h");
+    }
+    begin=true;
+    }
+    }
+    hap1.append("\n"); hap2.append("\n");
+    hap1.append(hap2);
+    linkageToHapsWriter.write(hap1.toString());
+    }
+    else{
+    //skip if indiv is parent in trio or unaffected
+    if (!(currentInd.getMomID().equals("0") || currentInd.getDadID().equals("0") || currentInd.getAffectedStatus() != 2)){
+    //trio
+    String dadT = new String("");
+    String dadU = new String("");
+    String momT = new String("");
+    String momU = new String("");
+    if (!(usedParents.contains( currentInd.getFamilyID() + " " + currentInd.getMomID()) ||
+    usedParents.contains(currentInd.getFamilyID() + " " + currentInd.getDadID()))){
+    //add 4 phased haps provided that we haven't used this trio already
+    numMarkers = currentInd.getNumMarkers();
+    for (int i = 0; i < numMarkers; i++){
+    if (markerResults[i]){
+    if (begin){
+    dadT+=" ";dadU+=" ";momT+=" ";momU+=" ";
+    }
+    byte[] thisMarker = currentInd.getMarker(i);
+    int kid1 = thisMarker[0];
+    int kid2 = thisMarker[1];
 
-                                    thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
-                                    int mom1 = thisMarker[0];
-                                    int mom2 = thisMarker[1];
-                                    thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
-                                    int dad1 = thisMarker[0];
-                                    int dad2 = thisMarker[1];
+    thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
+    int mom1 = thisMarker[0];
+    int mom2 = thisMarker[1];
+    thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
+    int dad1 = thisMarker[0];
+    int dad2 = thisMarker[1];
 
-                                    if (kid1==0 || kid2==0){
-                                        //kid missing
-                                        if (dad1==dad2){dadT += dad1; dadU +=dad1;}
-                                        else{dadT+="h"; dadU+="h";}
-                                        if (mom1==mom2){momT+=mom1; momU+=mom1;}
-                                        else{momT+="h"; momU+="h";}
-                                    }else if (kid1==kid2){
-                                        //kid homozygous
-                                        if(dad1==0){dadT+=kid1;dadU+="0";}
-                                        else if (dad1==kid1){dadT+=dad1;dadU+=dad2;}
-                                        else {dadT+=dad2;dadU+=dad1;}
+    if (kid1==0 || kid2==0){
+    //kid missing
+    if (dad1==dad2){dadT += dad1; dadU +=dad1;}
+    else{dadT+="h"; dadU+="h";}
+    if (mom1==mom2){momT+=mom1; momU+=mom1;}
+    else{momT+="h"; momU+="h";}
+    }else if (kid1==kid2){
+    //kid homozygous
+    if(dad1==0){dadT+=kid1;dadU+="0";}
+    else if (dad1==kid1){dadT+=dad1;dadU+=dad2;}
+    else {dadT+=dad2;dadU+=dad1;}
 
-                                        if(mom1==0){momT+=kid1;momU+="0";}
-                                        else if (mom1==kid1){momT+=mom1;momU+=mom2;}
-                                        else {momT+=mom2;momU+=mom1;}
-                                    }else{
-                                        //kid heterozygous and this if tree's a bitch
-                                        if(dad1==0 && mom1==0){
-                                            //both missing
-                                            dadT+="0";dadU+="0";momT+="0";momU+="0";
-                                        }else if (dad1==0 && mom1 != mom2){
-                                            //dad missing mom het
-                                            dadT+="0";dadU+="0";momT+="h";momU+="h";
-                                        }else if (mom1==0 && dad1 != dad2){
-                                            //dad het mom missing
-                                            dadT+="h"; dadU+="h"; momT+="0"; momU+="0";
-                                        }else if (dad1==0 && mom1 == mom2){
-                                            //dad missing mom hom
-                                            momT += mom1; momU += mom1; dadU+="0";
-                                            if(kid1==mom1){dadT+=kid2;}else{dadT+=kid1;}
-                                        }else if (mom1==0 && dad1==dad2){
-                                            //mom missing dad hom
-                                            dadT+=dad1;dadU+=dad1;momU+="0";
-                                            if(kid1==dad1){momT+=kid2;}else{momT+=kid1;}
-                                        }else if (dad1==dad2 && mom1 != mom2){
-                                            //dad hom mom het
-                                            dadT+=dad1; dadU+=dad2;
-                                            if(kid1==dad1){momT+=kid2;momU+=kid1;
-                                            }else{momT+=kid1;momU+=kid2;}
-                                        }else if (mom1==mom2 && dad1!=dad2){
-                                            //dad het mom hom
-                                            momT+=mom1; momU+=mom2;
-                                            if(kid1==mom1){dadT+=kid2;dadU+=kid1;
-                                            }else{dadT+=kid1;dadU+=kid2;}
-                                        }else if (dad1==dad2 && mom1==mom2){
-                                            //mom & dad hom
-                                            dadT+=dad1; dadU+=dad1; momT+=mom1; momU+=mom1;
-                                        }else{
-                                            //everybody het
-                                            dadT+="h";dadU+="h";momT+="h";momU+="h";
-                                        }
-                                    }
-                                    begin=true;
-                                }
-                            }
-                            momT+="\n";momU+="\n";dadT+="\n";dadU+="\n";
-                            linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getDadID()+"\tT\t" + dadT);
-                            linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getDadID()+"\tU\t" + dadU);
-                            linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getMomID()+"\tT\t" + momT);
-                            linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getMomID()+"\tU\t" + momU);
+    if(mom1==0){momT+=kid1;momU+="0";}
+    else if (mom1==kid1){momT+=mom1;momU+=mom2;}
+    else {momT+=mom2;momU+=mom1;}
+    }else{
+    //kid heterozygous and this if tree's a bitch
+    if(dad1==0 && mom1==0){
+    //both missing
+    dadT+="0";dadU+="0";momT+="0";momU+="0";
+    }else if (dad1==0 && mom1 != mom2){
+    //dad missing mom het
+    dadT+="0";dadU+="0";momT+="h";momU+="h";
+    }else if (mom1==0 && dad1 != dad2){
+    //dad het mom missing
+    dadT+="h"; dadU+="h"; momT+="0"; momU+="0";
+    }else if (dad1==0 && mom1 == mom2){
+    //dad missing mom hom
+    momT += mom1; momU += mom1; dadU+="0";
+    if(kid1==mom1){dadT+=kid2;}else{dadT+=kid1;}
+    }else if (mom1==0 && dad1==dad2){
+    //mom missing dad hom
+    dadT+=dad1;dadU+=dad1;momU+="0";
+    if(kid1==dad1){momT+=kid2;}else{momT+=kid1;}
+    }else if (dad1==dad2 && mom1 != mom2){
+    //dad hom mom het
+    dadT+=dad1; dadU+=dad2;
+    if(kid1==dad1){momT+=kid2;momU+=kid1;
+    }else{momT+=kid1;momU+=kid2;}
+    }else if (mom1==mom2 && dad1!=dad2){
+    //dad het mom hom
+    momT+=mom1; momU+=mom2;
+    if(kid1==mom1){dadT+=kid2;dadU+=kid1;
+    }else{dadT+=kid1;dadU+=kid2;}
+    }else if (dad1==dad2 && mom1==mom2){
+    //mom & dad hom
+    dadT+=dad1; dadU+=dad1; momT+=mom1; momU+=mom1;
+    }else{
+    //everybody het
+    dadT+="h";dadU+="h";momT+="h";momU+="h";
+    }
+    }
+    begin=true;
+    }
+    }
+    momT+="\n";momU+="\n";dadT+="\n";dadU+="\n";
+    linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getDadID()+"\tT\t" + dadT);
+    linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getDadID()+"\tU\t" + dadU);
+    linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getMomID()+"\tT\t" + momT);
+    linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getMomID()+"\tU\t" + momU);
 
-                            usedParents.add(currentInd.getFamilyID()+" "+currentInd.getDadID());
-                            usedParents.add(currentInd.getFamilyID()+" "+currentInd.getMomID());
-                        }
-                    }
-                }
-            }
-        }
-        linkageToHapsWriter.close();
+    usedParents.add(currentInd.getFamilyID()+" "+currentInd.getDadID());
+    usedParents.add(currentInd.getFamilyID()+" "+currentInd.getMomID());
+    }
+    }
+    }
+    }
+    }
+    linkageToHapsWriter.close();
 
     }*/
 
