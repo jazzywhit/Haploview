@@ -25,7 +25,7 @@ public class DPrimeTable {
 
 
     public PairwiseLinkage getLDStats(int pos1, int pos2){
-        //as above we need to convert the input of an absolute position into the relative position
+        //we need to convert the input of an absolute position into the relative position
         //to index into the DP array. here we jump through the additional hoop of un-filtering the input
         //numbers
         int x = Chromosome.realIndex[pos1];
@@ -47,7 +47,7 @@ public class DPrimeTable {
         return theTable[whichMarker].length;
     }*/
 
-    public int getFilteredLength(int x){
+    public int getLength(int x){
         //same as above but for the filtered dataset
         int whichMarker = Chromosome.realIndex[x];
         for (int m = theTable[whichMarker].length+whichMarker; m > whichMarker; m--){

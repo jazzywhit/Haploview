@@ -3,11 +3,10 @@ package edu.mit.wi.haploview;
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
-import java.util.Vector;
-import java.util.Hashtable;
-import java.util.Enumeration;
+import java.util.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import javax.swing.*;
@@ -80,6 +79,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private int wmMaxWidth=0;
     private Rectangle blockRect = new Rectangle(0,0,-1,-1);
     private int blockStartX = 0;
+    private double[] alignedPositions;
 
 
     DPrimeDisplay(HaploView h){
@@ -92,7 +92,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         addMouseMotionListener(this);
         this.setAutoscrolls(true);
     }
-
 
     DPrimeDisplay(HaploData hd){
         theData = hd;
@@ -108,7 +107,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         if (scheme == STD_SCHEME){
             // set coloring based on LOD and D'
             for (int i = 0; i < Chromosome.getSize()-1; i++){
-                for (int j = i+1; j < dPrime.getFilteredLength(i)+i; j++){
+                for (int j = i+1; j < dPrime.getLength(i)+i; j++){
                     PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                     if (thisPair == null){
                         continue;
@@ -190,7 +189,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             double max_l = 0.0;
 
             for (int i = 0; i < Chromosome.getSize(); i++){
-                for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
+                for (int j = i+1; j < dPrime.getLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                     if (thisPair == null){
                         continue;
@@ -204,7 +203,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             if (max_l > 5.0) max_l = 5.0;
 
             for (int i = 0; i < Chromosome.getSize(); i++){
-                for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
+                for (int j = i+1; j < dPrime.getLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                     if (thisPair == null){
                         continue;
@@ -261,7 +260,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             // set coloring based on R-squared values
 
             for (int i = 0; i < Chromosome.getSize(); i++){
-                for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
+                for (int j = i+1; j < dPrime.getLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                     if (thisPair == null){
                         continue;
@@ -336,6 +335,12 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         zoomLevel = type;
 
+        if (zoomLevel == 0){
+            printMarkerNames = true;
+        } else{
+            printMarkerNames = false;
+        }
+
         int x=0, y=0;
         int oldX = getVisibleRect().x;
         int oldY = getVisibleRect().y;
@@ -363,6 +368,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
         boxSize = BOX_SIZES[zoomLevel];
         boxRadius = BOX_RADII[zoomLevel];
+        this.computePreferredSize();
         ((JViewport)getParent()).setViewSize(getPreferredSize());
         //System.out.println(oldX + " " + x + " " + oldY + " " + y);
         ((JViewport)getParent()).setViewPosition(new Point(x,y));
@@ -392,16 +398,13 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             printDPrimeValues = true;
         }
 
-        if (zoomLevel == 0){
-            printMarkerNames = true;
-        } else{
-            printMarkerNames = false;
-        }
+
 
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
         g2.setColor(BG_GREY);
+
         //if it's a big dataset, resize properly, if it's small make sure to fill whole background
         if (size.height < pref.height){
             g2.fillRect(0,0,pref.width,pref.height);
@@ -509,46 +512,36 @@ END OF HIS HACKS
         metrics = g2.getFontMetrics();
         ascent = metrics.getAscent();
 
-        //TODO: finish implementing scaling gizmo
-        /*//deal with adding some space to better display data with large gaps
-        int cumulativeGap[] = new int[Chromosome.getSize()];
-        for (int i = 0; i < cumulativeGap.length; i++){
-            cumulativeGap[i] = 0;
-        }
-        if (theData.infoKnown){
-            double mean
-            = (((SNP)Chromosome.markers[Chromosome.markers.length-1]).getPosition() -
-                    ((SNP)Chromosome.markers[0]).getPosition())/Chromosome.markers.length-1;
-            for (int i = 1; i < cumulativeGap.length; i++){
-                double sep = Chromosome.getUnfilteredMarker(i).getPosition() - Chromosome.getUnfilteredMarker(i-1).getPosition();
-                if (sep > mean*10){
-                    cumulativeGap[i] = cumulativeGap[i-1] + (int)(sep/mean)*4;
-                }else{
-                    cumulativeGap[i] = cumulativeGap[i-1];
-                }
-            }
-        } */
-
         //the following values are the bounds on the boxes we want to
         //display given that the current window is 'visRect'
-        lowX = (visRect.x-clickXShift-(visRect.y +
-                visRect.height-clickYShift))/boxSize;
+        lowX = getBoundaryMarker(visRect.x-clickXShift-(visRect.y +visRect.height-clickYShift)) - 1;
+        highX = getBoundaryMarker(visRect.x + visRect.width);
+        lowY = getBoundaryMarker((visRect.x-clickXShift)+(visRect.y-clickYShift)) - 1;
+        highY = getBoundaryMarker((visRect.x-clickXShift+visRect.width) + (visRect.y-clickYShift+visRect.height));
         if (lowX < 0) {
             lowX = 0;
         }
-        highX = ((visRect.x + visRect.width)/boxSize)+1;
         if (highX > Chromosome.getSize()-1){
             highX = Chromosome.getSize()-1;
         }
-        lowY = ((visRect.x-clickXShift)+(visRect.y-clickYShift))/boxSize;
         if (lowY < lowX+1){
             lowY = lowX+1;
         }
-        highY = (((visRect.x-clickXShift+visRect.width) +
-                (visRect.y-clickYShift+visRect.height))/boxSize)+1;
         if (highY > Chromosome.getSize()){
             highY = Chromosome.getSize();
         }
+
+
+        /*lowX = (visRect.x-clickXShift-(visRect.y +
+                visRect.height-clickYShift))/boxSize;
+
+        highX = ((visRect.x + visRect.width)/boxSize)+1;
+
+        lowY = ((visRect.x-clickXShift)+(visRect.y-clickYShift))/boxSize;
+
+        highY = (((visRect.x-clickXShift+visRect.width) +
+                (visRect.y-clickYShift+visRect.height))/boxSize)+1;
+         */
         if (forExport){
             lowX = exportStart;
             lowY = exportStart;
@@ -556,7 +549,7 @@ END OF HIS HACKS
             highY = exportStop;
         }
 
-        int lineSpan = (Chromosome.getSize()-1) * boxSize;
+        double lineSpan = alignedPositions[alignedPositions.length-1] - alignedPositions[0];
         long minpos = Chromosome.getMarker(0).getPosition();
         long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
 
@@ -565,9 +558,9 @@ END OF HIS HACKS
         if (theData.trackExists){
             //draw the analysis track above where the marker positions will be marked
             g2.setColor(Color.white);
-            g2.fillRect(left, top, lineSpan, TRACK_HEIGHT);
+            g2.fill(new Rectangle2D.Double(left, top, lineSpan, TRACK_HEIGHT));
             g2.setColor(Color.black);
-            g2.drawRect(left, top, lineSpan, TRACK_HEIGHT);
+            g2.drawRect(left,top,(int)lineSpan,TRACK_HEIGHT);
 
             //get the data into an easier format
             double positions[] = new double[theData.analysisPositions.size()];
@@ -611,27 +604,29 @@ END OF HIS HACKS
 
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
-            g2.fillRect(left+1, top+1, lineSpan-1, TICK_HEIGHT-1);
+            g2.fill(new Rectangle2D.Double(left+1, top+1, lineSpan-1, TICK_HEIGHT-1));
             g2.setColor(Color.black);
-            g2.drawRect(left, top, lineSpan, TICK_HEIGHT);
+            g2.draw(new Rectangle2D.Double(left, top, lineSpan, TICK_HEIGHT));
 
             for (int i = 0; i < Chromosome.getSize(); i++){
                 double pos = (Chromosome.getMarker(i).getPosition() - minpos) / spanpos;
 
-                int xx = (int) (left + lineSpan*pos);
+                double xx = left + lineSpan*pos;
 
                 // if we're zoomed, use the line color to indicate whether there is extra data available
                 // (since the marker names are not displayed when zoomed)
 
                 if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(green);
 
+                //draw tick
                 g2.setStroke(thickerStroke);
-                g2.drawLine(xx, top, xx, top + TICK_HEIGHT);
+                g2.draw(new Line2D.Double(xx, top, xx, top + TICK_HEIGHT));
 
                 if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setStroke(thickerStroke);
                 else g2.setStroke(thinnerStroke);
-                g2.drawLine(xx, top + TICK_HEIGHT,
-                        left + i*boxSize, top+TICK_BOTTOM);
+                //draw connecting line
+                g2.draw(new Line2D.Double(xx, top + TICK_HEIGHT,
+                        left + alignedPositions[i], top+TICK_BOTTOM));
 
                 if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(Color.black);
             }
@@ -655,7 +650,7 @@ END OF HIS HACKS
                         g2.setFont(markerNameFont);
                     }
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(green);
-                    g2.drawString(Chromosome.getMarker(x).getName(),TEXT_GAP, x*boxSize + ascent/3);
+                    g2.drawString(Chromosome.getMarker(x).getName(),(float)TEXT_GAP, (float)alignedPositions[x] + ascent/3);
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(Color.black);
                 }
 
@@ -681,8 +676,8 @@ END OF HIS HACKS
             for (int x = 0; x < Chromosome.getSize(); x++) {
                 String mark = String.valueOf(Chromosome.realIndex[x] + 1);
                 g2.drawString(mark,
-                        left + x*boxSize - metrics.stringWidth(mark)/2,
-                        top + ascent);
+                        (float)(left + alignedPositions[x] - metrics.stringWidth(mark)/2),
+                        (float)(top + ascent));
             }
 
             top += boxRadius/2; // give a little space between numbers and boxes
@@ -716,8 +711,8 @@ END OF HIS HACKS
                 Color boxColor = dPrimeTable.getLDStats(x,y).getColor();
 
                 // draw markers above
-                int xx = left + (x + y) * boxSize / 2;
-                int yy = top + (y - x) * boxSize / 2;
+                int xx = left + (int)((alignedPositions[x] + alignedPositions[y])/2);
+                int yy = top + (int)((alignedPositions[y] - alignedPositions[x]) / 2);
 
                 diamondX[0] = xx; diamondY[0] = yy - boxRadius;
                 diamondX[1] = xx + boxRadius; diamondY[1] = yy;
@@ -744,7 +739,7 @@ END OF HIS HACKS
                 }
             }
         }
-        boolean even = true;
+
         //highlight blocks
         g2.setFont(markerNameFont);
         ascent = g2.getFontMetrics().getAscent();
@@ -758,37 +753,52 @@ END OF HIS HACKS
 
             //big vee around whole thing
             g2.setStroke(fatStroke);
-            g2.drawLine(left + (2*first) * boxSize/2 - boxRadius,
+            g2.draw(new Line2D.Double(left + alignedPositions[first] - boxRadius,
                     top,
-                    left + (first + last) * boxSize/2,
-                    top + (last - first) * boxSize/2 + boxRadius);
-            g2.drawLine(left + (first + last) * boxSize/2,
-                    top + (last - first) * boxSize/2 + boxRadius,
-                    left + (2*last) * boxSize/2+boxRadius,
-                    top);
+                    left + (alignedPositions[first] + alignedPositions[last])/2,
+                    top + (alignedPositions[last] - alignedPositions[first])/2 + boxRadius));
+            g2.draw(new Line2D.Double(left + (alignedPositions[first] + alignedPositions[last])/2,
+                    top + (alignedPositions[last] - alignedPositions[first])/2 + boxRadius,
+                    left + alignedPositions[last] + boxRadius,
+                    top));
 
-            for (int j = first; j <= last; j++){
+            for (int j = first; j < last; j++){
+                g2.setStroke(fatStroke);
                 if (theData.isInBlock[j]){
-                    g2.setStroke(fatStroke);
-                }else{
-                    g2.setStroke(dashedFatStroke);
-                }
-                g2.drawLine(left+j*boxSize-boxSize/2,
+                    g2.draw(new Line2D.Double(left+alignedPositions[j]-boxSize/2,
                         top-blockDispHeight,
-                        left+j*boxSize+boxSize/2,
-                        top-blockDispHeight);
+                        left+alignedPositions[j+1]-boxSize/2,
+                        top-blockDispHeight));
+                }else{
+                    g2.draw(new Line2D.Double(left + alignedPositions[j] + boxSize/2,
+                        top-blockDispHeight,
+                        left+alignedPositions[j+1]-boxSize/2,
+                        top-blockDispHeight));
+                    g2.setStroke(dashedFatStroke);
+                    g2.draw(new Line2D.Double(left+alignedPositions[j] - boxSize/2,
+                        top-blockDispHeight,
+                        left+alignedPositions[j] + boxSize/2,
+                        top-blockDispHeight));
+                }
             }
+            //cap off the end of the block
+            g2.setStroke(fatStroke);
+            g2.draw(new Line2D.Double(left+alignedPositions[last]-boxSize/2,
+                        top-blockDispHeight,
+                        left+alignedPositions[last]+boxSize/2,
+                        top-blockDispHeight));
+
 
             //lines to connect to block display
             g2.setStroke(fatStroke);
-            g2.drawLine(left + first*boxSize-boxSize/2,
+            g2.draw(new Line2D.Double(left + alignedPositions[first]-boxSize/2,
                     top-1,
-                    left+first*boxSize-boxSize/2,
-                    top-blockDispHeight);
-            g2.drawLine(left+last*boxSize+boxSize/2,
+                    left+alignedPositions[first]-boxSize/2,
+                    top-blockDispHeight));
+            g2.draw(new Line2D.Double(left+alignedPositions[last]+boxSize/2,
                     top-1,
-                    left+last*boxSize+boxSize/2,
-                    top-blockDispHeight);
+                    left+alignedPositions[last]+boxSize/2,
+                    top-blockDispHeight));
             if (printMarkerNames){
                 String labelString = new String ("Block " + (i+1));
                 if (theData.infoKnown){
@@ -796,21 +806,26 @@ END OF HIS HACKS
                             Chromosome.getMarker(first).getPosition();
                     labelString += " (" + blockSize/1000 + " kb)";
                 }
-                g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/3);
+                g2.drawString(labelString,
+                        (float)(left+alignedPositions[first]-boxSize/2+TEXT_GAP),
+                        (float)(top-boxSize/3));
             }
         }
         g2.setStroke(thickerStroke);
 
-
         //see if the user has right-clicked to popup some marker info
         if(popupExists){
+
+            //dumb bug where little datasets popup the box in the wrong place
             int smallDatasetSlopH = 0;
             int smallDatasetSlopV = 0;
-            if (pref.getWidth() < visRect.width){
-                //dumb bug where little datasets popup the box in the wrong place
-                smallDatasetSlopH = (int)(visRect.width - pref.getWidth())/2;
+            if (pref.getHeight() < visRect.height){
                 smallDatasetSlopV = (int)(visRect.height - pref.getHeight())/2;
             }
+            if (pref.getWidth() < visRect.width){
+                smallDatasetSlopH = (int)(visRect.width - pref.getWidth())/2;
+            }
+
             g2.setColor(Color.white);
             g2.fillRect(popupDrawRect.x+1-smallDatasetSlopH,
                     popupDrawRect.y+1-smallDatasetSlopV,
@@ -868,9 +883,10 @@ END OF HIS HACKS
                         if (dPrimeTable.getLDStats(x,y) == null){
                             continue;
                         }
-                        double xx = (x + y)*prefBoxSize/2+wmBorder.getBorderInsets(this).left;
-                        double yy = (y - x)*prefBoxSize/2+wmBorder.getBorderInsets(this).top + WM_BD_TOTAL;
-
+                        double xx = ((alignedPositions[y] + alignedPositions[x])/(scalefactor*2)) +
+                                wmBorder.getBorderInsets(this).left;
+                        double yy = ((alignedPositions[y] - alignedPositions[x])/(scalefactor*2)) +
+                                wmBorder.getBorderInsets(this).top + WM_BD_TOTAL;
 
                         smallDiamondX[0] = (float)xx; smallDiamondY[0] = (float)(yy - prefBoxSize/2);
                         smallDiamondX[1] = (float)(xx + prefBoxSize/2); smallDiamondY[1] = (float)yy;
@@ -901,7 +917,7 @@ END OF HIS HACKS
                     wmInteriorRect.width,
                     WM_BD_HEIGHT);
             gw2.setColor(Color.black);
-            even = true;
+            boolean even = true;
             for (int i = 0; i < blocks.size(); i++){
                 int first = ((int[])blocks.elementAt(i))[0];
                 int last = ((int[])blocks.elementAt(i))[((int[])blocks.elementAt(i)).length-1];
@@ -911,9 +927,9 @@ END OF HIS HACKS
                 }else{
                     voffset = WM_BD_HEIGHT/2;
                 }
-                gw2.fillRect(wmBorder.getBorderInsets(this).left+(int)(prefBoxSize*first),
+                gw2.fillRect(wmBorder.getBorderInsets(this).left - (int)prefBoxSize/2 + (int)(alignedPositions[first]/scalefactor),
                         wmBorder.getBorderInsets(this).top+voffset+WM_BD_GAP,
-                        (int)((last-first+1)*prefBoxSize),
+                        (int)(prefBoxSize + (alignedPositions[last] - alignedPositions[first])/scalefactor),
                         WM_BD_HEIGHT/2);
                 even = !even;
             }
@@ -961,11 +977,110 @@ END OF HIS HACKS
         }
     }
 
+    public double[] doMarkerLayout(double[] snpPositions, double goalSpan){
+        //create an array for the projected positions, initialized to starting positions
+        double spp[] = new double[snpPositions.length];
+        for (int i=0; i<spp.length; ++i) spp[i] = snpPositions[i];
+
+        /*
+        Create some simple structures to keep track of which snps are bumping into each other (and whose
+        positions are dependent on each other)
+        */
+        BitSet[] conflicts = new BitSet[snpPositions.length];
+        for (int i=0; i<conflicts.length; ++i) {
+            conflicts[i] = new BitSet();
+            conflicts[i].set(i);
+        }
+
+        while (1==1) {
+            boolean trouble = false;
+            for (int i=0; i<spp.length-1; ++i) {
+
+                //if two SNPs are overlapping (i.e. centers are < boxSize apart)
+                if (spp[i+1]-spp[i]<boxSize-.0001) {
+                    trouble = true;
+
+                    //update the bump structures .. these two snps now bump (and have positions that are
+                    //dependent on each other) .. indicate that in the bump structure
+                    int ip = i+1;
+                    conflicts[i].set(ip);
+                    conflicts[ip].set(i);
+
+                    //Come up with the full set all snps that are involved in a bump/dependency with either
+                    //of these two snps
+                    BitSet full = new BitSet();
+                    for (int j=0; j<conflicts[i].size(); ++j) {
+                        if (conflicts[i].get(j)) full.set(j);
+                    }
+                    for (int j=0; j<conflicts[ip].size(); ++j) {
+                        if (conflicts[ip].get(j)) full.set(j);
+                    }
+
+                    /*
+                    decide on the bounds of this full set of snps for which a bump problem exists
+                    each snp inherits this full set of snps for its bump/dependency structure
+                    */
+                    int li = -1;
+                    int hi = -1;
+                    int conflict_count=0;
+                    for (int j=0; j<full.size(); ++j) {
+                        if (full.get(j)) {
+                            conflicts[j] = (BitSet)full.clone();
+                            if (li==-1) {li=j;}
+                            hi=j;
+                            conflict_count++;
+                        }
+                    }
+
+                    //reposition the projected positions of the bumping snps, centered over
+                    //the non-projected snp range of that set of snps .. with boundary conditions
+                    double total_space_to_be_spanned = boxSize*(conflict_count-1);
+                    double low_point = snpPositions[li];
+                    double high_point = snpPositions[hi];
+                    double first_snp_proj_pos = low_point - (total_space_to_be_spanned-(high_point-low_point))/2;
+                    if (first_snp_proj_pos<0.0) first_snp_proj_pos=0.0;
+                    if (first_snp_proj_pos+total_space_to_be_spanned>goalSpan) {first_snp_proj_pos = goalSpan-total_space_to_be_spanned;}
+                    for (int j=li; j<=hi; ++j) {
+                        spp[j] = first_snp_proj_pos + boxSize*(j-li);
+                    }
+                    break;
+                }
+            }
+            if (!trouble) break;
+        }
+        return spp;
+    }
+
     public void computePreferredSize(){
         this.computePreferredSize(this.getGraphics());
     }
 
     public void computePreferredSize(Graphics g) {
+        //setup marker positions
+        double aligned = 0.0;
+        long minpos = Chromosome.getMarker(0).getPosition();
+        long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
+        double spanpos = maxpos - minpos;
+        double[] initialPositions = new double[Chromosome.getSize()];
+        alignedPositions = new double[Chromosome.getSize()];
+        double lineSpan = (Chromosome.getSize()-1) * boxSize;
+
+        //keep trying until we've got at least a certain fraction of the markers aligned
+        while (aligned < 0.11){
+            double numAligned = 0;
+            for (int i = 0; i < initialPositions.length; i++){
+                initialPositions[i] = (lineSpan*((Chromosome.getMarker(i).getPosition()-minpos)/spanpos));
+            }
+            alignedPositions = doMarkerLayout(initialPositions, lineSpan);
+            for (int i = 0; i < initialPositions.length; i++){
+                if (initialPositions[i] == alignedPositions[i])
+                    numAligned++;
+            }
+            aligned = numAligned/initialPositions.length;
+            //if we haven't finished yet we want to try again with a longer line...
+            lineSpan += 0.05 * lineSpan;
+        }
+
         //loop through table to find deepest non-null comparison
         DPrimeTable dPrimeTable = theData.dpTable;
         int upLim, loLim;
@@ -976,18 +1091,19 @@ END OF HIS HACKS
             loLim = 0;
             upLim = Chromosome.getSize();
         }
-        int count = 0;
+        double sep = 0;
         for (int x = loLim; x < upLim-1; x++){
             for (int y = x+1; y < upLim; y++){
                 if (dPrimeTable.getLDStats(x,y) != null){
-                    if (count < y-x){
-                        count = y-x;
+                    if (sep < alignedPositions[y]-alignedPositions[x]){
+                        sep = alignedPositions[y]-alignedPositions[x];
                     }
                 }
             }
         }
         //add one so we don't clip bottom box
-        count ++;
+        sep += boxSize;
+
 
         if (g != null){
             g.setFont(markerNameFont);
@@ -999,10 +1115,13 @@ END OF HIS HACKS
             }
         }
 
-        int high = 2*V_BORDER + count*boxSize/2 + blockDispHeight;
-        chartSize = new Dimension(2*H_BORDER + boxSize*(upLim-1),high);
+        int high = 2*V_BORDER + (int)(sep/2) + blockDispHeight;
+
         //this dimension is just the area taken up by the dprime chart
         //it is used in drawing the worldmap
+        chartSize = new Dimension(2*H_BORDER +(int)(alignedPositions[alignedPositions.length-1] - alignedPositions[0]),
+                high);
+
 
         if (theData.infoKnown){
             infoHeight = TICK_HEIGHT + TICK_BOTTOM + widestMarkerName + TEXT_GAP;
@@ -1016,7 +1135,7 @@ END OF HIS HACKS
             high += TRACK_HEIGHT + TRACK_GAP;
         }
 
-        int wide = 2*H_BORDER + boxSize*(upLim-loLim-1);
+        int wide = 2*H_BORDER + (int)(alignedPositions[alignedPositions.length-1] - alignedPositions[0]);
         Rectangle visRect = getVisibleRect();
         //big datasets often scroll way offscreen in zoom-out mode
         //but aren't the full height of the viewport
@@ -1024,6 +1143,42 @@ END OF HIS HACKS
             high = visRect.height;
         }
         setPreferredSize(new Dimension(wide, high));
+    }
+
+    public int getBoundaryMarker(double pos){
+        //if pos is in the array the binarysearch returns the positive index
+        //otherwise it returns the negative "insertion index" - 1
+        int where = Arrays.binarySearch(alignedPositions, pos);
+        if (where >= 0){
+            return where;
+        }else{
+            return -where - 1;
+        }
+    }
+
+    public int getPreciseMarkerAt(double pos){
+        int where = Arrays.binarySearch(alignedPositions,pos);
+        if (where >= 0){
+            return where;
+        }else{
+            int left = -where-2;
+            int right = -where-1;
+            if (left < 0){
+                left = 0;
+                right = 1;
+            }
+            if (right >= alignedPositions.length){
+               right = alignedPositions.length-1;
+                left = alignedPositions.length-1;
+            }
+            if (Math.abs(alignedPositions[right] - pos) < boxRadius){
+                return right;
+            }else if (Math.abs(pos - alignedPositions[left]) < boxRadius){
+                return left;
+            } else{
+                return -left;
+            }
+        }
     }
 
     public void mouseClicked(MouseEvent e) {
@@ -1060,15 +1215,17 @@ END OF HIS HACKS
                 ((JViewport)getParent()).setViewPosition(new Point(bigClickX,bigClickY));
             }else{
                 theHV.changeBlocks(BLOX_CUSTOM);
-                Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
-                        (Chromosome.getSize()*boxSize), boxSize);
+                Rectangle2D blockselector = new Rectangle2D.Double(clickXShift-boxRadius,clickYShift - boxRadius,
+                        alignedPositions[alignedPositions.length-1], boxSize);
                 if(blockselector.contains(clickX,clickY)){
-                    int whichMarker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
-                    if (theData.isInBlock[whichMarker]){
-                        theData.removeFromBlock(whichMarker);
-                        repaint();
-                    } else if (whichMarker > 0 && whichMarker < Chromosome.realIndex.length){
-                        theData.addMarkerIntoSurroundingBlock(whichMarker);
+                    int whichMarker = getPreciseMarkerAt(clickX - clickXShift);
+                    if (whichMarker > -1){
+                        if (theData.isInBlock[whichMarker]){
+                            theData.removeFromBlock(whichMarker);
+                            repaint();
+                        } else if (whichMarker > 0 && whichMarker < Chromosome.realIndex.length){
+                            theData.addMarkerIntoSurroundingBlock(whichMarker);
+                        }
                     }
                 }
             }
@@ -1077,7 +1234,7 @@ END OF HIS HACKS
 
     public void mousePressed (MouseEvent e) {
         Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
-                (Chromosome.getSize()*boxSize), boxSize);
+                (int)alignedPositions[alignedPositions.length-1]+boxSize, boxSize);
 
         //if users right clicks & holds, pop up the info
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
@@ -1088,19 +1245,10 @@ END OF HIS HACKS
             DPrimeTable dPrimeTable = theData.dpTable;
             final int clickX = e.getX();
             final int clickY = e.getY();
-            double dboxX = (double)(clickX - clickXShift - (clickY-clickYShift))/boxSize;
-            double dboxY = (double)(clickX - clickXShift + (clickY-clickYShift))/boxSize;
             final int boxX, boxY;
-            if (dboxX < 0){
-                boxX = (int)(dboxX - 0.5);
-            } else{
-                boxX = (int)(dboxX + 0.5);
-            }
-            if (dboxY < 0){
-                boxY = (int)(dboxY - 0.5);
-            }else{
-                boxY = (int)(dboxY + 0.5);
-            }
+            boxX = getPreciseMarkerAt(clickX - clickXShift - (clickY-clickYShift));
+            boxY = getPreciseMarkerAt(clickX - clickXShift + (clickY-clickYShift));
+
             if ((boxX >= lowX && boxX <= highX) &&
                     (boxY > boxX && boxY < highY) &&
                     !(wmInteriorRect.contains(clickX,clickY))){
@@ -1161,7 +1309,7 @@ END OF HIS HACKS
                     popupExists = true;
                 }
             } else if (blockselector.contains(clickX, clickY)){
-                int marker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
+                int marker = getPreciseMarkerAt(clickX - clickXShift);
                 int size = 2;
 
                 if (Chromosome.getMarker(marker).getExtra() != null) size++;
@@ -1240,13 +1388,23 @@ END OF HIS HACKS
             if (getCursor() == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)){
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 blockRectExists = false;
-                int firstMarker = (int)(0.5 + (double)((blockStartX - clickXShift))/boxSize);
-                int lastMarker = (int)(0.5 + (double)((e.getX() - clickXShift))/boxSize);
-                if (firstMarker > lastMarker){
+                int firstMarker = getPreciseMarkerAt(blockStartX - clickXShift);
+                int lastMarker = getPreciseMarkerAt(e.getX() - clickXShift);
+                //we're moving left to right
+                if (blockStartX > e.getX()){
                     int temp = firstMarker;
                     firstMarker = lastMarker;
                     lastMarker = temp;
                 }
+                //negative results represent starting or stopping the drag in "no-man's land"
+                //so we adjust depending on which side we're on
+                if (firstMarker < 0){
+                    firstMarker = -firstMarker + 1;
+                }
+                if (lastMarker < 0){
+                    lastMarker = -lastMarker;
+                }
+
                 theHV.changeBlocks(BLOX_CUSTOM);
                 theData.addBlock(firstMarker, lastMarker);
                 repaint();

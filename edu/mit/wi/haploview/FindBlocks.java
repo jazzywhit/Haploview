@@ -262,7 +262,7 @@ public class FindBlocks {
         for (int i = 0; i < Chromosome.getSize(); i++){
             baddies=0;
             //find how far LD from marker i extends
-            for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
+            for (int j = i+1; j < dPrime.getLength(i); j++){
                 PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
                 if (thisPair == null){
                     continue;
