@@ -1357,10 +1357,12 @@ public class HaploData implements Constants{
         for (int i = 0; i < chromosomes.size(); i++){
             //System.out.println(i + " " + pos1 + " " + pos2);
             //assign alleles for each of a pair of chromosomes at a marker to four variables
-            byte a1 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos1);
-            byte a2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
-            byte b1 = ((Chromosome) chromosomes.elementAt(++i)).getGenotype(pos1);
-            byte b2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
+
+            byte a1 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos1];
+            byte a2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
+            byte b1 = ((Chromosome) chromosomes.elementAt(++i)).genotypes[pos1];
+            byte b2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
+
             if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
                 //skip missing data
             } else if ((a1 >= 5 && a2 >= 5) || (a1 >= 5 && !(a2 == b2)) || (a2 >= 5 && !(a1 == b1))) doublehet++;
@@ -1449,7 +1451,7 @@ public class HaploData implements Constants{
         do {
             oldloglike=loglike;
             count_haps(count);
-            loglike = known[AA]*log10(probHaps[AA]) + known[AB]*log10(probHaps[AB]) + known[BA]*log10(probHaps[BA]) + known[BB]*log10(probHaps[BB]) + (double)unknownDH*log10(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]);
+            loglike = (known[AA]*Math.log(probHaps[AA]) + known[AB]*Math.log(probHaps[AB]) + known[BA]*Math.log(probHaps[BA]) + known[BB]*Math.log(probHaps[BB]) + (double)unknownDH*Math.log(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]))/LN10;
             if (Math.abs(loglike-oldloglike) < TOLERANCE) break;
             estimate_p();
             count++;
@@ -1457,8 +1459,8 @@ public class HaploData implements Constants{
         /* in reality I've never seen it need more than 10 or so iterations
         to converge so this is really here just to keep it from running off into eternity */
 
-        loglike1 = known[AA]*log10(probHaps[AA]) + known[AB]*log10(probHaps[AB]) + known[BA]*log10(probHaps[BA]) + known[BB]*log10(probHaps[BB]) + (double)unknownDH*log10(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]);
-        loglike0 = known[AA]*log10(pA1*pA2) + known[AB]*log10(pA1*pB2) + known[BA]*log10(pB1*pA2) + known[BB]*log10(pB1*pB2) + (double)unknownDH*log10(2*pA1*pA2*pB1*pB2);
+        loglike1 = known[AA]*Math.log(probHaps[AA]) + known[AB]*Math.log(probHaps[AB]) + known[BA]*Math.log(probHaps[BA]) + known[BB]*Math.log(probHaps[BB]) + (double)unknownDH*Math.log(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]);
+        loglike0 = known[AA]*Math.log(pA1*pA2) + known[AB]*Math.log(pA1*pB2) + known[BA]*Math.log(pB1*pA2) + known[BB]*Math.log(pB1*pB2) + (double)unknownDH*Math.log(2*pA1*pA2*pB1*pB2);
 
         num = probHaps[AA]*probHaps[BB] - probHaps[AB]*probHaps[BA];
 
@@ -1508,7 +1510,7 @@ public class HaploData implements Constants{
                 if (tmpBA < 1e-10) tmpBA=1e-10;
                 if (tmpBB < 1e-10) tmpBB=1e-10;
             }
-            lsurface[i] = known[AA]*log10(tmpAA) + known[AB]*log10(tmpAB) + known[BA]*log10(tmpBA) + known[BB]*log10(tmpBB) + (double)unknownDH*log10(tmpAA*tmpBB + tmpAB*tmpBA);
+            lsurface[i] = (known[AA]*Math.log(tmpAA) + known[AB]*Math.log(tmpAB) + known[BA]*Math.log(tmpBA) + known[BB]*Math.log(tmpBB) + (double)unknownDH*Math.log(tmpAA*tmpBB + tmpAB*tmpBA))/LN10;
         }
 
         /* Confidence bounds #2 - used in Gabriel et al (2002) - translate into posterior dist of D' -
@@ -1578,10 +1580,6 @@ public class HaploData implements Constants{
 
     public double roundDouble (double d){
         return Math.rint(d*100.0)/100.0;
-    }
-
-    public double log10 (double d) {
-        return Math.log(d)/LN10;
     }
 
     public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,
