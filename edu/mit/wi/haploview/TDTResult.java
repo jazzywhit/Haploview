@@ -1,5 +1,8 @@
 package edu.mit.wi.haploview;
 
+import edu.mit.wi.pedfile.MathUtil;
+import edu.mit.wi.pedfile.CheckDataException;
+
 
 public class TDTResult {
     int[][] counts;
@@ -75,7 +78,12 @@ public class TDTResult {
     }
 
     public double getPValue() {
-        return 0;
+        double pval = 0;
+        try {
+            pval= MathUtil.gammq(.5,.5*getChiSq());
+        }
+        catch(CheckDataException e) {}
+        return Math.rint(pval*10000.0)/10000.0;
     }
 
 }
