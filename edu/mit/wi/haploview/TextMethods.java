@@ -10,7 +10,7 @@ import java.util.Vector;
 //import java.util.Hashtable;
 
 class TextMethods {
-      //TODO: TOTALLY BROX0R3D
+      //TODO: TOTALLY BROX0R3D someplace this gets called with bogus args
 
     public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,  File saveHapsFile) throws IOException{
 

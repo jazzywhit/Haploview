@@ -229,16 +229,14 @@ public class HaploData{
                     byte[] chrom1 = new byte[numMarkers];
                     byte[] chrom2 = new byte[numMarkers];
                     for (int i = 0; i < numMarkers; i++){
-                        //if (markerResults[i]){
-                            byte[] thisMarker = currentInd.getMarker(i);
-                            if (thisMarker[0] == thisMarker[1]){
-                                chrom1[i] = thisMarker[0];
-                                chrom2[i] = thisMarker[1];
-                            }else{
-                                chrom1[i] = 5;
-                                chrom2[i] = 5;
-                            }
-                       //}
+                        byte[] thisMarker = currentInd.getMarker(i);
+                        if (thisMarker[0] == thisMarker[1]){
+                            chrom1[i] = thisMarker[0];
+                            chrom2[i] = thisMarker[1];
+                        }else{
+                            chrom1[i] = 5;
+                            chrom2[i] = 5;
+                        }
                     }
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1));
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2));
@@ -257,133 +255,131 @@ public class HaploData{
                             byte[] momUb = new byte[numMarkers];
 
                             for (int i = 0; i < numMarkers; i++){
-                                //if (markerResults[i]){
-                                    byte[] thisMarker = currentInd.getMarker(i);
-                                    byte kid1 = thisMarker[0];
-                                    byte kid2 = thisMarker[1];
+                                byte[] thisMarker = currentInd.getMarker(i);
+                                byte kid1 = thisMarker[0];
+                                byte kid2 = thisMarker[1];
 
-                                    thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
-                                    byte mom1 = thisMarker[0];
-                                    byte mom2 = thisMarker[1];
-                                    thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
-                                    byte dad1 = thisMarker[0];
-                                    byte dad2 = thisMarker[1];
+                                thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
+                                byte mom1 = thisMarker[0];
+                                byte mom2 = thisMarker[1];
+                                thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
+                                byte dad1 = thisMarker[0];
+                                byte dad2 = thisMarker[1];
 
-                                    if (kid1 == 0 || kid2 == 0) {
-                                        //kid missing
-                                        if (dad1 == dad2) {
-                                            dadTb[i] = dad1;
-                                            dadUb[i] = dad1;
-                                        } else {
-                                            dadTb[i] = 5;
-                                            dadUb[i] = 5;
-                                        }
-                                        if (mom1 == mom2) {
-                                            momTb[i] = mom1;
-                                            momUb[i] = mom1;
-                                        } else {
-                                            momTb[i] = 5;
-                                            momUb[i] = 5;
-                                        }
-                                    } else if (kid1 == kid2) {
-                                        //kid homozygous
-                                        if (dad1 == 0) {
-                                            dadTb[i] = kid1;
-                                            dadUb[i] = 0;
-                                        } else if (dad1 == kid1) {
-                                            dadTb[i] = dad1;
-                                            dadUb[i] = dad2;
-                                        } else {
-                                            dadTb[i] = dad2;
-                                            dadUb[i] = dad1;
-                                        }
-
-                                        if (mom1 == 0) {
-                                            momTb[i] = kid1;
-                                            momUb[i] = 0;
-                                        } else if (mom1 == kid1) {
-                                            momTb[i] = mom1;
-                                            momUb[i] = mom2;
-                                        } else {
-                                            momTb[i] = mom2;
-                                            momUb[i] = mom1;
-                                        }
+                                if (kid1 == 0 || kid2 == 0) {
+                                    //kid missing
+                                    if (dad1 == dad2) {
+                                        dadTb[i] = dad1;
+                                        dadUb[i] = dad1;
                                     } else {
-                                        //kid heterozygous and this if tree's a bitch
-                                        if (dad1 == 0 && mom1 == 0) {
-                                            //both missing
-                                            dadTb[i] = 0;
-                                            dadUb[i] = 0;
-                                            momTb[i] = 0;
-                                            momUb[i] = 0;
-                                        } else if (dad1 == 0 && mom1 != mom2) {
-                                            //dad missing mom het
-                                            dadTb[i] = 0;
-                                            dadUb[i] = 0;
-                                            momTb[i] = 5;
-                                            momUb[i] = 5;
-                                        } else if (mom1 == 0 && dad1 != dad2) {
-                                            //dad het mom missing
-                                            dadTb[i] = 5;
-                                            dadUb[i] = 5;
-                                            momTb[i] = 0;
-                                            momUb[i] = 0;
-                                        } else if (dad1 == 0 && mom1 == mom2) {
-                                            //dad missing mom hom
-                                            momTb[i] = mom1;
-                                            momUb[i] = mom1;
-                                            dadUb[i] = 0;
-                                            if (kid1 == mom1) {
-                                                dadTb[i] = kid2;
-                                            } else {
-                                                dadTb[i] = kid1;
-                                            }
-                                        } else if (mom1 == 0 && dad1 == dad2) {
-                                            //mom missing dad hom
-                                            dadTb[i] = dad1;
-                                            dadUb[i] = dad1;
-                                            momUb[i] = 0;
-                                            if (kid1 == dad1) {
-                                                momTb[i] = kid2;
-                                            } else {
-                                                momTb[i] = kid1;
-                                            }
-                                        } else if (dad1 == dad2 && mom1 != mom2) {
-                                            //dad hom mom het
-                                            dadTb[i] = dad1;
-                                            dadUb[i] = dad2;
-                                            if (kid1 == dad1) {
-                                                momTb[i] = kid2;
-                                                momUb[i] = kid1;
-                                            } else {
-                                                momTb[i] = kid1;
-                                                momUb[i] = kid2;
-                                            }
-                                        } else if (mom1 == mom2 && dad1 != dad2) {
-                                            //dad het mom hom
-                                            momTb[i] = mom1;
-                                            momUb[i] = mom2;
-                                            if (kid1 == mom1) {
-                                                dadTb[i] = kid2;
-                                                dadUb[i] = kid1;
-                                            } else {
-                                                dadTb[i] = kid1;
-                                                dadUb[i] = kid2;
-                                            }
-                                        } else if (dad1 == dad2 && mom1 == mom2) {
-                                            //mom & dad hom
-                                            dadTb[i] = dad1;
-                                            dadUb[i] = dad1;
-                                            momTb[i] = mom1;
-                                            momUb[i] = mom1;
+                                        dadTb[i] = 5;
+                                        dadUb[i] = 5;
+                                    }
+                                    if (mom1 == mom2) {
+                                        momTb[i] = mom1;
+                                        momUb[i] = mom1;
+                                    } else {
+                                        momTb[i] = 5;
+                                        momUb[i] = 5;
+                                    }
+                                } else if (kid1 == kid2) {
+                                    //kid homozygous
+                                    if (dad1 == 0) {
+                                        dadTb[i] = kid1;
+                                        dadUb[i] = 0;
+                                    } else if (dad1 == kid1) {
+                                        dadTb[i] = dad1;
+                                        dadUb[i] = dad2;
+                                    } else {
+                                        dadTb[i] = dad2;
+                                        dadUb[i] = dad1;
+                                    }
+
+                                    if (mom1 == 0) {
+                                        momTb[i] = kid1;
+                                        momUb[i] = 0;
+                                    } else if (mom1 == kid1) {
+                                        momTb[i] = mom1;
+                                        momUb[i] = mom2;
+                                    } else {
+                                        momTb[i] = mom2;
+                                        momUb[i] = mom1;
+                                    }
+                                } else {
+                                    //kid heterozygous and this if tree's a bitch
+                                    if (dad1 == 0 && mom1 == 0) {
+                                        //both missing
+                                        dadTb[i] = 0;
+                                        dadUb[i] = 0;
+                                        momTb[i] = 0;
+                                        momUb[i] = 0;
+                                    } else if (dad1 == 0 && mom1 != mom2) {
+                                        //dad missing mom het
+                                        dadTb[i] = 0;
+                                        dadUb[i] = 0;
+                                        momTb[i] = 5;
+                                        momUb[i] = 5;
+                                    } else if (mom1 == 0 && dad1 != dad2) {
+                                        //dad het mom missing
+                                        dadTb[i] = 5;
+                                        dadUb[i] = 5;
+                                        momTb[i] = 0;
+                                        momUb[i] = 0;
+                                    } else if (dad1 == 0 && mom1 == mom2) {
+                                        //dad missing mom hom
+                                        momTb[i] = mom1;
+                                        momUb[i] = mom1;
+                                        dadUb[i] = 0;
+                                        if (kid1 == mom1) {
+                                            dadTb[i] = kid2;
                                         } else {
-                                            //everybody het
-                                            dadTb[i] = 5;
-                                            dadUb[i] = 5;
-                                            momTb[i] = 5;
-                                            momUb[i] = 5;
+                                            dadTb[i] = kid1;
                                         }
-                                    //}
+                                    } else if (mom1 == 0 && dad1 == dad2) {
+                                        //mom missing dad hom
+                                        dadTb[i] = dad1;
+                                        dadUb[i] = dad1;
+                                        momUb[i] = 0;
+                                        if (kid1 == dad1) {
+                                            momTb[i] = kid2;
+                                        } else {
+                                            momTb[i] = kid1;
+                                        }
+                                    } else if (dad1 == dad2 && mom1 != mom2) {
+                                        //dad hom mom het
+                                        dadTb[i] = dad1;
+                                        dadUb[i] = dad2;
+                                        if (kid1 == dad1) {
+                                            momTb[i] = kid2;
+                                            momUb[i] = kid1;
+                                        } else {
+                                            momTb[i] = kid1;
+                                            momUb[i] = kid2;
+                                        }
+                                    } else if (mom1 == mom2 && dad1 != dad2) {
+                                        //dad het mom hom
+                                        momTb[i] = mom1;
+                                        momUb[i] = mom2;
+                                        if (kid1 == mom1) {
+                                            dadTb[i] = kid2;
+                                            dadUb[i] = kid1;
+                                        } else {
+                                            dadTb[i] = kid1;
+                                            dadUb[i] = kid2;
+                                        }
+                                    } else if (dad1 == dad2 && mom1 == mom2) {
+                                        //mom & dad hom
+                                        dadTb[i] = dad1;
+                                        dadUb[i] = dad1;
+                                        momTb[i] = mom1;
+                                        momUb[i] = mom1;
+                                    } else {
+                                        //everybody het
+                                        dadTb[i] = 5;
+                                        dadUb[i] = 5;
+                                        momTb[i] = 5;
+                                        momUb[i] = 5;
+                                    }
                                 }
                             }
 
@@ -423,6 +419,119 @@ public class HaploData{
             prepareMarkerInput(null,0);
         }catch(HaploViewException e){
         }catch(IOException e){
+        }
+    }
+
+    void generateDPrimeTable(long maxdist){
+        //calculating D prime requires the number of each possible 2 marker
+        //haplotype in the dataset
+        dPrimeTable = new PairwiseLinkage[Chromosome.getTrueSize()][Chromosome.getTrueSize()];
+        int doublehet;
+        long negMaxdist = -1*maxdist;
+        int[][] twoMarkerHaplos = new int[3][3];
+
+        //loop through all marker pairs
+        for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
+            //clear the array
+            for (int pos1 = 0; pos1 < pos2; pos1++){
+                long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
+                if (maxdist > 0){
+                    if ((sep > maxdist || sep < negMaxdist)){
+                        dPrimeTable[pos1][pos2] = null;
+                        continue;
+                    }
+                }
+                for (int i = 0; i < twoMarkerHaplos.length; i++){
+                    for (int j = 0; j < twoMarkerHaplos[i].length; j++){
+                        twoMarkerHaplos[i][j] = 0;
+                    }
+                }
+                doublehet = 0;
+                //get the alleles for the markers
+                int m1a1 = 0; int m1a2 = 0; int m2a1 = 0; int m2a2 = 0; int m1H = 0; int m2H = 0;
+
+                for (int i = 0; i < chromosomes.size(); i++){
+                    byte a1 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos1);
+                    byte a2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
+                    if (m1a1 > 0){
+                        if (m1a2 == 0 && !(a1 == 5) && !(a1 == 0) && a1 != m1a1) m1a2 = a1;
+                    } else if (!(a1 == 5) && !(a1 == 0)) m1a1=a1;
+
+                    if (m2a1 > 0){
+                        if (m2a2 == 0 && !(a2 == 5) && !(a2 == 0) && a2 != m2a1) m2a2 = a2;
+                    } else if (!(a2 == 5) && !(a2 == 0)) m2a1=a2;
+
+                    if (a1 == 5) m1H++;
+                    if (a2 == 5) m2H++;
+                }
+
+                //check for non-polymorphic markers
+                if (m1a2==0){
+                    if (m1H==0){
+                        dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
+                        continue;
+                    } else {
+                        if (m1a1 == 1){ m1a2=2; }
+                        else { m1a2 = 1; }
+                    }
+                }
+                if (m2a2==0){
+                    if (m2H==0){
+                        dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
+                        continue;
+                    } else {
+                        if (m2a1 == 1){ m2a2=2; }
+                        else { m2a2 = 1; }
+                    }
+                }
+
+                int[] marker1num = new int[5]; int[] marker2num = new int[5];
+
+                marker1num[0]=0;
+                marker1num[m1a1]=1;
+                marker1num[m1a2]=2;
+                marker2num[0]=0;
+                marker2num[m2a1]=1;
+                marker2num[m2a2]=2;
+                //iterate through all chromosomes in dataset
+                for (int i = 0; i < chromosomes.size(); i++){
+                    //System.out.println(i + " " + pos1 + " " + pos2);
+                    //assign alleles for each of a pair of chromosomes at a marker to four variables
+                    byte a1 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos1);
+                    byte a2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
+                    byte b1 = ((Chromosome) chromosomes.elementAt(++i)).elementAt(pos1);
+                    byte b2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
+                    if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
+                        //skip missing data
+                    } else if ((a1 == 5 && a2 == 5) || (a1 == 5 && !(a2 == b2)) || (a2 == 5 && !(a1 == b1))) doublehet++;
+                    //find doublehets and resolved haplotypes
+                    else if (a1 == 5){
+                        twoMarkerHaplos[1][marker2num[a2]]++;
+                        twoMarkerHaplos[2][marker2num[a2]]++;
+                    } else if (a2 == 5){
+                        twoMarkerHaplos[marker1num[a1]][1]++;
+                        twoMarkerHaplos[marker1num[a1]][2]++;
+                    } else {
+                        twoMarkerHaplos[marker1num[a1]][marker2num[a2]]++;
+                        twoMarkerHaplos[marker1num[b1]][marker2num[b2]]++;
+                    }
+
+                }
+                //another monomorphic marker check
+                int r1, r2, c1, c2;
+                r1 = twoMarkerHaplos[1][1] + twoMarkerHaplos[1][2];
+                r2 = twoMarkerHaplos[2][1] + twoMarkerHaplos[2][2];
+                c1 = twoMarkerHaplos[1][1] + twoMarkerHaplos[2][1];
+                c2 = twoMarkerHaplos[1][2] + twoMarkerHaplos[2][2];
+                if ( (r1==0 || r2==0 || c1==0 || c2==0) && doublehet == 0){
+                    dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
+                    continue;
+                }
+
+                //compute D Prime for this pair of markers.
+                //return is a tab delimited string of d', lod, r^2, CI(low), CI(high)
+                dPrimeTable[pos1][pos2] = computeDPrime(twoMarkerHaplos[1][1], twoMarkerHaplos[1][2], twoMarkerHaplos[2][1], twoMarkerHaplos[2][2], doublehet, 0.1);
+            }
         }
     }
 
@@ -1001,118 +1110,6 @@ public class HaploData{
     }
 
 
-    void generateDPrimeTable(long maxdist){
-        //calculating D prime requires the number of each possible 2 marker
-        //haplotype in the dataset
-        dPrimeTable = new PairwiseLinkage[Chromosome.getSize()][Chromosome.getSize()];
-        int doublehet;
-        long negMaxdist = -1*maxdist;
-        int[][] twoMarkerHaplos = new int[3][3];
-
-        //loop through all marker pairs
-        for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
-            //clear the array
-            for (int pos1 = 0; pos1 < pos2; pos1++){
-                long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
-                if (maxdist > 0){
-                    if ((sep > maxdist || sep < negMaxdist)){
-                        dPrimeTable[pos1][pos2] = null;
-                        continue;
-                    }
-                }
-                for (int i = 0; i < twoMarkerHaplos.length; i++){
-                    for (int j = 0; j < twoMarkerHaplos[i].length; j++){
-                        twoMarkerHaplos[i][j] = 0;
-                    }
-                }
-                doublehet = 0;
-                //get the alleles for the markers
-                int m1a1 = 0; int m1a2 = 0; int m2a1 = 0; int m2a2 = 0; int m1H = 0; int m2H = 0;
-
-                for (int i = 0; i < chromosomes.size(); i++){
-                    byte a1 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos1);
-                    byte a2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
-                    if (m1a1 > 0){
-                        if (m1a2 == 0 && !(a1 == 5) && !(a1 == 0) && a1 != m1a1) m1a2 = a1;
-                    } else if (!(a1 == 5) && !(a1 == 0)) m1a1=a1;
-
-                    if (m2a1 > 0){
-                        if (m2a2 == 0 && !(a2 == 5) && !(a2 == 0) && a2 != m2a1) m2a2 = a2;
-                    } else if (!(a2 == 5) && !(a2 == 0)) m2a1=a2;
-
-                    if (a1 == 5) m1H++;
-                    if (a2 == 5) m2H++;
-                }
-
-                //check for non-polymorphic markers
-                if (m1a2==0){
-                    if (m1H==0){
-                        dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
-                        continue;
-                    } else {
-                        if (m1a1 == 1){ m1a2=2; }
-                        else { m1a2 = 1; }
-                    }
-                }
-                if (m2a2==0){
-                    if (m2H==0){
-                        dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
-                        continue;
-                    } else {
-                        if (m2a1 == 1){ m2a2=2; }
-                        else { m2a2 = 1; }
-                    }
-                }
-
-                int[] marker1num = new int[5]; int[] marker2num = new int[5];
-
-                marker1num[0]=0;
-                marker1num[m1a1]=1;
-                marker1num[m1a2]=2;
-                marker2num[0]=0;
-                marker2num[m2a1]=1;
-                marker2num[m2a2]=2;
-                //iterate through all chromosomes in dataset
-                for (int i = 0; i < chromosomes.size(); i++){
-                    //System.out.println(i + " " + pos1 + " " + pos2);
-                    //assign alleles for each of a pair of chromosomes at a marker to four variables
-                    byte a1 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos1);
-                    byte a2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
-                    byte b1 = ((Chromosome) chromosomes.elementAt(++i)).elementAt(pos1);
-                    byte b2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
-                    if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
-                        //skip missing data
-                    } else if ((a1 == 5 && a2 == 5) || (a1 == 5 && !(a2 == b2)) || (a2 == 5 && !(a1 == b1))) doublehet++;
-                    //find doublehets and resolved haplotypes
-                    else if (a1 == 5){
-                        twoMarkerHaplos[1][marker2num[a2]]++;
-                        twoMarkerHaplos[2][marker2num[a2]]++;
-                    } else if (a2 == 5){
-                        twoMarkerHaplos[marker1num[a1]][1]++;
-                        twoMarkerHaplos[marker1num[a1]][2]++;
-                    } else {
-                        twoMarkerHaplos[marker1num[a1]][marker2num[a2]]++;
-                        twoMarkerHaplos[marker1num[b1]][marker2num[b2]]++;
-                    }
-
-                }
-                //another monomorphic marker check
-                int r1, r2, c1, c2;
-                r1 = twoMarkerHaplos[1][1] + twoMarkerHaplos[1][2];
-                r2 = twoMarkerHaplos[2][1] + twoMarkerHaplos[2][2];
-                c1 = twoMarkerHaplos[1][1] + twoMarkerHaplos[2][1];
-                c2 = twoMarkerHaplos[1][2] + twoMarkerHaplos[2][2];
-                if ( (r1==0 || r2==0 || c1==0 || c2==0) && doublehet == 0){
-                    dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
-                    continue;
-                }
-
-                //compute D Prime for this pair of markers.
-                //return is a tab delimited string of d', lod, r^2, CI(low), CI(high)
-                dPrimeTable[pos1][pos2] = computeDPrime(twoMarkerHaplos[1][1], twoMarkerHaplos[1][2], twoMarkerHaplos[2][1], twoMarkerHaplos[2][2], doublehet, 0.1);
-            }
-        }
-    }
 
     //everything below here is related to em phasing of haps
 

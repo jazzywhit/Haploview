@@ -15,11 +15,7 @@ public class CheckDataPanel extends JPanel {
 
 	public CheckDataPanel(File file){
 		try{
-
 			//okay, for now we're going to assume the ped file has no header
-			//pedfile = new PedFileParser().parse(file);
-
-			//CheckData data = new CheckData(pedfile);
             Vector pedFileStrings = new Vector();
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			String line;
