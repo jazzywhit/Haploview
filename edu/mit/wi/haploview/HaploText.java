@@ -3,12 +3,13 @@ package edu.mit.wi.haploview;
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
-import edu.mit.wi.haploview.association.AssociationTestSet;
+import edu.mit.wi.haploview.association.*;
 
 import java.io.*;
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.awt.image.BufferedImage;
 
 import com.sun.jimi.core.Jimi;
@@ -24,6 +25,7 @@ public class HaploText implements Constants{
     private String hapmapFileName;
     private String blockFileName;
     private String trackFileName;
+    private String customAssocTestsFileName;
     private boolean skipCheck = false;
     private Vector excludedMarkers = new Vector();
     private boolean quietMode = false;
@@ -32,6 +34,9 @@ public class HaploText implements Constants{
     private boolean outputDprime;
     private boolean outputPNG;
     private boolean outputCompressedPNG;
+    private boolean doPermutationTest;
+    private int permutationCount;
+
 
     public boolean isNogui() {
         return nogui;
@@ -112,6 +117,7 @@ public class HaploText implements Constants{
         int maxMendel = -1;
         boolean assocTDT = false;
         boolean assocCC = false;
+        permutationCount = 0;
 
 
         for(int i =0; i < args.length; i++) {
@@ -381,8 +387,37 @@ public class HaploText implements Constants{
                     i--;
                 }
             }
-
-
+            else if(args[i].equalsIgnoreCase("-permtests")) {
+                i++;
+                int permCount=0;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println("-permtests requires an integer argument");
+                    System.exit(1);
+                }
+                else {
+                    try {
+                        permCount = Integer.parseInt(args[i]);
+                        if(permCount<0){
+                            System.out.println("-permtests argument must be a positive integer");
+                            System.exit(1);
+                        }
+                    } catch(NumberFormatException nfe) {
+                        System.out.println("-permtests argument must be a positive integer");
+                        System.exit(1);
+                    }
+                }
+                doPermutationTest = true;
+                permutationCount = permCount;
+            }
+            else if(args[i].equalsIgnoreCase("-customassoc")) {
+                i++;
+                if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                    customAssocTestsFileName = args[i];
+                }else{
+                    System.out.println(args[i-1] + " requires a filename");
+                    System.exit(1);
+                }
+            }
             else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
             }
@@ -477,6 +512,23 @@ public class HaploText implements Constants{
             Options.setAssocTest(ASSOC_CC);
         }
 
+        if(doPermutationTest) {
+            if(!assocCC && !assocTDT) {
+                System.out.println("An association test type must be specified for permutation tests to be performed.");
+                System.exit(1);
+            }
+        }
+
+        if(customAssocTestsFileName != null) {
+            if(!assocCC && !assocTDT) {
+                System.out.println("An association test type must be specified when using a custom association test file.");
+                System.exit(1);
+            }
+            if(infoFileName == null) {
+                System.out.println("A marker info file must be specified when using a custom association test file.");
+                System.exit(1);
+            }
+        }
 
     }
 
@@ -596,6 +648,7 @@ public class HaploText implements Constants{
             HaploData textData;
             File OutputFile;
             File inputFile;
+            AssociationTestSet customAssocSet;
 
             if(!quietMode && fileName != null){
                 System.out.println("Using data file: " + fileName);
@@ -637,6 +690,15 @@ public class HaploText implements Constants{
                 textData.prepareMarkerInput(infoFile,null);
             }
 
+            HashSet whiteListedCustomMarkers = new HashSet();
+            if (customAssocTestsFileName != null){
+                customAssocSet = new AssociationTestSet(customAssocTestsFileName);
+                whiteListedCustomMarkers = customAssocSet.getWhitelist();
+            }else{
+                customAssocSet = null;
+            }
+            textData.setWhiteList(whiteListedCustomMarkers);
+
             boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
             Vector result = null;
             if (fileType != HAPS_FILE){
@@ -677,6 +739,8 @@ public class HaploText implements Constants{
                 cp.printTable(validateOutputFile(fileName + ".CHECK"));
             }
             Vector cust = new Vector();
+            AssociationTestSet blockTestSet = null;
+
             if(blockOutputType != -1){
                 textData.generateDPrimeTable();
                 Haplotype[][] haplos;
@@ -695,6 +759,9 @@ public class HaploText implements Constants{
                         OutputFile = validateOutputFile(fileName + ".CUSTblocks");
                         //read in the blocks file
                         File blocksFile = new File(blockFileName);
+                        if(!quietMode) {
+                            System.out.println("Using custom blocks file " + blockFileName);
+                        }
                         cust = textData.readBlocks(blocksFile);
                         break;
                     case BLOX_ALL:
@@ -765,7 +832,9 @@ public class HaploText implements Constants{
                         System.out.println("Haplotype association results cannot be used with block output \"ALL\"");
                     }else{
                         if (haplos != null){
-                            new AssociationTestSet(haplos,null).saveHapsToText(validateOutputFile(fileName + ".HAPASSOC"));
+                            blockTestSet = new AssociationTestSet(haplos,null);
+                            blockTestSet.saveHapsToText(validateOutputFile(fileName + ".HAPASSOC"));
+
                         }else if (!quietMode){
                             System.out.println("Skipping block association output: no valid blocks.");
                         }
@@ -790,6 +859,9 @@ public class HaploText implements Constants{
                 }
                 if (trackFileName != null){
                     textData.readAnalysisTrack(new File(trackFileName));
+                    if(!quietMode) {
+                        System.out.println("Using analysis track file " + trackFileName);
+                    }
                 }
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
                 BufferedImage i = dpd.export(0,Chromosome.getUnfilteredSize(),outputCompressedPNG);
@@ -800,10 +872,66 @@ public class HaploText implements Constants{
                 }
             }
 
+            AssociationTestSet markerTestSet =null;
             if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC){
-                new AssociationTestSet(textData.getPedFile(),null,Chromosome.getAllMarkers()).saveSNPsToText(validateOutputFile(fileName + ".ASSOC"));
+                markerTestSet = new AssociationTestSet(textData.getPedFile(),null,Chromosome.getAllMarkers());
+                markerTestSet.saveSNPsToText(validateOutputFile(fileName + ".ASSOC"));
             }
 
+            if(customAssocSet != null) {
+                if(!quietMode) {
+                    System.out.println("Using custom association test file " + customAssocTestsFileName);
+                }
+                try {
+                    customAssocSet.runFileTests(textData,markerTestSet.getMarkerAssociationResults());
+                    customAssocSet.saveResultsToText(validateOutputFile(fileName + ".CUSTASSOC"));
+
+                }catch(IOException ioe) {
+                    System.out.println("An error occured writing the custom association results file.");
+                    customAssocSet = null;
+                }
+            }
+
+            if(doPermutationTest) {
+                AssociationTestSet permTests = null;
+                if( customAssocSet != null) {
+                    permTests = customAssocSet;
+                }else {
+                    permTests = new AssociationTestSet();
+                    permTests.cat(markerTestSet);
+                    permTests.cat(blockTestSet);
+                }
+                final PermutationTestSet pts = new PermutationTestSet(permutationCount,textData.getSavedEMs(),textData.getPedFile(),permTests);
+                Thread permThread = new Thread(new Runnable() {
+                    public void run() {
+                        pts.doPermutations();
+                    }
+                });
+
+                permThread.start();
+
+                if(!quietMode) {
+                    System.out.println("Starting " + permutationCount + " permutation tests (each . printed represents 1% of tests completed)");
+                }
+
+                int dotsPrinted =0;
+                while(pts.getPermutationCount() - pts.getPermutationsPerformed() > 0) {
+                    while(( (double)pts.getPermutationsPerformed() / pts.getPermutationCount())*100 > dotsPrinted) {
+                        System.out.print(".");
+                        dotsPrinted++;
+                    }
+                    try{
+                        Thread.currentThread().sleep(100);
+                    }catch(InterruptedException ie) {}
+                }
+                System.out.println();
+
+                try {
+                    pts.writeResultsToFile(validateOutputFile(fileName  + ".PERMUT"));
+                } catch(IOException ioe) {
+                    System.out.println("An error occured while writing the permutation test results to file.");
+                }
+            }
         }
         catch(IOException e){
             System.err.println("An error has occured. This probably has to do with file input or output");

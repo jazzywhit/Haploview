@@ -531,7 +531,7 @@ public class AssociationTestSet implements Constants{
         }
     }
 
-    public void saveResultsToText(File outputFile){
+    public void saveResultsToText(File outputFile) throws IOException{
         if(results == null) {
             return;
         }
@@ -541,12 +541,7 @@ public class AssociationTestSet implements Constants{
         }
 
         FileWriter fw;
-        try {
-            fw = new FileWriter(outputFile);
-        } catch(IOException ioe) {
-            System.err.println("An error occured while accessing the association output file");
-            return;
-        }
+        fw = new FileWriter(outputFile);
 
         StringBuffer result = new StringBuffer();
         if(Options.getAssocTest() == ASSOC_TRIO) {
@@ -577,15 +572,11 @@ public class AssociationTestSet implements Constants{
             }
         }
 
-        try {
-            fw.write(result.toString().toCharArray());
-            fw.close();
-        } catch(IOException ioe) {
-            System.err.println("An error occured while writing to the association output file.");
-        }
+        fw.write(result.toString().toCharArray());
+        fw.close();
     }
 
-    public void saveHapsToText(File outputFile){
+    public void saveHapsToText(File outputFile) throws IOException{
         if(results == null) {
             return;
         }
@@ -595,12 +586,7 @@ public class AssociationTestSet implements Constants{
         }
 
         FileWriter fw;
-        try {
-            fw = new FileWriter(outputFile);
-        } catch(IOException ioe) {
-            System.err.println("An error occured while accessing the haplotype association output file");
-            return;
-        }
+        fw = new FileWriter(outputFile);
 
         StringBuffer result = new StringBuffer();
         if(Options.getAssocTest() == ASSOC_TRIO) {
@@ -623,15 +609,11 @@ public class AssociationTestSet implements Constants{
             }
         }
 
-        try {
-            fw.write(result.toString().toCharArray());
-            fw.close();
-        } catch(IOException ioe) {
-            System.err.println("An error occured while writing to the haplotype association output file.");
-        }
+        fw.write(result.toString().toCharArray());
+        fw.close();
     }
 
-    public void saveSNPsToText(File outputFile){
+    public void saveSNPsToText(File outputFile) throws IOException{
         if(results == null) {
             return;
         }
@@ -641,12 +623,7 @@ public class AssociationTestSet implements Constants{
         }
 
         FileWriter fw;
-        try {
-            fw = new FileWriter(outputFile);
-        } catch(IOException ioe) {
-            System.err.println("An error occured while accessing the marker association output file");
-            return;
-        }
+        fw = new FileWriter(outputFile);
 
         StringBuffer result = new StringBuffer();
         if(Options.getAssocTest() == ASSOC_TRIO) {
@@ -668,11 +645,7 @@ public class AssociationTestSet implements Constants{
             }
         }
 
-        try {
-            fw.write(result.toString().toCharArray());
-            fw.close();
-        } catch(IOException ioe) {
-            System.err.println("An error occured while writing to the marker association output file.");
-        }
+        fw.write(result.toString().toCharArray());
+        fw.close();
     }
 }
