@@ -499,6 +499,9 @@ public class HaploView extends JFrame implements ActionListener{
     void readMarkers(File inputFile){
         try {
             theData.prepareMarkerInput(inputFile,maxCompDist);
+            if (checkPanel != null){
+                checkPanel.refreshNames();
+            }
         }catch (HaploViewException e){
             JOptionPane.showMessageDialog(this,
                     e.getMessage(),
@@ -635,7 +638,7 @@ public class HaploView extends JFrame implements ActionListener{
             fc.setSelectedFile(null);
             int returnVal = fc.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                theData.saveDprimeToText(theData.filteredDPrimeTable, fc.getSelectedFile(), theData.infoKnown);
+                theData.saveDprimeToText(theData.filteredDPrimeTable, fc.getSelectedFile());
             }
         }catch (IOException ioexec){
             JOptionPane.showMessageDialog(this,

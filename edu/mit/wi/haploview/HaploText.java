@@ -364,6 +364,7 @@ public class HaploText {
         try {
             int outputType;
             long maxDistance;
+            long negMaxDistance;
             HaploData textData;
             File OutputFile;
             File inputFile;
@@ -375,11 +376,13 @@ public class HaploText {
             }
 
             maxDistance = this.arg_distance * 1000;
+            negMaxDistance = -maxDistance;
             outputType = this.arg_output;
 
 
 
             textData = new HaploData();
+            Vector result = null;
 
             if(!fileType){
                 //read in haps file
@@ -391,7 +394,6 @@ public class HaploText {
                 Vector pedFileStrings;
                 BufferedReader reader;
                 String line;
-                Vector result;
                 boolean[] markerResultArray;
 
                 ped = new PedFile();
@@ -407,23 +409,6 @@ public class HaploText {
 
                 if(!arg_skipCheck) {
                     result = ped.check();
-                }
-
-                if(this.arg_showCheck) {
-                    System.out.println("Data check results:\n" +
-                            "Name\t\tObsHET\tPredHET\tHWpval\t%Geno\tFamTrio\tMendErr");
-                    for(int i=0;i<result.size();i++){
-                        MarkerResult currentResult = (MarkerResult)result.get(i);
-                        System.out.println(
-                                currentResult.getName()        +"\t"+
-                                currentResult.getObsHet()      +"\t"+
-                                currentResult.getPredHet()     +"\t"+
-                                currentResult.getHWpvalue()    +"\t"+
-                                currentResult.getGenoPercent() +"\t"+
-                                currentResult.getFamTrioNum()  +"\t"+
-                                currentResult.getMendErrNum());
-                    }
-
                 }
 
                 markerResultArray = new boolean[ped.getNumMarkers()];
@@ -483,10 +468,28 @@ public class HaploText {
                 }
             }
 
+            if(this.arg_showCheck && result != null) {
+                System.out.println("Data check results:\n" +
+                        "Name\t\tObsHET\tPredHET\tHWpval\t%Geno\tFamTrio\tMendErr");
+                for(int i=0;i<result.size();i++){
+                    MarkerResult currentResult = (MarkerResult)result.get(i);
+                    System.out.println(
+                            Chromosome.getMarker(i).getName()        +"\t"+
+                            currentResult.getObsHet()      +"\t"+
+                            currentResult.getPredHet()     +"\t"+
+                            currentResult.getHWpvalue()    +"\t"+
+                            currentResult.getGenoPercent() +"\t"+
+                            currentResult.getFamTrioNum()  +"\t"+
+                            currentResult.getMendErrNum());
+                }
 
-            textData.generateDPrimeTable(maxDistance);
-            Haplotype[][] haplos;
+            }
+
+
+
             if(outputType != -1){
+                textData.generateDPrimeTable(maxDistance);
+                Haplotype[][] haplos;
                 switch(outputType){
                     case 0:
                         OutputFile = new File(fileName + ".SFSblocks");
@@ -526,7 +529,62 @@ public class HaploText {
             }
             if(this.arg_dprime) {
                 OutputFile = new File(fileName + ".DPRIME");
-                textData.saveDprimeToText(textData.filteredDPrimeTable,OutputFile,textData.infoKnown);
+                if (textData.filteredDPrimeTable != null){
+                    textData.saveDprimeToText(textData.filteredDPrimeTable,OutputFile);
+                }else{
+                    //this means that we're just writing dprime so we won't
+                    //keep the (potentially huge) dprime table in memory but instead
+                    //write out one line at a time forget
+                    FileWriter saveDprimeWriter = new FileWriter(OutputFile);
+                    if (textData.infoKnown){
+                        saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tDist\n");
+                        long dist;
+                        PairwiseLinkage linkageResult;
+
+                        for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+                            for (int j = 0; j < Chromosome.getFilteredSize(); j++){
+                                //many "slots" in table aren't filled in because it is a 1/2 matrix
+                                if (i < j){
+                                    dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
+                                    if (maxDistance > 0){
+                                        if ((dist > maxDistance || dist < negMaxDistance)){
+                                            continue;
+                                        }
+                                    }
+                                    linkageResult = textData.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
+                                    if(linkageResult != null) {
+                                        saveDprimeWriter.write(Chromosome.getFilteredMarker(i).getName() +
+                                                "\t" + Chromosome.getFilteredMarker(j).getName() +
+                                                "\t" + linkageResult.toString() + "\t" + dist + "\n");
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\n");
+                        long dist;
+                        PairwiseLinkage linkageResult;
+
+                        for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+                            for (int j = 0; j < Chromosome.getFilteredSize(); j++){
+                                //many "slots" in table aren't filled in because it is a 1/2 matrix
+                                if (i < j){
+                                    dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
+                                    if (maxDistance > 0){
+                                        if ((dist > maxDistance || dist < negMaxDistance)){
+                                            continue;
+                                        }
+                                    }
+                                    linkageResult = textData.computeDPrime(Chromosome.realIndex[i],Chromosome.realIndex[j]);
+                                    if(linkageResult != null) {
+                                        saveDprimeWriter.write((Chromosome.realIndex[i]+1) + "\t" + (Chromosome.realIndex[j]+1) + "\t" + linkageResult + "\n");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    saveDprimeWriter.close();
+                }
             }
             if(fileType){
                 TDT myTDT = new TDT();

@@ -98,7 +98,15 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 	}
 
     public void tableChanged(TableModelEvent e) {
-        changed = true;
+        if (e.getColumn() == 7){
+            changed = true;
+        }
+    }
+
+    public void refreshNames() {
+        for (int i = 0; i < table.getRowCount(); i++){
+              table.setValueAt(Chromosome.getMarker(i).getName(),i,0);
+        }
     }
 
     class CheckDataTableModel extends AbstractTableModel {

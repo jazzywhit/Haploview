@@ -1296,11 +1296,11 @@ public class HaploData{
         saveHapsWriter.close();
     }
 
-    public void saveDprimeToText(PairwiseLinkage[][] dPrimeTable, File dumpDprimeFile, boolean info) throws IOException{
+    public void saveDprimeToText(PairwiseLinkage[][] dPrimeTable, File dumpDprimeFile) throws IOException{
         FileWriter saveDprimeWriter = new FileWriter(dumpDprimeFile);
 
 
-        if (info){
+        if (infoKnown){
             saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tDist\n");
             long dist;
 
