@@ -462,6 +462,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
+        dPrimeDisplay.computePreferredSize();
         if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
             dPrimeDisplay.repaint();
         }
@@ -728,6 +729,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (tdtPanel != null){
                 tdtPanel.refreshNames();
             }
+            if (dPrimeDisplay != null){
+                dPrimeDisplay.computePreferredSize();
+            }
         }catch (HaploViewException e){
             JOptionPane.showMessageDialog(this,
                     e.getMessage(),
@@ -816,12 +820,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                 //after editing the filtered marker list, needs to be prodded into
                 //resizing correctly
-                Dimension size = dPrimeDisplay.getSize();
+                dPrimeDisplay.computePreferredSize();
                 Dimension pref = dPrimeDisplay.getPreferredSize();
-                Rectangle visRect = dPrimeDisplay.getVisibleRect();
-                if (size.width != pref.width && pref.width > visRect.width){
-                    ((JViewport)dPrimeDisplay.getParent()).setViewSize(pref);
-                }
+                ((JViewport)dPrimeDisplay.getParent()).setViewSize(pref);
                 dPrimeDisplay.colorDPrime(currentScheme);
 
                 hapDisplay.theData = theData;

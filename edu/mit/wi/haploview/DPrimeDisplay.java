@@ -85,6 +85,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     DPrimeDisplay(HaploView h){
         theData=h.theData;
         theHV = h;
+        this.computePreferredSize(theHV.getGraphics());
         this.colorDPrime(STD_SCHEME);
         this.setDoubleBuffered(true);
         addMouseListener(this);
@@ -92,8 +93,10 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         this.setAutoscrolls(true);
     }
 
+
     DPrimeDisplay(HaploData hd){
         theData = hd;
+        this.computePreferredSize();
         this.colorDPrime(STD_SCHEME);
     }
 
@@ -958,7 +961,11 @@ END OF HIS HACKS
         }
     }
 
-    public Dimension getPreferredSize() {
+    public void computePreferredSize(){
+        this.computePreferredSize(this.getGraphics());
+    }
+
+    public void computePreferredSize(Graphics g) {
         //loop through table to find deepest non-null comparison
         DPrimeTable dPrimeTable = theData.dpTable;
         int upLim, loLim;
@@ -981,8 +988,6 @@ END OF HIS HACKS
         }
         //add one so we don't clip bottom box
         count ++;
-
-        Graphics g = this.getGraphics();
 
         if (g != null){
             g.setFont(markerNameFont);
@@ -1018,7 +1023,7 @@ END OF HIS HACKS
         if (high < visRect.height && showWM){
             high = visRect.height;
         }
-        return new Dimension(wide, high);
+        setPreferredSize(new Dimension(wide, high));
     }
 
     public void mouseClicked(MouseEvent e) {
