@@ -153,7 +153,6 @@ class FindBlocks {
 		    numInGroup ++;
 		}
 	    }
-	    System.out.println(first + " " + last + "  " + numStrong);
 	    //change the definition somewhat for small blocks
 	    if (numInGroup > 3){
 		if (numStrong + numRec < 6) continue;
@@ -163,7 +162,7 @@ class FindBlocks {
 		if (numStrong + numRec < 1) continue;
 	    }
 	    
-	    if (numStrong/(numStrong + numRec) > 0.95){ //this qualifies as a block
+	    if ((double)numStrong/(double)(numStrong + numRec) > 0.95){ //this qualifies as a block
 		//add to the block list, but in order by first marker number:		
 		if (blocks.size() == 0){ //put first block first
 		    blocks.add(first + " " + last);
