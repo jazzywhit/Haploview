@@ -13,13 +13,13 @@ public class TaggerController {
     private Vector results;
     private Vector taggerSNPs;
     private boolean taggingCompleted;
-    //private Hashtable snpHash;
+    private Hashtable snpHash;
 
     public TaggerController(HaploData hd, Vector included, Vector excluded, Vector sitesToCapture) {
         theData = hd;
         taggerSNPs = new Vector();
 
-       Hashtable snpHash = new Hashtable();
+        snpHash = new Hashtable();
 
         for(int i=0;i<sitesToCapture.size();i++) {
             SNP tempSNP = (SNP) sitesToCapture.get(i);
@@ -65,6 +65,27 @@ public class TaggerController {
         return tagger.taggedSoFar;
     }
 
+    public Vector getForceIncludeds(){
+        return tagger.getForceInclude();
+    }
+
+    public Vector getMarkerTagDetails(int i){
+        //returns a vector with the details of how this marker was tagged:
+        //name, tag_name, r^2 with its tag
+        Vector res = new Vector();
+        String name = Chromosome.getMarker(i).getName();
+        res.add(name);
+        if (snpHash.containsKey(name)){
+            edu.mit.wi.tagger.SNP ts = (edu.mit.wi.tagger.SNP)snpHash.get(name);
+            res.add(ts.getBestTag().getTagSequence().getName());
+            res.add(String.valueOf(tagger.getPairwiseComp(ts,ts.getBestTag().getTagSequence())));
+        }else{
+            res.add(new String());
+            res.add(new String());
+        }
+
+        return res;
+    }
 
 /*    public void setExcluded(Vector e) {
         if(e == null) {

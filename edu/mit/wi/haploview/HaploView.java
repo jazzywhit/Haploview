@@ -1009,7 +1009,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                 //if we've adjusted the haps display thresh we need to change the haps ass panel
                 if (tabNum == VIEW_ASSOC_NUM){
-                    JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
+                    //todo: this is borken
+                   /* JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
                     //this is the haps ass tab inside the assoc super-tab
                     HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
                     if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
@@ -1022,7 +1023,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             permSet.cat(hapAssocPanel.getTestSet());
                             permutationPanel.setTestSet(new PermutationTestSet(0,theData.getSavedEMs(),theData.getPedFile(),permSet));
                         }
-                    }
+                    }*/
                 }
 
                 if (tabNum == VIEW_D_NUM){

@@ -52,10 +52,9 @@ public abstract class VariantSequence implements Taggable{
             if(tagComparator != null) {
                 Collections.sort(tags,tagComparator);
             }
-            return (TagSequence) tags.lastElement();
+            return (TagSequence)tags.lastElement();
         }
         return null;
     }
-
 
 }

@@ -15,7 +15,7 @@ import java.util.Hashtable;
 
 public class TaggerConfigPanel extends JPanel implements TableModelListener, ActionListener{
 	private JTable table;
-    private Vector results;
+    private TaggerController tagControl;
 
     private final static int NAME_COL = 1;
     private final static int INCLUDE_COL = 3;
@@ -83,7 +83,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
 
             tableData.add(tempData);
         }
-        TaggerTableModel tableModel = new TaggerTableModel(columnNames,tableData);
+        TagConfigTableModel tableModel = new TagConfigTableModel(columnNames,tableData);
         tableModel.addTableModelListener(this);
         table = new JTable(tableModel);
         table.getColumnModel().getColumn(0).setPreferredWidth(30);
@@ -144,7 +144,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                 }
             }
 
-            final TaggerController tagControl = new TaggerController(theData,include,exclude,capture);
+            tagControl = new TaggerController(theData,include,exclude,capture);
             //tagControl.setIncluded(include);
             //tagControl.setExcluded(exclude);
             tagControl.runTagger();
@@ -154,7 +154,6 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                             public void actionPerformed(ActionEvent e) {
                                 if(tagControl.isTaggingCompleted()) {
                                     runTaggerButton.setEnabled(true);
-                                    results = tagControl.getResults();
                                     fireTaggerEvent(new ActionEvent(tcp,ActionEvent.ACTION_PERFORMED,"taggingdone"));
                                     timer.stop();
                                 }
@@ -171,14 +170,14 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         }
     }
 
-    public Vector getResults() {
-        return results;
+    public TaggerController getTaggerController() {
+        return tagControl;
     }
 
-    class TaggerTableModel extends AbstractTableModel {
+    class TagConfigTableModel extends AbstractTableModel {
 		Vector columnNames; Vector data;
 
-		public TaggerTableModel(Vector c, Vector d){
+		public TagConfigTableModel(Vector c, Vector d){
 			columnNames=c;
 			data=d;
 		}

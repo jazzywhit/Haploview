@@ -131,7 +131,7 @@ public class Tagger {
 
     }
 
-    private double getPairwiseComp(VariantSequence a, VariantSequence b) {
+    public double getPairwiseComp(VariantSequence a, VariantSequence b) {
         return alleleCorrelator.getCorrelation(a,b);
     }
 
@@ -227,7 +227,7 @@ public class Tagger {
         System.out.println("# of SNPs that could not be tagged: " + untagged.size());
         for (Iterator iterator = snps.iterator(); iterator.hasNext();) {
             SNP snp = (SNP) iterator.next();
-            TagSequence bt = (TagSequence)snp.getBestTag();
+            TagSequence bt = snp.getBestTag();
             if(bt == null) {
                 //this snp is untagged
             } else {
@@ -353,6 +353,12 @@ public class Tagger {
         return tags;
     }
 
+
+    public Vector getForceInclude() {
+        return forceInclude;
+    }
+
+
     public void saveResultToFile(File outFile) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
 
@@ -389,6 +395,7 @@ public class Tagger {
 
         bw.close();
     }
+
 
 
 
