@@ -1,6 +1,6 @@
 package edu.mit.wi.haploview;
 
-class SNP{
+public class SNP{
 
     private String name;
     private long position;
