@@ -29,7 +29,7 @@ public class CheckDataController extends JPanel{
         failPanel.add(holdPanel);
         holdPanel = new JPanel();
         holdPanel.add(new JLabel("Minimum minor allele freq."));
-        mafcut = new NumberTextField(String.valueOf(CheckData.mafCut),5,true);
+        mafcut = new NumberTextField(String.valueOf(CheckData.mafCut),6,true);
         holdPanel.add(mafcut);
         failPanel.add(holdPanel);
         JButton rescore = new JButton("Rescore Markers");

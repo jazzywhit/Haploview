@@ -108,7 +108,7 @@ public interface Constants {
                         "-spacing <threshold>            Proportional spacing of markers in LD display. <threshold> is a value\n" +
                         "                                between 0 (no spacing) and 1 (max spacing). Default is 0\n"  +
                         "-minMAF <threshold>             Minimum minor allele frequency to include a marker. <threshold> is a value\n" +
-                        "                                between 0 and 0.5. Default is 0\n" +
+                        "                                between 0 and 0.5. Default is .001\n" +
                         "-maxMendel <integer>            Markers with more than <integer> Mendel errors will be excluded. Default is 1.\n" +
                         "-minGeno <threshold>            Exclude markers with less than <threshold> valid data. <threshold> is a value\n" +
                         "                                between 0 and 1. Default is .75\n" +

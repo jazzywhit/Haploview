@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 1.17 2004/10/04 21:15:10 jcbarret Exp $
+* $Id: CheckData.java,v 1.18 2004/10/05 17:04:44 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -29,7 +29,7 @@ public class CheckData {
     static public double hwCut = 0.001;
     static public int failedGenoCut = 75;
     static public int numMendErrCut = 1;
-    static public double mafCut = 0.00;
+    static public double mafCut = 0.001;
     //private int _size;
     //private Vector _pedFileEntries;
     //private Hashtable pedFileHash;
