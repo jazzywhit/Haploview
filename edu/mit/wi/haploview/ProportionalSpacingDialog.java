@@ -21,7 +21,7 @@ public class ProportionalSpacingDialog extends JDialog implements ActionListener
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
 
         JSlider slider = new JSlider(0,100,
-                (int)(Options.getSpacingThreshold()*100));
+                (int)(Options.getSpacingThreshold()*200));
         Hashtable labeltable = new Hashtable();
         labeltable.put(new Integer(0), new JLabel("None"));
         labeltable.put(new Integer(100), new JLabel ("Full"));
@@ -51,7 +51,7 @@ public class ProportionalSpacingDialog extends JDialog implements ActionListener
         JSlider source = (JSlider)e.getSource();
         if (!source.getValueIsAdjusting()) {
             double thresh = ((double)source.getValue())/100;
-            Options.setSpacingThreshold(thresh);
+            Options.setSpacingThreshold(thresh*0.5);
             hv.dPrimeDisplay.computePreferredSize();
             if (hv.dPrimeDisplay != null && hv.tabs.getSelectedIndex() == VIEW_D_NUM){
                 hv.dPrimeDisplay.repaint();

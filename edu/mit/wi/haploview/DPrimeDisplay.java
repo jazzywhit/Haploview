@@ -294,10 +294,12 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         int startBS = boxSize;
         int startBR = boxRadius;
-        boolean startPDP = printDPrimeValues;
-        boolean startPMN = printMarkerNames;
+        boolean startPD = printDPrimeValues;
+        boolean startMN = printMarkerNames;
+        int startZL = zoomLevel;
 
         if (compress){
+            zoomLevel = 2;
             printDPrimeValues = false;
             printMarkerNames = false;
 
@@ -315,6 +317,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
                 boxRadius = boxSize/2;
             }
+            this.computePreferredSize();
         }
 
         Dimension pref = getPreferredSize();
@@ -324,9 +327,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         boxSize = startBS;
         boxRadius = startBR;
-        printDPrimeValues = startPDP;
-        printMarkerNames = startPMN;
+        zoomLevel = startZL;
+        printMarkerNames = startMN;
+        printDPrimeValues = startPD;
         forExport = false;
+        this.computePreferredSize();
         return i;
     }
 
@@ -1155,7 +1160,7 @@ END OF HIS HACKS
         Rectangle visRect = getVisibleRect();
         //big datasets often scroll way offscreen in zoom-out mode
         //but aren't the full height of the viewport
-        if (high < visRect.height && showWM){
+        if (high < visRect.height && showWM && !forExport){
             high = visRect.height;
         }
         if (!getPreferredSize().equals(new Dimension(wide,high))){
