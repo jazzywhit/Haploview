@@ -1,6 +1,6 @@
 package edu.mit.wi.haploview.TreeTable;
 
-import edu.mit.wi.haploview.association.AssociationResult;
+import edu.mit.wi.haploview.association.HaplotypeAssociationResult;
 
 import java.util.Vector;
 import java.util.Locale;
@@ -10,24 +10,24 @@ import java.text.NumberFormat;
 public class HaplotypeAssociationNode {
     String name, pval;
     Vector children = new Vector();
-    double freq, chisq;
+    double chisq;
     NumberFormat nf = NumberFormat.getInstance(Locale.US);
-    String freqStr = "", countStr = "";
+    String freqStr = "", countStr = "", freq = "";
 
     public HaplotypeAssociationNode(String name) {
         this.name = name;
-        this.freq = -1;
+        this.freq = "";
         this.chisq = -1;
         this.pval = "";
     }
 
-    public HaplotypeAssociationNode(AssociationResult ar, int index) {
+    public HaplotypeAssociationNode(HaplotypeAssociationResult ar, int index) {
         this.name = ar.getAlleleName(index);
         this.chisq = ar.getChiSquare(index);
         this.pval = ar.getPValue(index);
         this.freq = ar.getFreq(index);
-        this.freqStr = ar.getHapFreqString(index);
-        this.countStr = ar.getHapCountString(index);
+        this.freqStr = ar.getFreqString(index);
+        this.countStr = ar.getCountString(index);
     }
 
     public void add(HaplotypeAssociationNode child){
@@ -43,15 +43,8 @@ public class HaplotypeAssociationNode {
     }
 
     public String getFreq() {
-        if (freq < 0){
-            return ("");
-        }else{
-            nf.setMinimumFractionDigits(3);
-            nf.setMaximumFractionDigits(3);
-            return nf.format(freq);
-        }
+        return freq;
     }
-
 
     public String getCCFreqs() {
         return freqStr;
