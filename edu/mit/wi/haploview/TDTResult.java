@@ -71,7 +71,7 @@ public class TDTResult {
         }
     }
 
-    public void tallyTrioInd(byte alleleT, byte alleleU) {
+    public void tallyTrioInd(byte alleleT, byte alleleU){
         if(alleleT >= 5 && alleleU >= 5) {
             if(tallyHet){
                 counts[0][0]++;

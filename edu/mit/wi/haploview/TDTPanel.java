@@ -1,6 +1,7 @@
 package edu.mit.wi.haploview;
 
 import edu.mit.wi.pedfile.PedFile;
+import edu.mit.wi.pedfile.PedFileException;
 
 import javax.swing.*;
 import java.util.Vector;
@@ -12,7 +13,7 @@ public class TDTPanel extends JPanel {
     Vector tableColumnNames = new Vector();
     private int type;
 
-    public TDTPanel(PedFile pf, int t){
+    public TDTPanel(PedFile pf, int t) throws PedFileException{
         type = t;
         if (type == 1){
             result = TDT.calcTrioTDT(pf);

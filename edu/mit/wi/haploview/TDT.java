@@ -30,7 +30,7 @@ public class  TDT {
         return results;
     }
 
-    public static Vector calcTrioTDT(PedFile pf){
+    public static Vector calcTrioTDT(PedFile pf) throws PedFileException{
 
         Vector results = new Vector();
         int numMarkers = Chromosome.getUnfilteredSize();
@@ -44,13 +44,8 @@ public class  TDT {
                 currentFam = pf.getFamily(currentInd.getFamilyID());
                 if (currentInd.hasBothParents() && currentInd.getAffectedStatus() == 2){
                     //if he has both parents, and is affected, we can get a transmission
-                    Individual mom = null;
-                    Individual dad = null;
-                    try{
-                        mom = currentFam.getMember(currentInd.getMomID());
-                        dad = currentFam.getMember(currentInd.getDadID());
-                    }catch (PedFileException pfe){
-                    }
+                    Individual mom = currentFam.getMember(currentInd.getMomID());
+                    Individual dad = currentFam.getMember(currentInd.getDadID());
                     byte[] thisMarker = currentInd.getMarker(i);
                     byte kid1 = thisMarker[0];
                     byte kid2 = thisMarker[1];

@@ -623,7 +623,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         //optionalTabCount++;
                         //VIEW_TDT_NUM = optionalTabCount;
                         //viewItems[VIEW_TDT_NUM] = VIEW_TDT;
-                        tdtPanel = new TDTPanel(theData.getPedFile(), assocTest);
+                        try{
+                            tdtPanel = new TDTPanel(theData.getPedFile(), assocTest);
+                        } catch(PedFileException e) {
+                            JOptionPane.showMessageDialog(window,
+                                    e.getMessage(),
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
                         tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
                         viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
                     }
