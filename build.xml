@@ -76,9 +76,10 @@
      <manifest>
        <attribute name="Built-By" value="${user.name}"/>
        <attribute name="Main-Class" value="edu.mit.wi.haploview.HVWrap"/>
-       <attribute name="Class-Path" value="resources/JimiProClasses.zip"/>
      </manifest>
      <zipfileset src="resources/JimiProClasses.zip"/>
+     <zipfileset src="resources/jh.jar"/>
+     <zipfileset src="resources/haplohelp.jar"/>
    </jar>
 </target>
 
@@ -92,10 +93,10 @@
      <manifest>
        <attribute name="Built-By" value="${user.name}"/>
        <attribute name="Main-Class" value="edu.mit.wi.haploview.HaploView"/>
-       <attribute name="Class-Path" value="resources/JimiProClasses.zip"/>
      </manifest>
-
      <zipfileset src="resources/JimiProClasses.zip"/>
+     <zipfileset src="resources/jh.jar"/>
+     <zipfileset src="resources/haplohelp.jar"/>
    </jar>
 </target>
 
@@ -107,9 +108,10 @@
      <manifest>
        <attribute name="Built-By" value="${user.name}"/>
        <attribute name="Main-Class" value="edu.mit.wi.haploview.HaploView"/>
-       <attribute name="Class-Path" value="resources/JimiProClasses.zip"/>
      </manifest>
      <zipfileset src="resources/JimiProClasses.zip"/>
+     <zipfileset src="resources/jh.jar"/>
+     <zipfileset src="resources/haplohelp.jar"/>
    </jar>
 </target>
 
