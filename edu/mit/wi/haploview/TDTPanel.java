@@ -88,6 +88,7 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
         }
         table.getColumnModel().getColumn(2).setPreferredWidth(100);
 
+
         JScrollPane tableScroller = new JScrollPane(table);
         tableScroller.setMaximumSize(tableScroller.getPreferredSize());
         add(tableScroller);
@@ -141,7 +142,8 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
         }
 
         public Class getColumnClass(int c){
-			return getValueAt(0, c).getClass();
+            //things look nicer if we use the String renderer to left align all the cols.
+            return String.class;
 		}
 
 		public int getColumnCount(){
