@@ -288,14 +288,43 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     public BufferedImage export(int start, int stop, boolean compress) throws HaploViewException {
         forExport = true;
-        exportStart = Chromosome.filterIndex[start];
-        if (exportStart < 0){
-            exportStart = 0;
+
+        exportStart = -1;
+        if (start < 0){
+            start = 0;
         }
-        exportStop = Chromosome.filterIndex[stop-1];
-        if (exportStop >= Chromosome.getSize()){
-            exportStop = Chromosome.getSize()-1;
+        while (true){
+            //if the marker we want has been filtered walk up until we find a valid one
+            exportStart = Chromosome.filterIndex[start];
+            if (exportStart == -1){
+                start++;
+                if (start >= Chromosome.getUnfilteredSize()){
+                    forExport = false;
+                    throw new HaploViewException("Invalid marker range for export.");
+                }
+            }else{
+                break;
+            }
         }
+
+        exportStop = -1;
+        if (stop >= Chromosome.getUnfilteredSize()){
+            stop = Chromosome.getUnfilteredSize()-1;
+        }
+        while (true){
+            //if the marker we want has been filtered walk down until we find a valid one
+            exportStop = Chromosome.filterIndex[stop-1];
+            if (exportStop == -1){
+                stop--;
+                if (stop < 0){
+                    forExport = false;
+                    throw new HaploViewException("Invalid marker range for export.");
+                }
+            }else{
+                break;
+            }
+        }
+
 
         this.computePreferredSize();
 
@@ -1008,7 +1037,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
         return spp;
     }
-
 
     public void computePreferredSize(){
         this.computePreferredSize(this.getGraphics());

@@ -381,9 +381,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             changeKey();
             //exporting clauses
         }else if (command.equals(EXPORT_PNG)){
-            export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getSize());
+            export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getUnfilteredSize());
         }else if (command.equals(EXPORT_TEXT)){
-            export(tabs.getSelectedIndex(), TXT_MODE, 0, Chromosome.getSize());
+            export(tabs.getSelectedIndex(), TXT_MODE, 0, Chromosome.getUnfilteredSize());
         }else if (command.equals(EXPORT_OPTIONS)){
             ExportDialog exDialog = new ExportDialog(this);
             exDialog.pack();
@@ -1069,16 +1069,16 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 BufferedImage image = null;
                 if (tabNum == VIEW_D_NUM){
                     try {
-                    if (format == PNG_MODE){
-                        image = dPrimeDisplay.export(start, stop, false);
-                    }else{
-                        image = dPrimeDisplay.export(start, stop, true);
-                    }
+                        if (format == PNG_MODE){
+                            image = dPrimeDisplay.export(start, stop, false);
+                        }else{
+                            image = dPrimeDisplay.export(start, stop, true);
+                        }
                     } catch(HaploViewException hve) {
                         JOptionPane.showMessageDialog(this,
-                            hve.getMessage(),
-                            "Export Error",
-                            JOptionPane.ERROR_MESSAGE);
+                                hve.getMessage(),
+                                "Export Error",
+                                JOptionPane.ERROR_MESSAGE);
                     }
                 }else if (tabNum == VIEW_HAP_NUM){
                     image = hapDisplay.export();
@@ -1086,17 +1086,19 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     image = new BufferedImage(1,1,BufferedImage.TYPE_3BYTE_BGR);
                 }
 
-                try{
-                    String filename = outfile.getPath();
-                    if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
-                        filename += ".png";
+                if (image != null){
+                    try{
+                        String filename = outfile.getPath();
+                        if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
+                            filename += ".png";
+                        }
+                        Jimi.putImage("image/png", image, filename);
+                    }catch(JimiException je){
+                        JOptionPane.showMessageDialog(this,
+                                je.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
                     }
-                    Jimi.putImage("image/png", image, filename);
-                }catch(JimiException je){
-                    JOptionPane.showMessageDialog(this,
-                            je.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
                 }
             } else if (format == TXT_MODE){
                 try{
