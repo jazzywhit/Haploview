@@ -56,7 +56,6 @@ public class HaploText implements Constants{
         return hapmapFileName;
     }
 
-
     public int getOutputType() {
         return outputType;
     }
@@ -99,26 +98,6 @@ public class HaploText implements Constants{
     }
 
     private void argHandler(String[] args){
-
-        //TODO: -specify values from HaplotypeDisplayController (min hap percentage etc)
-        //TODO:      -want to be able to output haps file from pedfile
-       /* boolean nogui = false;
-        String batchMode = "";
-        String hapsFileName = "";
-        String pedFileName = "";
-        String infoFileName = "";
-        String hapmapFileName = "";
-        String blockFileName = "";
-        boolean showCheck = false;
-        boolean skipCheck = false;
-        Vector ignoreMarkers = new Vector();
-        int outputType = -1;
-        int maxDistance = -1;
-        boolean quietMode = false;
-        boolean outputDprime=false;
-        boolean outputPNG = false;
-        boolean outputSmallPNG = false;
-        boolean outputCheck=false;*/
 
         int maxDistance = -1;
         //this means that user didn't specify any output type if it doesn't get changed below

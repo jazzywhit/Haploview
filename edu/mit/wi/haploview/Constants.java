@@ -54,11 +54,11 @@ public interface Constants {
     static final int HMP = 4;
 
     //color modes
-    static final int STD_SCHEME = 1;
-    static final int RSQ_SCHEME = 2;
-    static final int WMF_SCHEME = 3;
-    static final int GAB_SCHEME = 4;
-    static final int GAM_SCHEME = 5;
+    static final int STD_SCHEME = 0;
+    static final int RSQ_SCHEME = 1;
+    static final int WMF_SCHEME = 2;
+    static final int GAB_SCHEME = 3;
+    static final int GAM_SCHEME = 4;
 
     //association test modes
     static final int ASSOC_NONE = 0;

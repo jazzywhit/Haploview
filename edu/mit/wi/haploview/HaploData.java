@@ -771,8 +771,6 @@ public class HaploData implements Constants{
                         if (marker1 > marker2){
                             int tmp = marker1; marker1 = marker2; marker2 = tmp;
                         }
-
-
                         if ( dpTable.getLDStats(marker1,marker2) != null
                                 && dpTable.getLDStats(marker1,marker2).getRSquared() == 1.0){
                             //these two SNPs are redundant
