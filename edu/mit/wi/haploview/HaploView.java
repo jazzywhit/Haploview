@@ -964,6 +964,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     class TabChangeListener implements ChangeListener{
         public void stateChanged(ChangeEvent e) {
             if (tabs.getSelectedIndex() != -1){
+                window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
                 int tabNum = tabs.getSelectedIndex();
                 if (tabNum == VIEW_D_NUM || tabNum == VIEW_HAP_NUM){
                     exportMenuItems[0].setEnabled(true);
@@ -1013,8 +1015,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }
                         currentBlocks.add(thisBlockReal);
                     }
-
-                    window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
                     Chromosome.doFilter(checkPanel.getMarkerResults());
 
@@ -1069,12 +1069,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }
                     }
 
-                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     checkPanel.changed=false;
                 }
 
                 if (hapDisplay != null && theData.blocksChanged){
-                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                     try{
                         hapDisplay.getHaps();
                         if(Options.getAssocTest() != ASSOC_NONE) {
@@ -1098,9 +1096,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }
                     hapScroller.setViewportView(hapDisplay);
 
-                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     theData.blocksChanged = false;
                 }
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
         }
     }
