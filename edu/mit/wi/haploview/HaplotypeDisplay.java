@@ -1,5 +1,4 @@
 package edu.mit.wi.haploview;
-//TODO: display size screwed up when changing block defs
 import java.awt.*;
 //import java.awt.geom.*;
 import java.awt.image.*;

@@ -64,9 +64,10 @@ public class HaploView extends JFrame implements ActionListener{
     private javax.swing.Timer timer;
 
     DPrimeDisplay dPrimeDisplay;
-    HaplotypeDisplay hapDisplay;
-    JTabbedPane tabs;
-    String[] filenames;
+    private JScrollPane hapScroller;
+    private HaplotypeDisplay hapDisplay;
+    private JTabbedPane tabs;
+    private String[] inputOptions;
 
 
     //COMMAND LINE ARGUMENTS
@@ -229,7 +230,7 @@ public class HaploView extends JFrame implements ActionListener{
             }
             /*
             try{
-            new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),filenames[0]+".haps");
+            new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),inputOptions[0]+".haps");
             }catch (IOException ioexec){
             JOptionPane.showMessageDialog(this,
             ioexec.getMessage(),
@@ -269,12 +270,12 @@ public class HaploView extends JFrame implements ActionListener{
 
     void readPedGenotypes(String[] f){
         //input is a 3 element array with
-        //filenames[0] = ped file
-        //filenames[1] = info file (null if none)
-        //filenames[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
+        //inputOptions[0] = ped file
+        //inputOptions[1] = info file (null if none)
+        //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
 
-        filenames = f;
-        File pedFile = new File(filenames[0]);
+        inputOptions = f;
+        File pedFile = new File(inputOptions[0]);
 
         //pop open checkdata window
         checkWindow = new JFrame();
@@ -298,14 +299,14 @@ public class HaploView extends JFrame implements ActionListener{
 
     void readPhasedGenotypes(String[] f){
         //input is a 3 element array with
-        //filenames[0] = haps file
-        //filenames[1] = info file (null if none)
-        //filenames[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
+        //inputOptions[0] = haps file
+        //inputOptions[1] = info file (null if none)
+        //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
 
-        filenames = f;
+        inputOptions = f;
         theData = new HaploData();
         try{
-            theData.prepareHapsInput(new File(filenames[0]));
+            theData.prepareHapsInput(new File(inputOptions[0]));
             processData();
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
@@ -317,7 +318,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void processData(){
-        maxCompDist = Long.parseLong(filenames[2])*1000;
+        maxCompDist = Long.parseLong(inputOptions[2])*1000;
         try{
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -325,8 +326,8 @@ public class HaploView extends JFrame implements ActionListener{
                 public Object construct(){
                     dPrimeDisplay=null;
                     infoKnown = false;
-                    if (!(filenames[1].equals(""))){
-                        readMarkers(new File(filenames[1]));
+                    if (!(inputOptions[1].equals(""))){
+                        readMarkers(new File(inputOptions[1]));
                     }
                     theData.generateDPrimeTable(maxCompDist);
                     theData.guessBlocks(0);
@@ -416,7 +417,7 @@ public class HaploView extends JFrame implements ActionListener{
         hapDisplay = new HaplotypeDisplay(theData);
         HaplotypeDisplayController hdc =
                 new HaplotypeDisplayController(hapDisplay);
-        JScrollPane hapScroller = new JScrollPane(hapDisplay);
+        hapScroller = new JScrollPane(hapDisplay);
         panel.add(hapScroller);
         panel.add(hdc);
         tabs.addTab(viewItems[1], panel);
@@ -447,6 +448,7 @@ public class HaploView extends JFrame implements ActionListener{
         }
     }
 
+    //TODO: investigate export options
     /**void doExportDPrime(){
      fc.setSelectedFile(null);
      int returnVal = fc.showSaveDialog(this);
@@ -524,12 +526,13 @@ public class HaploView extends JFrame implements ActionListener{
                 JOptionPane.QUESTION_MESSAGE);
         theData.guessBlocks(methodList.getSelectedIndex());
         hapDisplay.getHaps();
+        hapScroller.setViewportView(hapDisplay);
         dPrimeDisplay.refreshWorldmap();
         if (tabs.getSelectedIndex() == 0) dPrimeDisplay.repaint();
     }
 
 
-    public static void main(String[] args) {//throws IOException{
+    public static void main(String[] args) {
         boolean nogui = false;
         HaploView window;
         for(int i = 0;i<args.length;i++) {
