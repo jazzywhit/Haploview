@@ -288,14 +288,16 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     public BufferedImage export(int start, int stop, boolean compress) throws HaploViewException {
         forExport = true;
-        exportStart = start;
+        exportStart = Chromosome.filterIndex[start];
         if (exportStart < 0){
             exportStart = 0;
         }
-        exportStop = stop;
-        if (exportStop > Chromosome.getSize()){
-            exportStop = Chromosome.getSize();
+        exportStop = Chromosome.filterIndex[stop-1];
+        if (exportStop >= Chromosome.getSize()){
+            exportStop = Chromosome.getSize()-1;
         }
+
+        this.computePreferredSize();
 
         int startBS = boxSize;
         int startBR = boxRadius;
@@ -506,7 +508,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             lowX = exportStart;
             lowY = exportStart;
             highX = exportStop;
-            highY = exportStop;
+            highY = exportStop+1;
         }
 
 
@@ -1092,11 +1094,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             upLim = exportStop;
         }else{
             loLim = 0;
-            upLim = Chromosome.getSize();
+            upLim = Chromosome.getSize()-1;
         }
         double sep = 0;
-        for (int x = loLim; x < upLim-1; x++){
-            for (int y = x+1; y < upLim; y++){
+        for (int x = loLim; x < upLim; x++){
+            for (int y = x+1; y <= upLim; y++){
                 if (dPrimeTable.getLDStats(x,y) != null){
                     if (sep < alignedPositions[y]-alignedPositions[x]){
                         sep = alignedPositions[y]-alignedPositions[x];
@@ -1133,14 +1135,13 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
         high += infoHeight;
 
+        int wide = 2*H_BORDER + (int)(alignedPositions[upLim] - alignedPositions[loLim]);
         //this dimension is just the area taken up by the dprime chart
         //it is used in drawing the worldmap
         //for other elements add their heights in the next code hunk!
-        chartSize = new Dimension(2*H_BORDER +(int)(alignedPositions[alignedPositions.length-1] - alignedPositions[0]),
-                high);
+        chartSize = new Dimension(wide, high);
 
 
-        int wide = 2*H_BORDER + (int)(alignedPositions[alignedPositions.length-1] - alignedPositions[0]);
         Rectangle visRect = getVisibleRect();
         //big datasets often scroll way offscreen in zoom-out mode
         //but aren't the full height of the viewport
