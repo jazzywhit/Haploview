@@ -14,7 +14,7 @@ public class Chromosome{
     private String origin;
 
     private static String dataChrom = null;
-    static int[] realIndex;
+    public static int[] realIndex;
     static int[] filterIndex;
     static Object[] markers;
     static int trueSize;
