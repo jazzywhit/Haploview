@@ -88,7 +88,7 @@ public class HaploData{
         return this.blocksDone;
     }
 
-    void prepareMarkerInput(File infile, long maxdist) throws IOException, HaploViewException{
+    void prepareMarkerInput(File infile, long maxdist, String[][] hapmapGoodies) throws IOException, HaploViewException{
         //this method is called to gather data about the markers used.
         //It is assumed that the input file is two columns, the first being
         //the name and the second the absolute position. the maxdist is
@@ -181,7 +181,7 @@ public class HaploData{
                 filteredDPrimeTable = getFilteredTable();
             }
             infoKnown=true;
-        }else{
+        }else {
             double numChroms = chromosomes.size();
             Vector markerInfo = new Vector();
             numBadGenotypes = new double[Chromosome.getSize()];
@@ -210,7 +210,14 @@ public class HaploData{
                 }
                 double maf = numa1/(numa2+numa1);
                 if (maf > 0.5) maf = 1.0-maf;
-                markerInfo.add(new SNP(String.valueOf(i+1), (i*4000), Math.rint(maf*100.0)/100.0));
+                if (hapmapGoodies != null){
+                    //we know some stuff from the hapmap so we'll add it here
+                    infoKnown = true;
+                    markerInfo.add(new SNP(hapmapGoodies[i][0], Long.parseLong(hapmapGoodies[i][1]),
+                            Math.rint(maf*100.0)/100.0));
+                }else{
+                    markerInfo.add(new SNP(String.valueOf(i+1), (i*4000), Math.rint(maf*100.0)/100.0));
+                }
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
             Chromosome.markers = markerInfo.toArray();
@@ -295,12 +302,12 @@ public class HaploData{
             Chromosome.realIndex[i] = i;
         }
         try{
-            prepareMarkerInput(null,0);
+            prepareMarkerInput(null,0,null);
         }catch(HaploViewException e){
         }
     }
 
-    public void linkageToChrom(boolean[] markerResults, PedFile pedFile)
+    public void linkageToChrom(boolean[] markerResults, PedFile pedFile, String[][] hmInfo)
             throws IllegalArgumentException, HaploViewException, PedFileException{
 
         if(markerResults == null){
@@ -519,7 +526,7 @@ public class HaploData{
         }
         chromosomes = chrom;
         try{
-            prepareMarkerInput(null,0);
+            prepareMarkerInput(null,0,hmInfo);
         }catch(HaploViewException e){
         }catch(IOException e){
         }

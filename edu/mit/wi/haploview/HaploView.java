@@ -293,7 +293,7 @@ public class HaploView extends JFrame implements ActionListener{
             fc.setSelectedFile(new File(""));
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                readMarkers(fc.getSelectedFile());
+                readMarkers(fc.getSelectedFile(),null);
             }
         }else if (command == CUST_BLOCKS){
             TweakBlockDefsDialog tweakDialog = new TweakBlockDefsDialog("Customize Blocks", this);
@@ -392,9 +392,6 @@ public class HaploView extends JFrame implements ActionListener{
             keyItem = new JMenuItem("High D' / Low LOD");
             keyItem.setBackground(new Color(192, 192, 240));
             keyMenu.add(keyItem);
-            keyItem = new JMenuItem("High LOD / Low D'");
-            keyItem.setBackground(new Color(224, 224, 224));
-            keyMenu.add(keyItem);
         } else if (scheme == 2){
             JMenuItem keyItem = new JMenuItem("Strong Linkage");
             keyItem.setBackground(Color.darkGray);
@@ -446,8 +443,8 @@ public class HaploView extends JFrame implements ActionListener{
                 markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
             }
 
-            theData.linkageToChrom(markerResultArray,checkPanel.getPedFile());
-            processData();
+            theData.linkageToChrom(markerResultArray,checkPanel.getPedFile(),checkPanel.getPedFile().getHMInfo());
+            processData(checkPanel.getPedFile().getHMInfo());
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
@@ -483,7 +480,7 @@ public class HaploView extends JFrame implements ActionListener{
         theData = new HaploData();
         try{
             theData.prepareHapsInput(new File(inputOptions[0]));
-            processData();
+            processData(null);
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
@@ -498,7 +495,7 @@ public class HaploView extends JFrame implements ActionListener{
 
     }
 
-    void processData() {
+    void processData(final String[][] hminfo) {
         if (inputOptions[2].equals("")){
             inputOptions[2] = "0";
         }
@@ -510,10 +507,14 @@ public class HaploView extends JFrame implements ActionListener{
                 dPrimeDisplay=null;
                 theData.infoKnown = false;
                 if (!(inputOptions[1].equals(""))){
-                    readMarkers(new File(inputOptions[1]));
+                    readMarkers(new File(inputOptions[1]), null);
+                }
+
+                if (hminfo != null){
+                    readMarkers(null,hminfo);
                 }
                 theData.generateDPrimeTable(maxCompDist);
-                theData.guessBlocks(0);
+                theData.guessBlocks(3);
                 colorMenuItems[0].setSelected(true);
                 colorMenuItems[1].setEnabled(true);
                 theData.blocksChanged = false;
@@ -662,9 +663,9 @@ public class HaploView extends JFrame implements ActionListener{
         timer.start();
     }
 
-    void readMarkers(File inputFile){
+    void readMarkers(File inputFile, String[][] hminfo){
         try {
-            theData.prepareMarkerInput(inputFile,maxCompDist);
+            theData.prepareMarkerInput(inputFile,maxCompDist,hminfo);
             if (checkPanel != null){
                 checkPanel.refreshNames();
             }

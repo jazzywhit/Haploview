@@ -436,7 +436,7 @@ public class HaploText {
                     }
                 }*/
 
-                textData.linkageToChrom(markerResultArray,ped);
+                textData.linkageToChrom(markerResultArray,ped,null);
 
             }
 
@@ -447,7 +447,7 @@ public class HaploText {
             if(!infoFileName.equals("")) {
                 File infoFile = new File(infoFileName);
                 if(infoFile.exists()) {
-                    textData.prepareMarkerInput(infoFile,maxDistance);
+                    textData.prepareMarkerInput(infoFile,maxDistance,null);
                     if(!arg_quiet){
                         System.out.println("Using marker file " + infoFile.getName());
                     }
@@ -460,7 +460,7 @@ public class HaploText {
             else {
                 File maybeInfo = new File(baseName + ".info");
                 if (maybeInfo.exists()){
-                    textData.prepareMarkerInput(maybeInfo,maxDistance);
+                    textData.prepareMarkerInput(maybeInfo,maxDistance,null);
                     if(!arg_quiet){
                         System.out.println("Using marker file " + maybeInfo.getName());
                     }
