@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.11 2004/03/25 17:54:08 jcbarret Exp $
+* $Id: PedFile.java,v 1.12 2004/04/12 17:32:37 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -310,18 +310,18 @@ public class PedFile {
         //sort first
         Vector lines = new Vector();
         Hashtable sortHelp = new Hashtable(numLines-1,1.0f);
-        String[] pos = new String[numLines-1];
+        long[] pos = new long[numLines-1];
         lines.add(rawLines.get(0));
         for (int k = 1; k < numLines; k++){
             StringTokenizer st = new StringTokenizer((String) rawLines.get(k));
             //strip off 1st 3 cols
             st.nextToken();st.nextToken();st.nextToken();
-            pos[k-1] = st.nextToken();
-            sortHelp.put(pos[k-1],rawLines.get(k));
+            pos[k-1] = new Long(st.nextToken()).longValue();
+            sortHelp.put(new Long(pos[k-1]),rawLines.get(k));
         }
         Arrays.sort(pos);
         for (int i = 0; i < pos.length; i++){
-            lines.add(sortHelp.get(pos[i]));
+            lines.add(sortHelp.get(new Long(pos[i])));
         }
 
         //enumerate indivs
