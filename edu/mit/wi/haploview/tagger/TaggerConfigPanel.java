@@ -11,6 +11,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
 import java.util.Hashtable;
+import java.io.File;
+import java.io.IOException;
 
 public class TaggerConfigPanel extends JPanel implements TableModelListener, ActionListener{
 	private JTable table;
@@ -185,6 +187,14 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
 
     public TaggerController getTaggerController() {
         return tagControl;
+    }
+
+    public void export(File outfile) throws IOException, HaploViewException{
+        if (tagControl != null){
+            tagControl.saveResultsToFile(outfile);
+        }else{
+            throw new HaploViewException("Tagger has not yet generated any results");
+        }
     }
 
     class TagConfigTableModel extends AbstractTableModel {

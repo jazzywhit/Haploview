@@ -1004,7 +1004,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 if (tabNum == VIEW_D_NUM || tabNum == VIEW_HAP_NUM){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(true);
-                }else if (tabNum == VIEW_ASSOC_NUM || tabNum == VIEW_CHECK_NUM){
+                }else if (tabNum == VIEW_ASSOC_NUM || tabNum == VIEW_CHECK_NUM || tabNum == VIEW_TAGGER_NUM){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(false);
                 }else{
@@ -1200,10 +1200,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }else if (selectedTab == custAssocPanel){
                             custAssocPanel.getTestSet().saveResultsToText(outfile);
                         }
+                    }else if (tabNum == VIEW_TAGGER_NUM){
+                        taggerConfigPanel.export(outfile);
                     }
                 }catch(IOException ioe){
                     JOptionPane.showMessageDialog(this,
                             ioe.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }catch(HaploViewException he){
+                    JOptionPane.showMessageDialog(this,
+                            he.getMessage(),
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }

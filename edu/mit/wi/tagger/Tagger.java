@@ -370,6 +370,9 @@ public class Tagger {
     public void saveResultToFile(File outFile) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
 
+        bw.write("#tagging with r^2 cutoff: " + minRSquared);
+        bw.newLine();
+
         bw.write("Marker\tBest Tag\tr^2 w/tag");
         bw.newLine();
         for (int i = 0; i < snps.size(); i++) {
