@@ -19,7 +19,7 @@ public class HaploView extends JFrame implements ActionListener{
     boolean DEBUG = false;
 
     //some constants etc.
-    private static final String TITLE_STRING = "Haploview v2.03";
+    private static final String TITLE_STRING = "Haploview v2.04";
     private static final String READ_GENOTYPES = "Open genotype data";
     private static final String READ_MARKERS = "Load marker data";
     JMenuItem readMarkerItem;
