@@ -15,6 +15,8 @@ import javax.swing.event.ChangeEvent;
 
 public class HaploView extends JFrame implements ActionListener{
 
+    boolean DEBUG = true;
+
     //some constants etc.
     static final String MARKER_DATA_EXT = ".info";
 
@@ -65,7 +67,17 @@ public class HaploView extends JFrame implements ActionListener{
     String[] filenames;
 
 
+    //COMMAND LINE ARGUMENTS
+    private boolean arg_nogui = false;
+    private boolean arg_batchmode = false;
+    private String arg_hapsfile;
+    private String arg_pedfile;
+    private int arg_output;
+    private int arg_distance;
+
+
     public HaploView(){
+
         //menu setup
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -175,6 +187,165 @@ public class HaploView extends JFrame implements ActionListener{
                 quit();
             }
         });
+
+    }
+
+    /**
+     * this constructor only gets called if -nogui (or -n) is passed on the command line
+     * skips gui initilization, checks arguments, then performs the requested actions
+     * @param args command line arguments passed to HaploView
+     */
+
+    public HaploView(String[] args) {
+        this.argHandler(args);
+
+        if(!(this.arg_pedfile).equals("") || !(this.arg_hapsfile).equals("") ){
+            //System.out.println("pedfile!\t" + pedFileName);
+            processTextOnly();
+        }
+
+    }
+
+    private void argHandler(String[] args){
+
+        // TODO:-want to be able to output dprime
+        //      -info file flag
+        //      -info files in batch file
+        //      -specify values from HaplotypeDisplayController (min hap percentage etc)
+        boolean nogui = false;
+        boolean batchMode = false;
+        String hapsFileName = "";
+        String pedFileName = "";
+        int outputType = -1;
+        int maxDistance = -1;
+
+        for(int i =0; i < args.length; i++) {
+            if(args[i].equals("-help") || args[i].equals("-h")) {
+                System.out.println("HaploView command line options\n" +
+                        "-h, -help                  print this message\n" +
+                        "-n, -nogui                 command line output only\n" +
+                        "-p <pedfile>               specify an input file in pedigree file format\n" +
+                        //"-p <pedfile> [options]     specify an input file in pedigree file format\n" +
+                        //"              pedfile options:\n" +
+                        //"              showcheck      displays the results of the various pedigree integrity checks\n" +
+                        "-ha <hapsfile>             specify an input file in .haps format\n" +
+                        "-b <batchfile>             batch mode. batchfile should contain a list of haps files\n" +
+                        "-o <SFS,GAM,MJD>           output type. SFS, 4 gamete or MJD output. default is SFS.\n" +
+                        "-m <distance>              maximum comparison distance in kilobases (integer). default is 200");
+
+                System.exit(0);
+
+            }
+            else if(args[i].equals("-nogui") || args[i].equals("-n")) {
+                nogui = true;
+            }
+            else if(args[i].equals("-p")) {
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println("-p requires a filename");
+                    System.exit(1);
+                }
+                else{
+                    if(pedFileName.equals("")){
+                        pedFileName = args[i];
+                    }
+                    else {
+                        System.out.println("only one -p argument is allowed");
+                        System.exit(1);
+                    }
+                }
+            }
+            else if(args[i].equals("-ha")) {
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println("-ha requires a filename");
+                    System.exit(1);
+                }
+                else{
+                    if(hapsFileName.equals("")){
+                        hapsFileName = args[i];
+                    }
+                    else {
+                        System.out.println("only one -h argument is allowed");
+                        System.exit(1);
+                    }
+                }
+            }
+            else if(args[i].equals("-o")) {
+                i++;
+                if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                    if(outputType != -1){
+                        System.out.println("only one -o argument is allowed");
+                        System.exit(1);
+                    }
+                    if(args[i].equals("SFS")){
+                        outputType = 0;
+                    }
+                    else if(args[i].equals("GAM")){
+                        outputType = 1;
+                    }
+                    else if(args[i].equals("MJD")){
+                        outputType = 2;
+                    }
+                }
+                else {
+                    //defaults to SFS output
+                    outputType =0;
+                    i--;
+                }
+            }
+            else if(args[i].equals("-m")) {
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    System.out.println("-m requires an integer argument");
+                    System.exit(1);
+                }
+                else {
+                    if(maxDistance != -1){
+                        System.out.println("only one -m argument allowed");
+                        System.exit(1);
+                    }
+                    maxDistance = Integer.parseInt(args[i]);
+                    if(maxDistance<0){
+                        System.out.println("-m argument must be a positive integer");
+                        System.exit(1);
+                    }
+
+                }
+            }
+            else if(args[i].equals("-b")) {
+                //batch mode
+                batchMode = true;
+            }
+            else {
+                System.out.println("invalid parameter specified: " + args[i]);
+            }
+        }
+
+        //mess with vars, set defaults, etc
+
+        if(outputType == -1) {
+            outputType = 0;
+            if(nogui) {
+                System.out.println("No output type specified. Default of SFS will be used");
+            }
+        }
+        if(maxDistance == -1){
+            maxDistance = 200;
+        }
+
+        //set the global variables
+        arg_nogui = nogui;
+        arg_hapsfile = hapsFileName;
+        arg_pedfile = pedFileName;
+        arg_output = outputType;
+        arg_distance = maxDistance;
+        arg_batchmode = batchMode;
+
+    }
+
+    public boolean isNoGui() {
+        return this.arg_nogui;
     }
 
 
@@ -373,27 +544,13 @@ public class HaploView extends JFrame implements ActionListener{
 
         //first, draw the D' picture
         JPanel panel = new JPanel();
-        //JLayeredPane layerPane = new JLayeredPane();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         dPrimeDisplay = new DPrimeDisplay(theData.dPrimeTable, infoKnown, theData.markerInfo);
         JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
         dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
         dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
-        //Dimension vs = dPrimeScroller.getViewport().getViewSize();
-        //dPrimeScroller.setBounds(0,0,vs.width,vs.height);
-        //dPrimeScroller.setOpaque(true);
-        //layerPane.add(dPrimeScroller, JLayeredPane.DEFAULT_LAYER);
         panel.add(dPrimeScroller);
-        JPanel arsePanel = new JPanel();
-        arsePanel.setBackground(Color.RED);
-        arsePanel.setPreferredSize(new Dimension(100,100));
-        arsePanel.setBounds(100,100,200,200);
-        arsePanel.setOpaque(true);
-        //layerPane.add(arsePanel, JLayeredPane.POPUP_LAYER);
-        //layerPane.add(new JButton("FOO"), JLayeredPane.DEFAULT_LAYER);
-        //panel.add(arsePanel);
-        //panel.add(layerPane);
         tabs.addTab(viewItems[0], panel);
 
         //compute and show haps on next tab
@@ -513,77 +670,105 @@ public class HaploView extends JFrame implements ActionListener{
         if (tabs.getSelectedIndex() == 0) dPrimeDisplay.repaint();
     }
 
-
-    private static void pedTextOnly(String pedFileName) {
-        try {
-            File theFile;
-            PedFile ped;
-            Vector pedFileStrings;
-            BufferedReader reader;
-            String line;
-
-
-            theFile  = new File(pedFileName);
-            ped = new PedFile();
-            pedFileStrings = new Vector();
-            reader = new BufferedReader(new FileReader(theFile));
-
-
-            while((line = reader.readLine())!=null){
-                pedFileStrings.add(line);
-            }
-
-            ped.parse(pedFileStrings);
-            Vector result = ped.check();
-        }
-        catch(IOException e){}
-    }
-
-
-    /*
+    /**
      * this method finds haplotypes and caclulates dprime without using any graphics
      */
-
-
-    private static void hapsTextOnly(String hapsFile,int outputType, int maxDistance){
+    private void processTextOnly(){
         try {
-            HaploData theData;
+            String fileName;
+            int outputType;
+            long maxDistance;
+            HaploData textData;
             File OutputFile;
-            File inputFile = new File(hapsFile);
-            long maxDist = maxDistance * 1000;
-            if(!inputFile.exists()){
-                System.out.println("haps input file " + hapsFile + " does not exist");
+            File inputFile;
+            //we use this boolean to keep track of the type of file we're processing (haps or ped)
+            //false means haps, true means ped.
+            boolean fileType = false;
+
+
+            if(!this.arg_hapsfile.equals("")) {
+                fileName = this.arg_hapsfile;
+                fileType = false;
             }
+            else {
+                fileName = this.arg_pedfile;
+                fileType = true;
+            }
+
+            inputFile = new File(fileName);
+            if(!inputFile.exists()){
+                System.out.println("input file: " + fileName + " does not exist");
+                System.exit(1);
+            }
+
+            maxDistance = this.arg_distance * 1000;
+            outputType = this.arg_output;
+
             switch(outputType){
                 case 1:
-                    OutputFile = new File(hapsFile + ".4GAMblocks");
+                    OutputFile = new File(fileName + ".4GAMblocks");
                     break;
                 case 2:
-                    OutputFile = new File(hapsFile + ".MJDblocks");
+                    OutputFile = new File(fileName + ".MJDblocks");
                     break;
                 default:
-                    OutputFile = new File(hapsFile + ".SFSblocks");
+                    OutputFile = new File(fileName + ".SFSblocks");
                     break;
             }
-            //TODO FIX THIS
-            theData = new HaploData();
-            String name = hapsFile;
-            String baseName = hapsFile.substring(0,name.length()-5);
+
+            textData = new HaploData();
+
+            if(!fileType){
+                //read in haps file
+                textData.prepareGenotypeInput(inputFile);
+            }
+            else {
+                //read in ped file
+                PedFile ped;
+                Vector pedFileStrings;
+                BufferedReader reader;
+                String line;
+                Vector result;
+                boolean[] markerResultArray;
+
+                ped = new PedFile();
+                pedFileStrings = new Vector();
+                reader = new BufferedReader(new FileReader(inputFile));
+
+                while((line = reader.readLine())!=null){
+                    pedFileStrings.add(line);
+                }
+
+                ped.parse(pedFileStrings);
+                result = ped.check();
+                textData = new HaploData();
+                markerResultArray = new boolean[ped.getNumMarkers()];
+                //TODO fix the output methods so that they actually use marker results
+                // - fixed?
+                textData.linkageToChrom(markerResultArray,ped);
+
+            }
+
+
+            String name = fileName;
+            String baseName = fileName.substring(0,name.length()-5);
             File maybeInfo = new File(baseName + ".info");
             if (maybeInfo.exists()){
-                theData.prepareMarkerInput(maybeInfo);
+                textData.prepareMarkerInput(maybeInfo);
             }
-            theData.generateDPrimeTable(maxDist);
+
+
+            textData.generateDPrimeTable(maxDistance);
             Haplotype[][] haplos;
 
-            theData.guessBlocks(outputType);
-            haplos = theData.generateHaplotypes(theData.blocks, 1);
-            new TextMethods().saveHapsToText(orderHaps(haplos, theData), theData.getMultiDprime(), OutputFile);
+            textData.guessBlocks(outputType);
+            haplos = textData.generateHaplotypes(textData.blocks, 1);
+            new TextMethods().saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
         }
         catch(IOException e){}
     }
 
-    public static Haplotype[][] orderHaps (Haplotype[][] haplos, HaploData theData) throws IOException{
+    public static Haplotype[][] orderHaps (Haplotype[][] haplos, HaploData theData){
         Haplotype[][] orderedHaplos = new Haplotype[haplos.length][];
         for (int i = 0; i < haplos.length; i++){
             Vector orderedHaps = new Vector();
@@ -614,156 +799,26 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
 
-    private static void handleFlags(String[] args){
-        // TODO:-want to be able to output dprime
-        //      -info file flag
-        //      -info files in batch file
-        //      -specify values from HaplotypeDisplayController (min hap percentage etc)
-        boolean arg_nogui = false;
-        String arg_hapsfile = "";
-        String arg_pedfile = "";
-        int arg_output = -1;
-        int arg_distance = -1;
-
-
-        if(args.length>0) {
-            //assume for now that if there are any arguments given that we want text-only mode
-            arg_nogui = true;
-        }
-
-        for(int i =0; i < args.length; i++) {
-            if(args[i].equals("-help") || args[i].equals("-h")) {
-                System.out.println("HaploView command line options\n" +
-                        "-h, -help          print this message\n" +
-                        "-n, -nogui         command line output only\n" +
-                        "-p <pedfile>       specify an input file in pedigree file format\n" +
-                        "-ha <hapsfile>     specify an input file in .haps format\n" +
-                        "-b <batchfile>     batch mode. batchfile should contain a list of haps files\n" +
-                        "-o <SFS,GAM,MJD>   output type. SFS, 4 gamete or MJD output. default is SFS.\n" +
-                        "-m <distance>      maximum comparison distance in kilobases (integer). default is 200 ");
-                System.exit(0);
-
-            }
-            else if(args[i].equals("-nogui") || args[i].equals("-n")) {
-                arg_nogui = true;
-            }
-            else if(args[i].equals("-p")) {
-                i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println("-p requires a filename");
-                    System.exit(1);
-                }
-                else{
-                    if(arg_pedfile.equals("")){
-                        arg_pedfile = args[i];
-                    }
-                    else {
-                        System.out.println("only one -p argument is allowed");
-                        System.exit(1);
-                    }
-                }
-            }
-            else if(args[i].equals("-ha")) {
-                i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println("-ha requires a filename");
-                    System.exit(1);
-                }
-                else{
-                    if(arg_hapsfile.equals("")){
-                        arg_hapsfile = args[i];
-                    }
-                    else {
-                        System.out.println("only one -h argument is allowed");
-                        System.exit(1);
-                    }
-                }
-            }
-            else if(args[i].equals("-o")) {
-                i++;
-                if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
-                    if(arg_output != -1){
-                        System.out.println("only one -o argument is allowed");
-                        System.exit(1);
-                    }
-                    if(args[i].equals("SFS")){
-                        arg_output = 0;
-                    }
-                    else if(args[i].equals("GAM")){
-                        arg_output = 1;
-                    }
-                    else if(args[i].equals("MJD")){
-                        arg_output = 2;
-                    }
-                }
-                else {
-                    //defaults to SFS output
-                    arg_output =0;
-                    i--;
-                }
-            }
-            else if(args[i].equals("-m")) {
-                i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println("-m requires an integer argument");
-                    System.exit(1);
-                }
-                else {
-                    if(arg_distance != -1){
-                        System.out.println("only one -m argument allowed");
-                        System.exit(1);
-                    }
-                    arg_distance = Integer.parseInt(args[i]);
-                    if(arg_distance<0){
-                        System.out.println("-m argument must be a positive integer");
-                        System.exit(1);
-                    }
-
-                }
-            }
-            else if(args[i].equals("-b")) {
-                //batch mode
-            }
-            else {
-                System.out.println("invalid parameter specified: " + args[i]);
-            }
-        }
-
-        if(arg_nogui) {
-            //System.out.println("nogui!");
-        }
-        if(arg_output == -1) {
-            arg_output = 0;
-        }
-        if(arg_distance == -1){
-            arg_distance = 200;
-        }
-        if(!arg_pedfile.equals("")){
-            //System.out.println("pedfile!\t" + arg_pedfile);
-
-        }
-        else if(!arg_hapsfile.equals("")){
-            //System.out.println("hapsfile!\t" + arg_hapsfile);
-            hapsTextOnly(arg_hapsfile,arg_output, arg_distance);
-        }
-
-    }
-
-
-
     public static void main(String[] args) {//throws IOException{
-
-        if(args.length>0){
-            handleFlags(args);
+        boolean nogui = false;
+        HaploView window;
+        for(int i = 0;i<args.length;i++) {
+            if(args[i].equals("-nogui") || args[i].equals("-n") ) {
+                nogui = true;
+            }
+        }
+        if(nogui) {
+            window = new HaploView(args);
         }
         else {
+            window =  new HaploView();
+            window.argHandler(args);
+
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) { }
 
             //setup view object
-            HaploView.setDefaultLookAndFeelDecorated(true);
-            HaploView window = new HaploView();
             window.setTitle("HaploView beta");
             window.setSize(800,600);
 
@@ -776,6 +831,7 @@ public class HaploView extends JFrame implements ActionListener{
             ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
             readDialog.pack();
             readDialog.setVisible(true);
+
         }
     }
 }
