@@ -309,21 +309,20 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
             //// draw the marker locations
 
-            int wide = (dPrimeTable.length-1) * boxSize;
-            int lineLeft = wide/20;
-            int lineSpan = (wide/10)*9;
+            int lineSpan = (dPrimeTable.length-1) * boxSize;
+
             long minpos = Chromosome.getMarker(0).getPosition();
             long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
             double spanpos = maxpos - minpos;
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
-            g2.fillRect(left + lineLeft+1, top+1, lineSpan-1, TICK_HEIGHT-1);
+            g2.fillRect(left+1, top+1, lineSpan-1, TICK_HEIGHT-1);
             g2.setColor(Color.black);
-            g2.drawRect(left + lineLeft, top, lineSpan, TICK_HEIGHT);
+            g2.drawRect(left, top, lineSpan, TICK_HEIGHT);
 
             for (int i = 0; i < Chromosome.getFilteredSize(); i++) {
                 double pos = (Chromosome.getFilteredMarker(i).getPosition() - minpos) / spanpos;
-                int xx = (int) (left + lineLeft + lineSpan*pos);
+                int xx = (int) (left + lineSpan*pos);
                 g2.setStroke(thickerStroke);
                 g2.drawLine(xx, top, xx, top + TICK_HEIGHT);
                 g2.setStroke(thinnerStroke);
