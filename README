@@ -1,0 +1,46 @@
+Welcome to Haploview!!
+
+Introduction:
+
+Haploview is designed to simplify and expedite the process of
+haplotype analysis by providing a common interface to several tasks
+relating to such analyses.
+
+
+What's here:
+
+A clean, pruned checkout of the code should have the following:
+
+edu/ -- the source tree
+examples/ -- some sample input files 
+resources/ -- some helper files
+build.xml -- the ant build instruction file
+README -- this file
+
+
+Dependencies:
+
+HaploView can be built using the jakarta-ant build tool. Please
+download this tool at:
+
+http://ant.apache.org
+
+
+Building:
+
+After installing ant and putting the ant executable script in your path:
+
+BASH export PATH=$PATH:<path_to_ant_bin_directory>
+
+CSH setenv PATH $PATH:<path_to_ant_bin_directory>
+
+simply type:
+
+	ant haploview 
+
+Questions??
+
+e-mail:
+
+Jeffrey Barrett
+jcbarret@broad.mit.edu
