@@ -200,10 +200,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             blockMenuItems[i] = new JRadioButtonMenuItem(blockItems[i], i==0);
             blockMenuItems[i].addActionListener(this);
             blockMenuItems[i].setActionCommand("block" + i);
+            blockMenuItems[i].setEnabled(false);
             blockMenu.add(blockMenuItems[i]);
             bg.add(blockMenuItems[i]);
         }
-        blockMenuItems[3].setEnabled(false);
         analysisMenu.add(blockMenu);
         clearBlocksItem = new JMenuItem(CLEAR_BLOCKS);
         setAccelerator(clearBlocksItem, 'C', false);
@@ -229,12 +229,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
          menuItem.addActionListener(this);
          helpMenu.add(menuItem);
          **/
-
-        /*
-        clearBlocksMenuItem.addActionListener(this);
-        clearBlocksMenuItem.setEnabled(false);
-        toolMenu.add(clearBlocksMenuItem);
-        */
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e){
@@ -634,9 +628,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
        try{
            Vector cust = theData.readBlocks(file);
            theData.guessBlocks(BLOX_CUSTOM, cust);
-           if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
-               dPrimeDisplay.repaint();
-           }
+           changeBlocks(BLOX_CUSTOM);
        }catch (HaploViewException hve){
             JOptionPane.showMessageDialog(this,
                     hve.getMessage(),
@@ -704,10 +696,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     }
 
     public void changeBlocks(int method){
-        if (method == BLOX_NONE){
+        if (method == BLOX_NONE || method == BLOX_CUSTOM){
             blockMenuItems[BLOX_CUSTOM].setSelected(true);
         }
-        theData.guessBlocks(method);
+        if (method != BLOX_CUSTOM){
+            theData.guessBlocks(method);
+        }
+
         dPrimeDisplay.repaint();
         currentBlockDef = method;
 
@@ -746,6 +741,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             viewMenuItems[tabs.getSelectedIndex()].setSelected(true);
             if (checkPanel != null && checkPanel.changed){
+                //first store up the current blocks
+                Vector currentBlocks = new Vector();
+                for (int blocks = 0; blocks < theData.blocks.size(); blocks++){
+                    int thisBlock[] = (int[]) theData.blocks.elementAt(blocks);
+                    int thisBlockReal[] = new int[thisBlock.length];
+                    for (int marker = 0; marker < thisBlock.length; marker++){
+                        thisBlockReal[marker] = Chromosome.realIndex[thisBlock[marker]];
+                    }
+                    currentBlocks.add(thisBlockReal);
+                }
+
                 window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JTable table = checkPanel.getTable();
                 boolean[] markerResults = new boolean[table.getRowCount()];
@@ -780,7 +786,32 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                 hapDisplay.theData = theData;
 
-                changeBlocks(currentBlockDef);
+                if (currentBlockDef != BLOX_CUSTOM){
+                    changeBlocks(currentBlockDef);
+                }else{
+                    //adjust the blocks
+                    Vector theBlocks = new Vector();
+                    for (int x = 0; x < currentBlocks.size(); x++){
+                        Vector goodies = new Vector();
+                        int currentBlock[] = (int[])currentBlocks.elementAt(x);
+                        for (int marker = 0; marker < currentBlock.length; marker++){
+                            for (int y = 0; y < Chromosome.realIndex.length; y++){
+                                //we only keep markers from the input that are "good" from checkdata
+                                //we also realign the input file to the current "good" subset since input is
+                                //indexed of all possible markers in the dataset
+                                if (Chromosome.realIndex[y] == currentBlock[marker]){
+                                    goodies.add(new Integer(y));
+                                }
+                            }
+                        }
+                        int thisBlock[] = new int[goodies.size()];
+                        for (int marker = 0; marker < thisBlock.length; marker++){
+                            thisBlock[marker] = ((Integer)goodies.elementAt(marker)).intValue();
+                        }
+                        theBlocks.add(thisBlock);
+                    }
+                    theData.guessBlocks(BLOX_CUSTOM, theBlocks);
+                }
 
                 if (tdtPanel != null){
                     tdtPanel.refreshTable();

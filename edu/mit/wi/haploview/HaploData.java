@@ -1656,11 +1656,21 @@ public class HaploData implements Constants{
                 continue;
             }
             try{
-                int[] thisBlock = new int[st.countTokens()];
-                int x = 0;
+                Vector goodies = new Vector();
                 while (st.hasMoreTokens()){
-                    //we're being nice to users and letting them input blocks with 1-offset
-                    thisBlock[x] = new Integer(st.nextToken()).intValue()-1;
+                    Integer nextInLine = new Integer(st.nextToken());
+                    for (int y = 0; y < Chromosome.realIndex.length; y++){
+                        //we only keep markers from the input file that are "good" from checkdata
+                        //we also realign the input file to the current "good" subset since input file is
+                        //indexed of all possible markers in the dataset
+                        if (Chromosome.realIndex[y] == nextInLine.intValue() - 1){
+                            goodies.add(new Integer(y));
+                        }
+                    }
+                }
+                int thisBlock[] = new int[goodies.size()];
+                for (int x = 0; x < goodies.size(); x++){
+                    thisBlock[x] = ((Integer)goodies.elementAt(x)).intValue();
                     if (thisBlock[x] > Chromosome.getSize() || thisBlock[x] < 0){
                         throw new HaploViewException("Error, marker in block out of bounds: " + thisBlock[x] +
                                 "\non line " + lineCount);
@@ -1670,7 +1680,6 @@ public class HaploData implements Constants{
                                 "on line " + lineCount);
                     }
                     highestYet = thisBlock[x];
-                    x++;
                 }
                 cust.add(thisBlock);
             }catch (NumberFormatException nfe) {

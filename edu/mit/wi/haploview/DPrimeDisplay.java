@@ -851,7 +851,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
                 ((JViewport)getParent()).setViewPosition(new Point(bigClickX,bigClickY));
             }else{
-                theHV.blockMenuItems[BLOX_CUSTOM].setSelected(true);
+                theHV.changeBlocks(BLOX_CUSTOM);
                 Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
                         (Chromosome.getFilteredSize()*boxSize), boxSize);
                 if(blockselector.contains(clickX,clickY)){
@@ -995,7 +995,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     firstMarker = lastMarker;
                     lastMarker = temp;
                 }
-                theHV.blockMenuItems[BLOX_CUSTOM].setSelected(true);
+                theHV.changeBlocks(BLOX_CUSTOM);
                 theData.addBlock(firstMarker, lastMarker);
                 repaint();
             }
