@@ -93,8 +93,8 @@ public class HaploText {
                         "         pedfile specific options (nogui mode only): \n" +
                         "         --showcheck       displays the results of the various pedigree integrity checks\n" +
                         "         --skipcheck       skips the various pedfile checks\n" +
-                        "         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
-                        "                                   seperated list of markers. eg. 1,5,7,19,25\n" +
+                        //"         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
+                        //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
                         "-ha <hapsfile>                specify an input file in .haps format\n" +
                         "-i <infofile>                 specify a marker info file\n" +
                         "-b <batchfile>                batch mode. batchfile should contain a list of haps files\n" +
@@ -126,7 +126,7 @@ public class HaploText {
             else if (args[i].equals("--skipcheck")){
                 skipCheck = true;
             }
-            else if (args[i].equals("--ignoremarkers")){
+           /* else if (args[i].equals("--ignoremarkers")){
                 i++;
                 if(i>=args.length || (args[i].charAt(0) == '-')){
                     System.out.println("--ignoremarkers requires a list of markers");
@@ -138,7 +138,7 @@ public class HaploText {
                         ignoreMarkers.add(str.nextToken());
                     }
                 }
-            }
+            } */
             else if(args[i].equals("-ha")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
@@ -266,6 +266,7 @@ public class HaploText {
 
 
     private void doBatch() {
+        //TODO: batch files should contain lines of either <hapsfile> or <hapsfile infofile>  or <pedfile> or <pedfile infofile>
         Vector files;
         File batchFile;
         File dataFile;
@@ -440,17 +441,17 @@ public class HaploText {
                     }
                 }
 
-                if(this.arg_ignoreMarkers.size()>0) {
+              /*  if(this.arg_ignoreMarkers.size()>0) {
                     for(int i=0;i<this.arg_ignoreMarkers.size();i++){
                         int index = Integer.parseInt((String)this.arg_ignoreMarkers.get(i));
                         if(index>0 && index<markerResultArray.length){
-                            markerResultArray[i] = false;
+                            markerResultArray[index] = false;
                             if(!this.arg_quiet) {
-                                System.out.println("Ignoring marker " + (i+1));
+                                System.out.println("Ignoring marker " + (index));
                             }
                         }
                     }
-                }
+                }*/
 
                 textData.linkageToChrom(markerResultArray,ped);
 
@@ -524,6 +525,7 @@ public class HaploText {
         }
         return theData.generateCrossovers(orderedHaplos);
     }
+
 
 
 
