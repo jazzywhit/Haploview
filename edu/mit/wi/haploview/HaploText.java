@@ -489,15 +489,6 @@ public class HaploText implements Constants{
         }
 
         //mess with vars, set defaults, etc
-
-        if( blockOutputType == -1 && ( pedFileName != null ||
-                hapsFileName != null || batchFileName != null || hapmapFileName != null)
-                && !outputDprime && !outputCheck && !outputPNG && !outputCompressedPNG) {
-            blockOutputType = BLOX_GABRIEL;
-            if(nogui && !quietMode) {
-                System.out.println("No output type specified. Default of Gabriel will be used");
-            }
-        }
         if(skipCheck && !quietMode) {
             System.out.println("Skipping genotype file check");
         }
