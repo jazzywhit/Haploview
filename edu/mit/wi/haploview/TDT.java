@@ -59,7 +59,7 @@ public class TDT {
         for(int i=0;i<this.results.size();i++){
             TDTResult tempRes = (TDTResult)this.results.get(i);
             int[][] counts = tempRes.counts;
-            System.out.println( counts[0][0] + "\t" + counts[1][1] + "\t" + counts[0][1] + "\t" + counts[1][0]);
+            //System.out.println( counts[0][0] + "\t" + counts[1][1] + "\t" + counts[0][1] + "\t" + counts[1][0]);
         }
         return this.results;
     }

@@ -509,6 +509,7 @@ public class HaploData{
                 if (m2a2==0){
                     if (m2H==0){
                         dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
+                        //TODO: look into these nulls (c.f. clean.ped adding in bad m's)
                         continue;
                     } else {
                         if (m2a1 == 1){ m2a2=2; }
