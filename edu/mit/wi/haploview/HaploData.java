@@ -105,6 +105,7 @@ public class HaploData{
             String currentLine;
             Vector markers = new Vector();
             long negMaxdist = -1 * maxdist;
+            long prevloc = -1000000000;
 
             //read the input file:
             BufferedReader in = new BufferedReader(new FileReader(infile));
@@ -152,6 +153,12 @@ public class HaploData{
                 if (maf > 0.5) maf = 1.0-maf;
 
                 String name = st.nextToken(); String loc = st.nextToken();
+                if (Long.parseLong(loc) < prevloc){
+                    throw new HaploViewException("Info file out of order:\n"+
+                            name);
+                }
+                prevloc = Long.parseLong(loc);
+
                 try{
                     markers.add(new SNP(name, Long.parseLong(loc), infile.getName(), Math.rint(maf*100.0)/100.0));
                 }catch (NumberFormatException nfe){
@@ -1505,7 +1512,9 @@ public class HaploData{
                                         if (i-x < 0 || i+y >= filteredDPrimeTable.length){
                                             continue;
                                         }
-                                        LODSum += filteredDPrimeTable[i-x][i+y].getLOD();
+                                        if (filteredDPrimeTable[i-x][i+y] != null){
+                                            LODSum += filteredDPrimeTable[i-x][i+y].getLOD();
+                                        }
                                     }
                                 }
                                 tInt = String.valueOf(roundDouble(LODSum));
@@ -1537,7 +1546,9 @@ public class HaploData{
                                         if (i-x < 0 || i+y >= filteredDPrimeTable.length){
                                             continue;
                                         }
-                                        LODSum += filteredDPrimeTable[i-x][i+y].getLOD();
+                                        if (filteredDPrimeTable[i-x][i+y] != null){
+                                            LODSum += filteredDPrimeTable[i-x][i+y].getLOD();
+                                        }
                                     }
                                 }
                                 tInt = String.valueOf(roundDouble(LODSum));
