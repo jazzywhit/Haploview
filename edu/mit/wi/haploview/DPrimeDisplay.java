@@ -70,18 +70,17 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private boolean showWM = false;
     private int zoomLevel = 0;
     private boolean noImage = true;
-    private boolean popupExists, resizeRectExists, blockRectExists = false;
 
     private Rectangle wmInteriorRect = new Rectangle();
     private Rectangle wmResizeCorner = new Rectangle(0,0,-1,-1);
-    private Rectangle resizeWMRect = new Rectangle(0,0,-1,-1);
-    private Rectangle popupDrawRect = new Rectangle(0,0,-1,-1);
+    private Rectangle resizeWMRect = null;
+    private Rectangle popupDrawRect = null;
     private BufferedImage worldmap;
     private HaploData theData;
     private HaploView theHV;
     private Dimension chartSize=null;
     private int wmMaxWidth=0;
-    private Rectangle blockRect = new Rectangle(0,0,-1,-1);
+    private Rectangle blockRect = null;
     private int blockStartX = 0;
     private double[] alignedPositions;
 
@@ -886,7 +885,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
 
         //see if the user has right-clicked to popup some marker info
-        if(popupExists){
+        if(popupDrawRect != null){
 
             //dumb bug where little datasets popup the box in the wrong place
             int smallDatasetSlopH = 0;
@@ -917,7 +916,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         //see if we're drawing a worldmap resize rect
-        if (resizeRectExists){
+        if (resizeWMRect != null){
             g2.setColor(Color.black);
             g2.drawRect(resizeWMRect.x,
                     resizeWMRect.y,
@@ -926,7 +925,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         //see if we're drawing a block selector rect
-        if (blockRectExists){
+        if (blockRect != null){
             g2.setColor(Color.black);
             g2.setStroke(dashedThinStroke);
             g2.drawRect(blockRect.x, blockRect.y,
@@ -1267,6 +1266,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             final int boxX, boxY;
             boxX = getPreciseMarkerAt(clickX - clickXShift - (clickY-clickYShift));
             boxY = getPreciseMarkerAt(clickX - clickXShift + (clickY-clickYShift));
+            displayStrings = null;
 
             if ((boxX >= lowX && boxX <= highX) &&
                     (boxY > boxX && boxY < highY) &&
@@ -1326,7 +1326,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                                     Math.rint(1000 * freqs[i])/10 + "%"));
                         }
                     }
-                    popupExists = true;
                 }
             } else if (blockselector.contains(clickX, clickY)){
                 int marker = getPreciseMarkerAt(clickX - clickXShift);
@@ -1344,9 +1343,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 displayStrings.add(new String ("MAF: " + Chromosome.getMarker(marker).getMAF()));
                 if (Chromosome.getMarker(marker).getExtra() != null)
                     displayStrings.add(new String (Chromosome.getMarker(marker).getExtra()));
-                popupExists = true;
             }
-            if (popupExists){
+            if (displayStrings != null){
                 int strlen = 0;
                 for (int x = 0; x < displayStrings.size(); x++){
                     if (strlen < metrics.stringWidth((String)displayStrings.elementAt(x))){
@@ -1389,44 +1387,49 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         //remove popped up window
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
                 InputEvent.BUTTON3_MASK){
-            popupExists = false;
+            popupDrawRect = null;
             repaint();
         //resize window once user has ceased dragging
         } else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
                 InputEvent.BUTTON1_MASK){
             if (getCursor() == Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR)){
-                resizeRectExists = false;
                 noImage = true;
                 if (resizeWMRect.width > 20){
                     wmMaxWidth = resizeWMRect.width;
                 }
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                resizeWMRect = null;
                 repaint();
             }
             if (getCursor() == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)){
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                blockRectExists = false;
-                int firstMarker = getPreciseMarkerAt(blockStartX - clickXShift);
-                int lastMarker = getPreciseMarkerAt(e.getX() - clickXShift);
-                //we're moving left to right
-                if (blockStartX > e.getX()){
-                    int temp = firstMarker;
-                    firstMarker = lastMarker;
-                    lastMarker = temp;
+                if (blockRect != null){
+                    //don't add the block if the dragging was really short, as it was probably just a twitch while clicking
+                    if (Math.abs(e.getX() - blockStartX) > boxRadius/2){
+                        int firstMarker = getPreciseMarkerAt(blockStartX - clickXShift);
+                        int lastMarker = getPreciseMarkerAt(e.getX() - clickXShift);
+                        //we're moving left to right
+                        if (blockStartX > e.getX()){
+                            int temp = firstMarker;
+                            firstMarker = lastMarker;
+                            lastMarker = temp;
+                        }
+                        //negative results represent starting or stopping the drag in "no-man's land"
+                        //so we adjust depending on which side we're on
+                        if (firstMarker < 0){
+                            firstMarker = -firstMarker + 1;
+                        }
+                        if (lastMarker < 0){
+                            lastMarker = -lastMarker;
+                        }
+                        theHV.changeBlocks(BLOX_CUSTOM);
+                        theData.addBlock(firstMarker, lastMarker);
+                    }
+                    blockRect = null;
+                    repaint();
                 }
-                //negative results represent starting or stopping the drag in "no-man's land"
-                //so we adjust depending on which side we're on
-                if (firstMarker < 0){
-                    firstMarker = -firstMarker + 1;
-                }
-                if (lastMarker < 0){
-                    lastMarker = -lastMarker;
-                }
-
-                theHV.changeBlocks(BLOX_CUSTOM);
-                theData.addBlock(firstMarker, lastMarker);
-                repaint();
             }
+
         }
     }
 
@@ -1444,7 +1447,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         wmInteriorRect.y + wmInteriorRect.height - height,
                         width,
                         height-1);
-                resizeRectExists = true;
                 repaint();
             }else if (getCursor() == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)){
                 Rectangle r = getVisibleRect();
@@ -1466,7 +1468,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
                 blockRect = new Rectangle(xcorner, top - boxRadius/2 - TEXT_GAP,
                         width,boxRadius);
-                blockRectExists=true;
                 repaint();
             }
         }
