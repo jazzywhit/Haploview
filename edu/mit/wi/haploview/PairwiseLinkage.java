@@ -6,15 +6,17 @@ class PairwiseLinkage{
 
     private double dprime, lod, r2, ci_low, ci_high;
     private double[] freqs;
+    private int[] counts;
     private Color color;
 
-    PairwiseLinkage(double d, double l, double r, double lo, double hi, double[] f){
+    PairwiseLinkage(double d, double l, double r, double lo, double hi, double[] f, int[] c){
         dprime = d;
         lod = l;
         r2 = r;
         ci_low = lo;
         ci_high = hi;
         freqs = f;
+	counts = c;
         color = Color.white;
     }
 
@@ -42,6 +44,9 @@ class PairwiseLinkage{
         return freqs;
     }
 
+    public int[] getCounts() {
+	return counts;
+    }
 
     public Color getColor(){
         return color;
