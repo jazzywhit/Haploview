@@ -22,17 +22,22 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
 
         Vector axedPeople = h.theData.getPedFile().getAxedPeople();
 
-        String[] columnNames = {"FamilyID", "IndividualID", "Reason"};
-        String[][] data = new String[axedPeople.size()][3];
+        Vector colNames = new Vector();
+        colNames.add("FamilyID");
+        colNames.add("IndividualID");
+        colNames.add("Reason");
+        Vector data = new Vector();
 
         for(int i=0;i<axedPeople.size();i++) {
+            Vector tmpVec = new Vector();
             Individual currentInd = (Individual) axedPeople.get(i);
-            data[i][0] = currentInd.getFamilyID();
-            data[i][1] = currentInd.getIndividualID();
-            data[i][2] = currentInd.getReasonImAxed();
+            tmpVec.add(currentInd.getFamilyID());
+            tmpVec.add(currentInd.getIndividualID());
+            tmpVec.add(currentInd.getReasonImAxed());
+            data.add(tmpVec);
         }
 
-        tableModel = new BasicTableModel(new Vector(Arrays.asList(columnNames)),new Vector(Arrays.asList(data)));
+        tableModel = new BasicTableModel(colNames, data);
         table = new JTable(tableModel);
         table.getColumnModel().getColumn(2).setPreferredWidth(300);
 
