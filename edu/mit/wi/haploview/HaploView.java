@@ -52,7 +52,6 @@ public class HaploView extends JFrame implements ActionListener{
     //private String hapInputFileName;
     //private BlockDisplay theBlocks;
     private boolean infoKnown = false;
-    private ProgressMonitor progressMonitor;
     private javax.swing.Timer timer;
 
     DPrimeDisplay dPrimeDisplay;
@@ -267,12 +266,7 @@ public class HaploView extends JFrame implements ActionListener{
 
         try{
             theData = new HaploData(new File(filenames[0]));
-
-            //compute D primes and monitor progress
-            //TODO: fix this in windows!
-            progressMonitor = new ProgressMonitor(this, "Computing " + theData.getToBeCompleted() + " values of D prime","", 0, theData.getToBeCompleted());
-            progressMonitor.setProgress(0);
-            progressMonitor.setMillisToDecideToPopup(2000);
+            this.setCursor(Cursor.WAIT_CURSOR);
 
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
@@ -283,10 +277,8 @@ public class HaploView extends JFrame implements ActionListener{
 
             timer = new javax.swing.Timer(50, new ActionListener(){
                 public void actionPerformed(ActionEvent evt){
-                    progressMonitor.setProgress(theData.getComplete());
                     if (theData.finished){
                         timer.stop();
-                        progressMonitor.close();
                         infoKnown=false;
                         if (!(filenames[1].equals(""))){
                             readMarkers(new File(filenames[1]));
@@ -294,13 +286,13 @@ public class HaploView extends JFrame implements ActionListener{
                         drawPicture(theData);
                         defineBlocksItem.setEnabled(true);
                         readMarkerItem.setEnabled(true);
+                        setCursor(Cursor.DEFAULT_CURSOR);
                     }
                 }
             });
 
             worker.start();
             timer.start();
-
         }catch (IOException ioexec){
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
