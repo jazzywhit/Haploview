@@ -231,7 +231,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         contents.add(compDistPanel);
 
         JPanel missingCutoffPanel = new JPanel();
-        missingCutoffField = new NumberTextField("25",3, false);
+        missingCutoffField = new NumberTextField("50",3, false);
         missingCutoffPanel.add(new JLabel("Exclude individuals with >"));
         missingCutoffPanel.add(missingCutoffField);
         missingCutoffPanel.add(new JLabel("% missing genotypes."));

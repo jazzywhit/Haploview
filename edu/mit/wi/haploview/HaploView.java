@@ -1145,7 +1145,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     public static void main(String[] args) {
         //set defaults
-        Options.setMissingThreshold(1.0);
+        Options.setMissingThreshold(0.5);
         Options.setSpacingThreshold(0.0);
         Options.setAssocTest(ASSOC_NONE);
         Options.setHaplotypeDisplayThreshold(1);
