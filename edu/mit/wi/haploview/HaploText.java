@@ -68,9 +68,7 @@ public class HaploText {
 
     private void argHandler(String[] args){
 
-        // TODO:-want to be able to output dprime  - in textmethods
-        //      -if dprime is specified, then by default shouldnt output blocks (explicit -o rquireD)
-        //      -specify values from HaplotypeDisplayController (min hap percentage etc)
+        //TODO: -specify values from HaplotypeDisplayController (min hap percentage etc)
         //      -want to be able to output haps file from pedfile
         boolean nogui = false;
         String batchMode = "";
@@ -91,11 +89,11 @@ public class HaploText {
                         "-h, -help                     print this message\n" +
                         "-n                            command line output only\n" +
                         "-q                            quiet mode- doesnt print any warnings or information to screen\n" +
-                        //"-p <pedfile>                specify an input file in pedigree file format\n" +
                         "-p <pedfile>                  specify an input file in pedigree file format\n" +
                         "         pedfile specific options (nogui mode only): \n" +
                         "         --showcheck       displays the results of the various pedigree integrity checks\n" +
                         "         --skipcheck       skips the various pedfile checks\n" +
+                        //TODO: fix ignoremarkers
                         //"         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
                         //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
                         "-ha <hapsfile>                specify an input file in .haps format\n" +
@@ -464,7 +462,10 @@ public class HaploText {
                 File infoFile = new File(infoFileName);
                 if(infoFile.exists()) {
                     textData.prepareMarkerInput(infoFile,maxDistance);
-                     System.out.println("Using marker file " + infoFile.getName());
+                    if(!arg_quiet){
+                        System.out.println("Using marker file " + infoFile.getName());
+                    }
+                    textData.infoKnown = true;
                 }
                 else if(!this.arg_quiet) {
                     System.out.println("info file " + infoFileName + " does not exist");
@@ -477,6 +478,7 @@ public class HaploText {
                     if(!arg_quiet){
                         System.out.println("Using marker file " + maybeInfo.getName());
                     }
+                    textData.infoKnown = true;
                 }
             }
 
@@ -523,7 +525,7 @@ public class HaploText {
             }
             if(this.arg_dprime) {
                 OutputFile = new File(fileName + ".DPRIME");
-                textData.saveDprimeToText(textData.filteredDPrimeTable,OutputFile,false,null);
+                textData.saveDprimeToText(textData.filteredDPrimeTable,OutputFile,textData.infoKnown);
             }
             if(fileType){
                 TDT myTDT = new TDT();

@@ -203,7 +203,6 @@ public class HaploData{
                 if (thisGenotype.equals("h")) {
                     genos[q] = 5;
                 }else{
-
                     genos[q] = Byte.parseByte(thisGenotype);
                 }
 
@@ -1222,7 +1221,7 @@ public class HaploData{
         saveHapsWriter.close();
     }
 
-    public void saveDprimeToText(PairwiseLinkage[][] dPrimeTable, File dumpDprimeFile, boolean info, Vector markerinfo) throws IOException{
+    public void saveDprimeToText(PairwiseLinkage[][] dPrimeTable, File dumpDprimeFile, boolean info) throws IOException{
         FileWriter saveDprimeWriter = new FileWriter(dumpDprimeFile);
 
 
@@ -1235,7 +1234,7 @@ public class HaploData{
                     //many "slots" in table aren't filled in because it is a 1/2 matrix
                     if (i < j){
                         if(dPrimeTable[i][j] != null) {
-                            dist = ((SNP)markerinfo.elementAt(j)).getPosition() - ((SNP)markerinfo.elementAt(i)).getPosition();
+                            dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
                             saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j].toString() + "\t" + dist + "\n");
                         }
                     }
