@@ -15,13 +15,16 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
     static final String MARKER_DATA_EXT = ".info";
     static final String BROWSE_GENO = "browse for geno files";
     static final String BROWSE_INFO = "browse for info files";
+    static final String BROWSE_ASSOC = "browse for association test files";
 
     int fileType;
-    JTextField genoFileField, infoFileField;
+    JTextField genoFileField, infoFileField, testFileField;
     JCheckBox doTDT, doGB;
     JRadioButton trioButton, ccButton;
+    JButton browseAssocButton;
     NumberTextField maxComparisonDistField;
     NumberTextField missingCutoffField;
+    private JLabel testFileLabel;
 
     public ReadDataDialog(String title, HaploView h){
         super(h, title);
@@ -53,15 +56,17 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command.equals(RAW_DATA)){
-            load(PED);
+            load(PED_FILE);
         }else if (command.equals(PHASED_DATA)){
-            load(HAPS);
+            load(HAPS_FILE);
         }else if (command.equals(HAPMAP_DATA)){
-            load(HMP);
+            load(HMP_FILE);
         }else if (command.equals(BROWSE_GENO)){
-            browse(GENO);
+            browse(GENO_FILE);
         }else if (command.equals(BROWSE_INFO)){
-            browse(INFO);
+            browse(INFO_FILE);
+        }else if (command.equals(BROWSE_ASSOC)) {
+            browse(ASSOC_FILE);
         }else if (command.equals("OK")){
             HaploView caller = (HaploView)this.getParent();
             if(missingCutoffField.getText().equals("")) {
@@ -103,10 +108,10 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 Options.setMaxDistance(Integer.parseInt(maxComparisonDistField.getText()));
             }
 
-
-
-            String[] returnStrings = {genoFileField.getText(), infoFileField.getText()};
+            String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), testFileField.getText()};
             if (returnStrings[1].equals("")) returnStrings[1] = null;
+            if (returnStrings[2].equals("") || !doTDT.isSelected()) returnStrings[2] = null;
+
 
             //if a dataset was previously loaded during this session, discard the display panes for it.
             caller.clearDisplays();
@@ -118,9 +123,17 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             if(this.doTDT.isSelected()){
                 trioButton.setEnabled(true);
                 ccButton.setEnabled(true);
+                browseAssocButton.setEnabled(true);
+                testFileField.setEnabled(true);
+                testFileField.setBackground(Color.white);
+                testFileLabel.setEnabled(true);
             }else{
                 trioButton.setEnabled(false);
                 ccButton.setEnabled(false);
+                browseAssocButton.setEnabled(false);
+                testFileField.setEnabled(false);
+                testFileField.setBackground(Color.lightGray);
+                testFileLabel.setEnabled(false);
             }
         }
     }
@@ -135,11 +148,11 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         if (returned != JFileChooser.APPROVE_OPTION) return;
         File file = h.fc.getSelectedFile();
 
-        if (browseType == GENO){
+        if (browseType == GENO_FILE){
             name = file.getName();
             genoFileField.setText(file.getParent()+File.separator+name);
 
-            if(infoFileField.getText().equals("") && fileType != HMP){
+            if(infoFileField.getText().equals("") && fileType != HMP_FILE){
                 //baseName should be everything but the final ".XXX" extension
                 StringTokenizer st = new StringTokenizer(name,".");
                 String baseName = st.nextToken();
@@ -162,9 +175,11 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 infoFileField.setText(file.getParent()+File.separator+markerInfoName);
             }
 
-        }else if (browseType==INFO){
+        }else if (browseType==INFO_FILE){
             markerInfoName = file.getName();
             infoFileField.setText(file.getParent()+File.separator+markerInfoName);
+        }else if (browseType == ASSOC_FILE) {
+            testFileField.setText(file.getParent() + File.separator + file.getName());
         }
     }
 
@@ -214,7 +229,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         botFilePanel.add(infoFileField);
         botFilePanel.add(browseInfoButton);
         filePanel.add(topFilePanel);
-        if (ft != HMP){
+        if (ft != HMP_FILE){
             filePanel.add(botFilePanel);
         }
         filePanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
@@ -236,7 +251,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
         doGB = new JCheckBox();//show gbrowse pic from hapmap website?
         doGB.setSelected(false);
-        if (ft == HMP){
+        if (ft == HMP_FILE){
             JPanel gBrowsePanel = new JPanel();
             gBrowsePanel.add(doGB);
             gBrowsePanel.add(new JLabel("Download and show HapMap info track? (requires internet connection)"));
@@ -254,7 +269,16 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         ButtonGroup group = new ButtonGroup();
         group.add(trioButton);
         group.add(ccButton);
-        if (ft == PED){
+
+        testFileField = new JTextField("",20);
+        testFileField.setEnabled(false);
+        testFileField.setBackground(Color.lightGray);
+        browseAssocButton = new JButton("Browse");
+        browseAssocButton.setActionCommand(BROWSE_ASSOC);
+        browseAssocButton.addActionListener(this);
+        browseAssocButton.setEnabled(false);
+
+        if (ft == PED_FILE){
             JPanel tdtOptsPanel = new JPanel();
             JPanel tdtCheckBoxPanel = new JPanel();
             tdtCheckBoxPanel.add(doTDT);
@@ -263,6 +287,14 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             tdtOptsPanel.add(ccButton);
             contents.add(tdtCheckBoxPanel);
             contents.add(tdtOptsPanel);
+
+            JPanel assocFilePanel = new JPanel();
+            testFileLabel = new JLabel("Test list file (optional)");
+            testFileLabel.setEnabled(false);
+            assocFilePanel.add(testFileLabel);
+            assocFilePanel.add(testFileField);
+            assocFilePanel.add(browseAssocButton);
+            contents.add(assocFilePanel);
         }
 
         JPanel choicePanel = new JPanel();
