@@ -44,7 +44,7 @@ public class EM {
         }
     }
 
-    public void full_em_breakup( char[][] input_haplos, int max_missing, int[] num_haplos_present, Vector haplos_present, Vector haplo_freq, int[] block_size, int dump_phased_haplos) throws HaploViewException{
+    public void full_em_breakup( byte[][] input_haplos, int max_missing, int[] num_haplos_present, Vector haplos_present, Vector haplo_freq, int[] block_size, int dump_phased_haplos) throws HaploViewException{
         int i, j, k, num_poss, iter;//, maxk, numk;
         double total;//, maxprob;
         int block, start_locus, end_locus, biggest_block_size;
@@ -288,10 +288,10 @@ public class EM {
 
 
 
-    public int read_observations(int num_haplos, int num_loci, char[][] haplo, int start_locus, int end_locus) throws HaploViewException {
+    public int read_observations(int num_haplos, int num_loci, byte[][] haplo, int start_locus, int end_locus) throws HaploViewException {
         //TODO: this should return something useful
         int i, j, a1, a2, h1, h2, two_n, num_poss, loc, ind;
-        char c1, c2;
+        byte c1, c2;
         int num_indivs = 0;
         int[] dhet = new int[MAXLOCI];
         int[] missing1 = new int[MAXLOCI];
@@ -326,7 +326,7 @@ public class EM {
                     if (c1 < '0' || c1 > '4' || c2 < '0' || c2 > '4') {
                         //    printf("bad allele in data file (%s,%s)\n",ln1,ln2);
                         //return(-1);
-                        throw new HaploViewException("bad allele in data file");
+                        throw new HaploViewException("bad allele in data file: " + c1 + " " + c2);
                     }
                 }
 
