@@ -451,6 +451,13 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         int diamondY[] = new int[4];
         Polygon diamond;
 
+
+        double lineSpan = alignedPositions[alignedPositions.length-1] - alignedPositions[0];
+        long minpos = Chromosome.getMarker(0).getPosition();
+        long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
+
+        double spanpos = maxpos - minpos;
+
         //System.out.println(Chromosome.dataChrom + " " + Chromosome.getMarker(0).getPosition() + " " +
         //        Chromosome.getMarker(Chromosome.getSize()-1).getPosition());
         /*
@@ -461,22 +468,18 @@ START OF SIMON'S HACKS
 
 See http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img
 for more info on GBrowse img.
-
+            */
 
 
         URL imgUrl;
         int imgHeight = 0;
-        int gbLineSpan = (dPrimeTable.length-1) * boxSize;
-        long gbminpos = Chromosome.getMarker(0).getPosition();
-        long gbmaxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
-
-
 
         try {
-// imgUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=chr5:" + gbminpos + ".." + gbmaxpos + ";width=" + gbLineSpan + ";type=genotyped_SNPs+LocusLink+RefSeq_mRNA");
+            imgUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=chr5:" + minpos +
+                    ".." + maxpos + ";width=" + lineSpan + ";type=genotyped_SNPs+LocusLink_genes");
 
 // fake the real region, actual file coordinates are not in actual genomic bp
-            imgUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=chr5:131856314..131999887;width=" + gbLineSpan + ";type=genotyped_SNPs+LocusLink+RefSeq_mRNA");
+         //   imgUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=chr5:131856314..131999887;width=" + gbLineSpan + ";type=genotyped_SNPs+LocusLink+RefSeq_mRNA");
 
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             Image gbrowse_img = toolkit.getImage(imgUrl); // get from the URL
@@ -506,7 +509,7 @@ for more info on GBrowse img.
             System.exit(1);
         }
 
-        */
+
         left = H_BORDER;
         top = V_BORDER;// + imgHeight; // push the haplotype display down to make room for gbrowse image.
 
@@ -548,17 +551,6 @@ END OF HIS HACKS
             highY = Chromosome.getSize();
         }
 
-
-        /*lowX = (visRect.x-clickXShift-(visRect.y +
-                visRect.height-clickYShift))/boxSize;
-
-        highX = ((visRect.x + visRect.width)/boxSize)+1;
-
-        lowY = ((visRect.x-clickXShift)+(visRect.y-clickYShift))/boxSize;
-
-        highY = (((visRect.x-clickXShift+visRect.width) +
-                (visRect.y-clickYShift+visRect.height))/boxSize)+1;
-         */
         if (forExport){
             lowX = exportStart;
             lowY = exportStart;
@@ -566,11 +558,6 @@ END OF HIS HACKS
             highY = exportStop;
         }
 
-        double lineSpan = alignedPositions[alignedPositions.length-1] - alignedPositions[0];
-        long minpos = Chromosome.getMarker(0).getPosition();
-        long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
-
-        double spanpos = maxpos - minpos;
 
         if (theData.trackExists){
             //draw the analysis track above where the marker positions will be marked
