@@ -413,22 +413,26 @@ public class HaplotypeDisplay extends JComponent {
 
                 char multiChars[] =
                         nfMulti.format(multidprimeArray[i]).toCharArray();
-                for (int m = 0; m < 3; m++) {
-                    // 7*CHAR_WIDTH/2 = CHAR_WIDTH*3.5 to center it better
-                    // since the . char is right-aligned, and visually off
-                    g.drawImage(blackNumImages[(m == 0) ? 10 : multiChars[m]-'0'],
-                            left + (LINE_SPAN - 7*CHAR_WIDTH/2)/2 + m*CHAR_WIDTH,
+                if (multidprimeArray[i] > 0.99){
+                    //draw 1.0 vals specially
+                    g.drawImage(blackNumImages[1],
+                            left + (LINE_SPAN - 7*CHAR_WIDTH/2)/2 + CHAR_WIDTH,
                             above + (depth * ROW_HEIGHT), null);
+                    g.drawImage(blackNumImages[10],
+                            left + (LINE_SPAN - 9*CHAR_WIDTH/2)/2 + 2*CHAR_WIDTH,
+                            above + (depth * ROW_HEIGHT), null);
+                    g.drawImage(blackNumImages[0],
+                            left + (LINE_SPAN - 9*CHAR_WIDTH/2)/2 + 3*CHAR_WIDTH,
+                            above + (depth * ROW_HEIGHT), null);
+                }else{
+                    for (int m = 0; m < 3; m++) {
+                        g.drawImage(blackNumImages[(m == 0) ? 10 : multiChars[m]-'0'],
+                                left + (LINE_SPAN - 7*CHAR_WIDTH/2)/2 + m*CHAR_WIDTH,
+                                above + (depth * ROW_HEIGHT), null);
+                    }
                 }
-                //int multiX = x + totalWidth + 3;
-                //g.drawString(nfMulti.format(multidprimeArray[i]),
-                //     multiX+2, windowY - 3);
             }
             left += LINE_SPAN;
-            //x += (totalWidth + 40);
-            //y = verticalOffset;
-
-            //left = textRight + LINE_SPAN;
         }
     }
 }
