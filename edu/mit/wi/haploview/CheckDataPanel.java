@@ -5,6 +5,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 import java.io.*;
 import java.util.Vector;
 
@@ -12,7 +14,7 @@ import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.PedFileException;
 
-public class CheckDataPanel extends JPanel implements TableModelListener{
+public class CheckDataPanel extends JPanel implements TableModelListener, ActionListener{
 	private JTable table;
     private CheckDataTableModel tableModel;
 	private PedFile pedfile;
@@ -20,10 +22,59 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 
     boolean changed;
     static int STATUS_COL = 8;
+    private HaploView hv;
 
-    public CheckDataPanel(HaploData hd, boolean disp) throws IOException, PedFileException{
-        STATUS_COL = 8;
+    public CheckDataPanel(HaploView hv){
+        this(hv.theData);
+        this.hv = hv;
+
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
+
+        JPanel missingPanel = new JPanel();
+        JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
+                + theData.numTrios + " trios from "
+                + theData.numPeds + " families.");
+        if (theData.numTrios + theData.numSingletons == 0){
+            countsLabel.setForeground(Color.red);
+        }
+        countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        missingPanel.add(countsLabel);
+        JButton missingButton = new JButton("Show Excluded Individuals");
+        if (hv.theData.getPedFile().getAxedPeople().size() == 0){
+            missingButton.setEnabled(false);
+        }
+
+        missingButton.addActionListener(this);
+        missingPanel.add(missingButton);
+        missingPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        JPanel extraPanel = new JPanel();
+        extraPanel.add(missingPanel);
+
+        table = new JTable(tableModel);
+        final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
+        try{
+            table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
+            table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
+            table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
+        }catch (Exception e){
+        }
+
+        table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        table.getColumnModel().getColumn(0).setMinWidth(30);
+        if (theData.infoKnown){
+            table.getColumnModel().getColumn(1).setMinWidth(100);
+            table.getColumnModel().getColumn(2).setMinWidth(60);
+        }
+        JScrollPane tableScroller = new JScrollPane(table);
+        tableScroller.setMaximumSize(new Dimension(600, tableScroller.getPreferredSize().height));
+
+        add(extraPanel);
+        add(tableScroller);
+    }
+
+    public CheckDataPanel(HaploData hd){
+        STATUS_COL = 8;
+
         pedfile = hd.getPedFile();
         theData = hd;
         Vector result = pedfile.getResults();
@@ -77,27 +128,6 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 
         tableModel = new CheckDataTableModel(tableColumnNames, tableData, markerRatings);
         tableModel.addTableModelListener(this);
-
-        if (disp){
-            table = new JTable(tableModel);
-            final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
-            try{
-                table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
-                table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
-                table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
-            }catch (Exception e){
-            }
-
-            table.getColumnModel().getColumn(0).setPreferredWidth(30);
-            table.getColumnModel().getColumn(0).setMinWidth(30);
-            if (theData.infoKnown){
-                table.getColumnModel().getColumn(1).setMinWidth(100);
-                table.getColumnModel().getColumn(2).setMinWidth(60);
-            }
-            JScrollPane tableScroller = new JScrollPane(table);
-            tableScroller.setMaximumSize(new Dimension(600, tableScroller.getPreferredSize().height));
-            add(tableScroller);
-        }
     }
 
 	public PedFile getPedFile(){
@@ -179,6 +209,16 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             changed = true;
         }catch (Exception e){
             e.printStackTrace();
+        }
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        String command = e.getActionCommand();
+        if (command.equals("Show Excluded Individuals")) {
+            //show details of individuals removed due to excessive missing data
+            FilteredIndividualsDialog fid = new FilteredIndividualsDialog(hv,"Filtered Individuals");
+            fid.pack();
+            fid.setVisible(true);
         }
     }
 

@@ -76,7 +76,7 @@ public class HaploData implements Constants{
         return this.blocksDone;
     }
 
-    PedFile getPedFile(){
+    public PedFile getPedFile(){
         return this.pedFile;
     }
 

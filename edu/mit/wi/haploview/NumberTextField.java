@@ -8,7 +8,7 @@ import javax.swing.text.BadLocationException;
 import java.awt.*;
 
 
-class NumberTextField extends JTextField {
+public class NumberTextField extends JTextField {
 
     int size;
     boolean decimal;

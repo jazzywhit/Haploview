@@ -612,7 +612,7 @@ public class HaploText implements Constants{
                 System.out.println("Using marker file " + infoFile.getName());
             }
             if(outputCheck && result != null){
-                CheckDataPanel cp = new CheckDataPanel(textData, false);
+                CheckDataPanel cp = new CheckDataPanel(textData);
                 cp.printTable(validateOutputFile(fileName + ".CHECK"));
             }
             Vector cust = new Vector();

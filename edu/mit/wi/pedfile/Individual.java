@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.6 2004/08/31 19:28:25 jcbarret Exp $
+* $Id: Individual.java,v 1.7 2004/09/24 19:50:55 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -241,6 +241,5 @@ public class Individual {
     public Iterator markerIterator(){
         return this.markers.iterator();
     }
-
 
 }

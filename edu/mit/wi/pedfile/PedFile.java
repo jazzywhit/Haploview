@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.28 2004/09/23 21:55:54 jmaller Exp $
+* $Id: PedFile.java,v 1.29 2004/09/24 19:50:55 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -27,6 +27,7 @@ import java.util.*;
  */
 public class PedFile {
     private Hashtable families;
+
     private Vector axedPeople = new Vector();
     private Vector axedFamilies = new Vector();
 
@@ -678,6 +679,8 @@ public class PedFile {
                     numMissing++;
                 }
             }
+
+            
             if (numMissing/numMarkers > Options.getMissingThreshold()){
                 //this person is missing too much data so remove him and then deal
                 //with his family connections
@@ -790,6 +793,16 @@ public class PedFile {
     public Vector getResults() {
         return results;
     }
+
+
+    public Vector getAxedPeople() {
+        return axedPeople;
+    }
+
+    public Vector getAxedFamilies() {
+        return axedFamilies;
+    }
+
 }
 
 

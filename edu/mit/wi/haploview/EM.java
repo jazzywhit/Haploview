@@ -702,8 +702,6 @@ return(-5);
                     //i.e. above statements look for 1 or 2 whereas below looks
                     //for 1, 2, 3 or 4
                     if (c1 < '0' || c1 > '4' || c2 < '0' || c2 > '4') {
-                        //    printf("bad allele in data file (%s,%s)\n",ln1,ln2);
-                        //return(-1);
                         throw new HaploViewException("bad allele in data file: " + c1 + " " + c2);
                     }
                 }

@@ -7,7 +7,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URL;
 
-public class UpdateDisplayDialog extends JDialog  implements ActionListener, Constants{
+public class UpdateDisplayDialog extends JDialog implements ActionListener, Constants{
 
     public UpdateDisplayDialog(HaploView h, String title, UpdateChecker uc) {
         super(h, title);

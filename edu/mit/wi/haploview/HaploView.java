@@ -440,7 +440,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     }
 
 
-
     private void changeKey() {
         int scheme = Options.getLDColorScheme();
         keyMenu.removeAll();
@@ -604,7 +603,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 readMarkers(markerFile, null);
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
-                checkPanel = new CheckDataPanel(theData, true);
+                checkPanel = new CheckDataPanel(this);
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
             }
 
@@ -688,14 +687,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         //viewItems[VIEW_CHECK_NUM] = VIEW_CHECK_PANEL;
                         JPanel metaCheckPanel = new JPanel();
                         metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
-                        JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
-                                + theData.numTrios + " trios from "
-                                + theData.numPeds + " families.");
-                        if (theData.numTrios + theData.numSingletons == 0){
-                            countsLabel.setForeground(Color.red);
-                        }
-                        countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-                        metaCheckPanel.add(countsLabel);
                         metaCheckPanel.add(checkPanel);
                         cdc = new CheckDataController(window);
                         metaCheckPanel.add(cdc);
@@ -813,20 +804,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (checkPanel != null){
                 //this is triggered when loading markers after already loading genotypes
                 //it is dumb and sucks, but at least it works. bah.
-                checkPanel = new CheckDataPanel(theData, true);
+                checkPanel = new CheckDataPanel(this);
                 Container checkTab = (Container)tabs.getComponentAt(VIEW_CHECK_NUM);
                 checkTab.removeAll();
 
                 JPanel metaCheckPanel = new JPanel();
                 metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
-                JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
-                        + theData.numTrios + " trios from "
-                        + theData.numPeds + " families.");
-                if (theData.numTrios + theData.numSingletons == 0){
-                    countsLabel.setForeground(Color.red);
-                }
-                countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-                metaCheckPanel.add(countsLabel);
                 metaCheckPanel.add(checkPanel);
                 cdc = new CheckDataController(window);
                 metaCheckPanel.add(cdc);
@@ -850,7 +833,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     ioexec.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
-        }catch (PedFileException pfe){
         }
     }
 
