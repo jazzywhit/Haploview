@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.10 2004/04/09 14:41:40 jcbarret Exp $
+ * $Id: CheckData.java,v 1.11 2004/07/14 18:21:27 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -181,7 +181,7 @@ public class CheckData {
 
                     //no allele data missing
                     if(allele1 > 0 && allele2 >0){
-                        //indiv has parents
+                        //indiv has no parents -- i.e. is a founder
                         if(currentInd.getMomID().compareTo(Individual.DATA_MISSING)==0 && currentInd.getDadID().compareTo(Individual.DATA_MISSING)==0){
                             //$parentgeno{$ped}++
 							//set parentgeno
