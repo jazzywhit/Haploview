@@ -18,7 +18,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
     int fileType;
     JTextField genoFileField, infoFileField;
-    JCheckBox doTDT;
+    JCheckBox doTDT, doGB;
     JRadioButton trioButton, ccButton;
     NumberTextField maxComparisonDistField;
 
@@ -76,6 +76,10 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 Options.setAssocTest(ASSOC_NONE);
             }
 
+            if (doGB.isSelected()){
+                Options.setShowGBrowse(true);
+            }
+
             if (maxComparisonDistField.getText().equals("")){
                 Options.setMaxDistance(0);
             }else{
@@ -118,7 +122,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             name = file.getName();
             genoFileField.setText(file.getParent()+File.separator+name);
 
-            if(infoFileField.getText().equals("")){
+            if(infoFileField.getText().equals("") && fileType != HMP){
                 //baseName should be everything but the final ".XXX" extension
                 StringTokenizer st = new StringTokenizer(name,".");
                 String baseName = st.nextToken();
@@ -199,12 +203,21 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         filePanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         contents.add(filePanel);
 
-        JPanel prefsPanel = new JPanel();
+        JPanel compDistPanel = new JPanel();
         maxComparisonDistField = new NumberTextField("500",4, false);
-        prefsPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
-        prefsPanel.add(maxComparisonDistField);
-        prefsPanel.add(new JLabel("kb apart."));
-        contents.add(prefsPanel);
+        compDistPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
+        compDistPanel.add(maxComparisonDistField);
+        compDistPanel.add(new JLabel("kb apart."));
+        contents.add(compDistPanel);
+
+        doGB = new JCheckBox();//show gbrowse pic from hapmap website?
+        doGB.setSelected(false);
+        if (ft == HMP){
+            JPanel gBrowsePanel = new JPanel();
+            gBrowsePanel.add(doGB);
+            gBrowsePanel.add(new JLabel("Download and show HapMap gene track? (requires internet connection)"));
+            contents.add(gBrowsePanel);
+        }
 
         doTDT = new JCheckBox();//"Do association test?");
         doTDT.setSelected(false);
