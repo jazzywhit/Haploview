@@ -13,6 +13,10 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;
 
+    private static final int STD_SCHEME = 1;
+    private static final int SFS_SCHEME = 2;
+    private static final int GAM_SCHEME = 3;
+
     private static final int BOX_SIZES[] = {50, 24, 12};
     private static final int BOX_RADII[] = {24, 11, 6};
     private static final int TICK_HEIGHT = 8;
@@ -66,16 +70,102 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private Rectangle blockRect = new Rectangle(0,0,-1,-1);
     private int blockStartX = 0;
 
+
     DPrimeDisplay(HaploData h){
         theData=h;
+        this.colorDPrime(STD_SCHEME);
         this.setDoubleBuffered(true);
         addMouseListener(this);
         addMouseMotionListener(this);
     }
 
-    public void refresh(){
+    public void refresh(int scheme){
+        if (scheme != 0){
+            colorDPrime(scheme);
+        }
         noImage = true;
         repaint();
+    }
+
+    public void colorDPrime(int scheme){
+
+        PairwiseLinkage dPrime[][] = theData.filteredDPrimeTable;
+        if (scheme == STD_SCHEME){
+            // set coloring based on LOD and D'
+            for (int i = 0; i < dPrime.length; i++){
+                for (int j = i+1; j < dPrime[i].length; j++){
+                    PairwiseLinkage thisPair = dPrime[i][j];
+                    if (thisPair == null){
+                        continue;
+                    }
+
+                    double d = thisPair.getDPrime();
+                    double l = thisPair.getLOD();
+                    Color boxColor = null;
+                    if (l > 2) {
+                        if (d < 0.5) {
+                            //high LOD, low D'
+                            boxColor = new Color(255, 224, 224);
+                        } else {
+                            //high LOD, high D' shades of red
+                            double blgr = (255-32)*2*(1-d);
+                            //boxColor = new Color(255, (int) blgr, (int) blgr);
+                            boxColor = new Color(224, (int) blgr, (int) blgr);
+                        }
+                    } else if (d > 0.99) {
+                        //high D', low LOD blueish color
+                        boxColor = new Color(192, 192, 240);
+                    } else {
+                        //no LD
+                        boxColor = Color.white;
+                    }
+                    thisPair.setColor(boxColor);
+                }
+            }
+        }else if (scheme == SFS_SCHEME){
+            for (int x = 0; x < dPrime.length-1; x++){
+                for (int y = x+1; y < dPrime.length; y++){
+                    PairwiseLinkage thisPair = dPrime[x][y];
+                    if (thisPair == null){
+                        continue;
+                    }
+                    //get the right bits
+                    double lowCI = thisPair.getConfidenceLow();
+                    double highCI = thisPair.getConfidenceHigh();
+
+                    //color in squares
+                    if (lowCI > FindBlocks.cutLowCI && highCI >= FindBlocks.cutHighCI) {
+                        thisPair.setColor(Color.darkGray);  //strong LD
+                    }else if (highCI > FindBlocks.recHighCI) {
+                        thisPair.setColor(Color.lightGray); //uninformative
+                    } else {
+                        thisPair.setColor(Color.white); //recomb
+                    }
+                }
+            }
+        }else if (scheme == GAM_SCHEME){
+            for (int x = 0; x < dPrime.length-1; x++){
+                for (int y = x+1; y < dPrime.length; y++){
+                    PairwiseLinkage thisPair = dPrime[x][y];
+                    if (thisPair == null) {
+                        continue;
+                    }
+
+                    double[] freqs = thisPair.getFreqs();
+                    int numGam = 0;
+                    for (int i = 0; i < freqs.length; i++){
+                        if (freqs[i] > FindBlocks.fourGameteCutoff) numGam++;
+                    }
+
+                    //color in squares
+                    if(numGam > 3){
+                        thisPair.setColor(Color.white);
+                    }else{
+                        thisPair.setColor(Color.darkGray);
+                    }
+                }
+            }
+        }
     }
 
     public Image export(Image i){
@@ -175,7 +265,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
 
 
-        g2.setFont(markerNameFont);
+        g2.setFont(boldMarkerNameFont);
         metrics = g2.getFontMetrics();
         ascent = metrics.getAscent();
 
@@ -212,20 +302,20 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             double spanpos = maxpos - minpos;
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
-            g2.fillRect(left + lineLeft+1, 6, lineSpan-1, TICK_HEIGHT-1);
+            g2.fillRect(left + lineLeft+1, top+1, lineSpan-1, TICK_HEIGHT-1);
             g2.setColor(Color.black);
-            g2.drawRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
+            g2.drawRect(left + lineLeft, top, lineSpan, TICK_HEIGHT);
 
             for (int i = 0; i < Chromosome.getFilteredSize(); i++) {
                 double pos = (Chromosome.getFilteredMarker(i).getPosition() - minpos) / spanpos;
                 int xx = (int) (left + lineLeft + lineSpan*pos);
                 g2.setStroke(thickerStroke);
-                g2.drawLine(xx, 5, xx, 5 + TICK_HEIGHT);
+                g2.drawLine(xx, top, xx, top + TICK_HEIGHT);
                 g2.setStroke(thinnerStroke);
-                g2.drawLine(xx, 5 + TICK_HEIGHT,
-                        left + i*boxSize, TICK_BOTTOM);
+                g2.drawLine(xx, top + TICK_HEIGHT,
+                        left + i*boxSize, top+TICK_BOTTOM);
             }
-            top += TICK_BOTTOM;
+            top += TICK_BOTTOM + TICK_HEIGHT;
 
             //// draw the marker names
             if (printDetails){
@@ -408,7 +498,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     top-blockDispHeight);
             if (printDetails){
                 String labelString = new String ("Block " + (i+1));
-                g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/2);
+                g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/3);
             }
         }
         g2.setStroke(thickerStroke);
@@ -589,9 +679,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         g.setFont(markerNameFont);
         FontMetrics fm = g.getFontMetrics();
         if (printDetails){
-            blockDispHeight = boxSize/2 + fm.getAscent();
+            blockDispHeight = boxSize/3 + fm.getAscent();
         }else{
-            blockDispHeight = boxSize/2;
+            blockDispHeight = boxSize/3;
         }
 
         int high = 2*V_BORDER + count*boxSize/2 + blockDispHeight;
@@ -652,7 +742,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     int whichMarker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
                     if (theData.isInBlock[whichMarker]){
                         theData.removeFromBlock(whichMarker);
-                        refresh();
+                        refresh(0);
+                    } else if (whichMarker > 0 && whichMarker < Chromosome.realIndex.length){
+                        theData.addMarkerIntoSurroundingBlock(whichMarker);
                     }
                 }
             }
@@ -769,7 +861,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     lastMarker = temp;
                 }
                 theData.addBlock(firstMarker, lastMarker);
-                refresh();
+                refresh(0);
             }
         }
     }
