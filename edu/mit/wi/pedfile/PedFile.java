@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.30 2004/09/24 20:43:23 jmaller Exp $
+* $Id: PedFile.java,v 1.31 2004/09/27 14:14:35 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -496,11 +496,11 @@ public class PedFile {
         for(int i=0;i<order.size();i++) {
             Individual currentInd = (Individual) order.get(i);
             Hashtable curFam = ((Family)(families.get(currentInd.getFamilyID())) ).getMembers();
-            if( ! (curFam.containsKey(currentInd.getDadID()))) {
+            if( !currentInd.getDadID().equals("0") && ! (curFam.containsKey(currentInd.getDadID()))) {
                 currentInd.setDadID("0");
                 bogusParents = true;
             }
-            if(! (curFam.containsKey(currentInd.getMomID()))) {
+            if(!currentInd.getMomID().equals("0") && ! (curFam.containsKey(currentInd.getMomID()))) {
                 currentInd.setMomID("0");
                 bogusParents = true;
             }
