@@ -14,11 +14,11 @@ class SNP{
 	MAF = m;
     }
 
-    SNP(String n, long p){
+    SNP(String n, long p, double m){
 	name = n;
 	position = p;
 	origin = "unknown";
-	MAF = 0.0;
+	MAF = m;
     }
 
     public String getName(){

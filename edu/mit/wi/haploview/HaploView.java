@@ -10,56 +10,140 @@ import java.awt.image.*;
 
 public class HaploView extends JFrame implements ActionListener{
 
+    //some constants etc.
+    static final String MARKER_DATA_EXT = ".info";
+
+    static final String READ_GENOTYPES = "Open genotype data";
+    static final String READ_MARKERS = "Load marker data";
+    JMenuItem readMarkerItem;
+
+    static final String EXPORT_TEXT = "Export data to text"; 
+    static final String EXPORT_PNG = "Export data to PNG";
+    static final String EXPORT_PS = "Export data to postscript";
+    static final String EXPORT_PRINT = "Print";
+    String exportItems[] = {
+	EXPORT_TEXT, EXPORT_PNG, EXPORT_PS, EXPORT_PRINT
+    };
+    JMenuItem exportMenuItems[];
+
+    static final String DEFINE_BLOCKS = "Define blocks";
+    JMenuItem defineBlocksItem;
+
+    static final String QUIT = "Quit";
+
+    static final String VIEW_DPRIME = "D Prime Plot";
+    static final String VIEW_HAPLOTYPES = "Haplotypes";
+    static final String VIEW_GENOTYPES = "Genotype Data";
+    static final String VIEW_MARKERS = "Marker Data";
+    String viewItems[] = {
+        VIEW_DPRIME, VIEW_HAPLOTYPES
+    };
+    JRadioButtonMenuItem viewMenuItems[];
+
+    //static final String DISPLAY_OPTIONS = "Display Options";
+    //JMenuItem displayOptionsItem;
+
     //start filechooser in current directory
     final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+
     HaploData theData;
-    HaploView window;
     JFrame checkWindow;
-    Container contents;
-    Haplotype[][] finishedHaplos;
-    int[][] lookupPos;
     private CheckDataPanel checkPanel;
     private String hapInputFileName;
     private BlockDisplay theBlocks;
-    private String loadInfoStr = "Load Marker Info";
-    private String infileName="";
     private boolean infoKnown = false;
-    private boolean useThickness = true;
     private ProgressMonitor progressMonitor;
     private javax.swing.Timer timer;
-    private int haploThresh = 1;
-    private int colorThresh = 1;
-    private int crossThinThresh = 1;
-    private int crossThickThresh = 10;
-    private NumberTextField minThickCrossValTF, minThinCrossValTF, minColorValTF;
-    JMenuItem loadInfoMenuItem = new JMenuItem(loadInfoStr);
-    JMenuItem hapMenuItem = new JMenuItem("Generate Haplotypes");
-    JMenuItem exportMenuItem = new JMenuItem("Export LD Picture to PNG");
-    JMenuItem saveDprimeMenuItem = new JMenuItem("Dump LD Output to Text");
-    JMenuItem clearBlocksMenuItem = new JMenuItem("Clear All Blocks");
-    JMenuItem guessBlocksMenuItem = new JMenuItem("Define Blocks");
-    JMenuItem saveHapsMenuItem = new JMenuItem("Save Haplotypes to Text");
-    JMenuItem saveHapsPicMenuItem = new JMenuItem("Save Haplotypes to PNG");
-    JMenuItem customizeHapsMenuItem = new JMenuItem("Customize Haplotype Output");
-    DPrimePanel theDPrime;
+    
+    DPrimeDisplay dPrimeDisplay;
+    HaplotypeDisplay hapDisplay;
+    JTabbedPane tabs;
+    String[] filenames;
+
 
     public HaploView(){
-	JMenu fileMenu, toolMenu, helpMenu, blockMenu;
+	//menu setup
 	JMenuBar menuBar = new JMenuBar();
+	setJMenuBar(menuBar);
 	JMenuItem menuItem;
 	
-	addWindowListener(new WindowAdapter() {
-		public void windowClosing(WindowEvent e){
-		    System.exit(0);
-		}
-	    });
-	setJMenuBar(menuBar);
-	
-	fileMenu = new JMenu("File");
+	//file menu
+	JMenu fileMenu = new JMenu("File");
 	menuBar.add(fileMenu);
 
-	toolMenu = new JMenu("Tools");
-	menuBar.add(toolMenu);
+	menuItem = new JMenuItem(READ_GENOTYPES);
+	setAccelerator(menuItem, 'O', false);
+	menuItem.addActionListener(this);
+	fileMenu.add(menuItem);
+
+	/*
+	  viewGenotypesItem = new JMenuItem(VIEW_GENOTYPES);
+	  viewGenotypesItem.addActionListener(this);
+	  //viewGenotypesItem.setEnabled(false);
+	  fileMenu.add(viewGenotypesItem);
+	*/
+
+	readMarkerItem = new JMenuItem(READ_MARKERS);
+	setAccelerator(readMarkerItem, 'I', false);
+	readMarkerItem.addActionListener(this);
+	readMarkerItem.setEnabled(false);
+	fileMenu.add(readMarkerItem);
+
+	/*
+	  viewMarkerItem = new JMenuItem(VIEW_MARKERS);
+	  viewMarkerItem.addActionListener(this);
+	  //viewMarkerItem.setEnabled(false);
+	  fileMenu.add(viewMarkerItem);
+	*/
+
+	fileMenu.addSeparator();
+
+	exportMenuItems = new JMenuItem[exportItems.length];
+	for (int i = 0; i < exportItems.length; i++) {
+	    exportMenuItems[i] = new JMenuItem(exportItems[i]);
+	    exportMenuItems[i].addActionListener(this);
+	    exportMenuItems[i].setEnabled(false);
+	    fileMenu.add(exportMenuItems[i]);
+	}
+
+	fileMenu.addSeparator();
+
+	menuItem = new JMenuItem(QUIT);
+	setAccelerator(menuItem, 'Q', false);
+	menuItem.addActionListener(this);
+	fileMenu.add(menuItem);
+
+	/// display menu
+
+	JMenu displayMenu = new JMenu("Display");
+	menuBar.add(displayMenu);
+
+	ButtonGroup group = new ButtonGroup();
+	viewMenuItems = new JRadioButtonMenuItem[viewItems.length];
+	for (int i = 0; i < viewItems.length; i++) {
+	    viewMenuItems[i] = new JRadioButtonMenuItem(viewItems[i], i == 0);
+	    viewMenuItems[i].addActionListener(this);
+	    
+	    KeyStroke ks = KeyStroke.getKeyStroke('1' + i, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());
+	    viewMenuItems[i].setAccelerator(ks);
+	    
+	    displayMenu.add(viewMenuItems[i]);
+	    group.add(viewMenuItems[i]);
+	}
+
+	//analysis menu
+	JMenu analysisMenu = new JMenu("Analysis");
+	menuBar.add(analysisMenu);
+	defineBlocksItem = new JMenuItem(DEFINE_BLOCKS);
+	setAccelerator(defineBlocksItem, 'B', false);
+	defineBlocksItem.addActionListener(this);
+	defineBlocksItem.setEnabled(false);
+	analysisMenu.add(defineBlocksItem);
+
+	// maybe
+	//displayMenu.addSeparator();
+	//displayOptionsItem = new JMenuItem(DISPLAY_OPTIONS);
+	//setAccelerator(displayOptionsItem, 'D', false);
 
 	/** NEEDS FIXING
 	helpMenu = new JMenu("Help");
@@ -70,89 +154,257 @@ public class HaploView extends JFrame implements ActionListener{
 	menuItem.addActionListener(this);
 	helpMenu.add(menuItem);
 	**/
+
+	/*
+	  clearBlocksMenuItem.addActionListener(this);
+	  clearBlocksMenuItem.setEnabled(false);
+	  toolMenu.add(clearBlocksMenuItem);
+	  
+	  guessBlocksMenuItem.addActionListener(this);
+	  guessBlocksMenuItem.setEnabled(false);
+	  toolMenu.add(guessBlocksMenuItem);
+	  toolMenu.addSeparator();
+	*/
 	
-	menuItem = new JMenuItem("Open Linkage File");
-	menuItem.addActionListener(this);
-	fileMenu.add(menuItem);
+	addWindowListener(new WindowAdapter() {
+	    public void windowClosing(WindowEvent e){
+		quit();
+	    }
+	});
+    }
+ 
 
-	menuItem = new JMenuItem("Open Haplotype File");
-	menuItem.addActionListener(this);
-	fileMenu.add(menuItem);
-
-	loadInfoMenuItem.addActionListener(this);
-	loadInfoMenuItem.setEnabled(false);
-	toolMenu.add(loadInfoMenuItem);
-	toolMenu.addSeparator();
-
-	clearBlocksMenuItem.addActionListener(this);
-	clearBlocksMenuItem.setEnabled(false);
-	toolMenu.add(clearBlocksMenuItem);
-
-	guessBlocksMenuItem.addActionListener(this);
-	guessBlocksMenuItem.setEnabled(false);
-	toolMenu.add(guessBlocksMenuItem);
-	toolMenu.addSeparator();
-	
-	hapMenuItem.addActionListener(this);
-	hapMenuItem.setEnabled(false);
-	toolMenu.add(hapMenuItem);
-
-	customizeHapsMenuItem.addActionListener(this);
-	customizeHapsMenuItem.setEnabled(false);
-	toolMenu.add(customizeHapsMenuItem);
-	toolMenu.addSeparator();
-	
-	saveHapsMenuItem.addActionListener(this);
-	saveHapsMenuItem.setEnabled(false);
-	toolMenu.add(saveHapsMenuItem);
-
-	saveHapsPicMenuItem.addActionListener(this);
-	saveHapsPicMenuItem.setEnabled(false);
-	toolMenu.add(saveHapsPicMenuItem);
-
-	saveDprimeMenuItem.addActionListener(this);
-	saveDprimeMenuItem.setEnabled(false);
-	toolMenu.add(saveDprimeMenuItem);
-
-	exportMenuItem.addActionListener(this);
-	exportMenuItem.setEnabled(false);
-	toolMenu.add(exportMenuItem);
-
-	fileMenu.addSeparator();
-	menuItem = new JMenuItem("Exit");
-	menuItem.addActionListener(this);
-	fileMenu.add(menuItem);
+    // function workaround for overdesigned, underthought swing api -fry
+    void setAccelerator(JMenuItem menuItem, char what, boolean shift) {
+	menuItem.setAccelerator(KeyStroke.getKeyStroke(what, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | (shift ? ActionEvent.SHIFT_MASK : 0)));
     }
 
+    
+    public void actionPerformed(ActionEvent e) {
+	String command = e.getActionCommand();
+	String shortHapInputFileName;
+	if (command == READ_GENOTYPES){
+	    ReadDataDialog readDialog = new ReadDataDialog("Open new data", this);
+	    readDialog.pack();
+	    readDialog.setVisible(true);
+	    /**if (command == "Open Linkage File"){
+	    fc.setSelectedFile(null);
+	    int returnVal = fc.showOpenDialog(this);
+	    if (returnVal == JFileChooser.APPROVE_OPTION) {
+		shortHapInputFileName = fc.getSelectedFile().getName();
+		try{
+		    hapInputFileName = fc.getSelectedFile().getCanonicalPath();
+		}catch (IOException ioexec){
+		    JOptionPane.showMessageDialog(this, 
+						  ioexec.getMessage(), 
+						  "File Error",
+						  JOptionPane.ERROR_MESSAGE);
+		}
+		//pop open checkdata window
+		checkWindow = new JFrame();
+		checkPanel = new CheckDataPanel(fc.getSelectedFile());
+		checkWindow.setTitle("Checking markers..."+shortHapInputFileName);
+		JPanel metaCheckPanel = new JPanel();
+		metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
+		JButton checkContinueButton = new JButton("Continue");
+		checkContinueButton.addActionListener(this);
+		checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		metaCheckPanel.add(checkPanel);
+		checkContinueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+		metaCheckPanel.add(checkContinueButton);
+		JLabel infoLabel = new JLabel("(this will create a haplotype file named " + shortHapInputFileName + ".haps)");
+		infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+		metaCheckPanel.add(infoLabel);
+		checkWindow.setContentPane(metaCheckPanel);
+		checkWindow.pack();
+		if (false){
+		    checkWindow.dispose();
+		    JOptionPane.showMessageDialog(this, 
+						  "File format error",
+						  "File Error",
+						  JOptionPane.ERROR_MESSAGE);
+		}
+		checkWindow.setVisible(true);
+	    }
+	}else if (command == "Open Haplotype File"){
+	    fc.setSelectedFile(null);
+	    int returnVal = fc.showOpenDialog(this);
+	    if (returnVal == JFileChooser.APPROVE_OPTION){
+		processInput(fc.getSelectedFile());
+		}**/
+	}else if (command == "Continue"){
+	    /**	    JTable table = checkPanel.getTable();
+	    checkWindow.dispose();
+	    boolean[] markerResultArray = new boolean[table.getRowCount()];
+	    for (int i = 0; i < table.getRowCount(); i++){
+		markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
+	    }
+	    try{
+		new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),hapInputFileName+".haps");
+	    }catch (IOException ioexec){
+		JOptionPane.showMessageDialog(this, 
+					      ioexec.getMessage(), 
+					      "File Error",
+					      JOptionPane.ERROR_MESSAGE);
+	    }
+	    processInput(new File(hapInputFileName+".haps"));**/
+	} else if (command == READ_MARKERS){
+	    fc.setSelectedFile(null);
+	    int returnVal = fc.showOpenDialog(this);
+	    if (returnVal == JFileChooser.APPROVE_OPTION) {
+		readMarkers(fc.getSelectedFile());
+	    }
+	}else if (command == "Clear All Blocks"){
+	    theBlocks.clearBlocks();
+	}else if (command == DEFINE_BLOCKS){
+	    defineBlocks();
+	}else if (command == "Tutorial"){
+	    showHelp();
+	} else if (command == QUIT){
+	    quit();
+	} else {
+	    for (int i = 0; i < viewItems.length; i++) {
+		if (command == viewItems[i]) tabs.setSelectedIndex(i);
+	    }
+	}
+    }
+
+
+    void quit(){
+	//any handling that might need to take place here
+	System.exit(0);
+    }
+
+    
+    void readPhasedGenotypes(String[] f){
+	//input is a 2 element array with 
+	//filenames[0] = haps file
+	//filenames[1] = info file (null if none)		
+	filenames = f;
+
+	try{
+	    theData = new HaploData(new File(filenames[0]));
+	    
+	    //compute D primes and monitor progress
+	    progressMonitor = new ProgressMonitor(this, "Computing " + theData.getToBeCompleted() + " values of D prime","", 0, theData.getToBeCompleted());
+	    progressMonitor.setProgress(0);
+	    progressMonitor.setMillisToDecideToPopup(2000);
+	    
+	    final SwingWorker worker = new SwingWorker(){
+		public Object construct(){
+		    theData.doMonitoredComputation();
+		    return "";
+		}
+	    };
+	    
+	    timer = new javax.swing.Timer(50, new ActionListener(){
+		public void actionPerformed(ActionEvent evt){
+		    progressMonitor.setProgress(theData.getComplete());
+		    if (theData.finished){
+			timer.stop();
+			progressMonitor.close();
+			infoKnown=false;
+			if (!(filenames[1].equals(""))){
+			    readMarkers(new File(filenames[1]));
+			}
+			drawPicture(theData);
+			defineBlocksItem.setEnabled(true);
+			readMarkerItem.setEnabled(true);
+		    }
+		}
+	    });
+	    
+	    worker.start();
+	    timer.start();
+
+	}catch (IOException ioexec){
+	    JOptionPane.showMessageDialog(this, 
+					  ioexec.getMessage(), 
+					  "File Error",
+					  JOptionPane.ERROR_MESSAGE);
+	}catch (RuntimeException rtexec){
+	    JOptionPane.showMessageDialog(this,
+					  "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
+					  "Error",
+					  JOptionPane.ERROR_MESSAGE);
+	}
+    }
+    
+    
+    void readMarkers(File inputFile){
+	try {
+	    int good = theData.prepareMarkerInput(inputFile);
+	    if (good == -1){
+		JOptionPane.showMessageDialog(this, 
+					      "Number of markers in info file does not match number of markers in dataset.",
+					      "Error",
+					      JOptionPane.ERROR_MESSAGE);
+	    }else{
+		infoKnown=true;
+	    }
+	}catch (IOException ioexec){
+	    JOptionPane.showMessageDialog(this, 
+					  ioexec.getMessage(), 
+					  "File Error",
+					  JOptionPane.ERROR_MESSAGE);
+	}catch (RuntimeException rtexec){
+	    JOptionPane.showMessageDialog(this,
+					  "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
+					  "Error",
+					  JOptionPane.ERROR_MESSAGE);
+	}	
+    }
+
+
     void drawPicture(HaploData theData){
-	contents = getContentPane();
+	Container contents = getContentPane();
 	contents.removeAll();
+	
+	//remember which tab we're in if they've already been set up
+	int currentTabIndex = 0;
+	if (!(tabs == null)){
+	    currentTabIndex = tabs.getSelectedIndex();
+	}
+
+        tabs = new JTabbedPane();
 
 	//first, draw the D' picture
-	contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
-	theDPrime = new DPrimePanel(theData.dPrimeTable, infoKnown, theData.markerInfo);
-	JPanel holderPanel = new JPanel();
-	holderPanel.add(theDPrime);
-	holderPanel.setBackground(new Color(192,192,192));
-	JScrollPane dPrimeScroller = new JScrollPane(holderPanel);
+        JPanel panel = new JPanel();
+	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+	dPrimeDisplay = new DPrimeDisplay(theData.dPrimeTable, infoKnown, theData.markerInfo);
+	JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
 	dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
 	dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
-	contents.add(dPrimeScroller);
+	panel.add(dPrimeScroller);
+	tabs.addTab(viewItems[0], panel);
 
-	//next add a little spacer
-	contents.add(Box.createRigidArea(new Dimension(0,5)));
+	//compute and show haps on next tab
+        panel = new JPanel();
+	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+	hapDisplay = new HaplotypeDisplay(theData);
+	HaplotypeDisplayController hdc = 
+	    new HaplotypeDisplayController(hapDisplay);
+	JScrollPane hapScroller = new JScrollPane(hapDisplay);
+	panel.add(hapScroller);
+	panel.add(hdc);
+        tabs.addTab(viewItems[1], panel);
+        tabs.setSelectedIndex(currentTabIndex);
+        contents.add(tabs);      
+        
+        //next add a little spacer
+	//ontents.add(Box.createRigidArea(new Dimension(0,5)));
 
 	//and then add the block display
-	theBlocks = new BlockDisplay(theData.markerInfo, theData.blocks, theDPrime, infoKnown);
-	contents.setBackground(Color.black);
+	//theBlocks = new BlockDisplay(theData.markerInfo, theData.blocks, dPrimeDisplay, infoKnown);
+	//contents.setBackground(Color.black);
 
 	//put the block display in a scroll pane in case the data set is very large.
-	JScrollPane blockScroller = new JScrollPane(theBlocks,
-						    JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-						    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-	blockScroller.getHorizontalScrollBar().setUnitIncrement(60);
-	blockScroller.setMinimumSize(new Dimension(800, 100));
-	contents.add(blockScroller);
+	//JScrollPane blockScroller = new JScrollPane(theBlocks,
+	//						    JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+	//					    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    //blockScroller.getHorizontalScrollBar().setUnitIncrement(60);
+    //blockScroller.setMinimumSize(new Dimension(800, 100));
+    //contents.add(blockScroller);
 	repaint();
 	setVisible(true);
     }
@@ -205,195 +457,7 @@ public class HaploView extends JFrame implements ActionListener{
 	helpFrame.setVisible(true);
     }
 
-    void drawHaplos(Haplotype[][] haplos) throws IOException{
-	Haplotype[][] orderedHaplos = new Haplotype[haplos.length][];
-	for (int i = 0; i < haplos.length; i++){
-	    Vector orderedHaps = new Vector();
-            //step through each haplotype in this block
-            for (int hapCount = 0; hapCount < haplos[i].length; hapCount++){
-		if (orderedHaps.size() == 0){
-		    orderedHaps.add(haplos[i][hapCount]);
-		}else{
-		    for (int j = 0; j < orderedHaps.size(); j++){
-			if (((Haplotype)(orderedHaps.elementAt(j))).getPercentage() < haplos[i][hapCount].getPercentage()){
-			    orderedHaps.add(j, haplos[i][hapCount]);
-			    break;
-			}
-			if ((j+1) == orderedHaps.size()){
-			    orderedHaps.add(haplos[i][hapCount]);
-			    break;
-			}
-		    }
-		}
-	    }
-	    orderedHaplos[i] = new Haplotype[orderedHaps.size()];
-	    for (int z = 0; z < orderedHaps.size(); z++){
-		orderedHaplos[i][z] = (Haplotype)orderedHaps.elementAt(z);
-	    }
-		
-	}
-	finishedHaplos = theData.generateCrossovers(orderedHaplos);
-
-
-	JFrame haploFrame = new JFrame("Haplotypes");
-	HaplotypePanel hapWindow = new HaplotypePanel(finishedHaplos, useThickness,
-						      colorThresh, crossThinThresh, crossThickThresh,
-						      theData.getMultiDprime());
-	hapWindow.setBackground(Color.white);
-
-	haploFrame.setContentPane(hapWindow);
-	haploFrame.pack();
-	haploFrame.setVisible(true);
-    }
-
-    void customizeHaps(){
-	JPanel itemsPanel = new JPanel();
-	JPanel hapPrefsPanel = new JPanel();
-	JPanel crossPrefsPanel = new JPanel();
-	
-	//text field for min haplotype percentage to display
-	NumberTextField minHapDisplayValTF = new NumberTextField(String.valueOf(haploThresh), 2);
-	hapPrefsPanel.add(new JLabel("Examine haps above "));
-	hapPrefsPanel.add(minHapDisplayValTF);
-	hapPrefsPanel.add(new JLabel("%"));
-	hapPrefsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-	
-	//options related to crossover percentages
-	JRadioButton thickButton = new JRadioButton("Line Thickness");
-	thickButton.setActionCommand("thick");
-
-	JRadioButton colorButton = new JRadioButton("Color");
-	colorButton.setActionCommand("color");
-
-	//radio buttons for which distinguishing method
-	ButtonGroup crossGroup = new ButtonGroup();
-	crossGroup.add(thickButton);
-	crossGroup.add(colorButton);
-
-	//listen for button switch
-	RadioListener myRadListener = new RadioListener();
-	thickButton.addActionListener(myRadListener);
-	colorButton.addActionListener(myRadListener);
-
-	//stuff for thickness mods
-	minThickCrossValTF = new NumberTextField(String.valueOf(crossThickThresh), 2);
-	minThinCrossValTF = new NumberTextField(String.valueOf(crossThinThresh), 2);
-	//all these sub-panels to make the layout pretty
-	JPanel thickPanel = new JPanel();
-	JPanel thickFieldsPanel = new JPanel();
-	JPanel fieldsPanelTop = new JPanel();
-	JPanel fieldsPanelBot = new JPanel();
-	thickFieldsPanel.setLayout(new BoxLayout(thickFieldsPanel, BoxLayout.Y_AXIS));
-	fieldsPanelTop.add(new JLabel("Connect with thick lines if > "));
-	fieldsPanelTop.add(minThickCrossValTF);
-	fieldsPanelTop.add(new JLabel("%"));
-	fieldsPanelBot.add(new JLabel("Connect with thin lines if > "));
-	fieldsPanelBot.add(minThinCrossValTF);
-	fieldsPanelBot.add(new JLabel("%"));
-	thickFieldsPanel.add(fieldsPanelTop);
-	thickFieldsPanel.add(fieldsPanelBot);
-	thickPanel.add(thickButton);
-	thickPanel.add(thickFieldsPanel);
-
-	//stuff for color 
-	JPanel colorPanel = new JPanel();
-	JPanel colorFieldPanel = new JPanel();
-	minColorValTF = new NumberTextField(String.valueOf(colorThresh), 2);
-	colorFieldPanel.add(new JLabel("Display connections > "));
-	colorFieldPanel.add(minColorValTF);
-	colorFieldPanel.add(new JLabel("%"));
-	colorPanel.add(colorButton);
-	colorPanel.add(colorFieldPanel);
-
-	//force the appropriate areas to be greyed out
-	if (useThickness){
-	    thickButton.setSelected(true);
-	    minColorValTF.setEnabled(false);
-	    minThinCrossValTF.setEnabled(true);
-	    minThickCrossValTF.setEnabled(true);
-	}else{
-	    colorButton.setSelected(true);
-	    minColorValTF.setEnabled(true);
-	    minThinCrossValTF.setEnabled(false);
-	    minThickCrossValTF.setEnabled(false);
-	}
-	
-	GridBagLayout gridbag = new GridBagLayout();
-	GridBagConstraints c = new GridBagConstraints();
-	crossPrefsPanel.setLayout(gridbag);
-
-	//header
-	JLabel crossLabel = new JLabel("Select a method to distinguish crossing strength:");
-	c.gridx = 0; c.gridy=0; c.anchor=GridBagConstraints.NORTH;
-	gridbag.setConstraints(crossLabel,c);
-	crossPrefsPanel.add(crossLabel);
-
-	//thickness stuff
-	c.gridy = 1; c.anchor = GridBagConstraints.WEST;
-	gridbag.setConstraints(thickPanel,c);
-	crossPrefsPanel.add(thickPanel);
-
-	//color stuff
-	c.gridy=2; c.anchor = GridBagConstraints.WEST;
-	gridbag.setConstraints(colorPanel,c);
-	crossPrefsPanel.add(colorPanel);
-	crossPrefsPanel.setBorder(BorderFactory.createLineBorder(Color.black));
-
-	//set up the layout of all the created items
-	itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
-	itemsPanel.add(hapPrefsPanel);
-	itemsPanel.add(Box.createRigidArea(new Dimension(0,5)));
-	itemsPanel.add(crossPrefsPanel);
-
-	JOptionPane.showMessageDialog(window,
-				      itemsPanel,
-				      "Customize Haplotype Output",
-				      JOptionPane.PLAIN_MESSAGE);
-	haploThresh = Integer.parseInt(minHapDisplayValTF.getText());
-	crossThinThresh = Integer.parseInt(minThinCrossValTF.getText());
-	crossThickThresh = Integer.parseInt(minThickCrossValTF.getText());
-	colorThresh = Integer.parseInt(minColorValTF.getText());
-    }
-
-    //listen to radio buttons
-    class RadioListener implements ActionListener {
-	public void actionPerformed(ActionEvent e){
-	    if (e.getActionCommand().equals("thick")){
-		useThickness = true;
-		minThickCrossValTF.setEnabled(true);
-		minThinCrossValTF.setEnabled(true);
-		minColorValTF.setEnabled(false);
-	    }else{
-		useThickness = false;
-		minThickCrossValTF.setEnabled(false);
-		minThinCrossValTF.setEnabled(false);
-		minColorValTF.setEnabled(true);
-	    }
-	}
-    }
-
-    void saveHapsPic(){
-	fc.setSelectedFile(null);
-	int returnVal = fc.showSaveDialog(this);
-	if (returnVal == JFileChooser.APPROVE_OPTION){
-	    try {
-		DrawingMethods dm = new DrawingMethods();
-		BufferedImage testImage = new BufferedImage(10,10,BufferedImage.TYPE_3BYTE_BGR);
-		Dimension theSize = dm.haploGetPreferredSize(finishedHaplos, testImage.getGraphics());
-		BufferedImage image = new BufferedImage((int)theSize.getWidth(),(int)theSize.getHeight(),BufferedImage.TYPE_3BYTE_BGR);
-		dm.haploDraw(image.getGraphics(), useThickness,
-			     colorThresh, crossThinThresh, crossThickThresh,
-			     theData.getMultiDprime() ,finishedHaplos);
-		dm.saveImage(image, fc.getSelectedFile().getPath());
-	    }catch (IOException ioexec){
-		JOptionPane.showMessageDialog(this, 
-					      ioexec.getMessage(), 
-					      "File Error",
-					      JOptionPane.ERROR_MESSAGE);
-	    }
-	}
-    }
-
+    
     void saveDprimeToText(){
 	fc.setSelectedFile(null);
 	try{
@@ -410,209 +474,41 @@ public class HaploView extends JFrame implements ActionListener{
 	}
     }
 
-    void saveHapsToText(){
-	fc.setSelectedFile(null);
-	try{
-	    fc.setSelectedFile(null);
-	    int returnVal = fc.showSaveDialog(this);
-	    if (returnVal == JFileChooser.APPROVE_OPTION) {
-		new TextMethods().saveHapsToText(finishedHaplos, fc.getSelectedFile());
-	    }
-	}catch (IOException ioexec){
-	    JOptionPane.showMessageDialog(this, 
-					  ioexec.getMessage(), 
-					  "File Error",
-					  JOptionPane.ERROR_MESSAGE);
-	}
-    }
 
     void defineBlocks(){
 	String[] methodStrings = {"95% of informative pairwise comparisons show strong LD via confidence intervals (SFS)",
 				  "Four Gamete Rule",
 				  "Solid block of strong LD via D prime (MJD)"};
 	JComboBox methodList = new JComboBox(methodStrings);
-	JOptionPane.showMessageDialog(window,
+	JOptionPane.showMessageDialog(this,
 				      methodList,
 				      "Select a block-finding algorithm",
 				      JOptionPane.QUESTION_MESSAGE);		       
 	theData.blocks = theData.guessBlocks(theData.dPrimeTable, methodList.getSelectedIndex());
-	drawPicture(theData);
+	hapDisplay.getHaps();
+	if (tabs.getSelectedIndex() == 0) dPrimeDisplay.repaint();
     }    
     
-    void processInput(File theFile){
-	try{
-	    theData = new HaploData(theFile);
-	    infileName = theFile.getName();
-	    
-	    //compute D primes and monitor progress
-	    progressMonitor = new ProgressMonitor(this, "Computing " + theData.getToBeCompleted() + " values of D prime","", 0, theData.getToBeCompleted());
-	    progressMonitor.setProgress(0);
-	    progressMonitor.setMillisToDecideToPopup(2000);
-	    
-	    final SwingWorker worker = new SwingWorker(){
-		public Object construct(){
-		    theData.doMonitoredComputation();
-		    return "";
-		}
-	    };
-	    
-	    timer = new javax.swing.Timer(50, new ActionListener(){
-		public void actionPerformed(ActionEvent evt){
-		    progressMonitor.setProgress(theData.getComplete());
-		    if (theData.finished){
-			timer.stop();
-			progressMonitor.close();
-			infoKnown=false;
-			drawPicture(theData);
-			loadInfoMenuItem.setEnabled(true);
-			hapMenuItem.setEnabled(true);
-			customizeHapsMenuItem.setEnabled(true);
-			exportMenuItem.setEnabled(true);
-			saveDprimeMenuItem.setEnabled(true);
-			clearBlocksMenuItem.setEnabled(true);
-			guessBlocksMenuItem.setEnabled(true);
-		    }
-		}
-	    });
-	    
-	    worker.start();
-	    timer.start();
-	    
-	}catch (IOException ioexec){
-	    JOptionPane.showMessageDialog(this, 
-					  ioexec.getMessage(), 
-					  "File Error",
-					  JOptionPane.ERROR_MESSAGE);
-	}catch (RuntimeException rtexec){
-	    JOptionPane.showMessageDialog(this,
-					  "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
-					  "Error",
-					  JOptionPane.ERROR_MESSAGE);
-	}
-    }
-	
-    public void actionPerformed(ActionEvent e) {
-	String command = e.getActionCommand();
-	String shortHapInputFileName;
-	if (command == "Open Linkage File"){
-	    fc.setSelectedFile(null);
-	    int returnVal = fc.showOpenDialog(this);
-	    if (returnVal == JFileChooser.APPROVE_OPTION) {
-		shortHapInputFileName = fc.getSelectedFile().getName();
-		try{
-		    hapInputFileName = fc.getSelectedFile().getCanonicalPath();
-		}catch (IOException ioexec){
-		    JOptionPane.showMessageDialog(this, 
-						  ioexec.getMessage(), 
-						  "File Error",
-						  JOptionPane.ERROR_MESSAGE);
-		}
-		//pop open checkdata window
-		checkWindow = new JFrame();
-		checkPanel = new CheckDataPanel(fc.getSelectedFile());
-		checkWindow.setTitle("Checking markers..."+shortHapInputFileName);
-		JPanel metaCheckPanel = new JPanel();
-		metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
-		JButton checkContinueButton = new JButton("Continue");
-		checkContinueButton.addActionListener(this);
-		checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		metaCheckPanel.add(checkPanel);
-		checkContinueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		metaCheckPanel.add(checkContinueButton);
-		JLabel infoLabel = new JLabel("(this will create a haplotype file named " + shortHapInputFileName + ".haps)");
-		infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		metaCheckPanel.add(infoLabel);
-		checkWindow.setContentPane(metaCheckPanel);
-		checkWindow.pack();
-		checkWindow.setVisible(true);
-	    }
-	}else if (command == "Open Haplotype File"){
-	    fc.setSelectedFile(null);
-	    int returnVal = fc.showOpenDialog(this);
-	    if (returnVal == JFileChooser.APPROVE_OPTION){
-		processInput(fc.getSelectedFile());
-	    }
-	}else if (command == "Continue"){
-	    JTable table = checkPanel.getTable();
-	    checkWindow.dispose();
-	    boolean[] markerResultArray = new boolean[table.getRowCount()];
-	    for (int i = 0; i < table.getRowCount(); i++){
-		markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
-	    }
-	    try{
-		new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),hapInputFileName+".haps");
-	    }catch (IOException ioexec){
-		JOptionPane.showMessageDialog(this, 
-					      ioexec.getMessage(), 
-					      "File Error",
-					      JOptionPane.ERROR_MESSAGE);
-	    }
-	    processInput(new File(hapInputFileName+".haps"));
-	} else if (command == loadInfoStr){
-	    fc.setSelectedFile(null);
-	    int returnVal = fc.showOpenDialog(this);
-	    if (returnVal == JFileChooser.APPROVE_OPTION) {
-		try{
-		    int good = theData.prepareMarkerInput(fc.getSelectedFile());
-		    if (good == -1){
-			JOptionPane.showMessageDialog(this, 
-						      "Number of markers in info file does not match number of markers in dataset.",
-						      "Error",
-						      JOptionPane.ERROR_MESSAGE);
-		    }else{
-			infoKnown=true;
-			// loadInfoMenuItem.setEnabled(false);
-			drawPicture(theData);
-		    }
-		}catch (IOException ioexec){
-		    JOptionPane.showMessageDialog(this, 
-						  ioexec.getMessage(), 
-						  "File Error",
-						  JOptionPane.ERROR_MESSAGE);
-		}catch (RuntimeException rtexec){
-		    JOptionPane.showMessageDialog(this,
-						  "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
-						  "Error",
-						  JOptionPane.ERROR_MESSAGE);
-		}
-	    }
-	}else if (command == "Clear All Blocks"){
-	    theBlocks.clearBlocks();
-	}else if (command == "Define Blocks"){
-	    defineBlocks();
-	}else if (command == "Customize Haplotype Output"){
-	    customizeHaps();
-	}else if (command == "Tutorial"){
-	    showHelp();
-	}else if (command == "Export LD Picture to PNG"){
-	    doExportDPrime();
-	}else if (command == "Dump LD Output to Text"){
-	    saveDprimeToText();
-	}else if (command == "Save Haplotypes to Text"){
-	    saveHapsToText();
-	}else if (command == "Save Haplotypes to PNG"){
-	    saveHapsPic();
-	}else if (command == "Generate Haplotypes"){
-	    try{
-		drawHaplos(theData.generateHaplotypes(theData.blocks, haploThresh));
-		saveHapsMenuItem.setEnabled(true);
-		saveHapsPicMenuItem.setEnabled(true);
-	    }catch (IOException ioe){}
-	} else if (command == "Exit"){
-	    System.exit(0);
-	}
-    }
 
     public static void main(String[] args) throws IOException{
 	try {
-	    UIManager.setLookAndFeel(
-		UIManager.getCrossPlatformLookAndFeelClassName());
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 	} catch (Exception e) { }
 	
+	//setup view object
 	HaploView window = new HaploView();
-	window.setTitle("HaploView alpha");
-	window.setSize(800,800);
+	window.setTitle("HaploView beta");
+	window.setSize(800,600);
+
+	//center the window on the screen
+	Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+	window.setLocation((screen.width - window.getWidth()) / 2,
+			   (screen.height - window.getHeight()) / 2);
+
 	window.setVisible(true);
+	ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
+	readDialog.pack();
+	readDialog.setVisible(true);
     }    
 }
 

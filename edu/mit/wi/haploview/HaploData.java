@@ -57,7 +57,7 @@ class HaploData{
 	finished = true;
     }
 
-    Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh) throws IOException{
+    Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh){
 	Haplotype[][] results = new Haplotype[blocks.size()][];
 	String raw = new String();
 	String currentLine;
@@ -212,13 +212,19 @@ class HaploData{
 	return multidprimeArray;
     }
 
-    Haplotype[][] generateCrossovers(Haplotype[][] haplos) throws IOException{
+    Haplotype[][] generateCrossovers(Haplotype[][] haplos){
 	Vector crossBlock = new Vector();
 	double CROSSOVER_THRESHOLD = 0.01;   //to what percentage do we want to consider crossings?
-	
+
+	if (haplos.length == 0) return null;
+
 	//seed first block with ordering numbers
 	for (int u = 0; u < haplos[0].length; u++){
 	    haplos[0][u].setListOrder(u);
+	}
+
+	for (int i = 0; i < haplos.length; i++){
+	    haplos[i][0].clearTags();
 	}
 
 	multidprimeArray = new double[haplos.length];
@@ -435,7 +441,7 @@ class HaploData{
 	String currentLine;
 	Vector markers = new Vector();
 	
-	//read the file:
+	//read the input file:
 	BufferedReader in = new BufferedReader(new FileReader(infile));
 	// a vector of SNP's is created and returned.
 	int snpcount = 0;
@@ -514,9 +520,29 @@ class HaploData{
 	//also convert sums of bad genotypes to percentages for each marker
 	double numChroms = chroms.size();
 	for (int i = 0; i < genos.size(); i++){
-	    markerInfo.add(new SNP(String.valueOf(i), (i*4000)));
+	    //to compute maf, browse chrom list and count instances of each allele
+	    String a1 = "";
+	    double numa1 = 0; double numa2 = 0;
+	    for (int j = 0; j < chroms.size(); j++){
+		//if there is a data point for this marker on this chromosome
+		String thisAllele = (String)((Chromosome)chroms.elementAt(j)).elementAt(i);
+		if (!(thisAllele.equals("0"))){
+		    if (thisAllele.equals("h")){
+			numa1+=0.5; numa2+=0.5;
+		    }else if (a1.equals("")){
+			a1 = thisAllele; numa1++;
+		    }else if (thisAllele.equals(a1)){
+			numa1++;
+		    }else{
+			numa2++;
+		    }
+		}
+	    }
+	    double maf = numa1/(numa2+numa1);
+	    if (maf > 0.5) maf = 1.0-maf;
+	    markerInfo.add(new SNP(String.valueOf(i), (i*4000), maf));
 	    percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
-	}	
+	}
 	return chroms;
     }
 
@@ -803,6 +829,7 @@ class HaploData{
 		marker2num[m2a2]=2;
 		//iterate through all chromosomes in dataset	
 		for (int i = 0; i < chromosomes.size(); i++){
+		    //System.out.println(i + " " + pos1 + " " + pos2);
 				//assign alleles for each of a pair of chromosomes at a marker to four variables
 		    String a1 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos1).toString();
 		    String a2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2).toString();

@@ -6,7 +6,9 @@ import java.util.*;
 
 class TextMethods {
 
-    public void saveHapsToText(Haplotype[][] finishedHaplos, File saveHapsFile) throws IOException{
+    public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,  File saveHapsFile) throws IOException{
+
+	if (finishedHaplos == null) return;
 
 	NumberFormat nf = NumberFormat.getInstance();
 	nf.setMinimumFractionDigits(3);
@@ -15,44 +17,40 @@ class TextMethods {
 	//open file for saving haps text
 	FileWriter saveHapsWriter = new FileWriter(saveHapsFile);
 	
-	int[][]lookupPos = new int[finishedHaplos.length][];
-	for (int p = 0; p < lookupPos.length; p++){
-	    lookupPos[p] = new int[finishedHaplos[p].length];
-	    for (int q = 0; q < lookupPos[p].length; q++){
-		lookupPos[p][finishedHaplos[p][q].getListOrder()] = q;
-		//System.out.println(p + " " + q + " " + finishedHaplos[p][q].getListOrder());
-	    }
-	}
-
 	//go through each block and print haplos
 	for (int i = 0; i < finishedHaplos.length; i++){
 	    //write block header
 	    saveHapsWriter.write("BLOCK " + (i+1) + ".  MARKERS:");
 	    int[] markerNums = finishedHaplos[i][0].getMarkers();
+	    boolean[] tags = finishedHaplos[i][0].getTags();
 	    for (int j = 0; j < markerNums.length; j++){
 		saveHapsWriter.write(" " + (markerNums[j]+1));
+		if (tags[j]) saveHapsWriter.write("!");
 	    }
 	    saveHapsWriter.write("\n");
 	    //write haps and crossover percentages
 	    for (int j = 0; j < finishedHaplos[i].length; j++){
-		int curHapNum = lookupPos[i][j];
 		String theHap = new String();
-		int[] theGeno = finishedHaplos[i][curHapNum].getGeno();
+		int[] theGeno = finishedHaplos[i][j].getGeno();
 		for (int k = 0; k < theGeno.length; k++){
 		    theHap += theGeno[k];
 		}
-		saveHapsWriter.write(theHap + " (" + nf.format(finishedHaplos[i][curHapNum].getPercentage()) + ")");
+		saveHapsWriter.write(theHap + " (" + nf.format(finishedHaplos[i][j].getPercentage()) + ")");
 		if (i < finishedHaplos.length-1){
 		    saveHapsWriter.write("\t|");
 		    for (int crossCount = 0; crossCount < finishedHaplos[i+1].length; crossCount++){
 			if (crossCount != 0) saveHapsWriter.write("\t");
-			saveHapsWriter.write(nf.format(finishedHaplos[i][curHapNum].getCrossover(crossCount)));
+			saveHapsWriter.write(nf.format(finishedHaplos[i][j].getCrossover(crossCount)));
 		    }
 		    saveHapsWriter.write("|");
 		}
 		saveHapsWriter.write("\n");
 	    }
-	    saveHapsWriter.write("\n");
+	    if (i < finishedHaplos.length - 1){
+		saveHapsWriter.write("Multiallelic Dprime: " + multidprime[i] + "\n");
+	    }else{
+		saveHapsWriter.write("\n");
+	    }
 	}
 	saveHapsWriter.close();
     }

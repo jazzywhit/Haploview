@@ -33,6 +33,12 @@ class Haplotype{
 	tags[t] = true;
     }
 
+    public void clearTags(){
+	for (int t = 0; t < tags.length; t++){
+	    tags[t] = false;
+	}
+    }
+
     public double getCrossover(int index){
 	return crossovers[index];
     }
@@ -52,5 +58,4 @@ class Haplotype{
     public void setListOrder(int slo){
 	listorder = slo;
     }
-
 }
