@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 3.0 2005/01/27 18:19:02 jcbarret Exp $
+* $Id: CheckData.java,v 3.1 2005/02/04 16:50:35 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -59,22 +59,20 @@ public class CheckData {
         MarkerResult result = new MarkerResult();
         Individual currentInd;
         //int indivgeno=0,
-        int missing=0, parenthet=0, mendErrNum=0;
+        int missing=0, founderHetCount=0, mendErrNum=0;
         int allele1=0, allele2=0, hom=0, het=0;
         //Hashtable allgenos = new Hashtable();
-        Hashtable numindivs=new Hashtable();
-        Hashtable parentgeno = new Hashtable();
+        Hashtable founderGenoCount = new Hashtable();
         Hashtable kidgeno = new Hashtable();
         //Hashtable parenthom = new Hashtable();
-        int[] parentHom = new int[5];
+        int[] founderHomCount = new int[5];
 
         //Hashtable count = new Hashtable();
         int[] count = new int[5];
         for(int i=0;i<5;i++) {
-            parentHom[i] =0;
+            founderHomCount[i] =0;
             count[i]=0;
         }
-        //String allele1_string, allele2_string;
 
         //loop through each family, check data for marker loc
         Enumeration famList = _pedFile.getFamList();
@@ -86,19 +84,7 @@ public class CheckData {
                 currentInd = currentFamily.getMember((String)indList.nextElement());
                 byte[] markers = currentInd.getMarker(loc);
                 allele1 = markers[0];
-                //allele1_string = Integer.toString(allele1);
                 allele2 = markers[1];
-                //allele2_string = Integer.toString(allele2);
-
-                String familyID = currentInd.getFamilyID();
-
-                if(numindivs.containsKey(familyID)){
-                    int value = ((Integer)numindivs.get(familyID)).intValue() +1;
-                    numindivs.put(familyID, new Integer(value));
-                }
-                else{
-                    numindivs.put(familyID, new Integer(1));
-                }
 
                 //no allele data missing
                 if(allele1 > 0 && allele2 >0){
@@ -106,11 +92,9 @@ public class CheckData {
                     if (currentFamily.containsMember(currentInd.getMomID()) &&
                             currentFamily.containsMember(currentInd.getDadID())){
                         //do mendel check
-                        //byte[] marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getMomID())).getUnfilteredMarker(loc);
                         byte[] marker = (currentFamily.getMember(currentInd.getMomID())).getMarker(loc);
                         int momAllele1 = marker[0];
                         int momAllele2 = marker[1];
-                        //marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getDadID())).getUnfilteredMarker(loc);
                         marker = (currentFamily.getMember(currentInd.getDadID())).getMarker(loc);
                         int dadAllele1 = marker[0];
                         int dadAllele2 = marker[1];
@@ -186,39 +170,30 @@ public class CheckData {
 
                 String familyID = currentInd.getFamilyID();
 
-                if(numindivs.containsKey(familyID)){
-                    int value = ((Integer)numindivs.get(familyID)).intValue() +1;
-                    numindivs.put(familyID, new Integer(value));
-                }
-                else{
-                    numindivs.put(familyID, new Integer(1));
-                }
-
                 //no allele data missing
                 if(allele1 > 0 && allele2 >0){
                     //indiv has no parents -- i.e. is a founder
                     if(!currentFamily.hasAncestor(currentInd.getIndividualID())){
-                        //set parentgeno
+                        //set founderGenoCount
 
-                        if(parentgeno.containsKey(familyID)){
-                            int value = ((Integer)parentgeno.get(familyID)).intValue() +1;
-                            parentgeno.put(familyID, new Integer(value));
+                        if(founderGenoCount.containsKey(familyID)){
+                            int value = ((Integer)founderGenoCount.get(familyID)).intValue() +1;
+                            founderGenoCount.put(familyID, new Integer(value));
                         }
                         else{
-                            parentgeno.put(familyID, new Integer(1));
+                            founderGenoCount.put(familyID, new Integer(1));
                         }
 
                         if(allele1 != allele2) {
-                            parenthet++;
+                            founderHetCount++;
                         }
                         else{
-                            parentHom[allele1]++;
+                            founderHomCount[allele1]++;
                         }
 
                         count[allele1]++;
                         count[allele2]++;
-                    }
-                    else{
+                    }else{
                         if(kidgeno.containsKey(familyID)){
                             int value = ((Integer)kidgeno.get(familyID)).intValue() +1;
                             kidgeno.put(familyID, new Integer(value));
@@ -245,17 +220,17 @@ public class CheckData {
         double maf = freqStuff[1];
 
         //HW p value
-        double pvalue = getPValue(parentHom, parenthet);
+        double pvalue = getPValue(founderHomCount, founderHetCount);
 
         //geno percent
         double genopct = getGenoPercent(het, hom, missing);
 
         // num of families with a fully genotyped trio
         //int famTrio =0;
-        int famTrio = getNumOfFamTrio(numindivs, parentgeno, kidgeno);
+        int famTrio = getNumOfFamTrio(_pedFile.getFamList(), founderGenoCount, kidgeno);
 
         //rating
-        int rating = this.getRating(genopct, pvalue, obsHET, mendErrNum,maf);
+        int rating = this.getRating(genopct, pvalue, mendErrNum,maf);
 
         result.setObsHet(obsHET);
         result.setPredHet(preHET);
@@ -284,10 +259,7 @@ public class CheckData {
     private double[] getFreqStuff(int[] count){
         double[] freqStuff = new double[2];
         int sumsq=0, sum=0, num=0, mincount = -1;
-        //Enumeration enu = count.elements();
-        //while(enu.hasMoreElements()){
         for(int i=0;i<count.length;i++){
-            //num = Integer.parseInt((String)enu.nextElement());
             if(count[i] != 0){
                 num = count[i];
                 sumsq += num*num;
@@ -430,14 +402,13 @@ public class CheckData {
         }
     }
 
-    private int getNumOfFamTrio(Hashtable numindivs, Hashtable parentgeno, Hashtable kidgeno){
+    private int getNumOfFamTrio(Enumeration famList, Hashtable parentgeno, Hashtable kidgeno){
         //int totalfams = 0;
         int tdtfams =0;
-        Enumeration enuKey = numindivs.keys();
-        while(enuKey.hasMoreElements()){
+        while(famList.hasMoreElements()){
             //totalfams++;
             int parentGeno=0, kidsGeno =0;
-            String key = (String)enuKey.nextElement();
+            String key = (String)famList.nextElement();
             Integer pGeno = (Integer)parentgeno.get(key);
             Integer kGeno = (Integer)kidgeno.get(key);
             if(pGeno != null) parentGeno = pGeno.intValue();
@@ -447,7 +418,7 @@ public class CheckData {
         return tdtfams;
     }
 
-    private int getRating(double genopct, double pval, double obsHet, int menderr, double maf){
+    private int getRating(double genopct, double pval, int menderr, double maf){
         int rating = 0;
         if (genopct < failedGenoCut){
             rating -= 2;
