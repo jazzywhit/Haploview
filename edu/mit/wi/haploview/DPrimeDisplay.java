@@ -43,7 +43,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     private final Color BG_GREY = new Color(212,208,200);
 
-    private Image gBrowseImage = null;
+    private BufferedImage gBrowseImage = null;
 
     BasicStroke thickerStroke = new BasicStroke(1);
     BasicStroke thinnerStroke = new BasicStroke(0.35f);
@@ -769,38 +769,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
         g2.setStroke(thickerStroke);
 
-        //see if the user has right-clicked to popup some marker info
-        if(popupExists){
-
-            //dumb bug where little datasets popup the box in the wrong place
-            int smallDatasetSlopH = 0;
-            int smallDatasetSlopV = 0;
-            if (pref.getHeight() < visRect.height){
-                smallDatasetSlopV = (int)(visRect.height - pref.getHeight())/2;
-            }
-            if (pref.getWidth() < visRect.width){
-                smallDatasetSlopH = (int)(visRect.width - pref.getWidth())/2;
-            }
-
-            g2.setColor(Color.white);
-            g2.fillRect(popupDrawRect.x+1-smallDatasetSlopH,
-                    popupDrawRect.y+1-smallDatasetSlopV,
-                    popupDrawRect.width-1,
-                    popupDrawRect.height-1);
-            g2.setColor(Color.black);
-            g2.drawRect(popupDrawRect.x-smallDatasetSlopH,
-                    popupDrawRect.y-smallDatasetSlopV,
-                    popupDrawRect.width,
-                    popupDrawRect.height);
-
-            g.setFont(popupFont);
-            for (int x = 0; x < displayStrings.size(); x++){
-                g.drawString((String)displayStrings.elementAt(x),popupDrawRect.x + popupLeftMargin-smallDatasetSlopH,
-                        popupDrawRect.y+((x+1)*metrics.getHeight())-smallDatasetSlopV);
-            }
-        }
-
-
         if (showWM && !forExport){
             //dataset is big enough to require worldmap
             if (wmMaxWidth == 0){
@@ -914,6 +882,38 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     (int)(visRect.y*vRatio)+vBump/2+(visRect.y + visRect.height - worldmap.getHeight()),
                     (int)(visRect.width*hRatio),
                     (int)(visRect.height*vRatio));
+        }
+
+
+        //see if the user has right-clicked to popup some marker info
+        if(popupExists){
+
+            //dumb bug where little datasets popup the box in the wrong place
+            int smallDatasetSlopH = 0;
+            int smallDatasetSlopV = 0;
+            if (pref.getHeight() < visRect.height){
+                smallDatasetSlopV = (int)(visRect.height - pref.getHeight())/2;
+            }
+            if (pref.getWidth() < visRect.width){
+                smallDatasetSlopH = (int)(visRect.width - pref.getWidth())/2;
+            }
+
+            g2.setColor(Color.white);
+            g2.fillRect(popupDrawRect.x+1-smallDatasetSlopH,
+                    popupDrawRect.y+1-smallDatasetSlopV,
+                    popupDrawRect.width-1,
+                    popupDrawRect.height-1);
+            g2.setColor(Color.black);
+            g2.drawRect(popupDrawRect.x-smallDatasetSlopH,
+                    popupDrawRect.y-smallDatasetSlopV,
+                    popupDrawRect.width,
+                    popupDrawRect.height);
+
+            g.setFont(popupFont);
+            for (int x = 0; x < displayStrings.size(); x++){
+                g.drawString((String)displayStrings.elementAt(x),popupDrawRect.x + popupLeftMargin-smallDatasetSlopH,
+                        popupDrawRect.y+((x+1)*metrics.getHeight())-smallDatasetSlopV);
+            }
         }
 
         //see if we're drawing a worldmap resize rect
@@ -1066,12 +1066,14 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         ";type=genotyped_SNPs+LocusLink_genes;options=genotyped_SNPs+1");
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 //getImage() caches by default so it will only download an image when the URL changes
-                gBrowseImage = toolkit.getImage(imageUrl);
+                Image i = toolkit.getImage(imageUrl);
                 MediaTracker mt = new MediaTracker(this);
-                mt.addImage(gBrowseImage,0);
+                mt.addImage(i,0);
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
                 mt.waitForID(0);
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                gBrowseImage = new BufferedImage(i.getWidth(this), i.getHeight(this), BufferedImage.TYPE_INT_RGB);
+                gBrowseImage.getGraphics().drawImage(i,0,0, this);
                 gbImageHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
             }catch (MalformedURLException mue){
                 //this exception sucks walnuts, so I refuse to handle it on principle
