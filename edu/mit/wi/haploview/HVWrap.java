@@ -42,7 +42,18 @@ public class HVWrap {
         while (st.hasMoreTokens()){
             System.out.println(st.nextToken());
         } */
-        String jarfile = System.getProperty("java.class.path");
+
+        //ugh windows sucks and we need to put quotes around path in case it contains spaces
+        //on the other hand, linux seems displeased with the quoted classpath. sigh.
+        String jarfile;
+        if (System.getProperty("java.class.path").indexOf(" ") > 0 ){
+            jarfile = ("\"");
+            jarfile += System.getProperty("java.class.path");
+            jarfile += "\"";
+        }else{
+            jarfile = System.getProperty("java.class.path");
+        }
+
 
         String argsToBePassed = new String();
         boolean headless = false;
@@ -55,7 +66,7 @@ public class HVWrap {
 
         try {
             //if the nogui flag is present we force it into headless mode
-            String runString = "java -Xmx1024m -classpath \"" + jarfile + "\"";
+            String runString = "java -Xmx1024m -classpath " + jarfile;
             if (headless){
                 runString += " -Djava.awt.headless=true";
             }
