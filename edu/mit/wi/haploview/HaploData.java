@@ -3,10 +3,10 @@ package edu.mit.wi.haploview;
 import java.io.*;
 import java.lang.*;
 import java.util.*;
-import java.text.*;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.geom.*;
+//import java.text.*;
+//import javax.swing.*;
+//import java.awt.*;
+//import java.awt.geom.*;
 
 class HaploData{
     Vector chromosomes, blocks;

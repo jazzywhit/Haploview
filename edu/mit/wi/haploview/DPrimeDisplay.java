@@ -2,8 +2,8 @@ package edu.mit.wi.haploview;
 
 import java.awt.*;
 import java.awt.font.*;
-import java.io.*;
-import java.text.*;
+//import java.io.*;
+//import java.text.*;
 import javax.swing.*;
 import java.util.*;
 

@@ -2,9 +2,9 @@ package edu.mit.wi.haploview;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+//import java.awt.event.*;
 import javax.swing.text.*;
-import java.beans.*;
+//import java.beans.*;
 import java.awt.Toolkit;
 
 public class NumberTextField extends JTextField {

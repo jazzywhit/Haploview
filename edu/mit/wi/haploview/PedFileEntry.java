@@ -1,6 +1,6 @@
 package edu.mit.wi.haploview;
 
-import java.util.*;
+//import java.util.*;
 
 /**
  * <p>Title: PedFileEntry.java </p>

@@ -1,8 +1,8 @@
 package edu.mit.wi.haploview;
 
 import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
+//import java.awt.event.*;
+//import java.beans.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.text.*;

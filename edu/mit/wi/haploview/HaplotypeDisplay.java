@@ -1,7 +1,7 @@
 package edu.mit.wi.haploview;
 
 import java.awt.*;
-import java.awt.geom.*;
+//import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
 import javax.swing.*;

@@ -5,9 +5,9 @@ import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
-import javax.swing.event.*;
+//import javax.swing.event.*;
 import javax.swing.text.*;
-import java.beans.*;
+//import java.beans.*;
 
 
 public class ReadDataDialog extends JDialog implements ActionListener {

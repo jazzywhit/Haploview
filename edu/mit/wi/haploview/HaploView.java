@@ -2,11 +2,11 @@ package edu.mit.wi.haploview;
 
 import java.awt.*;
 import java.io.*;
-import java.util.*;
+//import java.util.*;
 import java.awt.event.*;
 import javax.swing.*;
-import java.awt.geom.*;
-import java.awt.image.*;
+//import java.awt.geom.*;
+//import java.awt.image.*;
 
 public class HaploView extends JFrame implements ActionListener{
 
