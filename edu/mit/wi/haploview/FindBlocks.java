@@ -1,11 +1,18 @@
 package edu.mit.wi.haploview;
 
 import java.util.*;
-import java.awt.Color;
 
-class FindBlocks {
+public class FindBlocks {
+    static double cutHighCI = 0.98;
+    static double cutLowCI = 0.70;
+    static double mafThresh = 0.05;
+    static double[] cutLowCIVar = {0,0,0.80,0.50,0.50};
+    static double[] maxDist = {0,0,20000,30000,1000000};
+    static double recHighCI = 0.90;
+    static double fourGameteCutoff = 0.01;
 
-    static Vector do4Gamete(PairwiseLinkage[][] dPrime, double fourGameteCutoff){
+    static Vector do4Gamete(PairwiseLinkage[][] dPrime, double f){
+        fourGameteCutoff = f;
         Vector blocks = new Vector();
         Vector strongPairs = new Vector();
 
@@ -21,13 +28,6 @@ class FindBlocks {
                 int numGam = 0;
                 for (int i = 0; i < freqs.length; i++){
                     if (freqs[i] > fourGameteCutoff) numGam++;
-                }
-
-                //color in squares
-                if(numGam > 3){
-                    thisPair.setColor(Color.white);
-                }else{
-                    thisPair.setColor(Color.darkGray);
                 }
 
                 if (numGam > 3){ continue; }
@@ -105,12 +105,7 @@ class FindBlocks {
     }
 
     static Vector doSFS(PairwiseLinkage[][] dPrime){
-        double cutHighCI = 0.98;
-        double cutLowCI = 0.70;
-        double mafThresh = 0.05;
-        double[] cutLowCIVar = {0,0,0.80,0.50,0.50};
-        double[] maxDist = {0,0,20000,30000,1000000};
-        double recHighCI = 0.90;
+
 
         int numStrong = 0; int numRec = 0; int numInGroup = 0;
         Vector blocks = new Vector();
@@ -137,15 +132,6 @@ class FindBlocks {
                 double lod = thisPair.getLOD();
                 double lowCI = thisPair.getConfidenceLow();
                 double highCI = thisPair.getConfidenceHigh();
-
-                //color in squares
-                if (lowCI > cutLowCI && highCI >= cutHighCI) {
-                    thisPair.setColor(new Color(224, 0, 0));  //strong LD
-                }else if (highCI > recHighCI) {
-                    thisPair.setColor(new Color(192, 192, 240)); //uninformative
-                } else {
-                    thisPair.setColor(Color.white); //recomb
-                }
 
                 if (skipMarker[x] || skipMarker[y]) continue;
                 if (lod < -90) continue; //missing data
@@ -269,38 +255,6 @@ class FindBlocks {
     static Vector  doMJD(PairwiseLinkage[][] dPrime){
         // find blocks by searching for stretches between two markers A,B where
         // D prime is > 0.8 for all informative combinations of A, (A+1...B)
-
-        // set coloring based on LOD and D'
-        for (int i = 0; i < dPrime.length; i++){
-            for (int j = i+1; j < dPrime[i].length; j++){
-                PairwiseLinkage thisPair = dPrime[i][j];
-                if (thisPair == null){
-                    continue;
-                }
-
-                double d = thisPair.getDPrime();
-                double l = thisPair.getLOD();
-                Color boxColor = null;
-                if (l > 2) {
-                    if (d < 0.5) {
-                        //high LOD, low D'
-                        boxColor = new Color(255, 224, 224);
-                    } else {
-                        //high LOD, high D' shades of red
-                        double blgr = (255-32)*2*(1-d);
-                        //boxColor = new Color(255, (int) blgr, (int) blgr);
-                        boxColor = new Color(224, (int) blgr, (int) blgr);
-                    }
-                } else if (d > 0.99) {
-                    //high D', low LOD blueish color
-                    boxColor = new Color(192, 192, 240);
-                } else {
-                    //no LD
-                    boxColor = Color.white;
-                }
-                thisPair.setColor(boxColor);
-            }
-        }
 
         int baddies;
         int verticalExtent=0;
