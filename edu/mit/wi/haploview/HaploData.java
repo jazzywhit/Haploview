@@ -1367,7 +1367,12 @@ public class HaploData implements Constants{
             tmp=probHaps[AA]; probHaps[AA]=probHaps[AB]; probHaps[AB]=tmp;
             tmp=probHaps[BB]; probHaps[BB]=probHaps[BA]; probHaps[BA]=tmp;
             /* flip frequency of second allele */
-            tmp=pA2; pA2=pB2; pB2=tmp;
+            //done in this slightly asinine way because of a compiler bug in the alpha version of java
+            //which causes it to try to parallelize the swapping operations and mis-schedules them
+            pA2 = pA2 + pB2;
+            pB2 = pA2 - pB2;
+            pA2 = pA2 - pB2;
+            //pA2=pB2;pB2=temp;
             /* flip counts in the same fashion as p's */
             tmp=numHaps[AA]; numHaps[AA]=numHaps[AB]; numHaps[AB]=tmp;
             tmp=numHaps[BB]; numHaps[BB]=numHaps[BA]; numHaps[BA]=tmp;
@@ -1386,7 +1391,6 @@ public class HaploData implements Constants{
 
         /* add computation of r^2 = (D^2)/p(1-p)q(1-q) */
         rsq = num*num/(pA1*pB1*pA2*pB2);
-
 
         //real_dprime=dprime;
 
