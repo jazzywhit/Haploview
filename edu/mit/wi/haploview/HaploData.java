@@ -1332,6 +1332,8 @@ public class HaploData{
         }
         if (high_i > 100){ high_i = 100; }
 
+
+
         double[] freqarray = {probHaps[AA], probHaps[AB], probHaps[BB], probHaps[BA]};
         return new PairwiseLinkage(roundDouble(dprime), roundDouble((loglike1-loglike0)), roundDouble(rsq), ((double)low_i/100.0), ((double)high_i/100.0), freqarray);
     }
@@ -1422,7 +1424,7 @@ public class HaploData{
     public void saveDprimeToText(File dumpDprimeFile) throws IOException{
         FileWriter saveDprimeWriter = new FileWriter(dumpDprimeFile);
         if (infoKnown){
-            saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tDist\n");
+            saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tDist\tT-int\n");
             long dist;
 
             for (int i = 0; i < filteredDPrimeTable.length; i++){
@@ -1430,24 +1432,58 @@ public class HaploData{
                     //many "slots" in table aren't filled in because it is a 1/2 matrix
                     if (i < j){
                         if(filteredDPrimeTable[i][j] != null) {
+                            double LODSum = 0;
+                            String tInt = "-";
+                            if (i == j-1){
+                                //this belongs somewhere else really...
+                                //these are adjacent markers so we'll put in the t-int stat
+                                for (int x = 0; x < 5; x++){
+                                    for (int y = 1; y < 6; y++){
+                                        if (i-x < 0 || i+y >= filteredDPrimeTable.length){
+                                            continue;
+                                        }
+                                        LODSum += filteredDPrimeTable[i-x][i+y].getLOD();
+                                    }
+                                }
+                                tInt = String.valueOf(roundDouble(LODSum));
+                            }
                             dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
                             saveDprimeWriter.write(Chromosome.getFilteredMarker(i).getName() +
                                     "\t" + Chromosome.getFilteredMarker(j).getName() +
-                                    "\t" + filteredDPrimeTable[i][j].toString() + "\t" + dist + "\n");
+                                    "\t" + filteredDPrimeTable[i][j].toString() + "\t" + dist + "\t" + tInt +"\n");
                         }
                     }
                 }
             }
 
         }else{
-            saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\n");
+            saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tT-int\n");
 
             for (int i = 0; i < filteredDPrimeTable.length; i++){
                 for (int j = 0; j < filteredDPrimeTable[i].length; j++){
                     //many "slots" in table aren't filled in because it is a 1/2 matrix
                     if (i < j){
                         if(filteredDPrimeTable[i][j] != null) {
-                            saveDprimeWriter.write((Chromosome.realIndex[i]+1) + "\t" + (Chromosome.realIndex[j]+1) + "\t" + filteredDPrimeTable[i][j] + "\n");
+                            double LODSum = 0;
+                            String tInt = "-";
+                            if (i == j-1){
+                                //this belongs somewhere else really...
+                                //these are adjacent markers so we'll put in the t-int stat
+                                int numGaps = filteredDPrimeTable.length;
+                                double prev = 0;
+                                for (int gap = 0; gap < numGaps; gap++){
+                                    for (int x = 0; x < 5; x++){
+                                        for (int y = 1; y < 6; y++){
+                                            if (gap-x < 0 || gap+y >= numGaps){
+                                                continue;
+                                            }
+                                            LODSum += filteredDPrimeTable[gap-x][gap+y].getLOD();
+                                        }
+                                    }
+                                }
+                                tInt = String.valueOf(roundDouble(LODSum));
+                            }
+                            saveDprimeWriter.write((Chromosome.realIndex[i]+1) + "\t" + (Chromosome.realIndex[j]+1) + "\t" + filteredDPrimeTable[i][j] + "\t" + tInt + "\n");
                         }
                     }
                 }

@@ -9,48 +9,49 @@ class PairwiseLinkage{
     private Color color;
 
     PairwiseLinkage(double d, double l, double r, double lo, double hi, double[] f){
-	dprime = d;
-	lod = l;
-	r2 = r;
-	ci_low = lo;
-	ci_high = hi;
-	freqs = f;
-	color = Color.white;
+        dprime = d;
+        lod = l;
+        r2 = r;
+        ci_low = lo;
+        ci_high = hi;
+        freqs = f;
+        color = Color.white;
     }
 
     public double getDPrime(){
-	return dprime;
+        return dprime;
     }
 
     public double getLOD(){
-	return lod;
+        return lod;
     }
-    
+
     public double getRSquared(){
-	return r2;
+        return r2;
     }
 
     public double getConfidenceLow(){
-	return ci_low;
+        return ci_low;
     }
 
     public double getConfidenceHigh(){
-	return ci_high;
+        return ci_high;
     }
 
     public double[] getFreqs(){
-	return freqs;
+        return freqs;
     }
 
+
     public Color getColor(){
-	return color;
+        return color;
     }
 
     public void setColor(Color c){
-	color = c;
+        color = c;
     }
 
     public String toString(){
-	return new String(dprime + "\t" + lod + "\t" + r2 + "\t" + ci_low + "\t" + ci_high);
+        return new String(dprime + "\t" + lod + "\t" + r2 + "\t" + ci_low + "\t" + ci_high);
     }
 }
