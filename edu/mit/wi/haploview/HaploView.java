@@ -50,7 +50,7 @@ public class HaploView extends JFrame implements ActionListener{
     JFrame checkWindow;
     private CheckDataPanel checkPanel;
     private String hapInputFileName;
-    private BlockDisplay theBlocks;
+    //private BlockDisplay theBlocks;
     private boolean infoKnown = false;
     private ProgressMonitor progressMonitor;
     private javax.swing.Timer timer;
@@ -182,63 +182,19 @@ public class HaploView extends JFrame implements ActionListener{
     
     public void actionPerformed(ActionEvent e) {
 	String command = e.getActionCommand();
-	String shortHapInputFileName;
 	if (command == READ_GENOTYPES){
 	    ReadDataDialog readDialog = new ReadDataDialog("Open new data", this);
 	    readDialog.pack();
 	    readDialog.setVisible(true);
-	    /**if (command == "Open Linkage File"){
-	    fc.setSelectedFile(null);
-	    int returnVal = fc.showOpenDialog(this);
-	    if (returnVal == JFileChooser.APPROVE_OPTION) {
-		shortHapInputFileName = fc.getSelectedFile().getName();
-		try{
-		    hapInputFileName = fc.getSelectedFile().getCanonicalPath();
-		}catch (IOException ioexec){
-		    JOptionPane.showMessageDialog(this, 
-						  ioexec.getMessage(), 
-						  "File Error",
-						  JOptionPane.ERROR_MESSAGE);
-		}
-		//pop open checkdata window
-		checkWindow = new JFrame();
-		checkPanel = new CheckDataPanel(fc.getSelectedFile());
-		checkWindow.setTitle("Checking markers..."+shortHapInputFileName);
-		JPanel metaCheckPanel = new JPanel();
-		metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
-		JButton checkContinueButton = new JButton("Continue");
-		checkContinueButton.addActionListener(this);
-		checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		metaCheckPanel.add(checkPanel);
-		checkContinueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		metaCheckPanel.add(checkContinueButton);
-		JLabel infoLabel = new JLabel("(this will create a haplotype file named " + shortHapInputFileName + ".haps)");
-		infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		metaCheckPanel.add(infoLabel);
-		checkWindow.setContentPane(metaCheckPanel);
-		checkWindow.pack();
-		if (false){
-		    checkWindow.dispose();
-		    JOptionPane.showMessageDialog(this, 
-						  "File format error",
-						  "File Error",
-						  JOptionPane.ERROR_MESSAGE);
-		}
-		checkWindow.setVisible(true);
-	    }
-	}else if (command == "Open Haplotype File"){
-	    fc.setSelectedFile(null);
-	    int returnVal = fc.showOpenDialog(this);
-	    if (returnVal == JFileChooser.APPROVE_OPTION){
-		processInput(fc.getSelectedFile());
-		}**/
+
 	}else if (command == "Continue"){
-	    /**	    JTable table = checkPanel.getTable();
-	    checkWindow.dispose();
-	    boolean[] markerResultArray = new boolean[table.getRowCount()];
-	    for (int i = 0; i < table.getRowCount(); i++){
-		markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
-	    }
+	    /**
+	       JTable table = checkPanel.getTable();
+	       checkWindow.dispose();
+	       boolean[] markerResultArray = new boolean[table.getRowCount()];
+	       for (int i = 0; i < table.getRowCount(); i++){
+	       markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
+	       }
 	    try{
 		new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),hapInputFileName+".haps");
 	    }catch (IOException ioexec){
@@ -255,7 +211,7 @@ public class HaploView extends JFrame implements ActionListener{
 		readMarkers(fc.getSelectedFile());
 	    }
 	}else if (command == "Clear All Blocks"){
-	    theBlocks.clearBlocks();
+	    //theBlocks.clearBlocks();
 	}else if (command == DEFINE_BLOCKS){
 	    defineBlocks();
 	}else if (command == "Tutorial"){
@@ -275,6 +231,33 @@ public class HaploView extends JFrame implements ActionListener{
 	System.exit(0);
     }
 
+    
+    void readPedGenotypes(String[] f){
+	//input is a 2 element array with
+	//filenames[0] = ped file
+	//filenames[1] = info file (null if none)
+	filenames = f;
+	File pedFile = new File(filenames[0]);
+	
+	//pop open checkdata window
+	checkWindow = new JFrame();
+	checkPanel = new CheckDataPanel(pedFile);
+	checkWindow.setTitle("Checking markers..." + pedFile.getName());
+	JPanel metaCheckPanel = new JPanel();
+	metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
+	JButton checkContinueButton = new JButton("Continue");
+	checkContinueButton.addActionListener(this);
+	checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+	metaCheckPanel.add(checkPanel);
+	checkContinueButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+	metaCheckPanel.add(checkContinueButton);
+	JLabel infoLabel = new JLabel("(this will create a haplotype file named " + pedFile.getName() + ".haps)");
+	infoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+	metaCheckPanel.add(infoLabel);
+	checkWindow.setContentPane(metaCheckPanel);
+	checkWindow.pack();
+	checkWindow.setVisible(true);
+    }
     
     void readPhasedGenotypes(String[] f){
 	//input is a 2 element array with 
@@ -409,7 +392,7 @@ public class HaploView extends JFrame implements ActionListener{
 	setVisible(true);
     }
 
-    void doExportDPrime(){
+    /**void doExportDPrime(){
 	fc.setSelectedFile(null);
 	int returnVal = fc.showSaveDialog(this);
 	if (returnVal == JFileChooser.APPROVE_OPTION){
@@ -426,7 +409,7 @@ public class HaploView extends JFrame implements ActionListener{
 					      JOptionPane.ERROR_MESSAGE);
 	    }
 	}
-    }
+	}**/
 
     void showHelp(){
 
