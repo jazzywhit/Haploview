@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.9 2003/12/17 21:50:12 jcbarret Exp $
+* $Id: PedFile.java,v 1.10 2004/01/28 21:35:21 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -31,6 +31,7 @@ public class PedFile {
     * also used in parsing hapmap data
     */
     private Vector order;
+    private Vector results = null;
     private String[][] hminfo;
 
     private static Hashtable hapMapTranslate;
@@ -446,6 +447,7 @@ public class PedFile {
         MarkerResult markerResult = (MarkerResult) results.elementAt(i);
         System.out.println(markerResult.toString());
         }*/
+        this.results = results;
         return results;
     }
 
@@ -453,6 +455,9 @@ public class PedFile {
         return hminfo;
     }
 
+    public Vector getResults() {
+        return results;
+    }
 }
 
 

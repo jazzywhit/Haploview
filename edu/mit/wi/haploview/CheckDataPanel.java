@@ -23,7 +23,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
     public CheckDataPanel(PedFile pf) throws IOException, PedFileException{
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         pedfile = pf;
-        Vector result = pedfile.check();
+        Vector result = pedfile.getResults();
 
         int numResults = result.size();
 
