@@ -141,7 +141,7 @@ public class HaploData{
 
                 String name = st.nextToken(); String loc = st.nextToken();
                 try{
-                    markers.add(new SNP(name, Long.parseLong(loc), infile.getName(), maf));
+                    markers.add(new SNP(name, Long.parseLong(loc), infile.getName(), Math.rint(maf*100.0)/100.0));
                 }catch (NumberFormatException nfe){
                     throw new HaploViewException("Info file format error on line "+lineCount+
                             ":\n\"" + loc + "\" should be of type long." +
@@ -200,7 +200,7 @@ public class HaploData{
                 }
                 double maf = numa1/(numa2+numa1);
                 if (maf > 0.5) maf = 1.0-maf;
-                markerInfo.add(new SNP(String.valueOf(i+1), (i*4000), maf));
+                markerInfo.add(new SNP(String.valueOf(i+1), (i*4000), Math.rint(maf*100.0)/100.0));
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
             Chromosome.markers = markerInfo.toArray();
@@ -999,6 +999,30 @@ public class HaploData{
       }
     }
 
+    public void addMarkerIntoSurroundingBlock(int markerNum) {
+        if (blocks != null){
+            OUTER: for (int i = 0; i < blocks.size(); i ++){
+                int thisBlock[] = (int[])blocks.elementAt(i);
+                int newBlock[] = new int[thisBlock.length+1];
+                int count = 0;
+                if(markerNum > thisBlock[0] && markerNum < thisBlock[thisBlock.length-1]){
+                    blocksChanged = true;
+                    this.isInBlock[markerNum] = true;
+                    for (int j = 0; j < thisBlock.length; j++){
+                        newBlock[count] = thisBlock[j];
+                        count++;
+                        if (thisBlock[j] < markerNum && thisBlock[j+1] > markerNum){
+                            newBlock[count] = markerNum;
+                            count++;
+                        }
+                    }
+                    blocks.setElementAt(newBlock, i);
+                    break OUTER;
+                }
+            }
+        }
+    }
+
     public void addBlock(int firstMarker, int lastMarker) {
         if (firstMarker < 0){
             firstMarker = 0;
@@ -1554,8 +1578,4 @@ public class HaploData{
         linkageToHapsWriter.close();
 
     }
-
-
-
-
 }
