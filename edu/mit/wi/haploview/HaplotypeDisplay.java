@@ -416,9 +416,9 @@ public class HaplotypeDisplay extends JComponent {
                                 left + k*CHAR_WIDTH, above + j*ROW_HEIGHT, null);
                     }else{
                         if (theGeno[k] == majorAllele[k]){
-                            g.setColor(dullRed);
-                        }else{
                             g.setColor(dullBlue);
+                        }else{
+                            g.setColor(dullRed);
                         }
                         g.fillRect(left + k*CHAR_WIDTH,
                                 above + j*ROW_HEIGHT + (ROW_HEIGHT - CHAR_WIDTH)/2,
