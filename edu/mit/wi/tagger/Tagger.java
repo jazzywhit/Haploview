@@ -248,11 +248,9 @@ public class Tagger {
     }
 
     private void peelBack(Vector tagsToBePeeled){
-        Hashtable tagsBySeq = new Hashtable();
+        Hashtable blockTagsByAllele = new Hashtable();
         HashSet snpsInBlockTags = new HashSet();
-        for (int i = 0; i < tagsToBePeeled.size(); i++){
-            tagsBySeq.put(((TagSequence)tagsToBePeeled.get(i)).getSequence(), tagsToBePeeled.get(i));
-        }
+
         for (int i = 0; i < tagsToBePeeled.size(); i++){
             TagSequence curTag = (TagSequence) tagsToBePeeled.get(i);
             if (forceInclude.contains(curTag.getSequence()) ||
@@ -308,16 +306,18 @@ public class Tagger {
             if (peelSuccessful){
                 for (int k = 0; k < taggedByCurTag.size(); k++){
                     SNP thisTaggable = (SNP) taggedByCurTag.get(k);
+                    //if more than one snp is tagged by the same
                     if (bestPredictor.containsKey(thisTaggable)){
                         Allele bpAllele = ((LocusCorrelation)bestPredictor.get(thisTaggable)).getAllele();
                         snpsInBlockTags.addAll(((Block)bpAllele.getLocus()).getSnps());
-                        if (tagsBySeq.containsKey(bpAllele)){
-                            thisTaggable.addTag((TagSequence)tagsBySeq.get(bpAllele));
+                        if (blockTagsByAllele.containsKey(bpAllele)){
+                            TagSequence ts = (TagSequence)blockTagsByAllele.get(bpAllele);
+                            ts.addTagged(thisTaggable);
                         }else{
                             TagSequence ts = new TagSequence(bpAllele);
                             ts.addTagged(thisTaggable);
                             tags.add(ts);
-                            tagsBySeq.put(bpAllele,ts);
+                            blockTagsByAllele.put(bpAllele,ts);
                         }
                     }
                     thisTaggable.removeTag(curTag);

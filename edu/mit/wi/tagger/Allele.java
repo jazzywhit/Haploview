@@ -34,4 +34,8 @@ public class Allele{
         }
         return false;
     }
+
+    public int hashCode(){
+        return locus.hashCode() + genotypeString.hashCode();
+    }
 }
