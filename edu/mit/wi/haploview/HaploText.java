@@ -2,6 +2,7 @@ package edu.mit.wi.haploview;
 
 import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.MarkerResult;
+import edu.mit.wi.pedfile.PedFileException;
 
 import java.io.*;
 import java.util.Vector;
@@ -532,9 +533,14 @@ public class HaploText {
                 myTDT.calcTDT(textData.chromosomes);
             }
         }
-        catch(IOException e){}
+        catch(IOException e){
+            System.err.println("An error has occured. This probably has to do with file input or output");
+        }
         catch(HaploViewException e){
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
+        }
+        catch(PedFileException pfe) {
+            System.err.println(pfe.getMessage());
         }
     }
 

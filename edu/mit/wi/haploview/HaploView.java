@@ -1,6 +1,8 @@
 package edu.mit.wi.haploview;
 
 
+import edu.mit.wi.pedfile.PedFileException;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -297,12 +299,18 @@ public class HaploView extends JFrame implements ActionListener{
                     ioexec.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
+        } catch(PedFileException pfe){
+            JOptionPane.showMessageDialog(this,
+                    pfe.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
         }catch (HaploViewException hve){
             JOptionPane.showMessageDialog(this,
                     hve.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
+
 
     }
 
