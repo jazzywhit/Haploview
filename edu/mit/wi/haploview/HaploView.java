@@ -677,7 +677,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                                     "Error",
                                     JOptionPane.ERROR_MESSAGE);
                         }
-                        metaAssoc.add(viewItems[VIEW_TDT_NUM], tdtPanel);
+                        metaAssoc.add("Single Marker", tdtPanel);
 
                         HaploAssocPanel htp = new HaploAssocPanel(theData.getHaplotypes());
                         metaAssoc.add("Haplotypes", htp);

@@ -23,7 +23,7 @@ public interface Constants {
     public static final String VIEW_HAPLOTYPES = "Haplotypes";
     public static final String VIEW_LOD = "Genotyping completeness";
     public static final String VIEW_CHECK_PANEL = "Check Markers";
-    public static final String VIEW_TDT = "Single Marker";
+    public static final String VIEW_TDT = "Association";
 
     //main frame tab numbers
     public static final int VIEW_D_NUM = 0;
