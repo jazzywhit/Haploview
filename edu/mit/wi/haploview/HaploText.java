@@ -8,10 +8,7 @@ import edu.mit.wi.haploview.tagger.TaggerController;
 import edu.mit.wi.tagger.Tagger;
 
 import java.io.*;
-import java.util.Vector;
-import java.util.StringTokenizer;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.awt.image.BufferedImage;
 
 import com.sun.jimi.core.Jimi;
@@ -41,7 +38,9 @@ public class HaploText implements Constants{
     private boolean doTagging;
     private double tagRSquaredCutOff = -1;
     private Vector forceIncludeTags;
+    private String forceIncludeFileName;
     private Vector forceExcludeTags;
+    private String forceExcludeFileName;
 
 
     public boolean isNogui() {
@@ -434,7 +433,7 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-includeTags")) {
                 i++; 
                 if(i>=args.length || args[i].charAt(0) == '-') {
-                    System.out.println("-includeTags requires a list of marker names.");
+                    System.out.println(args[i-1] + " requires a list of marker names.");
                     System.exit(1);
                 }
                 StringTokenizer str = new StringTokenizer(args[i],",");
@@ -442,7 +441,15 @@ public class HaploText implements Constants{
                 while(str.hasMoreTokens()) {
                     forceIncludeTags.add(str.nextToken());
                 }
-
+            }
+            else if (args[i].equalsIgnoreCase("-includeTagsFile")) {
+                i++;
+                if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
+                    forceIncludeFileName =args[i];
+                }else {
+                    System.out.println(args[i-1] + " requires a filename");
+                    System.exit(1);
+                }
             }
             else if(args[i].equalsIgnoreCase("-excludeTags")) {
                 i++;
@@ -455,7 +462,15 @@ public class HaploText implements Constants{
                 while(str.hasMoreTokens()) {
                     forceExcludeTags.add(str.nextToken());
                 }
-
+            }
+            else if (args[i].equalsIgnoreCase("-excludeTagsFile")) {
+                i++;
+                if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
+                    forceExcludeFileName =args[i];
+                }else {
+                    System.out.println(args[i-1] + " requires a filename");
+                    System.exit(1);
+                }
             }
             else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
@@ -565,11 +580,72 @@ public class HaploText implements Constants{
                 System.out.println("A marker info file must be specified when using -doTagging");
                 System.exit(1);
             }
+
+            if(blockOutputType == -1) {
+                System.out.println("a block output type must be specified when using tagger");
+                System.exit(1);
+            }
+
             if(forceExcludeTags == null) {
                 forceExcludeTags = new Vector();
+            } else if (forceExcludeFileName != null) {
+                System.out.println("-excludeTags and -excludeTagsFile cannot both be used");
+                System.exit(1);
             }
+
+            if(forceExcludeFileName != null) {
+                File excludeFile = new File(forceExcludeFileName);
+                forceExcludeTags = new Vector();
+
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(excludeFile));
+                    String line;
+                    while((line = br.readLine()) != null) {
+                        if(line.length() > 0 && line.charAt(0) != '#'){
+                            forceExcludeTags.add(line);
+                        }
+                    }
+                }catch(IOException ioe) {
+                    System.out.println("An error occured while reading the file specified by -excludeTagsFile.");
+                    System.exit(1);
+                }
+            }
+
             if(forceIncludeTags == null ) {
                 forceIncludeTags = new Vector();
+            } else if (forceIncludeFileName != null) {
+                System.out.println("-includeTags and -includeTagsFile cannot both be used");
+                System.exit(1);
+            }
+
+            if(forceIncludeFileName != null) {
+                File includeFile = new File(forceIncludeFileName);
+                forceIncludeTags = new Vector();
+
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(includeFile));
+                    String line;
+                    while((line = br.readLine()) != null) {
+                        if(line.length() > 0 && line.charAt(0) != '#'){
+                            forceIncludeTags.add(line);
+                        }
+                    }
+                }catch(IOException ioe) {
+                    System.out.println("An error occured while reading the file specified by -includeTagsFile.");
+                    System.exit(1);
+                }
+            }
+
+            //check that there isn't any overlap between include/exclude lists
+            Vector tempInclude = (Vector) forceIncludeTags.clone();
+            tempInclude.retainAll(forceExcludeTags);
+            if(tempInclude.size() > 0) {
+                StringBuffer sb = new StringBuffer();
+                for (int i = 0; i < tempInclude.size(); i++) {
+                    String s = (String) tempInclude.elementAt(i);
+                    sb.append(s).append(",");
+                }
+                System.out.println("The following markers appear in both the include and exclude lists: " + sb.toString());
             }
 
             if(tagRSquaredCutOff != -1) {
@@ -577,7 +653,7 @@ public class HaploText implements Constants{
             }
 
         } else if(forceExcludeTags != null || forceIncludeTags != null || tagRSquaredCutOff != -1) {
-            System.out.println("-tagrSqCutoff, -excludeTags and -includeTags cannot be used without -doTagging");
+            System.out.println("-tagrSqCutoff, -excludeTags, -excludeTagsFile, -includeTags and -includeTagsFile cannot be used without -doTagging");
             System.exit(1);
         }
 
@@ -748,6 +824,21 @@ public class HaploText implements Constants{
             }else{
                 customAssocSet = null;
             }
+
+            Hashtable snpsByName = new Hashtable();
+            for(int i=0;i<Chromosome.getUnfilteredSize();i++) {
+                SNP snp = Chromosome.getUnfilteredMarker(i);
+                snpsByName.put(snp.getName(), snp);
+            }
+
+            for(int i=0;i<forceIncludeTags.size();i++) {
+                if(snpsByName.containsKey(forceIncludeTags.get(i))) {
+                    whiteListedCustomMarkers.add(snpsByName.get(forceIncludeTags.get(i)));
+                }
+            }
+
+
+
             textData.setWhiteList(whiteListedCustomMarkers);
 
             boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
@@ -757,8 +848,7 @@ public class HaploText implements Constants{
                 //once check has been run we can filter the markers
                 for (int i = 0; i < result.size(); i++){
                     if (((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&
-                            Chromosome.getUnfilteredMarker(i).getDupStatus() != 2)||
-                            textData.isWhiteListed(Chromosome.getUnfilteredMarker(i))){
+                            Chromosome.getUnfilteredMarker(i).getDupStatus() != 2)){
                         markerResults[i] = true;
                     }else{
                         markerResults[i] = false;
@@ -777,6 +867,12 @@ public class HaploText implements Constants{
                     System.exit(1);
                 }else{
                     markerResults[cur-1] = false;
+                }
+            }
+
+            for(int i=0;i<Chromosome.getUnfilteredSize();i++) {
+                if(textData.isWhiteListed(Chromosome.getUnfilteredMarker(i))) {
+                    markerResults[i] = true;
                 }
             }
 
@@ -988,46 +1084,33 @@ public class HaploText implements Constants{
             if(doTagging) {
                 Vector snps = Chromosome.getAllMarkers();
                 HashSet names = new HashSet();
+                Hashtable idsByName = new Hashtable();
                 for (int i = 0; i < snps.size(); i++) {
                     SNP snp = (SNP) snps.elementAt(i);
                     names.add(snp.getName());
+                    idsByName.put(snp.getName(),new Integer(i));
                 }
 
                 Vector sitesToCapture = new Vector();
-                HashSet filteredNames = new HashSet();
                 for(int i=0;i<Chromosome.getSize();i++) {
-                    SNP snp = Chromosome.getMarker(i);
-                    filteredNames.add(snp.getName());
-                    sitesToCapture.add(snp);
+                    sitesToCapture.add(Chromosome.getMarker(i));
                 }
 
-                Vector toRemove = new Vector();
                 for (int i = 0; i < forceIncludeTags.size(); i++) {
                     String s = (String) forceIncludeTags.elementAt(i);
                     if(!names.contains(s)) {
                         System.out.println("Marker " + s + " in the list of forced included tags does not appear in the marker info file.");
                         System.exit(1);
-                    }else if(!filteredNames.contains(s)) {
-                        System.out.println("Marker " + s + " in the list of forced included tags has been filtered out, so it will not be used as a tag.");
-                        toRemove.add(s);
                     }
                 }
-
-                forceIncludeTags.removeAll(toRemove);
-                toRemove = new Vector();
 
                 for (int i = 0; i < forceExcludeTags.size(); i++) {
                     String s = (String) forceExcludeTags.elementAt(i);
                     if(!names.contains(s)) {
                         System.out.println("Marker " + s + " in the list of forced excluded tags does not appear in the marker info file.");
                         System.exit(1);
-                    }else if(!filteredNames.contains(s)) {
-                        System.out.println("Marker " + s + " in the list of forced excluded tags has been filtered out.");
-                        toRemove.add(s);
                     }
                 }
-
-                forceIncludeTags.removeAll(toRemove);
 
                 if(!quietMode) {
                     System.out.println("Starting tagging.");
@@ -1080,5 +1163,13 @@ public class HaploText implements Constants{
 
     }
 
+    private Vector readMarkerListFile(File fileName) {
+
+
+        Vector markerList = new Vector();
+
+
+        return markerList;
+    }
 
 }
