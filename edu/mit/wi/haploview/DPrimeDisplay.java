@@ -33,17 +33,15 @@ class DPrimeDisplay extends JComponent{
     private boolean printDetails = true;
     private boolean noImage = true;
 
-    private Vector blocks;
     private Rectangle ir = new Rectangle();
     private Rectangle worldmapRect = new Rectangle(0,0,-1,-1);
     private BufferedImage worldmap;
-    PairwiseLinkage dPrimeTable[][];
+    private HaploData theData;
     private Dimension chartSize;
 
-    DPrimeDisplay(PairwiseLinkage[][] t, boolean b, Vector v){
+    DPrimeDisplay(HaploData h, boolean b){
         markersLoaded = b;
-        dPrimeTable = t;
-        blocks = v;
+        theData=h;
         this.setDoubleBuffered(true);
         addMouseListener(new PopMouseListener(this));
     }
@@ -55,6 +53,9 @@ class DPrimeDisplay extends JComponent{
     }
 
     public void paintComponent(Graphics g){
+        PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
+        Vector blocks = theData.blocks;
+
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
@@ -399,6 +400,7 @@ class DPrimeDisplay extends JComponent{
 
     public Dimension getPreferredSize() {
         //loop through table to find deepest non-null comparison
+        PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
         int count = 0;
         for (int x = 0; x < dPrimeTable.length-1; x++){
            for (int y = x+1; y < dPrimeTable.length; y++){
@@ -434,15 +436,16 @@ class DPrimeDisplay extends JComponent{
         return returnArray;
     }
 
-    public void refreshBlocks(Vector v) {
+  /*  public void refreshBlocks(Vector v) {
         //recolor the worldmap and change the blocklist
         noImage=true;
         blocks = v;
-    }
+    }*/
 
 
     class PopMouseListener implements MouseListener{
         JComponent caller;
+        PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
         public PopMouseListener(DPrimeDisplay d){
               caller = d;
         }

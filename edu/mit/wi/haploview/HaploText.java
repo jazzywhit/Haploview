@@ -509,7 +509,7 @@ public class HaploText {
             }
             if(this.arg_dprime) {
                 OutputFile = new File(fileName + ".DPRIME");
-                textData.saveDprimeToText(textData.dPrimeTable,OutputFile,false,null);
+                textData.saveDprimeToText(textData.filteredDPrimeTable,OutputFile,false,null);
             }
             //if(fileType){
             //    TDT myTDT = new TDT();

@@ -25,7 +25,8 @@ import java.text.NumberFormat;
 public class HaploData{
     Vector chromosomes, blocks;
     int missingLimit = 5;
-    PairwiseLinkage[][] dPrimeTable;
+    private PairwiseLinkage[][] dPrimeTable;
+    PairwiseLinkage[][] filteredDPrimeTable;
     public boolean finished = false;
     private boolean markersLoaded = false;
     private double[] numBadGenotypes;
@@ -565,9 +566,10 @@ public class HaploData{
                 this.realCompsDone++;
             }
         }
+        filteredDPrimeTable = getFilteredTable();
     }
 
-    PairwiseLinkage[][] getFilteredTable(PairwiseLinkage[][] fullTable){
+    PairwiseLinkage[][] getFilteredTable(){
         //make a filtered version which doesn't include unchecked markers
         //from ped files. this is the version which needs to be handed off to all
         //display methods etc.
@@ -965,9 +967,9 @@ public class HaploData{
     void guessBlocks(int method){
         Vector returnVec = new Vector();
         switch(method){
-            case 0: returnVec = FindBlocks.doSFS(getFilteredTable(dPrimeTable)); break;
-            case 1: returnVec = FindBlocks.do4Gamete(getFilteredTable(dPrimeTable),0.01); break;
-            case 2: returnVec = FindBlocks.doMJD(getFilteredTable(dPrimeTable)); break;
+            case 0: returnVec = FindBlocks.doSFS(filteredDPrimeTable); break;
+            case 1: returnVec = FindBlocks.do4Gamete(filteredDPrimeTable,0.01); break;
+            case 2: returnVec = FindBlocks.doMJD(filteredDPrimeTable); break;
         }
         blocks = returnVec;
     }
