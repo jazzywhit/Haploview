@@ -1263,7 +1263,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }else{
                 theHV.changeBlocks(BLOX_CUSTOM);
                 Rectangle2D blockselector = new Rectangle2D.Double(clickXShift-boxRadius,clickYShift - boxRadius,
-                        alignedPositions[alignedPositions.length-1], boxSize);
+                        alignedPositions[alignedPositions.length-1] + boxSize, boxSize);
                 if(blockselector.contains(clickX,clickY)){
                     int whichMarker = getPreciseMarkerAt(clickX - clickXShift);
                     if (whichMarker > -1){
