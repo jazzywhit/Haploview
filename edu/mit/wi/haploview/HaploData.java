@@ -370,12 +370,7 @@ public class HaploData implements Constants{
         Chromosome.markers = null;
     }
 
-    public void linkageToChrom(File infile, int type)
-            throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
-        this.linkageToChrom(infile, type, false);
-    }
-
-    public Vector linkageToChrom(File infile, int type, boolean skipCheck)
+    public Vector linkageToChrom(File infile, int type)
             throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
 
         //okay, for now we're going to assume the ped file has no header
@@ -395,7 +390,7 @@ public class HaploData implements Constants{
         }
         pedFile = new PedFile();
 
-        if (type == 3){
+        if (type == PED){
             pedFile.parseLinkage(pedFileStrings);
         }else{
             pedFile.parseHapMap(pedFileStrings);
@@ -405,7 +400,7 @@ public class HaploData implements Constants{
 
         boolean[] markerResults = new boolean[result.size()];
         for (int i = 0; i < result.size(); i++){
-            if (((MarkerResult)result.get(i)).getRating() > 0 || skipCheck){
+            if (((MarkerResult)result.get(i)).getRating() > 0){
                 markerResults[i] = true;
             }else{
                 markerResults[i] = false;

@@ -89,6 +89,8 @@ public interface Constants {
                         "                                followed by an optional info file, separated by a space.\n" +
                         "-blocks <blockfile>             Blocks file, one block per line, will force output for these blocks\n" +
                         "-track <trackfile>              Specify an input analysis track file.\n"+
+                        "-excludeMarkers <markers>       Specify markers (in range 1-N where N is total number of markers) to be\n"+
+                        "                                skipped for all analyses. Format: 1,2,5..12\n"+
                         "-skipcheck                      Skips the various genotype file checks\n" +
                         "-dprime                         Outputs LD text to <inputfile>.LD\n" +
                         "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+

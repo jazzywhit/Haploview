@@ -24,9 +24,9 @@ public class HaploText implements Constants{
     private String blockFileName;
     private String trackFileName;
     private boolean skipCheck = false;
-    private Vector ignoreMarkers = new Vector();
+    private Vector excludedMarkers = new Vector();
     private boolean quietMode = false;
-    private int outputType;
+    private int blockOutputType;
     private boolean outputCheck;
     private boolean outputDprime;
     private boolean outputPNG;
@@ -56,8 +56,8 @@ public class HaploText implements Constants{
         return hapmapFileName;
     }
 
-    public int getOutputType() {
-        return outputType;
+    public int getBlockOutputType() {
+        return blockOutputType;
     }
 
     private double getDoubleArg(String[] args, int valueIndex, String argName, double min, double max) {
@@ -101,7 +101,7 @@ public class HaploText implements Constants{
 
         int maxDistance = -1;
         //this means that user didn't specify any output type if it doesn't get changed below
-        outputType = -1;
+        blockOutputType = -1;
         double hapThresh = -1;
         double minimumMAF=-1;
         double spacingThresh = -1;
@@ -137,20 +137,34 @@ public class HaploText implements Constants{
             else if (args[i].equals("-skipcheck") || args[i].equals("--skipcheck")){
                 skipCheck = true;
             }
-            //todo: fix ignoremarkers
-           /* else if (args[i].equals("--ignoremarkers")){
+            else if (args[i].equalsIgnoreCase("-excludeMarkers")){
                 i++;
                 if(i>=args.length || (args[i].charAt(0) == '-')){
-                    System.out.println("--ignoremarkers requires a list of markers");
+                    System.out.println("-excludeMarkers requires a list of markers");
                     System.exit(1);
                 }
                 else {
                     StringTokenizer str = new StringTokenizer(args[i],",");
-                    while(str.hasMoreTokens()) {
-                        ignoreMarkers.add(str.nextToken());
+                    try {
+                        while(str.hasMoreTokens()) {
+                            String token = str.nextToken();
+                            if(token.indexOf("..") != -1) {
+                                int lastIndex = token.indexOf("..");
+                                int rangeStart = Integer.parseInt(token.substring(0,lastIndex));
+                                int rangeEnd = Integer.parseInt(token.substring(lastIndex+2,token.length()));
+                                for(int j=rangeStart;j<=rangeEnd;j++) {
+                                    excludedMarkers.add(new Integer(j));
+                                }
+                            } else {
+                                excludedMarkers.add(new Integer(token));
+                            }
+                        }
+                    } catch(NumberFormatException nfe) {
+                        System.out.println("-excludeMarkers argument should be of the format: 1,3,5..8,12");
+                        System.exit(1);
                     }
                 }
-            } */
+            }
             else if(args[i].equals("-ha") || args[i].equals("-l") || args[i].equals("-haps")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
@@ -193,7 +207,7 @@ public class HaploText implements Constants{
                 i++;
                 if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
                     blockFileName = args[i];
-                    outputType = BLOX_CUSTOM;
+                    blockOutputType = BLOX_CUSTOM;
                 }else{
                     System.out.println(args[i-1] + " requires a filename");
                     System.exit(1);
@@ -217,26 +231,26 @@ public class HaploText implements Constants{
             else if(args[i].equals("-o") || args[i].equals("-output") || args[i].equalsIgnoreCase("-blockoutput")) {
                 i++;
                 if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
-                    if(outputType != -1){
+                    if(blockOutputType != -1){
                         System.out.println("only one output argument is allowed");
                         System.exit(1);
                     }
                     if(args[i].equalsIgnoreCase("SFS") || args[i].equalsIgnoreCase("GAB")){
-                        outputType = BLOX_GABRIEL;
+                        blockOutputType = BLOX_GABRIEL;
                     }
                     else if(args[i].equalsIgnoreCase("GAM")){
-                        outputType = BLOX_4GAM;
+                        blockOutputType = BLOX_4GAM;
                     }
                     else if(args[i].equalsIgnoreCase("MJD") || args[i].equalsIgnoreCase("SPI")){
-                        outputType = BLOX_SPINE;
+                        blockOutputType = BLOX_SPINE;
                     }
                     else if(args[i].equalsIgnoreCase("ALL")) {
-                        outputType = BLOX_ALL;
+                        blockOutputType = BLOX_ALL;
                     }
                 }
                 else {
                     //defaults to SFS output
-                    outputType = BLOX_GABRIEL;
+                    blockOutputType = BLOX_GABRIEL;
                     i--;
                 }
             }
@@ -365,6 +379,7 @@ public class HaploText implements Constants{
             }
             else {
                 System.out.println("invalid parameter specified: " + args[i]);
+                System.exit(1);
             }
         }
 
@@ -392,10 +407,10 @@ public class HaploText implements Constants{
 
         //mess with vars, set defaults, etc
 
-        if( outputType == -1 && ( pedFileName != null ||
+        if( blockOutputType == -1 && ( pedFileName != null ||
                 hapsFileName != null || batchFileName != null || hapmapFileName != null)
                 && !outputDprime && !outputCheck && !outputPNG && !outputCompressedPNG) {
-            outputType = BLOX_GABRIEL;
+            blockOutputType = BLOX_GABRIEL;
             if(nogui && !quietMode) {
                 System.out.println("No output type specified. Default of Gabriel will be used");
             }
@@ -580,28 +595,37 @@ public class HaploText implements Constants{
             }
             else if (fileType == PED) {
                 //read in ped file
-              /*  if(this.arg_ignoreMarkers.size()>0) {
-                    for(int i=0;i<this.arg_ignoreMarkers.size();i++){
-                        int index = Integer.parseInt((String)this.arg_ignoreMarkers.get(i));
-                        if(index>0 && index<markerResultArray.length){
-                            markerResultArray[index] = false;
-                            if(!this.quietMode) {
-                                System.out.println("Ignoring marker " + (index));
-                            }
-                        }
-                    }
-                }*/
-
-                result = textData.linkageToChrom(inputFile, 3, skipCheck);
+                result = textData.linkageToChrom(inputFile, PED);
 
                 if(textData.getPedFile().isBogusParents()) {
                     System.out.println("Error: One or more individuals in the file reference non-existent parents.\nThese references have been ignored.");
                 }
-
             }else{
                 //read in hapmapfile
-                result = textData.linkageToChrom(inputFile,4,skipCheck);
+                result = textData.linkageToChrom(inputFile,HMP);
             }
+
+            //once check has been run, but before anything else, we can filter the markers
+            boolean[] markerResults = new boolean[result.size()];
+            for (int i = 0; i < result.size(); i++){
+                if (((MarkerResult)result.get(i)).getRating() > 0 || skipCheck){
+                    markerResults[i] = true;
+                }else{
+                    markerResults[i] = false;
+                }
+            }
+            for (int i = 0; i < excludedMarkers.size(); i++){
+                int cur = ((Integer)excludedMarkers.elementAt(i)).intValue();
+                if (cur < 1 || cur > markerResults.length){
+                    System.out.println("Excluded marker out of bounds has been ignored: " + cur +
+                            "\nMarkers must be between 1 and N, where N is the total number of markers.");
+                    System.exit(1);
+                }else{
+                    markerResults[cur-1] = false;
+                }
+            }
+
+            Chromosome.doFilter(markerResults);
 
             File infoFile = null;
             if (infoFileName != null){
@@ -620,11 +644,11 @@ public class HaploText implements Constants{
                 cp.printTable(validateOutputFile(fileName + ".CHECK"));
             }
             Vector cust = new Vector();
-            if(outputType != -1){
+            if(blockOutputType != -1){
                 textData.generateDPrimeTable();
                 Haplotype[][] haplos;
                 Haplotype[][] filtHaplos;
-                switch(outputType){
+                switch(blockOutputType){
                     case BLOX_GABRIEL:
                         OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                         break;
@@ -647,7 +671,7 @@ public class HaploText implements Constants{
                 }
 
                 //this handles output type ALL
-                if(outputType == BLOX_ALL) {
+                if(blockOutputType == BLOX_ALL) {
                     OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
@@ -667,17 +691,21 @@ public class HaploText implements Constants{
                     textData.pickTags(filtHaplos);
                     textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
                 }else{
-                    textData.guessBlocks(outputType, cust);
+                    //guesses blocks based on output type determined above.
+                    textData.guessBlocks(blockOutputType, cust);
                     haplos = textData.generateHaplotypes(textData.blocks, false);
                     filtHaplos = filterHaplos(haplos);
                     textData.pickTags(filtHaplos);
                     textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), OutputFile);
                 }
 
-                //todo: should this output hap assoc for each block type if they do more than one?
                 if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
-                    //Haplotype[][] orderedHaps = orderHaps(textData.getHaplotypes());
-                    HaploData.saveHapAssocToText(haplos, fileName + ".HAPASSOC");
+                    if (blockOutputType == BLOX_ALL){
+                        System.out.println("Haplotype association results must be generated one block\n" +
+                                "definition at a time and so cannot be used with output type ALL.");
+                    }else{
+                        HaploData.saveHapAssocToText(haplos, fileName + ".HAPASSOC");
+                    }
                 }
             }
 
