@@ -1630,6 +1630,52 @@ public class HaploData implements Constants{
 
     }
 
+    public Vector readBlocks(File infile) throws HaploViewException, IOException{
+        if (!infile.exists()){
+            throw new HaploViewException("File " + infile.getName() + " doesn't exist!");
+        }
+
+        Vector cust = new Vector();
+        BufferedReader in = new BufferedReader(new FileReader(infile));
+        String currentLine;
+        int lineCount = 0;
+        int highestYet = -1;
+        while ((currentLine = in.readLine()) != null){
+            lineCount ++;
+            StringTokenizer st = new StringTokenizer(currentLine);
+
+            if (st.countTokens() == 1){
+                //complain if we have only one col
+                throw new HaploViewException("File error on line " + lineCount + " in " + infile.getName());
+            }else if (st.countTokens() == 0){
+                //skip blank lines
+                continue;
+            }
+            try{
+                int[] thisBlock = new int[st.countTokens()];
+                int x = 0;
+                while (st.hasMoreTokens()){
+                    //we're being nice to users and letting them input blocks with 1-offset
+                    thisBlock[x] = new Integer(st.nextToken()).intValue()-1;
+                    if (thisBlock[x] > Chromosome.getSize() || thisBlock[x] < 0){
+                        throw new HaploViewException("Error, marker in block out of bounds: " + thisBlock[x] +
+                                "\non line " + lineCount);
+                    }
+                    if (thisBlock[x] <= highestYet){
+                        throw new HaploViewException("Error, markers/blocks out of order or overlap:\n" +
+                                "on line " + lineCount);
+                    }
+                    highestYet = thisBlock[x];
+                    x++;
+                }
+                cust.add(thisBlock);
+            }catch (NumberFormatException nfe) {
+                throw new HaploViewException("Format error on line " + lineCount + " in " + infile.getName());
+            }
+        }
+        return cust;
+    }
+
     //this whole method is broken at the very least because it doesn't check for zeroing
     //out of mendel errors correctly. on the other hand we may never want to
     //resurrect this format, so who cares...

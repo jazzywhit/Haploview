@@ -11,6 +11,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Vector;
+
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 
@@ -18,7 +20,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     boolean DEBUG = false;
 
-    JMenuItem readMarkerItem, analysisItem;
+    JMenuItem readMarkerItem, analysisItem, blocksItem;
     String exportItems[] = {
         EXPORT_TEXT, EXPORT_PNG, EXPORT_OPTIONS
     };
@@ -106,6 +108,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         analysisItem.addActionListener(this);
         analysisItem.setEnabled(false);
         fileMenu.add(analysisItem);
+
+        blocksItem = new JMenuItem(READ_BLOCKS_FILE);
+        setAccelerator(blocksItem, 'B', false);
+        blocksItem.addActionListener(this);
+        blocksItem.setEnabled(false);
+        fileMenu.add(blocksItem);
 
         /*
         viewMarkerItem = new JMenuItem(VIEW_MARKERS);
@@ -264,6 +272,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (returnVal == JFileChooser.APPROVE_OPTION){
                 readAnalysisFile(fc.getSelectedFile());
             }
+        }else if (command == READ_BLOCKS_FILE){
+            fc.setSelectedFile(new File(""));
+            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
+                readBlocksFile(fc.getSelectedFile());
+            }
         }else if (command == CUST_BLOCKS){
             TweakBlockDefsDialog tweakDialog = new TweakBlockDefsDialog("Customize Blocks", this);
             tweakDialog.pack();
@@ -341,6 +354,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
         }
     }
+
+
 
     private void changeKey(int scheme) {
         keyMenu.removeAll();
@@ -588,6 +603,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }
                         clearBlocksItem.setEnabled(true);
                         readMarkerItem.setEnabled(true);
+                        blocksItem.setEnabled(true);
 
                         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
@@ -614,6 +630,25 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
+    void readBlocksFile(File file) {
+       try{
+           Vector cust = theData.readBlocks(file);
+           theData.guessBlocks(BLOX_CUSTOM, cust);
+           if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
+               dPrimeDisplay.repaint();
+           }
+       }catch (HaploViewException hve){
+            JOptionPane.showMessageDialog(this,
+                    hve.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }catch (IOException ioe){
+            JOptionPane.showMessageDialog(this,
+                    ioe.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     void readMarkers(File inputFile, String[][] hminfo){
         try {

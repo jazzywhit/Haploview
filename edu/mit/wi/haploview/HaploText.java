@@ -522,25 +522,7 @@ public class HaploText implements Constants{
                         OutputFile = new File(fileName + ".CUSTblocks");
                         //read in the blocks file
                         File blocksFile = new File(arg_blockfile);
-                        if (!(blocksFile.exists())){
-                            System.out.println("Blocks file " + arg_blockfile + " doesn't exist!");
-                            System.exit(1);
-                        }else{
-                            //todo:bad, bad, bad, doesn't check at all that the file is formatted properly
-                            BufferedReader in = new BufferedReader(new FileReader(blocksFile));
-                            String currentLine;
-                            while ((currentLine = in.readLine()) != null){
-                                StringTokenizer st = new StringTokenizer(currentLine);
-                                int[] thisBlock = new int[st.countTokens()];
-                                int x = 0;
-                                while (st.hasMoreTokens()){
-                                    //we're being nice to users and letting them input blocks with 1-offset
-                                    thisBlock[x] = new Integer(st.nextToken()).intValue()-1;
-                                    x++;
-                                }
-                                cust.add(thisBlock);
-                            }
-                        }
+                        cust = textData.readBlocks(blocksFile);
                         break;
                     default:
                         OutputFile = new File(fileName + ".GABRIELblocks");
