@@ -468,7 +468,7 @@ public class HaploView extends JFrame implements ActionListener{
     class TabChangeListener implements ChangeListener{
         public void stateChanged(ChangeEvent e) {
             viewMenuItems[tabs.getSelectedIndex()].setSelected(true);
-            if (checkPanel.changed){
+            if (checkPanel != null && checkPanel.changed){
                 window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
                 JTable table = checkPanel.getTable();
                 boolean[] markerResults = new boolean[table.getRowCount()];
