@@ -5,12 +5,14 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 import java.awt.event.*;
 import java.util.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
+
 
 class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionListener, Constants{
     private static final int H_BORDER = 30;
@@ -1097,7 +1099,7 @@ END OF HIS HACKS
             for (int i = 0; i < initialPositions.length; i++){
                 //if the alignedPos is less than two pixels from the intitialpos we
                 //decide that's "close enough" to being aligned
-                if (Math.abs(initialPositions[i] - alignedPositions[i]) < 2)
+                if (initialPositions[i] == alignedPositions[i])
                     numAligned++;
             }
             aligned = numAligned/initialPositions.length;
