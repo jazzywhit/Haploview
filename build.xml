@@ -30,7 +30,7 @@
     <property name="haploview.dist" value="${haploview.root}/dist"/>
     <property name="haploview.classes" value="${haploview.build}/classes"/>
     <property name="haploview.src" value="${haploview.root}"/>
-    <property name="haploview.lib" value="${haploview.root}/lib"/>
+    <property name="haploview.lib" value="${haploview.root}/resources"/>
     <property name="haploview.package" value="edu/mit/wi/haploview"/>
     <property name="pedfile.package" value="edu/mit/wi/pedfile"/>
     <tstamp>
@@ -62,7 +62,7 @@
      <fileset dir="${haploview.classes}">
        <include name="edu/mit/wi/**/**"/>
      </fileset>
-     <zipfileset src="lib/JimiProClasses.zip"/>
+     <zipfileset src="resources/JimiProClasses.zip"/>
    </jar>
 </target>
 
