@@ -272,10 +272,13 @@ public class HaploView extends JFrame implements ActionListener{
 
         inputOptions = f;
         File pedFile = new File(inputOptions[0]);
-
         //pop open checkdata window
         //checkWindow = new JFrame();
         try {
+            if (pedFile.length() < 1){
+                throw new HaploViewException("Pedfile is empty or nonexistent: " + pedFile.getName());
+            }
+
             checkPanel = new CheckDataPanel(pedFile);
             checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -292,6 +295,11 @@ public class HaploView extends JFrame implements ActionListener{
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }catch (HaploViewException hve){
+            JOptionPane.showMessageDialog(this,
+                    hve.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
