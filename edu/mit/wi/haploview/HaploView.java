@@ -254,7 +254,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         helpContentsItem = new JMenuItem("Help Contents");
         HelpSet hs;
         HelpBroker hb;
-        String helpHS = "HaploviewHelp/HaploHelp.hs";
+        String helpHS = "jhelpset.hs";
         try {
             URL hsURL = HelpSet.findHelpSet(HaploView.class.getClassLoader(), helpHS);
             hs = new HelpSet(null, hsURL);
