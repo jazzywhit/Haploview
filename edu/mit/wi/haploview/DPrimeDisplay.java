@@ -179,7 +179,7 @@ class DPrimeDisplay extends JComponent {
             if (highY > dPrimeTable.length){
                 highY = dPrimeTable.length;
             }
-            /*
+            /**
             boxSize = (int)((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
             if (boxSize < 12){boxSize=12;}
             if (boxSize < 25){
@@ -188,7 +188,7 @@ class DPrimeDisplay extends JComponent {
             }else{
             boxRadius = boxSize/2 - 1;
             }
-            */
+             **/
         } else{
             lowX = 0;
             highX = dPrimeTable.length-1;
@@ -205,6 +205,9 @@ class DPrimeDisplay extends JComponent {
             }
 
             for (int y = lowY; y < highY; y++) {
+                if (dPrimeTable[x][y] == null){
+                    continue;
+                }
                 double d = dPrimeTable[x][y].getDPrime();
                 //double l = dPrimeTable[x][y].getLOD();
                 Color boxColor = dPrimeTable[x][y].getColor();

@@ -1,8 +1,11 @@
 package edu.mit.wi.haploview;
 
-import java.io.*;
-import java.lang.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.StringTokenizer;
+import java.util.Vector;
 //import java.text.*;
 //import javax.swing.*;
 //import java.awt.*;
@@ -14,7 +17,6 @@ public class HaploData{
     Vector markerInfo = new Vector();
     PairwiseLinkage[][] dPrimeTable;
     public boolean finished = false;
-    private int numCompleted, toBeCompleted;
     private double[] numBadGenotypes;
     private double[] percentBadGenotypes;
     private double[] multidprimeArray;
@@ -48,11 +50,11 @@ public class HaploData{
     public HaploData(File infile) throws IOException{
         //create the data object and prepare the input
         chromosomes = prepareGenotypeInput(infile);
-        toBeCompleted = (((Chromosome)chromosomes.firstElement()).size()-1)*((Chromosome)chromosomes.firstElement()).size()/2;
     }
 
 
     Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh){
+        //TODO: output indiv hap estimates
         Haplotype[][] results = new Haplotype[blocks.size()][];
         String raw = new String();
         String currentLine;
@@ -752,28 +754,24 @@ public class HaploData{
         return Math.log(d)/LN10;
     }
 
-    public int getComplete(){
-        return numCompleted;
-    }
 
-    public int getToBeCompleted(){
-        return toBeCompleted;
-    }
-
-    void generateDPrimeTable(){
-        numCompleted = 0;
-
+    void generateDPrimeTable(long maxdist){
         //calculating D prime requires the number of each possible 2 marker
         //haplotype in the dataset
         dPrimeTable = new PairwiseLinkage[((Chromosome) chromosomes.firstElement()).size()][((Chromosome) chromosomes.firstElement()).size()];
         int doublehet;
+        long negMaxdist = -1*maxdist;
         int[][] twoMarkerHaplos = new int[3][3];
 
         //loop through all marker pairs
         for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
             //clear the array
             for (int pos1 = 0; pos1 < pos2; pos1++){
-                numCompleted ++;
+                long sep = ((SNP)markerInfo.elementAt(pos1)).getPosition() - ((SNP)markerInfo.elementAt(pos2)).getPosition();
+                if (sep > maxdist || sep < negMaxdist){
+                    dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,-99,0,0,0,nullArray);
+                    continue;
+                }
                 for (int i = 0; i < twoMarkerHaplos.length; i++){
                     for (int j = 0; j < twoMarkerHaplos[i].length; j++){
                         twoMarkerHaplos[i][j] = 0;
@@ -798,11 +796,10 @@ public class HaploData{
                     if (a2 == 5) m2H++;
                 }
 
-                double[] nullArray = new double[1];
                 //check for non-polymorphic markers
                 if (m1a2==0){
                     if (m1H==0){
-                        dPrimeTable[pos1][pos2] = new PairwiseLinkage(0,0,0,0,0,nullArray);
+                        dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
                         continue;
                     } else {
                         if (m1a1 == 1){ m1a2=2; }
@@ -811,7 +808,7 @@ public class HaploData{
                 }
                 if (m2a2==0){
                     if (m2H==0){
-                        dPrimeTable[pos1][pos2] = new PairwiseLinkage(0,0,0,0,0,nullArray);
+                        dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
                         continue;
                     } else {
                         if (m2a1 == 1){ m2a2=2; }
@@ -858,7 +855,7 @@ public class HaploData{
                 c1 = twoMarkerHaplos[1][1] + twoMarkerHaplos[2][1];
                 c2 = twoMarkerHaplos[1][2] + twoMarkerHaplos[2][2];
                 if ( (r1==0 || r2==0 || c1==0 || c2==0) && doublehet == 0){
-                    dPrimeTable[pos1][pos2] = new PairwiseLinkage(0,0,0,0,0,nullArray);
+                    dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
                     continue;
                 }
 

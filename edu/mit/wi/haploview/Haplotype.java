@@ -10,52 +10,52 @@ class Haplotype{
     private double[] crossovers;
 
     Haplotype(int[] g, double p, int[] m){
-	genotypes=g;
-	percentage = p;
-	markers = m;
-	tags = new boolean[genotypes.length];
-	listorder = 0;
+        genotypes=g;
+        percentage = p;
+        markers = m;
+        tags = new boolean[genotypes.length];
+        listorder = 0;
     }
 
     public int[] getGeno(){
-	return genotypes;
+        return genotypes;
     }
 
     public double getPercentage(){
-	return percentage;
+        return percentage;
     }
 
     public void addCrossovers(double[] c){
-	crossovers = c;
+        crossovers = c;
     }
 
     public void addTag(int t){
-	tags[t] = true;
+        tags[t] = true;
     }
 
     public void clearTags(){
-	for (int t = 0; t < tags.length; t++){
-	    tags[t] = false;
-	}
+        for (int t = 0; t < tags.length; t++){
+            tags[t] = false;
+        }
     }
 
     public double getCrossover(int index){
-	return crossovers[index];
+        return crossovers[index];
     }
 
     public int[] getMarkers(){
-	return markers;
+        return markers;
     }
-    
+
     public boolean[] getTags(){
-	return tags;
+        return tags;
     }
 
     public int getListOrder(){
-	return listorder;
+        return listorder;
     }
 
     public void setListOrder(int slo){
-	listorder = slo;
+        listorder = slo;
     }
 }

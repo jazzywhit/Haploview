@@ -232,9 +232,11 @@ public class HaploView extends JFrame implements ActionListener{
 
 
     void readPedGenotypes(String[] f){
-        //input is a 2 element array with
+        //input is a 3 element array with
         //filenames[0] = ped file
         //filenames[1] = info file (null if none)
+        //filenames[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
+
         filenames = f;
         File pedFile = new File(filenames[0]);
 
@@ -259,10 +261,13 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void readPhasedGenotypes(String[] f){
-        //input is a 2 element array with
+        //input is a 3 element array with
         //filenames[0] = haps file
         //filenames[1] = info file (null if none)
+        //filenames[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
+
         filenames = f;
+        final long maxCompDist = Long.parseLong(filenames[2])*1000;
 
         try{
             theData = new HaploData(new File(filenames[0]));
@@ -271,11 +276,10 @@ public class HaploView extends JFrame implements ActionListener{
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
                     dPrimeDisplay=null;
-                    theData.generateDPrimeTable();
-                    infoKnown=false;
                     if (!(filenames[1].equals(""))){
                         readMarkers(new File(filenames[1]));
                     }
+                    theData.generateDPrimeTable(maxCompDist);
                     theData.guessBlocks(0);
                     drawPicture(theData);
                     theData.finished = true;
