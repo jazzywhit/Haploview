@@ -39,18 +39,21 @@ public class HaploView extends JFrame implements ActionListener{
 
     static final String VIEW_DPRIME = "D Prime Plot";
     static final String VIEW_HAPLOTYPES = "Haplotypes";
-    static final String VIEW_GENOTYPES = "Genotype Data";
-    static final String VIEW_MARKERS = "Marker Data";
+    static final String VIEW_LOD = "Genotyping completeness";
     static final String VIEW_CHECK_PANEL = "Check Markers";
     static final String VIEW_TDT = "TDT";
 
+    //these three are always 1st and 2nd in the tabs
     static final int VIEW_D_NUM = 0;
     static final int VIEW_HAP_NUM = 1;
-    static final int VIEW_CHECK_NUM = 2;
-    static final int VIEW_TDT_NUM = 3;
+    //static final int VIEW_LOD_NUM = 2;
+    //these are "optional" tabs so we don't force them into an order
+    static int VIEW_CHECK_NUM, VIEW_TDT_NUM;
+    //static final int VIEW_CHECK_NUM = 2;
+    //static final int VIEW_TDT_NUM = 3;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TDT
+        VIEW_DPRIME, VIEW_HAPLOTYPES, "",""
     };
     JRadioButtonMenuItem viewMenuItems[];
     String zoomItems[] = {
@@ -419,22 +422,21 @@ public class HaploView extends JFrame implements ActionListener{
         System.exit(0);
     }
 
-    void readPedGenotypes(String[] f){
+    void readPedGenotypes(String[] f, int type){
         //input is a 3 element array with
         //inputOptions[0] = ped file
         //inputOptions[1] = info file (null if none)
         //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
+        //type is either 3 or 4 for ped and hapmap files respectively
 
         inputOptions = f;
         File pedFile = new File(inputOptions[0]);
-        //pop open checkdata window
-        //checkWindow = new JFrame();
         try {
             if (pedFile.length() < 1){
                 throw new HaploViewException("Pedfile is empty or nonexistent: " + pedFile.getName());
             }
 
-            checkPanel = new CheckDataPanel(pedFile);
+            checkPanel = new CheckDataPanel(pedFile, type);
             checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             theData = new HaploData(assocTest);
@@ -462,8 +464,6 @@ public class HaploView extends JFrame implements ActionListener{
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-
-
     }
 
     void readPhasedGenotypes(String[] f){
@@ -520,7 +520,7 @@ public class HaploView extends JFrame implements ActionListener{
                 Container contents = getContentPane();
                 contents.removeAll();
 
-                int currentTab = 0;
+                int currentTab = VIEW_D_NUM;
                 /*if (!(tabs == null)){
                 currentTab = tabs.getSelectedIndex();
                 } */
@@ -561,8 +561,32 @@ public class HaploView extends JFrame implements ActionListener{
                 tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
                 viewMenuItems[VIEW_HAP_NUM].setEnabled(true);
 
+                //LOD panel
+                /*panel = new JPanel();
+                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+                LODDisplay ld = new LODDisplay(theData);
+                JScrollPane lodScroller = new JScrollPane(ld);
+                panel.add(lodScroller);
+                tabs.addTab(viewItems[VIEW_LOD_NUM], panel);
+                viewMenuItems[VIEW_LOD_NUM].setEnabled(true);*/
+
+                int optionalTabCount = 1;
+
+                //TDT panel
+                if(assocTest > 0) {
+                    optionalTabCount++;
+                    VIEW_TDT_NUM = optionalTabCount;
+                    viewItems[VIEW_TDT_NUM] = VIEW_TDT;
+                    tdtPanel = new TDTPanel(theData.chromosomes, assocTest);
+                    tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
+                    viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
+                }
+
                 //check data panel
                 if (checkPanel != null){
+                    optionalTabCount++;
+                    VIEW_CHECK_NUM = optionalTabCount;
+                    viewItems[VIEW_CHECK_NUM] = VIEW_CHECK_PANEL;
                     JPanel metaCheckPanel = new JPanel();
                     metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
                     JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
@@ -602,18 +626,11 @@ public class HaploView extends JFrame implements ActionListener{
                     JPanel ctrlPanel = new JPanel();
                     ctrlPanel.add(failPanel);
                     ctrlPanel.add(selAll);
-                    metaCheckPanel.add(ctrlPanel);
+                    checkPanel.add(ctrlPanel);
 
                     tabs.addTab(viewItems[VIEW_CHECK_NUM], metaCheckPanel);
                     viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
                     currentTab=VIEW_CHECK_NUM;
-                }
-
-                //TDT panel
-                if(assocTest > 0) {
-                    tdtPanel = new TDTPanel(theData.chromosomes, assocTest);
-                    tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
-                    viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
                 }
 
                 tabs.setSelectedIndex(currentTab);
@@ -948,5 +965,7 @@ public class HaploView extends JFrame implements ActionListener{
 
         }
     }
+
+
 }
 
