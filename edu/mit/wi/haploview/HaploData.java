@@ -1452,7 +1452,7 @@ public class HaploData implements Constants{
             tmp=probHaps[AA]; probHaps[AA]=probHaps[AB]; probHaps[AB]=tmp;
             tmp=probHaps[BB]; probHaps[BB]=probHaps[BA]; probHaps[BA]=tmp;
             /* flip frequency of second allele */
-            //done in this slightly asinine way because of a compiler bug in the alpha version of java
+            //done in this slightly asinine way because of a compiler bug in the dec-alpha version of java
             //which causes it to try to parallelize the swapping operations and mis-schedules them
             pA2 = pA2 + pB2;
             pB2 = pA2 - pB2;
