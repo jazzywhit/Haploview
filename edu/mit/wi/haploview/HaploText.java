@@ -1063,7 +1063,7 @@ public class HaploText implements Constants{
                         dotsPrinted++;
                     }
                     try{
-                        Thread.currentThread().sleep(100);
+                        Thread.sleep(100);
                     }catch(InterruptedException ie) {}
                 }
                 System.out.println();
@@ -1168,14 +1168,4 @@ public class HaploText implements Constants{
         return filteredHaplos;
 
     }
-
-    private Vector readMarkerListFile(File fileName) {
-
-
-        Vector markerList = new Vector();
-
-
-        return markerList;
-    }
-
 }
