@@ -755,7 +755,6 @@ public class HaploData implements Constants{
                 }
 
                 theBlock = selectedMarkers;
-                Arrays.sort(theBlock);
                 //System.out.println("Block " + k + " " + theBlock.length + "/" + preFiltBlock.length);
             }else{
                 theBlock = preFiltBlock;
@@ -865,7 +864,6 @@ public class HaploData implements Constants{
                 EMreturn += (String)haplos_present.elementAt(j)+"\t"+(String)haplo_freq.elementAt(j)+"\t";
             }
 
-
             StringTokenizer st = new StringTokenizer(EMreturn);
             int p = 0;
             Haplotype[] tempArray = new Haplotype[st.countTokens()/2];
@@ -908,13 +906,29 @@ public class HaploData implements Constants{
                             }
                         }
                         //this (somewhat laboriously) reconstructs whether to add the minor or major allele
-                        if (Chromosome.getFilteredMarker(selectedMarkers[currentClass]).getMajor() ==
-                                genos[indexIntoBlock]){
-                            hapsHash.put(new Integer(preFiltBlock[q]),
-                                    new Integer(Chromosome.getFilteredMarker(preFiltBlock[q]).getMajor()));
+                        //for markers with MAF close to 0.50 we can't use major/minor alleles to match
+                        //'em up 'cause these might change given missing data
+                        if (Chromosome.getFilteredMarker(selectedMarkers[currentClass]).getMAF() > 0.4){
+                            for (int i = 0; i < chromosomes.size(); i++){
+                                Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
+                                Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++i);
+                                int theGeno = thisChrom.getFilteredGenotype(selectedMarkers[currentClass]);
+                                int nextGeno = nextChrom.getFilteredGenotype(selectedMarkers[currentClass]);
+                                if (theGeno == nextGeno && theGeno == genos[indexIntoBlock]
+                                        && thisChrom.getFilteredGenotype(preFiltBlock[q]) != 0){
+                                    hapsHash.put(new Integer(preFiltBlock[q]),
+                                            new Integer(thisChrom.getFilteredGenotype(preFiltBlock[q])));
+                                }
+                            }
                         }else{
-                            hapsHash.put(new Integer(preFiltBlock[q]),
-                                    new Integer(Chromosome.getFilteredMarker(preFiltBlock[q]).getMinor()));
+                            if (Chromosome.getFilteredMarker(selectedMarkers[currentClass]).getMajor() ==
+                                    genos[indexIntoBlock]){
+                                hapsHash.put(new Integer(preFiltBlock[q]),
+                                        new Integer(Chromosome.getFilteredMarker(preFiltBlock[q]).getMajor()));
+                            }else{
+                                hapsHash.put(new Integer(preFiltBlock[q]),
+                                        new Integer(Chromosome.getFilteredMarker(preFiltBlock[q]).getMinor()));
+                            }
                         }
                     }
                     genos = new int[preFiltBlock.length];
