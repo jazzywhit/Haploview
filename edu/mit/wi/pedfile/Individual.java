@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.7 2004/09/24 19:50:55 jmaller Exp $
+* $Id: Individual.java,v 1.8 2004/09/30 21:37:17 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -31,6 +31,7 @@ public class Individual {
     private int affectedStatus;
 
     private boolean haskids;
+    private String reasonImAxed;
     private int liability; //optional
     private Vector markers;
     //private Vector zeroed;
@@ -240,6 +241,14 @@ public class Individual {
      */
     public Iterator markerIterator(){
         return this.markers.iterator();
+    }
+
+    public String getReasonImAxed() {
+        return reasonImAxed;
+    }
+
+    public void setReasonImAxed(String reasonImAxed) {
+        this.reasonImAxed = reasonImAxed;
     }
 
 }

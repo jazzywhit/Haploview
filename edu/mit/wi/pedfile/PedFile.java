@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.31 2004/09/27 14:14:35 jmaller Exp $
+* $Id: PedFile.java,v 1.32 2004/09/30 21:37:17 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -698,11 +698,13 @@ public class PedFile {
                 }
             }
 
-            
-            if (numMissing/numMarkers > Options.getMissingThreshold()){
+
+            double genoPctMissing = numMissing/numMarkers;
+            if (genoPctMissing > Options.getMissingThreshold()){
                 //this person is missing too much data so remove him and then deal
                 //with his family connections
                 order.removeElement(currentInd);
+                currentInd.setReasonImAxed("% Genotypes: "+ new Double(((1-genoPctMissing)*100)).intValue());
                 axedPeople.add(currentInd);
                 if (currentFamily.getNumMembers() > 1){
                     //there are more people in this family so deal with relatives appropriately
@@ -714,6 +716,7 @@ public class PedFile {
                             if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
                                     nextMember.getMomID().equals(currentInd.getIndividualID())){
                                 order.removeElement(nextMember);
+                                nextMember.setReasonImAxed("Parent " + currentInd.getIndividualID() + " missing data.");
                                 axedPeople.add(nextMember);
                                 currentFamily.removeMember(nextMember.getIndividualID());
                             }
@@ -738,6 +741,7 @@ public class PedFile {
                                     if (nextMember.getDadID().equals(currentInd.getIndividualID()) ||
                                             nextMember.getMomID().equals(currentInd.getIndividualID())){
                                         order.removeElement(nextMember);
+                                        nextMember.setReasonImAxed("Parent " + currentInd.getIndividualID() + " missing data.");
                                         axedPeople.add(nextMember);
                                         currentFamily.removeMember(nextMember.getIndividualID());
                                     }
@@ -745,8 +749,10 @@ public class PedFile {
                             }else{
                                 //knock off my spouse and make my first kid a founder (i.e. "0" for parents)
                                 //and remove any other kids
-                                order.removeElement(currentFamily.getMember(spouseID));
-                                axedPeople.add(currentFamily.getMember(spouseID));
+                                Individual spouse = currentFamily.getMember(spouseID);
+                                order.removeElement(spouse);
+                                spouse.setReasonImAxed("Spouse " + currentInd.getIndividualID() + " missing data.");
+                                axedPeople.add(spouse);
                                 currentFamily.removeMember(spouseID);
                                 peopleinFam = currentFamily.getMemberList();
                                 boolean oneFound = false;
@@ -756,6 +762,7 @@ public class PedFile {
                                             nextMember.getMomID().equals(currentInd.getIndividualID())){
                                         if (oneFound){
                                             order.removeElement(nextMember);
+                                            nextMember.setReasonImAxed("Parent " + currentInd.getIndividualID() + " missing data.");                                                                                    
                                             axedPeople.add(nextMember);
                                             currentFamily.removeMember(nextMember.getIndividualID());
                                         }else{

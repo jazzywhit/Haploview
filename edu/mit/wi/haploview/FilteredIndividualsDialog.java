@@ -23,24 +23,26 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
 
         Vector axedPeople = h.theData.getPedFile().getAxedPeople();
 
-        String[] columnNames = {"FamilyID", "IndividualID"};
-        String[][] data = new String[axedPeople.size()][2];
+        String[] columnNames = {"FamilyID", "IndividualID", "Reason"};
+        String[][] data = new String[axedPeople.size()][3];
 
         for(int i=0;i<axedPeople.size();i++) {
             Individual currentInd = (Individual) axedPeople.get(i);
             data[i][0] = currentInd.getFamilyID();
             data[i][1] = currentInd.getIndividualID();
+            data[i][2] = currentInd.getReasonImAxed();
         }
 
         tableModel = new FilteredIndividualsTableModel(columnNames,data);
         table = new JTable(tableModel);
+        table.getColumnModel().getColumn(2).setPreferredWidth(150);
 
         JScrollPane tableScroller = new JScrollPane(table);
         int tableHeight = (table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+1);
         if (tableHeight > 300){
-            tableScroller.setPreferredSize(new Dimension(150, 300));
+            tableScroller.setPreferredSize(new Dimension(300, 300));
         }else{
-            tableScroller.setPreferredSize(new Dimension(150, tableHeight));
+            tableScroller.setPreferredSize(new Dimension(300, tableHeight));
         }
         tableScroller.setBorder(BorderFactory.createEmptyBorder(2,5,2,5));
 
