@@ -66,7 +66,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             g1.add(hapAssocButton);
             tabPanel.add(hapAssocButton);
 
-            if (currTab == VIEW_TDT_NUM){
+            if (currTab == VIEW_ASSOC_NUM){
                 if(((JTabbedPane)hv.tabs.getComponent(currTab)).getSelectedIndex() == VIEW_SINGLE_ASSOC){
                     singleAssocButton.setSelected(true);
                 }else{
@@ -91,7 +91,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
         compressCheckBox = new JCheckBox("Compress image (smaller file)");
         formatPanel.add(compressCheckBox);
         compressCheckBox.setEnabled(false);
-        if (currTab == VIEW_CHECK_NUM || currTab == VIEW_TDT_NUM){
+        if (currTab == VIEW_CHECK_NUM || currTab == VIEW_ASSOC_NUM){
             pngButton.setEnabled(false);
         }
         contents.add(formatPanel);
@@ -194,10 +194,10 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             } else if (checkButton.isSelected()){
                 tab = VIEW_CHECK_NUM;
             } else if (singleAssocButton.isSelected()){
-                tab = VIEW_TDT_NUM;
+                tab = VIEW_ASSOC_NUM;
                 ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedIndex(VIEW_SINGLE_ASSOC);
             }else{
-                tab = VIEW_TDT_NUM;
+                tab = VIEW_ASSOC_NUM;
                 ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedIndex(VIEW_HAPLO_ASSOC);                
             }
             this.dispose();

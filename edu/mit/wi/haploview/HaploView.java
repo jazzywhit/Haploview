@@ -34,7 +34,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     JMenuItem clearBlocksItem;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TDT
+        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_ASSOC
     };
     JRadioButtonMenuItem viewMenuItems[];
     String zoomItems[] = {
@@ -616,7 +616,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (type == HAPS_FILE){
                 //these are not available for non ped files
                 viewMenuItems[VIEW_CHECK_NUM].setEnabled(false);
-                viewMenuItems[VIEW_TDT_NUM].setEnabled(false);
+                viewMenuItems[VIEW_ASSOC_NUM].setEnabled(false);
                 Options.setAssocTest(ASSOC_NONE);
             }
             theData = new HaploData();
@@ -798,8 +798,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         metaAssoc.add(permutationPanel,"Permutation Tests");
 
 
-                        tabs.addTab("Association Results", metaAssoc);
-                        viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
+                        tabs.addTab(VIEW_ASSOC, metaAssoc);
+                        viewMenuItems[VIEW_ASSOC_NUM].setEnabled(true);
 
                     }
 
@@ -965,7 +965,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 if (tabNum == VIEW_D_NUM || tabNum == VIEW_HAP_NUM){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(true);
-                }else if (tabNum == VIEW_TDT_NUM || tabNum == VIEW_CHECK_NUM){
+                }else if (tabNum == VIEW_ASSOC_NUM || tabNum == VIEW_CHECK_NUM){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(false);
                 }else{
@@ -974,7 +974,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }
 
                 //if we've adjusted the haps display thresh we need to change the haps ass panel
-                if (tabNum == VIEW_TDT_NUM){
+                if (tabNum == VIEW_ASSOC_NUM){
                     JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
                     //this is the haps ass tab inside the assoc super-tab
                     HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
@@ -1149,54 +1149,19 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray, outfile);
                     }else if (tabNum == VIEW_CHECK_NUM){
                         checkPanel.printTable(outfile);
-                    }else if (tabNum == VIEW_TDT_NUM){
-                        FileWriter assocWriter = new FileWriter(outfile);
+                    }else if (tabNum == VIEW_ASSOC_NUM){
                         StringBuffer header = new StringBuffer();
+                        Component selectedTab = ((JTabbedPane)tabs.getComponent(tabNum)).getSelectedComponent();
 
-                        if(((JTabbedPane)tabs.getComponent(tabNum)).getSelectedIndex() == VIEW_SINGLE_ASSOC){
-                            JTable table = tdtPanel.getTable();
-                            int numCols = table.getColumnCount();
-                            for (int i = 0; i < numCols; i++){
-                                header.append(table.getColumnName(i)).append("\t");
-                            }
-                            header.append("\n");
-                            assocWriter.write(header.toString());
-                            for (int i = 0; i < table.getRowCount(); i++){
-                                StringBuffer sb = new StringBuffer();
-                                for (int j = 0; j < numCols; j++){
-                                    sb.append(table.getValueAt(i,j)).append("\t");
-                                }
-                                sb.append("\n");
-                                assocWriter.write(sb.toString());
-                            }
-                        } else{
-                            //now we write the haplotype association
-                            JTreeTable jtt = ((HaploAssocPanel)((JTabbedPane)tabs.getComponent(tabNum)).
-                                    getComponent(1)).jtt;
-                            int numCols = jtt.getColumnCount();
-                            for (int i = 0; i < numCols; i++){
-                                header.append(jtt.getColumnName(i)).append("\t");
-                            }
-                            header.append("\n");
-                            assocWriter.write(header.toString());
-                            HaplotypeAssociationModel ham = (HaplotypeAssociationModel) jtt.getTree().getModel();
-                            HaplotypeAssociationNode root = (HaplotypeAssociationNode) ham.getRoot();
-                            for(int i=0;i<ham.getChildCount(root);i++) {
-                                HaplotypeAssociationNode curBlock = (HaplotypeAssociationNode) ham.getChild(root,i);
-                                assocWriter.write(curBlock.getName() + "\n");
-                                StringBuffer sb = new StringBuffer();
-                                for(int j=0;j<ham.getChildCount(curBlock);j++){
-                                    HaplotypeAssociationNode curHap = (HaplotypeAssociationNode) ham.getChild(curBlock,j);
-                                    sb.append("\t").append(curHap.getName()).append("\t");
-                                    sb.append(curHap.getFreq()).append("\t");
-                                    sb.append(curHap.getCounts()).append("\t");
-                                    sb.append(curHap.getChiSq()).append("\t");
-                                    sb.append(curHap.getPVal()).append("\n");
-                                }
-                                assocWriter.write(sb.toString());
-                            }
+                        if(selectedTab == tdtPanel){
+                            tdtPanel.getTestSet().saveSNPsToText(outfile);
+                        }else if (selectedTab == hapAssocPanel){
+                            hapAssocPanel.getTestSet().saveHapsToText(outfile);
+                        }else if (selectedTab == permutationPanel){
+                            //todo: implement me!
+                        }else if (selectedTab == custAssocPanel){
+                            //todo: implement me!
                         }
-                        assocWriter.close();
                     }
                 }catch(IOException ioe){
                     JOptionPane.showMessageDialog(this,

@@ -33,13 +33,13 @@ public interface Constants {
     public static final String VIEW_HAPLOTYPES = "Haplotypes";
     public static final String VIEW_LOD = "Genotyping completeness";
     public static final String VIEW_CHECK_PANEL = "Check Markers";
-    public static final String VIEW_TDT = "Association";
+    public static final String VIEW_ASSOC = "Association";
 
     //main frame tab numbers
     public static final int VIEW_D_NUM = 0;
     public static final int VIEW_HAP_NUM = 1;
     public static final int VIEW_CHECK_NUM = 2;
-    public static final int VIEW_TDT_NUM = 3;
+    public static final int VIEW_ASSOC_NUM = 3;
 
     //association tab subtab indices
     public static final int VIEW_SINGLE_ASSOC = 0;
