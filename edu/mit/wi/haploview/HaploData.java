@@ -277,7 +277,10 @@ public class HaploData implements Constants{
                 }
                 if (numa2 > numa1){
                     byte temp = a1;
+                    double tempnum = numa1;
+                    numa1 = numa2;
                     a1 = a2;
+                    numa2 = tempnum;
                     a2 = temp;
                 }
 
@@ -285,7 +288,7 @@ public class HaploData implements Constants{
                 if (mr != null){
                     maf = Math.rint(mr.getMAF()*100.0)/100.0;
                 }else{
-                    maf = Math.rint(100.0*(numa1/(numa1+numa2)))/100.0;
+                    maf = Math.rint(100.0*(numa2/(numa1+numa2)))/100.0;
                 }
 
                 if (infoKnown){
