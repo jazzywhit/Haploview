@@ -40,7 +40,7 @@ public class UpdateChecker {
     public boolean checkForUpdate() throws IOException{
 
         try {
-            URL url = new URL("http://18.157.34.100:8080/haploview.txt");
+            URL url = new URL("http://www.broad.mit.edu/mpg/haploview/uc/version.txt");
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.connect();
 

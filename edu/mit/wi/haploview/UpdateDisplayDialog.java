@@ -17,19 +17,21 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
 
         Font bigguns = new Font("Default", Font.PLAIN, 14);
 
-
-        JLabel announceLabel = new JLabel("A newer version of Haploview is available: " + uc.getNewVersion());
-        announceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        announceLabel.setFont(bigguns);
-        JLabel urlLabel = new JLabel(WEBSITE_STRING);
-        urlLabel.setFont(bigguns);
-        urlLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JTextArea announceArea = new JTextArea();
+        announceArea.setFont(bigguns);
+        announceArea.append("A newer version of Haploview is available: " + uc.getNewVersion() + "\n");
+        announceArea.append(WEBSITE_STRING + "\n");
+        announceArea.setAlignmentX(Component.CENTER_ALIGNMENT);
+        announceArea.setEditable(false);
+        announceArea.setOpaque(false);
+        JPanel announcePanel = new JPanel();
+        announcePanel.add(announceArea);
         JScrollPane changeScroller = null;
 
         try {
             JEditorPane changePane = new JEditorPane();
             changePane.setEditable(false);
-            changePane.setPage(new URL("http://18.157.34.100:8080/hapchanges.html"));
+            changePane.setPage(new URL("http://www.broad.mit.edu/mpg/haploview/uc/changes.html"));
             changePane.setOpaque(false);
             changeScroller = new JScrollPane(changePane);
             changeScroller.setPreferredSize(new Dimension(250,150));
@@ -38,8 +40,7 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
             //without listing the changes
         }
 
-        contents.add(announceLabel);
-        contents.add(urlLabel);
+        contents.add(announcePanel);
         if(changeScroller != null) {
             changeScroller.setAlignmentX(Component.CENTER_ALIGNMENT);
             JPanel scrollHolder = new JPanel();
