@@ -45,16 +45,14 @@ public class HaploView extends JFrame implements ActionListener{
     static final String VIEW_MARKERS = "Marker Data";
     static final String VIEW_CHECK_PANEL = "Check Markers";
     static final String VIEW_TDT = "TDT";
-    static final String VIEW_BLOCKS = "Blocks";
 
     static final int VIEW_D_NUM = 0;
     static final int VIEW_HAP_NUM = 1;
-    static final int VIEW_BLOCK_NUM = 2;
-    static final int VIEW_TDT_NUM = 3;
-    static final int VIEW_CHECK_NUM = 4;
+    static final int VIEW_TDT_NUM = 2;
+    static final int VIEW_CHECK_NUM = 3;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_BLOCKS, VIEW_TDT, VIEW_CHECK_PANEL
+        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_TDT, VIEW_CHECK_PANEL
     };
     JRadioButtonMenuItem viewMenuItems[];
     String zoomItems[] = {
@@ -427,12 +425,6 @@ public class HaploView extends JFrame implements ActionListener{
                 panel.add(hdc);
                 tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
                 viewMenuItems[VIEW_HAP_NUM].setEnabled(true);
-
-                //block panel
-                BlockController blockPanel = new BlockController(theData);
-                JScrollPane bScroller = new JScrollPane(blockPanel);
-                tabs.addTab(viewItems[VIEW_BLOCK_NUM], bScroller);
-                viewMenuItems[VIEW_BLOCK_NUM].setEnabled(true);
 
                 //TDT panel
                 if(doTDT) {
