@@ -13,6 +13,7 @@ import java.util.Vector;
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.PedFileException;
+import edu.mit.wi.pedfile.CheckData;
 
 public class CheckDataPanel extends JPanel implements TableModelListener, ActionListener{
 	private JTable table;
@@ -56,6 +57,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
             table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
             table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
+            table.setDefaultRenderer(Class.forName("java.lang.String"),renderer);
         }catch (Exception e){
         }
 
@@ -70,6 +72,14 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
 
         add(extraPanel);
         add(tableScroller);
+
+        if (theData.dupsToBeFlagged){
+            JOptionPane.showMessageDialog(hv,
+                    "Two or more SNPs have identical position. They have been flagged in yellow\n"+
+                    "and the less completely genotyped duplicate has been deselected.",
+                    "Duplicate SNPs",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public CheckDataPanel(HaploData hd){
@@ -98,6 +108,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
 
         Vector tableData = new Vector();
         int[] markerRatings = new int[numResults];
+        int[] dups = new int[numResults];
         for (int i = 0; i < numResults; i++){
             Vector tempVect = new Vector();
             MarkerResult currentResult = (MarkerResult)result.get(i);
@@ -114,19 +125,21 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             tempVect.add(new Integer(currentResult.getMendErrNum()));
             tempVect.add(new Double(currentResult.getMAF()));
 
-            if (currentResult.getRating() > 0){
+            int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
+            if (currentResult.getRating() > 0 && dupStatus != 2){
                 tempVect.add(new Boolean(true));
             }else{
                 tempVect.add(new Boolean(false));
             }
 
-            //this value is never displayed, just kept for bookkeeping
+            //these values are never displayed, just kept for bookkeeping
             markerRatings[i] = currentResult.getRating();
+            dups[i] = dupStatus;
 
             tableData.add(tempVect.clone());
         }
 
-        tableModel = new CheckDataTableModel(tableColumnNames, tableData, markerRatings);
+        tableModel = new CheckDataTableModel(tableColumnNames, tableData, markerRatings, dups);
         tableModel.addTableModelListener(this);
     }
 
@@ -194,12 +207,15 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
 
     public void redoRatings(){
         try{
-            Vector result = pedfile.check();
+            Vector result = new CheckData(pedfile).check();
 
             for (int i = 0; i < table.getRowCount(); i++){
                 MarkerResult cur = (MarkerResult)result.get(i);
+
+                //use this marker as long as it has a good (i.e. positive) rating and is not an "unused" dup (==2)
                 int curRating = cur.getRating();
-                if (curRating > 0){
+                int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
+                if (curRating > 0 && dupStatus != 2){
                     table.setValueAt(new Boolean(true),i,STATUS_COL);
                 }else{
                     table.setValueAt(new Boolean(false),i,STATUS_COL);
@@ -223,12 +239,13 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
     }
 
     class CheckDataTableModel extends AbstractTableModel {
-		Vector columnNames; Vector data; int[] ratings;
+		Vector columnNames; Vector data; int[] ratings; int[] dups;
 
-		public CheckDataTableModel(Vector c, Vector d, int[] r){
+		public CheckDataTableModel(Vector c, Vector d, int[] r, int[] dups){
 			columnNames=c;
 			data=d;
             ratings = r;
+            this.dups = dups;
 		}
 
 		public int getColumnCount(){
@@ -250,6 +267,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
 		public int getRating(int row){
 			return ratings[row];
 		}
+
+        public int getDupStatus(int row){
+            return dups[row];
+        }
 
         public void setRating(int row, int value) {
             if(row < ratings.length) {
@@ -285,8 +306,16 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
 			Component cell = super.getTableCellRendererComponent
 			        (table, value, isSelected, hasFocus, row, column);
 			int myRating = ((CheckDataTableModel)table.getModel()).getRating(row);
+            int myDupStatus = ((CheckDataTableModel)table.getModel()).getDupStatus(row);
             String thisColumnName = table.getColumnName(column);
             cell.setForeground(Color.black);
+            cell.setBackground(Color.white);
+
+            if (myDupStatus > 0){
+                //I'm a dup so color the background in bright, ugly yellow
+                cell.setBackground(Color.yellow);
+            }
+
             //bitmasking to decode the status bits
             if (myRating < 0){
                 myRating *= -1;

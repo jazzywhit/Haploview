@@ -605,10 +605,22 @@ public class HaploText implements Constants{
                 result = textData.linkageToChrom(inputFile,HMP);
             }
 
-            //once check has been run, but before anything else, we can filter the markers
+
+            File infoFile = null;
+            if (infoFileName != null){
+                infoFile = new File(infoFileName);
+            }
+            if (result != null){
+                textData.prepareMarkerInput(infoFile,textData.getPedFile().getHMInfo());
+            }else{
+                textData.prepareMarkerInput(infoFile,null);
+            }
+
+            //once check has been run we can filter the markers
             boolean[] markerResults = new boolean[result.size()];
             for (int i = 0; i < result.size(); i++){
-                if (((MarkerResult)result.get(i)).getRating() > 0 || skipCheck){
+                if ((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&
+                        Chromosome.getUnfilteredMarker(i).getDupStatus() != 2){
                     markerResults[i] = true;
                 }else{
                     markerResults[i] = false;
@@ -627,15 +639,6 @@ public class HaploText implements Constants{
 
             Chromosome.doFilter(markerResults);
 
-            File infoFile = null;
-            if (infoFileName != null){
-                infoFile = new File(infoFileName);
-            }
-            if (result != null){
-                textData.prepareMarkerInput(infoFile,textData.getPedFile().getHMInfo());
-            }else{
-                textData.prepareMarkerInput(infoFile,null);
-            }
             if(!quietMode && infoFile != null){
                 System.out.println("Using marker file " + infoFile.getName());
             }

@@ -3,9 +3,10 @@ package edu.mit.wi.haploview;
 
 import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
+import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.haploview.TreeTable.*;
 
-//import javax.help.*;
+import javax.help.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -238,14 +239,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         analysisMenu.setEnabled(false);
 
         //NEEDS FIXING
- /*        JMenu helpMenu = new JMenu("Help");
+        JMenu helpMenu = new JMenu("Help");
          //menuBar.add(Box.createHorizontalGlue());
          menuBar.add(helpMenu);
 
-        menuItem = new JMenuItem("Contents");
+        menuItem = new JMenuItem("Help Contents");
         HelpSet hs;
         HelpBroker hb;
-        String helpHS = "IdeHelp_en.hs";
+        String helpHS = "HaploviewHelp/HaploHelp.hs";
         try {
             URL hsURL = HelpSet.findHelpSet(HaploView.class.getClassLoader(), helpHS);
             hs = new HelpSet(null, hsURL);
@@ -256,7 +257,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
         hb = hs.createHelpBroker();
         menuItem.addActionListener(new CSH.DisplayHelpFromSource(hb));
-        helpMenu.add(menuItem);     */
+        helpMenu.add(menuItem);
 
 
         //color key
@@ -597,10 +598,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
             theData = new HaploData();
 
+            Vector result = null;
             if (type == HAPS){
                 theData.prepareHapsInput(new File(inputOptions[0]));
             }else{
-                theData.linkageToChrom(inFile, type);
+                result = theData.linkageToChrom(inFile, type);
             }
 
             if(theData.getPedFile().isBogusParents()) {
@@ -623,10 +625,24 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             checkPanel = null;
             if (type == HAPS){
                 readMarkers(markerFile, null);
+
+                //initialize realIndex
+                Chromosome.doFilter(Chromosome.getUnfilteredSize());
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
                 checkPanel = new CheckDataPanel(this);
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                boolean[] markerResults = new boolean[result.size()];
+                for (int i = 0; i < result.size(); i++){
+                    if (((MarkerResult)result.get(i)).getRating() > 0 && Chromosome.getUnfilteredMarker(i).getDupStatus() != 2){
+                        markerResults[i] = true;
+                    }else{
+                        markerResults[i] = false;
+                    }
+                }
+                //set up the indexing to take into account skipped markers.
+                Chromosome.doFilter(markerResults);
             }
 
 
@@ -889,6 +905,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     public void clearDisplays() {
         if (tabs != null){
             tabs.removeAll();
+            dPrimeDisplay = null;
+            hapDisplay = null;
+            tdtPanel = null;
+            checkPanel = null;
         }
     }
 
@@ -1167,6 +1187,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         //otherwise, we want to actually load and run the gui
         if(!argParser.isNogui()) {
             try {
+                UIManager.put("EditorPane.selectionBackground",Color.lightGray);
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) { }
             //System.setProperty("swing.disableFileChooserSpeedFix", "true");

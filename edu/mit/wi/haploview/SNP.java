@@ -7,6 +7,7 @@ class SNP{
     private double MAF;
     private String extra;
     private byte minor, major;
+    private int dup;
 
     SNP(String n, long p, double m, byte a1, byte a2){
         name = n;
@@ -47,5 +48,16 @@ class SNP{
 
     public byte getMajor(){
         return major;
+    }
+
+    public void setDup(int i) {
+        //0 for non dup
+        //1 for "used" dup (has higher geno% than twin)
+        //2 for "unused" dup
+        dup = i;
+    }
+
+    public int getDupStatus(){
+        return dup;
     }
 }

@@ -30,6 +30,7 @@ public class HaploData implements Constants{
     Vector analysisPositions = new Vector();
     Vector analysisValues = new Vector();
     boolean trackExists = false;
+    boolean dupsToBeFlagged = false;
 
     //stuff for computing d prime
     private int AA = 0;
@@ -95,8 +96,7 @@ public class HaploData implements Constants{
         Vector positions = new Vector();
         Vector extras = new Vector();
 
-
-
+        dupsToBeFlagged = false;
         try{
             if (infile != null){
                 if (infile.length() < 1){
@@ -234,6 +234,8 @@ public class HaploData implements Constants{
             double[] numBadGenotypes = new double[Chromosome.getUnfilteredSize()];
             percentBadGenotypes = new double[Chromosome.getUnfilteredSize()];
             Vector results = pedFile.getResults();
+            long prevPosition = Long.MIN_VALUE;
+            SNP prevMarker = null;
             for (int i = 0; i < Chromosome.getUnfilteredSize(); i++){
                 MarkerResult mr = (MarkerResult)results.elementAt(i);
                 //to compute minor/major alleles, browse chrom list and count instances of each allele
@@ -273,10 +275,33 @@ public class HaploData implements Constants{
                     a2 = temp;
                 }
                 if (infoKnown){
-                    markerInfo.add(new SNP((String)names.elementAt(i),
-                            Long.parseLong((String)positions.elementAt(i)),
+                    long pos = Long.parseLong((String)positions.elementAt(i));
+
+                    SNP thisMarker = (new SNP((String)names.elementAt(i),
+                            pos,
                             Math.rint(mr.getMAF()*100.0)/100.0, a1, a2,
                             (String)extras.elementAt(i)));
+                    markerInfo.add(thisMarker);
+
+                    double genoPC = mr.getGenoPercent();
+                    //check to make sure adjacent SNPs do not have identical positions
+                    if (prevPosition != Long.MIN_VALUE){
+                        //only do this for markers 2..N, since we're comparing to the previous location
+                        if (pos == prevPosition){
+                            dupsToBeFlagged = true;
+                            if (genoPC >= mr.getGenoPercent()){
+                                //use this one because it has more genotypes
+                                thisMarker.setDup(1);
+                                prevMarker.setDup(2);
+                            }else{
+                                //use the other one because it has more genotypes
+                                thisMarker.setDup(2);
+                                prevMarker.setDup(1);
+                            }
+                        }
+                    }
+                    prevPosition = pos;
+                    prevMarker = thisMarker;
                 }else{
                     markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), Math.rint(mr.getMAF()*100.0)/100.0,a1,a2));
                 }
@@ -363,9 +388,6 @@ public class HaploData implements Constants{
         }
         chromosomes = chroms;
 
-        //initialize realIndex
-        Chromosome.doFilter(genos.length);
-
         //wipe clean any existing marker info so we know we're starting clean with a new file
         Chromosome.markers = null;
     }
@@ -397,21 +419,6 @@ public class HaploData implements Constants{
         }
 
         Vector result = pedFile.check();
-
-        boolean[] markerResults = new boolean[result.size()];
-        for (int i = 0; i < result.size(); i++){
-            if (((MarkerResult)result.get(i)).getRating() > 0){
-                markerResults[i] = true;
-            }else{
-                markerResults[i] = false;
-            }
-        }
-
-
-        if(markerResults == null){
-            throw new IllegalArgumentException();
-        }
-
         Vector indList = pedFile.getOrder();
         int numMarkers = 0;
         numSingletons = 0;
@@ -677,10 +684,6 @@ public class HaploData implements Constants{
         }
 
 
-        //set up the indexing to take into account skipped markers. Need
-        //to loop through twice because first time we just count number of
-        //unskipped markers
-        Chromosome.doFilter(markerResults);
         chromTrios.addAll(chrom);
         chromosomes = chromTrios;
         //wipe clean any existing marker info so we know we're starting with a new file
