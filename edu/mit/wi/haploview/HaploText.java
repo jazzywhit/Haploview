@@ -624,9 +624,4 @@ public class HaploText implements Constants{
         }
         return theData.generateCrossovers(orderedHaplos);
     }
-
-
-
-
-
 }

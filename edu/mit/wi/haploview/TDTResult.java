@@ -119,6 +119,30 @@ public class TDTResult {
         }
     }
 
+    public String getOverTransmittedAllele(int type) {
+        String[] alleleCodes = new String[5];
+        alleleCodes[0] = "X";
+        alleleCodes[1] = "A";
+        alleleCodes[2] = "C";
+        alleleCodes[3] = "G";
+        alleleCodes[4] = "T";
+        String retStr;
+
+        if (this.counts[0][0] >= this.counts[0][1]){
+            retStr = alleleCodes[allele1];
+        }else{
+            retStr = alleleCodes[allele2];
+        }
+        if (type != 1){
+            if (this.counts[1][0] >= this.counts[1][1]){
+                retStr += (", " + alleleCodes[allele1]);
+            }else{
+                retStr += (", " + alleleCodes[allele2]);
+            }
+        }
+        return retStr;
+    }
+
     public String getPValue() {
         double pval = 0;
         pval= MathUtil.gammq(.5,.5*this.chiSqVal);
