@@ -18,6 +18,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private static final int H_BORDER = 30;
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;
+    private static final int GBROWSE_MARGIN = 25;
 
     private static final int BOX_SIZES[] = {50, 24, 12};
     private static final int BOX_RADII[] = {24, 11, 6};
@@ -42,7 +43,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     private final Color BG_GREY = new Color(212,208,200);
 
-    private Image gBrowseImage;
+    private Image gBrowseImage = null;
 
     BasicStroke thickerStroke = new BasicStroke(1);
     BasicStroke thinnerStroke = new BasicStroke(0.35f);
@@ -465,7 +466,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         //for more info on GBrowse img.
         int imgHeight = 0;
         if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null){
-            g2.drawImage(gBrowseImage, H_BORDER,V_BORDER,this); // not sure if this is an imageObserver, however
+            g2.drawImage(gBrowseImage,H_BORDER-GBROWSE_MARGIN,V_BORDER,this);
             imgHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
         }
         left = H_BORDER;
@@ -1061,14 +1062,16 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     gbright = maxpos+1;
                 }
                 URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
-                        Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + gblineSpan +
+                        Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
                         ";type=genotyped_SNPs+LocusLink_genes;options=genotyped_SNPs+1");
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 //getImage() caches by default so it will only download an image when the URL changes
                 gBrowseImage = toolkit.getImage(imageUrl);
                 MediaTracker mt = new MediaTracker(this);
                 mt.addImage(gBrowseImage,0);
+                setCursor(new Cursor(Cursor.WAIT_CURSOR));
                 mt.waitForID(0);
+                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                 gbImageHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
             }catch (MalformedURLException mue){
                 //this exception sucks walnuts, so I refuse to handle it on principle
