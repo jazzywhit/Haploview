@@ -356,10 +356,20 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             diff = -diff;
             x = oldX*2*diff + oldWidth/2*diff;
             y = oldY*2*diff + oldHeight/2*diff;
+
+            //for cases when zoomed out view doesn't take up whole screen we don't wanna end
+            //up zooming in to some random place, but rather the upper left corner.
+            if (oldX == 0){
+                x = 0;
+            }
+            if (oldY == 0){
+                y = 0;
+            }
         }else{
             //we didn't change the zoom so don't waste cycles
             return;
         }
+
         if (x < 0){
             x = 0;
         }
@@ -369,7 +379,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         boxSize = BOX_SIZES[zoomLevel];
         boxRadius = BOX_RADII[zoomLevel];
         this.computePreferredSize();
-        ((JViewport)getParent()).setViewSize(getPreferredSize());
         //System.out.println(oldX + " " + x + " " + oldY + " " + y);
         ((JViewport)getParent()).setViewPosition(new Point(x,y));
     }
@@ -1061,7 +1070,8 @@ END OF HIS HACKS
         }
 
         //setup marker positions
-        double aligned = 0.0;
+        //force it to run through the aligner once by setting this val as negative
+        double aligned = -1;
         long minpos = Chromosome.getMarker(0).getPosition();
         long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
         double spanpos = maxpos - minpos;
@@ -1070,14 +1080,16 @@ END OF HIS HACKS
         double lineSpan = (Chromosome.getSize()-1) * boxSize;
 
         //keep trying until we've got at least a certain fraction of the markers aligned
-        while (aligned < 0.25){
+        while (aligned < Options.getSpacingThreshold()){
             double numAligned = 0;
             for (int i = 0; i < initialPositions.length; i++){
                 initialPositions[i] = (lineSpan*((Chromosome.getMarker(i).getPosition()-minpos)/spanpos));
             }
             alignedPositions = doMarkerLayout(initialPositions, lineSpan);
             for (int i = 0; i < initialPositions.length; i++){
-                if (initialPositions[i] == alignedPositions[i])
+                //if the alignedPos is less than two pixels from the intitialpos we
+                //decide that's "close enough" to being aligned
+                if (Math.abs(initialPositions[i] - alignedPositions[i]) < 2)
                     numAligned++;
             }
             aligned = numAligned/initialPositions.length;
@@ -1146,7 +1158,21 @@ END OF HIS HACKS
         if (high < visRect.height && showWM){
             high = visRect.height;
         }
+        if (!getPreferredSize().equals(new Dimension(wide,high))){
+            noImage=true;
+
+        }
         setPreferredSize(new Dimension(wide, high));
+        if (getParent() != null){
+            JViewport par = (JViewport)getParent();
+            //OK, if the resizing involves a dataset which is larger than the visible Rect we need to prod the
+            //Viewport into resizing itself. if the resizing is all within the visrect, we don't want to do this
+            //because it makes the screen flicker with a double-repaint.
+            if (par.getVisibleRect().width < par.getViewSize().width ||
+                    par.getVisibleRect().height < par.getViewSize().height){
+                par.setViewSize(getPreferredSize());
+            }
+        }
     }
 
     public int getBoundaryMarker(double pos){

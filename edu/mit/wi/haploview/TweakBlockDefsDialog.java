@@ -86,10 +86,10 @@ public class TweakBlockDefsDialog extends JDialog implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        if (command == "OK"){
+        if (command.equals("OK")){
             doTweak();
             this.dispose();
-        }else if (command == "Cancel"){
+        }else if (command.equals("Cancel")){
             this.dispose();
         }
     }

@@ -28,7 +28,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         EXPORT_TEXT, EXPORT_PNG, EXPORT_OPTIONS
     };
     JMenuItem exportMenuItems[];
-    JMenu keyMenu;
+    JMenu keyMenu, displayMenu, analysisMenu;
     JMenuItem clearBlocksItem;
 
     String viewItems[] = {
@@ -70,6 +70,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     public HaploView(){
         Options.setMissingThreshold(1.0);
+        Options.setSpacingThreshold(0.0);
         try{
             fc = new JFileChooser(System.getProperty("user.dir"));
         }catch(NullPointerException n){
@@ -146,8 +147,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         fileMenu.add(menuItem);
 
         /// display menu
-
-        JMenu displayMenu = new JMenu("Display");
+        displayMenu = new JMenu("Display");
         displayMenu.setMnemonic(KeyEvent.VK_D);
         menuBar.add(displayMenu);
 
@@ -191,9 +191,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             cg.add(colorMenuItems[i]);
         }
         displayMenu.add(colorMenu);
+        JMenuItem spacingItem = new JMenuItem("LD Display Spacing");
+        spacingItem.setMnemonic(KeyEvent.VK_S);
+        spacingItem.addActionListener(this);
+        displayMenu.add(spacingItem);
+        displayMenu.setEnabled(false);
 
         //analysis menu
-        JMenu analysisMenu = new JMenu("Analysis");
+        analysisMenu = new JMenu("Analysis");
         analysisMenu.setMnemonic(KeyEvent.VK_A);
         menuBar.add(analysisMenu);
         //a submenu
@@ -218,6 +223,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         JMenuItem customizeBlocksItem = new JMenuItem(CUST_BLOCKS);
         customizeBlocksItem.addActionListener(this);
         analysisMenu.add(customizeBlocksItem);
+        analysisMenu.setEnabled(false);
 
         //color key
         keyMenu = new JMenu("Key");
@@ -283,33 +289,33 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        if (command == READ_GENOTYPES){
+        if (command.equals(READ_GENOTYPES)){
             ReadDataDialog readDialog = new ReadDataDialog("Open new data", this);
             readDialog.pack();
             readDialog.setVisible(true);
-        } else if (command == READ_MARKERS){
+        } else if (command.equals(READ_MARKERS)){
             //JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
             fc.setSelectedFile(new File(""));
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 readMarkers(fc.getSelectedFile(),null);
             }
-        }else if (command == READ_ANALYSIS_TRACK){
+        }else if (command.equals(READ_ANALYSIS_TRACK)){
             fc.setSelectedFile(new File(""));
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION){
                 readAnalysisFile(fc.getSelectedFile());
             }
-        }else if (command == READ_BLOCKS_FILE){
+        }else if (command.equals(READ_BLOCKS_FILE)){
             fc.setSelectedFile(new File(""));
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
                 readBlocksFile(fc.getSelectedFile());
             }
-        }else if (command == CUST_BLOCKS){
+        }else if (command.equals(CUST_BLOCKS)){
             TweakBlockDefsDialog tweakDialog = new TweakBlockDefsDialog("Customize Blocks", this);
             tweakDialog.pack();
             tweakDialog.setVisible(true);
-        }else if (command == CLEAR_BLOCKS){
+        }else if (command.equals(CLEAR_BLOCKS)){
             changeBlocks(BLOX_NONE);
 
             //blockdef clauses
@@ -336,17 +342,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             dPrimeDisplay.colorDPrime(currentScheme);
             changeKey(currentScheme);
             //exporting clauses
-        }else if (command == EXPORT_PNG){
+        }else if (command.equals(EXPORT_PNG)){
             export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getSize());
-        }else if (command == EXPORT_TEXT){
+        }else if (command.equals(EXPORT_TEXT)){
             export(tabs.getSelectedIndex(), TXT_MODE, 0, Chromosome.getSize());
-        }else if (command == EXPORT_OPTIONS){
+        }else if (command.equals(EXPORT_OPTIONS)){
             ExportDialog exDialog = new ExportDialog(this);
             exDialog.pack();
             exDialog.setVisible(true);
-        }else if (command == "Select All"){
+        }else if (command.equals("Select All")){
             checkPanel.selectAll();
-        }else if (command == "Rescore Markers"){
+        }else if (command.equals("Rescore Markers")){
             String cut = cdc.hwcut.getText();
             if (cut.equals("")){
                 cut = "0";
@@ -372,13 +378,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             CheckData.mafCut = Double.parseDouble(cut);
 
             checkPanel.redoRatings();
-        }else if (command == "Tutorial"){
+        }else if (command.equals("LD Display Spacing")){
+            ProportionalSpacingDialog spaceDialog = new ProportionalSpacingDialog(this, "Adjust LD Spacing");
+            spaceDialog.pack();
+            spaceDialog.setVisible(true);
+        }else if (command.equals("Tutorial")){
             showHelp();
-        } else if (command == "Quit"){
+        } else if (command.equals("Quit")){
             quit();
         } else {
             for (int i = 0; i < viewItems.length; i++) {
-                if (command == viewItems[i]) tabs.setSelectedIndex(i);
+                if (command.equals(viewItems[i])) tabs.setSelectedIndex(i);
             }
         }
     }
@@ -617,6 +627,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     panel.add(hdc);
                     tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
                     viewMenuItems[VIEW_HAP_NUM].setEnabled(true);
+                    displayMenu.setEnabled(true);
+                    analysisMenu.setEnabled(true);
 
                     //LOD panel
                     /*panel = new JPanel();
@@ -866,8 +878,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 //after editing the filtered marker list, needs to be prodded into
                 //resizing correctly
                 dPrimeDisplay.computePreferredSize();
-                Dimension pref = dPrimeDisplay.getPreferredSize();
-                ((JViewport)dPrimeDisplay.getParent()).setViewSize(pref);
                 dPrimeDisplay.colorDPrime(currentScheme);
 
                 hapDisplay.theData = theData;

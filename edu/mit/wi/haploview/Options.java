@@ -11,6 +11,7 @@ public class Options {
     private static int maxDistance;
     private static int genoFileType;
     private static double missingThreshold;
+    private static double spacingThreshold;
 
     public static int getGenoFileType() {
         return genoFileType;
@@ -36,5 +37,11 @@ public class Options {
         Options.missingThreshold = missingThreshold;
     }
 
+    public static double getSpacingThreshold() {
+        return spacingThreshold;
+    }
 
+    public static void setSpacingThreshold(double spacingThreshold) {
+        Options.spacingThreshold = spacingThreshold;
+    }
 }

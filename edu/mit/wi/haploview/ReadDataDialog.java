@@ -53,17 +53,17 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        if (command==RAW_DATA){
+        if (command.equals(RAW_DATA)){
             load(PED);
-        }else if (command == PHASED_DATA){
+        }else if (command.equals(PHASED_DATA)){
             load(HAPS);
-        }else if (command == HAPMAP_DATA){
+        }else if (command.equals(HAPMAP_DATA)){
             load(HMP);
-        }else if (command == BROWSE_GENO){
+        }else if (command.equals(BROWSE_GENO)){
             browse(GENO);
-        }else if (command == BROWSE_INFO){
+        }else if (command.equals(BROWSE_INFO)){
             browse(INFO);
-        }else if (command == "OK"){
+        }else if (command.equals("OK")){
             HaploView caller = (HaploView)this.getParent();
 
             if (doTDT.isSelected()){
@@ -91,9 +91,9 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             caller.readGenotypes(returnStrings, fileType);
 
             this.dispose();
-        }else if (command == "Cancel"){
+        }else if (command.equals("Cancel")){
             this.dispose();
-        }else if (command == "tdt"){
+        }else if (command.equals("tdt")){
             if(this.doTDT.isSelected()){
                 trioButton.setEnabled(true);
                 ccButton.setEnabled(true);
