@@ -244,7 +244,13 @@ class DrawingMethods {
 		for (int y = 0; y < table.length; y++){
 		    double fracLength = (((SNP)snps.elementAt(y)).getPosition() - start)/totalLength;
 		    double xOrYDist = Math.sqrt((fracLength*lineLength*fracLength*lineLength)/2);
-		    g.drawLine(labeloffset+25+y*30, 5+y*30,(int)(labeloffset+90+xOrYDist),(int)(5+xOrYDist));
+		    
+		    int xSpineCoord = (int)(labeloffset + 90 +xOrYDist);
+		    int ySpineCoord = (int)(5+xOrYDist);
+		    
+		    g.drawLine(labeloffset+25+y*30, 5+y*30,xSpineCoord,ySpineCoord);
+		    //add "ticks" to spine
+		    g.drawLine(xSpineCoord, ySpineCoord, (xSpineCoord+5), (ySpineCoord-5)); 
 		}
 	    }
 	}
