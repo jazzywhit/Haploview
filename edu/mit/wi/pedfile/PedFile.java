@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.4 2003/09/26 21:11:05 jcbarret Exp $
+* $Id: PedFile.java,v 1.5 2003/10/15 15:37:58 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -165,7 +165,7 @@ public class PedFile {
                         int allele2 = Integer.parseInt(tokenizer.nextToken().trim());
                         if ( !( (allele1==0) && (allele2 == 0) ) ) isTyped = true;
                         if(allele1 <0 || allele1 > 4 || allele2 <0 || allele2 >4) {
-                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + k
+                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + (k+1)
                                     + ".\n all genotypes must be 0-4.");
                         }
                         byte[] markers = new byte[2];
@@ -173,7 +173,7 @@ public class PedFile {
                         markers[1]= (byte)allele2;
                         ind.addMarker(markers);
                     }catch(NumberFormatException nfe) {
-                        throw new PedFileException("Pedigree file input error: invalid genotype on line " + k );
+                        throw new PedFileException("Pedigree file input error: invalid genotype on line " + (k+1) );
                     }
                 }
 
