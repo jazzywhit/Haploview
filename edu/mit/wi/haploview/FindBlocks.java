@@ -12,9 +12,10 @@ class FindBlocks {
     
     Vector do4Gamete(){
 	Vector blocks = new Vector();
+	Vector strongPairs = new Vector();
+	
+	//first make a list of marker pairs with < 4 gametes, sorted by distance apart
 	for (int x = 0; x < dPrime.length-1; x++){
-	    String thisOne = new String(x + " ");
-	    boolean start = false;
 	    for (int y = x+1; y < dPrime.length; y++){
 		PairwiseLinkage thisPair = dPrime[x][y];
 		double[] freqs = thisPair.getFreqs();
@@ -22,31 +23,67 @@ class FindBlocks {
 		for (int i = 0; i < freqs.length; i++){
 		    if (freqs[i] > fourGameteCutoff) numGam++;
 		}
-		if (numGam == 4){
-		    if (start){
-			boolean isABlock = true;
-			/** FIX THIS
-			for (int xx = x+1; x < y-1; xx++){
-			    for (int yy = xx+1; yy < y; yy++){
-				int numGam2=0;
-				for (int i = 0; i < freqs.length; i++){
-				    if (freqs[i] > fourGameteCutoff) numGam2++;
-				}
-				if(numGam2 == 4){
-				    isABlock = false;
-				}
-			    }
-			}
-			**/
-			if (isABlock){
-			    thisOne += y-1;
-			    blocks.add(thisOne);
-			    x=y-1;
+		if (numGam > 3){ continue; }
+
+		Vector addMe = new Vector(); //a vector of x, y, separation
+		int sep = y - x - 1; //compute separation of two markers
+		addMe.add(String.valueOf(x)); addMe.add(String.valueOf(y)); addMe.add(String.valueOf(sep));
+		if (strongPairs.size() == 0){ //put first pair first
+		    strongPairs.add(addMe);
+		}else{
+		    //sort by descending separation of markers in each pair
+		    for (int v = 0; v < strongPairs.size(); v ++){
+			if (sep >= Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(2))){
+			    strongPairs.insertElementAt(addMe, v);
+			    break;
 			}
 		    }
-		    break;
 		}
-		start = true;
+	    }
+	}
+
+	//now take this list of pairs with 3 gametes and construct blocks
+	boolean[] usedInBlock = new boolean[dPrime.length + 1];
+	for (int v = 0; v < strongPairs.size(); v++){
+	    boolean isABlock = true;
+	    int first = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(0));
+	    int last = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(1));
+	    //first see if this block overlaps with another:
+	    if (usedInBlock[first] || usedInBlock[last]) continue;
+	    //test this block. requires 95% of informative markers to be "strong"
+	    for (int y = first+1; y <= last; y++){
+		//loop over columns in row y
+		for (int x = first; x < y; x++){
+		    PairwiseLinkage thisPair = dPrime[x][y];
+		    double[] freqs = thisPair.getFreqs();
+		    int numGam = 0;
+		    for (int i = 0; i < freqs.length; i++){
+			if (freqs[i] > fourGameteCutoff) numGam++;
+		    }
+		    if (numGam > 3){ isABlock = false; }
+		}
+	    }
+	    if (isABlock){
+		//add to the block list, but in order by first marker number:		
+		if (blocks.size() == 0){ //put first block first
+		    blocks.add(first + " " + last);
+		}else{
+		    //sort by ascending separation of markers in each pair
+		    boolean placed = false;
+		    for (int b = 0; b < blocks.size(); b ++){
+			StringTokenizer st = new StringTokenizer((String)blocks.elementAt(b));
+			if (first < Integer.parseInt(st.nextToken())){
+			    blocks.insertElementAt(first + " " + last, b);
+			    placed = true;
+			    break;
+			}
+		    }
+		    //make sure to put in blocks which fall on the tail end
+		    if (!placed) blocks.add(first + " " + last);
+		}
+		for (int used = first; used <= last; used++){
+		    usedInBlock[used] = true;
+		}
 	    }
 	}
 	return stringVec2intVec(blocks);
@@ -65,7 +102,7 @@ class FindBlocks {
 	for (int x = 0; x < dPrime.length-1; x++){
 	    for (int y = x+1; y < dPrime.length; y++){
 		PairwiseLinkage thisPair = dPrime[x][y];
-		//get the right bits from the string
+		//get the right bits 
 		double lod = thisPair.getLOD();
 		double lowCI = thisPair.getConfidenceLow();
 		double highCI = thisPair.getConfidenceHigh();
