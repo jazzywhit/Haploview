@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.0 2005/01/27 18:19:03 jcbarret Exp $
+ * $Id: MarkerResult.java,v 3.1 2005/03/02 18:51:17 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -41,6 +41,7 @@ public class MarkerResult {
     public MarkerResult() {
 		nf.setMinimumFractionDigits(3);
 		nf.setMaximumFractionDigits(3);
+        nf.setGroupingUsed(false);
 
         pctNF.setMinimumFractionDigits(0);
         pctNF.setMaximumFractionDigits(1);
