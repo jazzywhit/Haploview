@@ -34,4 +34,11 @@ public interface Constants {
     public static final int TXT_MODE = 1;
     public static final int TABLE_TYPE = 0;
     public static final int LIVE_TYPE = 1;
+
+    //block defs
+    public static final int BLOX_NONE = 0;
+    public static final int BLOX_GABRIEL = 1;
+    public static final int BLOX_4GAM = 2;
+    public static final int BLOX_SPINE = 3;
+    public static final int BLOX_ALL = 4;
 }
