@@ -22,6 +22,7 @@ public class HaplotypeDisplay extends JComponent {
     public int alleleDisp;
     private Color dullRed = new Color(204,51,51);
     private Color dullBlue = new Color(51,51,204);
+    private final Color BG_GREY = new Color(212,208,200);
 
 
     public HaplotypeDisplay(HaploData h) throws HaploViewException {
@@ -255,11 +256,10 @@ public class HaplotypeDisplay extends JComponent {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
-        //System.out.println(getUnfilteredSize());
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
-        g.setColor(this.getBackground());
-        g.fillRect(0,0,pref.width, pref.height);
+        g.setColor(BG_GREY);
+        g.fillRect(0,0,size.width, size.height);
 
 
         if (!forExport){
