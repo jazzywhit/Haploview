@@ -13,8 +13,8 @@ public class EM {
 
 
     class RECOVERY {
-        short h1;
-        short h2;
+        int h1;
+        int h2;
         float p;
         public RECOVERY() {
             h1=0;
@@ -193,7 +193,13 @@ public class EM {
         for (i=0; i<num_indivs; i++) {
             if (superdata[i].nsuper==1) {
                 //TODO: somehow fix this so that it doesn't break with weird trio hh00 stuff... maybe not fix here.
-                superprob[superdata[i].superposs[0].h1]+=1.0;
+                SUPER_OBS foo = superdata[i];
+                int bar = foo.superposs[0].h1;
+
+                //System.out.println("i= " + i);
+                superprob[bar] += 1.0;
+
+                //superprob[superdata[i].superposs[0].h1]+=1.0;
                 superprob[superdata[i].superposs[0].h2]+=1.0;
                 total+=2.0;
             }
@@ -334,8 +340,8 @@ public class EM {
             }
 
             data[num_indivs].nposs = num_poss;
-            data[num_indivs].poss[0].h1=(short)h1;
-            data[num_indivs].poss[0].h2=(short)h2;
+            data[num_indivs].poss[0].h1=h1;
+            data[num_indivs].poss[0].h2=h2;
             data[num_indivs].poss[0].p=0.0f;
 
             /*    printf("h1=%s, ",haplo_str(h1));
@@ -356,8 +362,8 @@ public class EM {
                         } else {
                             //printf("error - attepmting to flip homozygous position\n");
                         }
-                        data[num_indivs].poss[num_poss+j].h1=(short)h1;
-                        data[num_indivs].poss[num_poss+j].h2=(short)h2;
+                        data[num_indivs].poss[num_poss+j].h1=h1;
+                        data[num_indivs].poss[num_poss+j].h2=h2;
                         data[num_indivs].poss[num_poss+j].p=0.0f;
                     }
                     num_poss *= 2;
@@ -374,8 +380,8 @@ public class EM {
                         } else {
                             //printf("error - attempting to flip missing !=0\n");
                         }
-                        data[num_indivs].poss[num_poss+j].h1=(short)h1;
-                        data[num_indivs].poss[num_poss+j].h2=(short)h2;
+                        data[num_indivs].poss[num_poss+j].h1=h1;
+                        data[num_indivs].poss[num_poss+j].h2=h2;
                         data[num_indivs].poss[num_poss+j].p=0.0f;
                     }
                     num_poss *= 2;
@@ -392,8 +398,8 @@ public class EM {
                         } else {
                             //printf("error - attempting to flip missing !=0\n");
                         }
-                        data[num_indivs].poss[num_poss+j].h1=(short)h1;
-                        data[num_indivs].poss[num_poss+j].h2=(short)h2;
+                        data[num_indivs].poss[num_poss+j].h1=h1;
+                        data[num_indivs].poss[num_poss+j].h2=h2;
                         data[num_indivs].poss[num_poss+j].p=0.0f;
                     }
                     num_poss *= 2;
@@ -434,8 +440,8 @@ public class EM {
                     h1 = data[i].poss[j].h1;
                     h2 = data[i].poss[j].h2;
                     if (hint[h1] >= 0 && hint[h2] >= 0) {
-                        superdata[i].poss[block][k].h1 = (short)hint[h1];
-                        superdata[i].poss[block][k].h2 = (short)hint[h2];
+                        superdata[i].poss[block][k].h1 = hint[h1];
+                        superdata[i].poss[block][k].h2 = hint[h2];
                         k++;
                     }
                 }
@@ -446,29 +452,30 @@ public class EM {
     public String haplo_str(int h, int num_loci)
     {
         int i;//, val;
-        String s="";
+        StringBuffer s = new StringBuffer(num_loci);
         for (i=0; i<num_loci; i++) {
-            if ((h&two_n[i])==two_n[i]) { s+="2"; }
-            else { s+="1"; }
+            if ((h&two_n[i])==two_n[i]) { s.append("2"); }
+            else { s.append("1"); }
         }
-        return(s);
+        return(s.toString());
     }
 
     public String decode_haplo_str(int chap, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist)
     {
         int i, val;
-        String s = "";
+        StringBuffer s = new StringBuffer(num_blocks);
         for (i=0; i<num_blocks; i++) {
             val = chap % num_hlist[i];
-            s+=haplo_str(hlist[i][val],block_size[i]);
+            s.append(haplo_str(hlist[i][val],block_size[i]));
             chap -= val;
             chap /= num_hlist[i];
         }
-        return(s);
+        return(s.toString());
     }
 
     public void create_super_haplos(int num_indivs, int num_blocks, int[] num_hlist)
     {
+        //System.out.println("Entering create_super_haplos");
         int i, j, num_poss, h1, h2;
 
         for (i=0; i<num_indivs; i++) {
@@ -479,6 +486,7 @@ public class EM {
 
             superdata[i].nsuper=0;
             superdata[i].superposs = new RECOVERY[num_poss];
+            //System.out.println(num_poss);
             for (int ii=0; ii<num_poss; ++ii) superdata[i].superposs[ii] = new RECOVERY();
 
             /* block 0 */
@@ -489,7 +497,7 @@ public class EM {
             }
 
             if (superdata[i].nsuper != num_poss) {
-                //printf("error in superfill\n");
+                System.out.println("error in superfill" + " " + i);
             }
         }
     }
@@ -498,8 +506,8 @@ public class EM {
         int j, curr_prod, newh1, newh2;
 
         if (block == num_blocks) {
-            superdata[indiv].superposs[superdata[indiv].nsuper].h1 = (short)h1;
-            superdata[indiv].superposs[superdata[indiv].nsuper].h2 = (short)h2;
+            superdata[indiv].superposs[superdata[indiv].nsuper].h1 = h1;
+            superdata[indiv].superposs[superdata[indiv].nsuper].h2 = h2;
             superdata[indiv].nsuper++;
         } else {
             curr_prod=1;

@@ -86,6 +86,9 @@ public class HaploData{
         //situation where no info file exists
 
         if (infile != null){
+            if (infile.length() < 1){
+                throw new HaploViewException("Info file is empty or does not exist: " + infile.getName());
+            }
             String currentLine;
             Vector markers = new Vector();
             long negMaxdist = -1 * maxdist;
@@ -94,7 +97,26 @@ public class HaploData{
             BufferedReader in = new BufferedReader(new FileReader(infile));
             // a vector of SNP's is created and returned.
             int snpcount = 0;
+
+
+            int lineCount = 0;
             while ((currentLine = in.readLine()) != null){
+                StringTokenizer st = new StringTokenizer(currentLine);
+                if (st.countTokens() > 1){
+                    lineCount++;
+                }else if (st.countTokens() == 1){
+                    //complain if only one field found
+                    throw new HaploViewException("Info file format error on line "+lineCount+
+                            ":\n Info file must be of format: <markername> <markerposition>");
+                }else{
+                    //skip blank lines
+                    continue;
+                }
+
+                if (lineCount > Chromosome.markers.length){
+                    throw(new HaploViewException("Info file error:\nToo many markers"));
+                }
+
                 //to compute maf, browse chrom list and count instances of each allele
                 byte a1 = 0;
                 double numa1 = 0; double numa2 = 0;
@@ -116,30 +138,38 @@ public class HaploData{
                 //System.out.println(numa1 + " " + numa2);
                 double maf = numa1/(numa2+numa1);
                 if (maf > 0.5) maf = 1.0-maf;
-                StringTokenizer st = new StringTokenizer(currentLine);
-                markers.add(new SNP(st.nextToken(), Long.parseLong(st.nextToken()), infile.getName(), maf));
+
+                String name = st.nextToken(); String loc = st.nextToken();
+                try{
+                    markers.add(new SNP(name, Long.parseLong(loc), infile.getName(), maf));
+                }catch (NumberFormatException nfe){
+                    throw new HaploViewException("Info file format error on line "+lineCount+
+                            ":\n\"" + loc + "\" should be of type long." +
+                            "\n Info file must be of format: <markername> <markerposition>");
+                }
                 snpcount ++;
             }
 
-            if (Chromosome.markers.length == markers.size()){
-                Chromosome.markers = markers.toArray();
-                if (dPrimeTable != null){
-                    //loop through the dprime table to null-out distant markers
-                    for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
-                        for (int pos1 = 0; pos1 < pos2; pos1++){
-                            long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
-                            if (maxdist > 0){
-                                if ((sep > maxdist || sep < negMaxdist)){
-                                    dPrimeTable[pos1][pos2] = null;
-                                    continue;
-                                }
+            if (lineCount < Chromosome.markers.length){
+                throw(new HaploViewException("Info file error:\nNot enough markers"));
+            }
+
+            Chromosome.markers = markers.toArray();
+            if (dPrimeTable != null){
+                //loop through the dprime table to null-out distant markers
+                for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
+                    for (int pos1 = 0; pos1 < pos2; pos1++){
+                        long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
+                        if (maxdist > 0){
+                            if ((sep > maxdist || sep < negMaxdist)){
+                                dPrimeTable[pos1][pos2] = null;
+                                continue;
                             }
                         }
                     }
                 }
-            }else{
-                throw(new HaploViewException("Wrong number of markers"));
             }
+            infoKnown=true;
         }else{
             double numChroms = chromosomes.size();
             Vector markerInfo = new Vector();
@@ -176,7 +206,7 @@ public class HaploData{
         }
     }
 
-    void prepareHapsInput(File infile) throws IOException, NumberFormatException{
+    void prepareHapsInput(File infile) throws IOException, HaploViewException{
         //this method is called to suck in data from a file (its only argument)
         //of genotypes and sets up the Chromosome objects.
         String currentLine;
@@ -184,10 +214,16 @@ public class HaploData{
         byte[] genos = new byte[0];
         String ped, indiv;
 
+        if(infile.length() < 1){
+            throw new HaploViewException("Genotype file is empty or does not exist: " + infile.getName());
+        }
         //read the file:
         BufferedReader in = new BufferedReader(new FileReader(infile));
 
+        int lineCount = 0;
+        int numTokens = 0;
         while ((currentLine = in.readLine()) != null){
+            lineCount++;
             //each line is expected to be of the format:
             //ped   indiv   geno   geno   geno   geno...
             StringTokenizer st = new StringTokenizer(currentLine);
@@ -198,14 +234,30 @@ public class HaploData{
             //all other tokens are loaded into a vector (they should all be genotypes)
             genos = new byte[st.countTokens()];
             int q = 0;
+
+            if (numTokens == 0){
+                numTokens = st.countTokens();
+            }
+            if (numTokens != st.countTokens()){
+                throw new HaploViewException("Genotype file error:\nLine " + lineCount +
+                        " appears to have an incorrect number of entries");
+            }
             while (st.hasMoreTokens()){
                 String thisGenotype = (String)st.nextElement();
                 if (thisGenotype.equals("h")) {
                     genos[q] = 5;
                 }else{
-                    genos[q] = Byte.parseByte(thisGenotype);
+                    try{
+                        genos[q] = Byte.parseByte(thisGenotype);
+                    }catch (NumberFormatException nfe){
+                            throw new HaploViewException("Genotype file input error:\ngenotype value \""
+                                    + thisGenotype + "\" on line " + lineCount + " not allowed.");
+                    }
                 }
-
+                if (genos[q] < 0 || genos[q] > 5){
+                    throw new HaploViewException("Genotype file input error:\ngenotype value \"" + genos[q] +
+                            "\" on line " + lineCount + " not allowed.");
+                }
                 q++;
             }
             //a Chromosome is created and added to a vector of chromosomes.
@@ -631,7 +683,7 @@ public class HaploData{
             }
 
 
-            String hapstr = "";
+            StringBuffer hapstr = new StringBuffer(theBlock.length);
             Vector inputHaploVector = new Vector();
             for (int i = 0; i < chromosomes.size(); i++){
                 Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
@@ -648,23 +700,23 @@ public class HaploData{
                     for (int j = 0; j < theBlock.length; j++){
                         byte theGeno = thisChrom.getFilteredGenotype(theBlock[j]);
                         if (theGeno == 5){
-                            hapstr = hapstr + "h";
+                            hapstr.append("h");
                         } else {
-                            hapstr = hapstr + convert[j][theGeno];
+                            hapstr.append(convert[j][theGeno]);
                         }
                     }
-                    inputHaploVector.add(hapstr);
-                    hapstr = "";
+                    inputHaploVector.add(hapstr.toString());
+                    hapstr = new StringBuffer(theBlock.length);
                     for (int j = 0; j < theBlock.length; j++){
                         byte nextGeno = nextChrom.getFilteredGenotype(theBlock[j]);
                         if (nextGeno == 5){
-                            hapstr = hapstr + "h";
+                            hapstr.append("h");
                         }else{
-                            hapstr = hapstr + convert[j][nextGeno];
+                            hapstr.append(convert[j][nextGeno]);
                         }
                     }
-                    inputHaploVector.add(hapstr);
-                    hapstr = "";
+                    inputHaploVector.add(hapstr.toString());
+                    hapstr = new StringBuffer(theBlock.length);
                 }
             }
             String[] input_haplos = (String[])inputHaploVector.toArray(new String[0]);
@@ -797,26 +849,30 @@ public class HaploData{
 
             for (int i = 0; i < haplos[gap].length; i++){
                 double[] crossPercentages = new double[haplos[gap+1].length];
-                String firstHapCode = new String();
+                StringBuffer firstHapCodeB = new StringBuffer(preGapSubset.size());
                 for (int j = 0; j < preGapSubset.size(); j++){   //make a string out of uniquely identifying genotypes for this hap
-                    firstHapCode += haplos[gap][i].getGeno()[((Integer)preGapSubset.elementAt(j)).intValue()];
+                    firstHapCodeB.append(haplos[gap][i].getGeno()[((Integer)preGapSubset.elementAt(j)).intValue()]);
                 }
+                String firstHapCode = firstHapCodeB.toString();
                 for (int gapHaplo = 0; gapHaplo < crossHaplos.length; gapHaplo++){  //look at each crossover hap
                     if (crossHaplos[gapHaplo].getPercentage() > CROSSOVER_THRESHOLD){
-                        String gapBeginHapCode = new String();
+                        StringBuffer gapBeginHapCodeB = new StringBuffer(preGapSubset.size());
                         for (int j = 0; j < preGapSubset.size(); j++){     //make a string as above
-                            gapBeginHapCode += crossHaplos[gapHaplo].getGeno()[j];
+                            gapBeginHapCodeB.append(crossHaplos[gapHaplo].getGeno()[j]);
                         }
+                        String gapBeginHapCode = gapBeginHapCodeB.toString();
                         if (gapBeginHapCode.equals(firstHapCode)){    //if this crossover hap corresponds to this pregap hap
-                            String gapEndHapCode = new String();
+                            StringBuffer gapEndHapCodeB = new StringBuffer(preGapSubset.size());
                             for (int j = preGapSubset.size(); j < crossHaplos[gapHaplo].getGeno().length; j++){
-                                gapEndHapCode += crossHaplos[gapHaplo].getGeno()[j];
+                                gapEndHapCodeB.append(crossHaplos[gapHaplo].getGeno()[j]);
                             }
+                            String gapEndHapCode = gapEndHapCodeB.toString();
                             for (int j = 0; j < haplos[gap+1].length; j++){
-                                String endHapCode = new String();
+                                StringBuffer endHapCodeB = new StringBuffer();
                                 for (int k = 0; k < postGapSubset.size(); k++){
-                                    endHapCode += haplos[gap+1][j].getGeno()[((Integer)postGapSubset.elementAt(k)).intValue()];
+                                    endHapCodeB.append(haplos[gap+1][j].getGeno()[((Integer)postGapSubset.elementAt(k)).intValue()]);
                                 }
+                                String endHapCode = endHapCodeB.toString();
                                 if (gapEndHapCode.equals(endHapCode)){
                                     crossPercentages[j] = crossHaplos[gapHaplo].getPercentage();
                                 }
@@ -1196,12 +1252,12 @@ public class HaploData{
             saveHapsWriter.write("\n");
             //write haps and crossover percentages
             for (int j = 0; j < finishedHaplos[i].length; j++){
-                String theHap = new String();
                 int[] theGeno = finishedHaplos[i][j].getGeno();
+                StringBuffer theHap = new StringBuffer(theGeno.length);
                 for (int k = 0; k < theGeno.length; k++){
-                    theHap += theGeno[k];
+                    theHap.append(theGeno[k]);
                 }
-                saveHapsWriter.write(theHap + " (" + nf.format(finishedHaplos[i][j].getPercentage()) + ")");
+                saveHapsWriter.write(theHap.toString() + " (" + nf.format(finishedHaplos[i][j].getPercentage()) + ")");
                 if (i < finishedHaplos.length-1){
                     saveHapsWriter.write("\t|");
                     for (int crossCount = 0; crossCount < finishedHaplos[i+1].length; crossCount++){
@@ -1259,7 +1315,7 @@ public class HaploData{
         saveDprimeWriter.close();
     }
 
-    public void linkageToHaps(boolean[] markerResults, PedFile pedFile, String hapFileName)throws IOException{
+    public void linkageToHapsFormat(boolean[] markerResults, PedFile pedFile, String hapFileName)throws IOException{
         FileWriter linkageToHapsWriter = new FileWriter(new File(hapFileName));
 
         Vector indList = pedFile.getOrder();
@@ -1280,28 +1336,30 @@ public class HaploData{
             if(currentInd.getIsTyped()){
                 //singleton
                 if(currentFamily.getNumMembers() == 1){
-                    String hap1 = new String(""); String hap2 = new String("");
-                    hap1 += currentInd.getFamilyID() + "\t" + currentInd.getIndividualID() + "\t";
-                    hap2 += currentInd.getFamilyID() + "\t" + currentInd.getIndividualID() + "\t";
+                    StringBuffer hap1 = new StringBuffer(numMarkers);
+                    StringBuffer hap2 = new StringBuffer(numMarkers);
+                    hap1.append(currentInd.getFamilyID()).append("\t").append(currentInd.getIndividualID()).append("\t");
+                    hap2.append(currentInd.getFamilyID()).append("\t").append(currentInd.getIndividualID()).append("\t");
                     numMarkers = currentInd.getNumMarkers();
                     for (int i = 0; i < numMarkers; i++){
                         if (markerResults[i]){
                             if (begin){
-                                hap1+=" "; hap2+=" ";
+                                hap1.append(" "); hap2.append(" ");
                             }
                             byte[] thisMarker = currentInd.getMarker(i);
                             if (thisMarker[0] == thisMarker[1]){
-                                hap1 += thisMarker[0];
-                                hap2 += thisMarker[1];
+                                hap1.append(thisMarker[0]);
+                                hap2.append(thisMarker[1]);
                             }else{
-                                hap1 += "h";
-                                hap2 += "h";
+                                hap1.append("h");
+                                hap2.append("h");
                             }
                             begin=true;
                         }
                     }
-                    hap1 += "\n"; hap2+= "\n";
-                    linkageToHapsWriter.write(hap1 + hap2);
+                    hap1.append("\n"); hap2.append("\n");
+                    hap1.append(hap2);
+                    linkageToHapsWriter.write(hap1.toString());
                 }
                else{
                     //skip if indiv is parent in trio or unaffected
@@ -1402,6 +1460,5 @@ public class HaploData{
         linkageToHapsWriter.close();
 
     }
-
 
 }

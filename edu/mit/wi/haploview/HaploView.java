@@ -317,13 +317,12 @@ public class HaploView extends JFrame implements ActionListener{
             processData();
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
-                    ioexec.getMessage(),
+                    ioexec.getMessage()+"\nCould not access file.",
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
-        }
-        catch(NumberFormatException nfe){
+        }catch(HaploViewException ex){
             JOptionPane.showMessageDialog(this,
-                    nfe.getMessage() + "\nFile Format Error: all genotypes must be 0-4,h",
+                    ex.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
@@ -332,122 +331,115 @@ public class HaploView extends JFrame implements ActionListener{
 
     void processData() {
         maxCompDist = Long.parseLong(inputOptions[2])*1000;
-        try{
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-            final SwingWorker worker = new SwingWorker(){
-                public Object construct(){
-                    dPrimeDisplay=null;
-                    theData.infoKnown = false;
-                    if (!(inputOptions[1].equals(""))){
-                        readMarkers(new File(inputOptions[1]));
-                    }
-                    theData.generateDPrimeTable(maxCompDist);
-                    theData.guessBlocks(0);
-                    //drawPicture(theData);
-                    //void drawPicture(HaploData theData) {
-                    Container contents = getContentPane();
-                    contents.removeAll();
-
-                    int currentTab = 0;
-                        /*if (!(tabs == null)){
-                            currentTab = tabs.getSelectedIndex();
-                        } */
-
-                    tabs = new JTabbedPane();
-                    tabs.addChangeListener(new TabChangeListener());
-
-                    //first, draw the D' picture
-                    JPanel panel = new JPanel();
-                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                    dPrimeDisplay = new DPrimeDisplay(theData);
-                    JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
-                    dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
-                    dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
-                    dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
-                    panel.add(dPrimeScroller);
-                    tabs.addTab(viewItems[VIEW_D_NUM], panel);
-
-                    //compute and show haps on next tab
-                    panel = new JPanel();
-                    panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                    try {
-                        hapDisplay = new HaplotypeDisplay(theData);
-                    } catch(HaploViewException e) {
-                        JOptionPane.showMessageDialog(window,
-                                e.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                    HaplotypeDisplayController hdc =
-                            new HaplotypeDisplayController(hapDisplay);
-                    hapScroller = new JScrollPane(hapDisplay);
-                    panel.add(hapScroller);
-                    panel.add(hdc);
-                    tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
-
-                    //TDT panel
-                    if(doTDT) {
-                        tdtPanel = new TDTPanel(theData.chromosomes);
-                        tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
-                        viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
-                    }
-
-                    //check data panel
-                    if (checkPanel != null){
-                        tabs.addTab(viewItems[VIEW_CHECK_NUM], checkPanel);
-                        viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
-                        currentTab=VIEW_CHECK_NUM;
-                    }
-
-
-
-                    tabs.setSelectedIndex(currentTab);
-                    contents.add(tabs);
-
-                    //next add a little spacer
-                    //ontents.add(Box.createRigidArea(new Dimension(0,5)));
-
-                    //and then add the block display
-                    //theBlocks = new BlockDisplay(theData.markerInfo, theData.blocks, dPrimeDisplay, infoKnown);
-                    //contents.setBackground(Color.black);
-
-                    //put the block display in a scroll pane in case the data set is very large.
-                    //JScrollPane blockScroller = new JScrollPane(theBlocks,
-                    //						    JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-                    //					    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-                    //blockScroller.getHorizontalScrollBar().setUnitIncrement(60);
-                    //blockScroller.setMinimumSize(new Dimension(800, 100));
-                    //contents.add(blockScroller);
-                    repaint();
-                    setVisible(true);
-                    //}
-
-                    theData.finished = true;
-                    return "";
+        final SwingWorker worker = new SwingWorker(){
+            public Object construct(){
+                dPrimeDisplay=null;
+                theData.infoKnown = false;
+                if (!(inputOptions[1].equals(""))){
+                    readMarkers(new File(inputOptions[1]));
                 }
-            };
+                theData.generateDPrimeTable(maxCompDist);
+                theData.guessBlocks(0);
+                //drawPicture(theData);
+                //void drawPicture(HaploData theData) {
+                Container contents = getContentPane();
+                contents.removeAll();
 
-            timer = new javax.swing.Timer(50, new ActionListener(){
-                public void actionPerformed(ActionEvent evt){
-                    if (theData.finished){
-                        timer.stop();
-                        defineBlocksItem.setEnabled(true);
-                        clearBlocksItem.setEnabled(true);
-                        readMarkerItem.setEnabled(true);
-                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                    }
+                int currentTab = 0;
+                /*if (!(tabs == null)){
+                currentTab = tabs.getSelectedIndex();
+                } */
+
+                tabs = new JTabbedPane();
+                tabs.addChangeListener(new TabChangeListener());
+
+                //first, draw the D' picture
+                JPanel panel = new JPanel();
+                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+                dPrimeDisplay = new DPrimeDisplay(theData);
+                JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
+                dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
+                dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
+                dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
+                panel.add(dPrimeScroller);
+                tabs.addTab(viewItems[VIEW_D_NUM], panel);
+
+                //compute and show haps on next tab
+                panel = new JPanel();
+                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+                try {
+                    hapDisplay = new HaplotypeDisplay(theData);
+                } catch(HaploViewException e) {
+                    JOptionPane.showMessageDialog(window,
+                            e.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
-            });
+                HaplotypeDisplayController hdc =
+                        new HaplotypeDisplayController(hapDisplay);
+                hapScroller = new JScrollPane(hapDisplay);
+                panel.add(hapScroller);
+                panel.add(hdc);
+                tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
 
-            worker.start();
-            timer.start();
-        }catch (RuntimeException rtexec){
-            JOptionPane.showMessageDialog(this,
-                    "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+                //TDT panel
+                if(doTDT) {
+                    tdtPanel = new TDTPanel(theData.chromosomes);
+                    tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
+                    viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
+                }
+
+                //check data panel
+                if (checkPanel != null){
+                    tabs.addTab(viewItems[VIEW_CHECK_NUM], checkPanel);
+                    viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
+                    currentTab=VIEW_CHECK_NUM;
+                }
+
+
+
+                tabs.setSelectedIndex(currentTab);
+                contents.add(tabs);
+
+                //next add a little spacer
+                //ontents.add(Box.createRigidArea(new Dimension(0,5)));
+
+                //and then add the block display
+                //theBlocks = new BlockDisplay(theData.markerInfo, theData.blocks, dPrimeDisplay, infoKnown);
+                //contents.setBackground(Color.black);
+
+                //put the block display in a scroll pane in case the data set is very large.
+                //JScrollPane blockScroller = new JScrollPane(theBlocks,
+                //						    JScrollPane.VERTICAL_SCROLLBAR_NEVER,
+                //					    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+                //blockScroller.getHorizontalScrollBar().setUnitIncrement(60);
+                //blockScroller.setMinimumSize(new Dimension(800, 100));
+                //contents.add(blockScroller);
+                repaint();
+                setVisible(true);
+                //}
+
+                theData.finished = true;
+                return "";
+            }
+        };
+
+        timer = new javax.swing.Timer(50, new ActionListener(){
+            public void actionPerformed(ActionEvent evt){
+                if (theData.finished){
+                    timer.stop();
+                    defineBlocksItem.setEnabled(true);
+                    clearBlocksItem.setEnabled(true);
+                    readMarkerItem.setEnabled(true);
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                }
+            }
+        });
+
+        worker.start();
+        timer.start();
     }
 
 
@@ -470,7 +462,6 @@ public class HaploView extends JFrame implements ActionListener{
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }  */
-        theData.infoKnown=true;
         if (dPrimeDisplay != null){
             dPrimeDisplay.refresh();
         }
@@ -604,7 +595,7 @@ public class HaploView extends JFrame implements ActionListener{
         theData.guessBlocks(methodList.getSelectedIndex());
         hapDisplay.getHaps();
         hapScroller.setViewportView(hapDisplay);
-        if (tabs.getSelectedIndex() == 0) dPrimeDisplay.repaint();
+        dPrimeDisplay.refresh();
     }
 
 
