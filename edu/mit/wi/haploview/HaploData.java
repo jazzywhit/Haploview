@@ -66,12 +66,13 @@ public class HaploData{
 
 
 
-    int prepareMarkerInput(File infile) throws IOException{
+    int prepareMarkerInput(File infile, long maxdist) throws IOException{
         //this method is called to gather data about the markers used.
         //It is assumed that the input file is two columns, the first being
         //the name and the second the absolute position
         String currentLine;
         Vector markers = new Vector();
+        long negMaxdist = -1 * maxdist;
 
         //read the input file:
         BufferedReader in = new BufferedReader(new FileReader(infile));
@@ -103,9 +104,22 @@ public class HaploData{
             markers.add(new SNP(st.nextToken(), Long.parseLong(st.nextToken()), infile.getName(), maf));
             snpcount ++;
         }
+
         if (Chromosome.markers.length == markers.size()){
             Chromosome.markers = markers.toArray();
             markersLoaded = true;
+            //loop through the dprime table to null-out distant markers
+            for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
+                for (int pos1 = 0; pos1 < pos2; pos1++){
+                    long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
+                    if (maxdist > 0){
+                        if ((sep > maxdist || sep < negMaxdist)){
+                            dPrimeTable[pos1][pos2] = null;
+                            continue;
+                        }
+                    }
+                }
+            }
             return 1;
         }else{
             return -1;
@@ -180,7 +194,7 @@ public class HaploData{
             }
             double maf = numa1/(numa2+numa1);
             if (maf > 0.5) maf = 1.0-maf;
-            markerInfo.add(new SNP(String.valueOf(i), (i*4000), maf));
+            markerInfo.add(new SNP(String.valueOf(i), (i*3000), maf));
             percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
         }
         chromosomes = chroms;
@@ -435,7 +449,7 @@ public class HaploData{
             if (maf > 0.5) {
                 maf = 1.0-maf;
             }
-            markerInfo.add(new SNP(String.valueOf(i), (i*4000), maf));
+            markerInfo.add(new SNP(String.valueOf(i), (i*3000), maf));
             percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
         }
         chromosomes = chrom;

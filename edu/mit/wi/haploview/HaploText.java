@@ -319,7 +319,7 @@ public class HaploText {
             String baseName = fileName.substring(0,name.length()-5);
             File maybeInfo = new File(baseName + ".info");
             if (maybeInfo.exists()){
-                textData.prepareMarkerInput(maybeInfo);
+                textData.prepareMarkerInput(maybeInfo,arg_distance);
             }
 
 

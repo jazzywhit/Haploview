@@ -16,7 +16,8 @@ import javax.swing.event.ChangeEvent;
 
 public class HaploView extends JFrame implements ActionListener{
 
-    boolean DEBUG = true;
+    boolean DEBUG = false;
+    long maxCompDist;
 
     //some constants etc.
     static final String MARKER_DATA_EXT = ".info";
@@ -316,7 +317,7 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void processData(){
-        final long maxCompDist = Long.parseLong(filenames[2])*1000;
+        maxCompDist = Long.parseLong(filenames[2])*1000;
         try{
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -359,7 +360,7 @@ public class HaploView extends JFrame implements ActionListener{
 
     void readMarkers(File inputFile){
         try {
-            int good = theData.prepareMarkerInput(inputFile);
+            int good = theData.prepareMarkerInput(inputFile,maxCompDist);
             if (good == -1){
                 JOptionPane.showMessageDialog(this,
                         "Number of markers in info file does not match number of markers in dataset.",

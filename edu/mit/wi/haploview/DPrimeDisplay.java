@@ -1,7 +1,6 @@
 package edu.mit.wi.haploview;
 
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
@@ -50,6 +49,7 @@ class DPrimeDisplay extends JComponent{
     }
 
     public void loadMarkers(){
+        noImage = true;
         markersLoaded = true;
         repaint();
     }
@@ -279,7 +279,6 @@ class DPrimeDisplay extends JComponent{
                 float[] smallDiamondX = new float[4];
                 float[] smallDiamondY = new float[4];
                 GeneralPath gp;
-                System.out.println(System.currentTimeMillis());
                 for (int x = 0; x < dPrimeTable.length-1; x++){
                     for (int y = x+1; y < dPrimeTable.length; y++){
                         if (dPrimeTable[x][y] == null){
@@ -306,7 +305,6 @@ class DPrimeDisplay extends JComponent{
 
                     }
                 }
-                System.out.println(System.currentTimeMillis());
                 noImage = false;
             }
             paintWorldMap(g);
