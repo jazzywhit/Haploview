@@ -1,5 +1,5 @@
 /*
- * $Id: CheckData.java,v 1.7 2004/01/09 18:46:39 jcbarret Exp $
+ * $Id: CheckData.java,v 1.8 2004/01/20 18:50:14 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -320,7 +320,11 @@ public class CheckData {
 		//System.out.println("homA="+homA+" homB="+homB+" parentHet="+parentHet);
 		//HW hw = new HW((double)homA, (double)parentHet, (double)homB);
 			//hw.caculate();
+        if (homA + parentHet + homB <= 0){
+            pvalue=0;
+        }else{
 			pvalue = hwCalculate(homA, parentHet, homB);
+        }
 		return pvalue;
 	}
 
@@ -332,9 +336,6 @@ public class CheckData {
         //
         // (c) 2003 Jan Wigginton, Goncalo Abecasis
         int diplotypes =  obsAA + obsAB + obsBB;
-        if (diplotypes <= 0){
-            throw new PedFileException("No valid genotypes or no complete trios!");
-        }
         int rare = (obsAA*2) + obsAB;
         int hets = obsAB;
 
