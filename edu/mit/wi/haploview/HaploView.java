@@ -1103,17 +1103,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         Options.setHaplotypeDisplayThreshold(1);
         Options.setMaxDistance(500);
 
-        
-        boolean nogui = false;
-        //HaploView window;
-        for(int i = 0;i<args.length;i++) {
-            if(args[i].equalsIgnoreCase("-nogui") || args[i].equals("-n") || args[i].equals("-h") || args[i].equals("-help")) {
-                nogui = true;
-            }
-        }
-        if(nogui) {
-            HaploText textOnly = new HaploText(args);
-        } else {
+        //this parses the command line arguments. if nogui mode is specified,
+        //then haploText will execute whatever the user specified
+        HaploText argParser = new HaploText(args);
+
+        //if nogui is specified, then HaploText has already executed everything, and let Main() return
+        //otherwise, we want to actually load and run the gui
+        if(!argParser.isNogui()) {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) { }
@@ -1133,7 +1129,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             window.setVisible(true);
 
             //parse command line stuff for input files or prompt data dialog
-            HaploText argParser = new HaploText(args);
             String[] inputArray = new String[2];
             if (argParser.getHapsFileName() != null){
                 inputArray[0] = argParser.getHapsFileName();
@@ -1154,7 +1149,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
         }
     }
-
-
 }
+
+
+
 
