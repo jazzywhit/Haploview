@@ -6,6 +6,8 @@ import java.io.*;
 import java.awt.event.*;
 import java.util.Vector;
 import javax.swing.*;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 //import java.awt.geom.*;
 //import java.awt.image.*;
 
@@ -354,6 +356,7 @@ public class HaploView extends JFrame implements ActionListener{
         }
 
         tabs = new JTabbedPane();
+        tabs.addChangeListener(new TabChangeListener());
 
         //first, draw the D' picture
         JPanel panel = new JPanel();
@@ -395,6 +398,12 @@ public class HaploView extends JFrame implements ActionListener{
         //contents.add(blockScroller);
         repaint();
         setVisible(true);
+    }
+
+    class TabChangeListener implements ChangeListener{
+        public void stateChanged(ChangeEvent e) {
+            viewMenuItems[tabs.getSelectedIndex()].setSelected(true);
+        }
     }
 
     /**void doExportDPrime(){
