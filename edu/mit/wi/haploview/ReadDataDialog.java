@@ -20,8 +20,11 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     static final String BROWSE_INFO = "browse for info files";    
     static final int GENO = 0;
     static final int INFO = 1;
+    static final int HAPS = 2;
+    static final int PED = 3;
 
     HaploView caller;
+    int fileType;
     JTextField genoFileField, infoFileField;
     JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
 
@@ -34,7 +37,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
 	JButton hapmapButton = new JButton(HAPMAP_DATA);
 	hapmapButton.addActionListener(this);
 	//hapmap isn't ready yet
-	hapmapButton.disable();
+	hapmapButton.setEnabled(false);
 	JButton rawdataButton = new JButton(RAW_DATA);
 	rawdataButton.addActionListener(this);
 	JButton phaseddataButton = new JButton(PHASED_DATA);
@@ -61,9 +64,9 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 	String command = e.getActionCommand();
 	if (command==RAW_DATA){
-	    loadRaw();
+	    load(PED);
 	}else if (command == PHASED_DATA){
-	    loadPhased();
+	    load(HAPS);
 	}else if (command == BROWSE_GENO){
 	    browse(GENO);
 	}else if (command == BROWSE_INFO){
@@ -72,19 +75,15 @@ public class ReadDataDialog extends JDialog implements ActionListener {
 	    //hapmap
 	}else if (command == "OK"){
 	    String[] returnStrings = {genoFileField.getText(), infoFileField.getText()};
-	    caller.readPhasedGenotypes(returnStrings);
+	    if (fileType == HAPS){
+		caller.readPhasedGenotypes(returnStrings);
+	    }else if (fileType == PED){
+		caller.readPedGenotypes(returnStrings);
+	    }
 	    this.dispose();
 	}else if (command == "Cancel"){
 	    this.dispose();
 	}
-    }
-
-
-    void loadRaw(){
-	JPanel contents = new JPanel();
-	contents.add(new JLabel("RAW"));
-	this.setContentPane(contents);
-	this.pack();
     }
 
 
@@ -128,7 +127,8 @@ public class ReadDataDialog extends JDialog implements ActionListener {
 	}
     }	
 
-    void loadPhased(){
+    void load(int ft){
+	fileType = ft;
 	JPanel contents = new JPanel();
 	contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
 
