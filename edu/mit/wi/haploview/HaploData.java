@@ -22,14 +22,16 @@ class HaploData{
     //stuff for computing d prime
     int AA = 0;
     int AB = 1;
-    int BB = 2;
-    int BA = 3;
+    int BA = 2;
+    int BB = 3;
     double TOLERANCE = 0.00000001;
     double LN10 = Math.log(10.0);
     int unknownDH=-1;
     int total_chroms=-1;
     double const_prob=-1.0;
     double[] known = new double[5];
+    double[] numHaps = new double[4];
+    double[] probHaps = new double[4];
 
     //stuff for em phasing
     int MAXLOCI = 100;
@@ -543,14 +545,6 @@ class HaploData{
 	int i,j,k,count,itmp;
 	int low_i = 0;
 	int high_i = 0;	
-	double[] nAA = new double[1];
-	double[] nBB = new double[1];
-	double[] nAB = new double[1];
-	double[] nBA = new double[1];
-	double[] pAA = new double[1];
-	double[] pBB = new double[1];
-	double[] pAB = new double[1];
-	double[] pBA = new double[1];
 	double loglike, oldloglike, meand, mean2d, sd;
 	double g,h,m,tmp,r;
 	double num, denom1, denom2, denom, dprime, real_dprime;
@@ -573,23 +567,23 @@ class HaploData{
 	/* set initial conditions */
 	
 	if (const_prob < 0.00) {
-	    pAA[0]=pA1*pA2;
-	    pAB[0]=pA1*pB2;
-	    pBA[0]=pB1*pA2;
-	    pBB[0]=pB1*pB2;
+	    probHaps[AA]=pA1*pA2;
+	    probHaps[AB]=pA1*pB2;
+	    probHaps[BA]=pB1*pA2;
+	    probHaps[BB]=pB1*pB2;
 	} else {	    
-	    pAA[0]=const_prob;
-	    pAB[0]=const_prob;
-	    pBA[0]=const_prob;
-	    pBB[0]=const_prob;;
+	    probHaps[AA]=const_prob;
+	    probHaps[AB]=const_prob;
+	    probHaps[BA]=const_prob;
+	    probHaps[BB]=const_prob;;
 
 	    /* so that the first count step will produce an
 	       initial estimate without inferences (this should
 	       be closer and therefore speedier than assuming 
 	       they are all at equal frequency) */
 	    
-	    count_haps(pAA[0],pAB[0],pBA[0],pBB[0],nAA,nAB,nBA,nBB,0);	    
-	    estimate_p(nAA[0],nAB[0],nBA[0],nBB[0],pAA,pAB,pBA,pBB);
+	    count_haps(0);	    
+	    estimate_p();
 	}
 	
 	/* now we have an initial reasonable guess at p we can
@@ -600,39 +594,39 @@ class HaploData{
 	
 	do {	    
 	    oldloglike=loglike;
-	    count_haps(pAA[0],pAB[0],pBA[0],pBB[0],nAA,nAB,nBA,nBB,count);	    
-	    loglike = known[AA]*log10(pAA[0]) + known[AB]*log10(pAB[0]) + known[BA]*log10(pBA[0]) + known[BB]*log10(pBB[0]) + (double)unknownDH*log10(pAA[0]*pBB[0] + pAB[0]*pBA[0]);
+	    count_haps(count);	    
+	    loglike = known[AA]*log10(probHaps[AA]) + known[AB]*log10(probHaps[AB]) + known[BA]*log10(probHaps[BA]) + known[BB]*log10(probHaps[BB]) + (double)unknownDH*log10(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]);
 	    if (Math.abs(loglike-oldloglike) < TOLERANCE) break;	    
-	    estimate_p(nAA[0],nAB[0],nBA[0],nBB[0],pAA,pAB,pBA,pBB);
+	    estimate_p();
 	    count++;
 	} while(count < 1000);
 	/* in reality I've never seen it need more than 10 or so iterations 
 	   to converge so this is really here just to keep it from running off into eternity */
 	
-	loglike1 = known[AA]*log10(pAA[0]) + known[AB]*log10(pAB[0]) + known[BA]*log10(pBA[0]) + known[BB]*log10(pBB[0]) + (double)unknownDH*log10(pAA[0]*pBB[0] + pAB[0]*pBA[0]);
+	loglike1 = known[AA]*log10(probHaps[AA]) + known[AB]*log10(probHaps[AB]) + known[BA]*log10(probHaps[BA]) + known[BB]*log10(probHaps[BB]) + (double)unknownDH*log10(probHaps[AA]*probHaps[BB] + probHaps[AB]*probHaps[BA]);
 	loglike0 = known[AA]*log10(pA1*pA2) + known[AB]*log10(pA1*pB2) + known[BA]*log10(pB1*pA2) + known[BB]*log10(pB1*pB2) + (double)unknownDH*log10(2*pA1*pA2*pB1*pB2);
 	
-	num = pAA[0]*pBB[0] - pAB[0]*pBA[0];
+	num = probHaps[AA]*probHaps[BB] - probHaps[AB]*probHaps[BA];
 	
 	if (num < 0) { 
 	    /* flip matrix so we get the positive D' */
 	    /* flip AA with AB and BA with BB */
-	    tmp=pAA[0]; pAA[0]=pAB[0]; pAB[0]=tmp;
-	    tmp=pBB[0]; pBB[0]=pBA[0]; pBA[0]=tmp; 
+	    tmp=probHaps[AA]; probHaps[AA]=probHaps[AB]; probHaps[AB]=tmp;
+	    tmp=probHaps[BB]; probHaps[BB]=probHaps[BA]; probHaps[BA]=tmp; 
 	    /* flip frequency of second allele */
 	    tmp=pA2; pA2=pB2; pB2=tmp;
 	    /* flip counts in the same fashion as p's */
-	    tmp=nAA[0]; nAA[0]=nAB[0]; nAB[0]=tmp;
-	    tmp=nBB[0]; nBB[0]=nBA[0]; nBA[0]=tmp;
+	    tmp=numHaps[AA]; numHaps[AA]=numHaps[AB]; numHaps[AB]=tmp;
+	    tmp=numHaps[BB]; numHaps[BB]=numHaps[BA]; numHaps[BA]=tmp;
 	    /* num has now undergone a sign change */
-	    num = pAA[0]*pBB[0] - pAB[0]*pBA[0];
+	    num = probHaps[AA]*probHaps[BB] - probHaps[AB]*probHaps[BA];
 	    /* flip known array for likelihood computation */
 	    tmp=known[AA]; known[AA]=known[AB]; known[AB]=tmp;
 	    tmp=known[BB]; known[BB]=known[BA]; known[BA]=tmp;
 	}
 	
-	denom1 = (pAA[0]+pBA[0])*(pBA[0]+pBB[0]);
-	denom2 = (pAA[0]+pAB[0])*(pAB[0]+pBB[0]);
+	denom1 = (probHaps[AA]+probHaps[BA])*(probHaps[BA]+probHaps[BB]);
+	denom2 = (probHaps[AA]+probHaps[AB])*(probHaps[AB]+probHaps[BB]);
 	if (denom1 < denom2) { denom = denom1; }
 	else { denom = denom2; }
 	dprime = num/denom;
@@ -692,39 +686,36 @@ class HaploData{
 	}
 	if (high_i > 100){ high_i = 100; }
 
-	double[] freqarray = {pAA[0], pAB[0], pBB[0], pBA[0]};
+	double[] freqarray = {probHaps[AA], probHaps[AB], probHaps[BB], probHaps[BA]};
 	PairwiseLinkage linkage = new PairwiseLinkage(roundDouble(dprime), roundDouble((loglike1-loglike0)), roundDouble(r2), ((double)low_i/100.0), ((double)high_i/100.0), freqarray);
 
 	return linkage;
     }
     
-    public void count_haps(double pAA, double pAB, double pBA, double pBB,
-			   double[] nAA, double[] nAB, double[] nBA, double[] nBB,
-			   int em_round)
+    public void count_haps(int em_round)
     {
 	/* only the double heterozygote [AB][AB] results in 
 	   ambiguous reconstruction, so we'll count the obligates 
 	   then tack on the [AB][AB] for clarity */
 	
-	nAA[0] = (double) (known[AA]);
-	nAB[0] = (double) (known[AB]);
-	nBA[0] = (double) (known[BA]);
-	nBB[0] = (double) (known[BB]);	
+	numHaps[AA] = (double) (known[AA]);
+	numHaps[AB] = (double) (known[AB]);
+	numHaps[BA] = (double) (known[BA]);
+	numHaps[BB] = (double) (known[BB]);	
 	if (em_round > 0) {
-	    nAA[0] += unknownDH* (pAA*pBB)/((pAA*pBB)+(pAB*pBA));
-	    nBB[0] += unknownDH* (pAA*pBB)/((pAA*pBB)+(pAB*pBA));
-	    nAB[0] += unknownDH* (pAB*pBA)/((pAA*pBB)+(pAB*pBA));
-	    nBA[0] += unknownDH* (pAB*pBA)/((pAA*pBB)+(pAB*pBA));
+	    numHaps[AA] += unknownDH* (probHaps[AA]*probHaps[BB])/((probHaps[AA]*probHaps[BB])+(probHaps[AB]*probHaps[BA]));
+	    numHaps[BB] += unknownDH* (probHaps[AA]*probHaps[BB])/((probHaps[AA]*probHaps[BB])+(probHaps[AB]*probHaps[BA]));
+	    numHaps[AB] += unknownDH* (probHaps[AB]*probHaps[BA])/((probHaps[AA]*probHaps[BB])+(probHaps[AB]*probHaps[BA]));
+	    numHaps[BA] += unknownDH* (probHaps[AB]*probHaps[BA])/((probHaps[AA]*probHaps[BB])+(probHaps[AB]*probHaps[BA]));
 	}
     }
     
-    public void estimate_p(double nAA, double nAB, double nBA, double nBB,
-			   double[] pAA, double[] pAB, double[] pBA, double[] pBB) {
-	double total= nAA+nAB+nBA+nBB+(4.0*const_prob);
-	pAA[0]=(nAA+const_prob)/total; if (pAA[0] < 1e-10) pAA[0]=1e-10;
-	pAB[0]=(nAB+const_prob)/total; if (pAB[0] < 1e-10) pAB[0]=1e-10;
-	pBA[0]=(nBA+const_prob)/total; if (pBA[0] < 1e-10) pBA[0]=1e-10;
-	pBB[0]=(nBB+const_prob)/total; if (pBB[0] < 1e-10) pBB[0]=1e-10;	
+    public void estimate_p() {
+	double total= numHaps[AA]+numHaps[AB]+numHaps[BA]+numHaps[BB]+(4.0*const_prob);
+	probHaps[AA]=(numHaps[AA]+const_prob)/total; if (probHaps[AA] < 1e-10) probHaps[AA]=1e-10;
+	probHaps[AB]=(numHaps[AB]+const_prob)/total; if (probHaps[AB] < 1e-10) probHaps[AB]=1e-10;
+	probHaps[BA]=(numHaps[BA]+const_prob)/total; if (probHaps[BA] < 1e-10) probHaps[BA]=1e-10;
+	probHaps[BB]=(numHaps[BB]+const_prob)/total; if (probHaps[BB] < 1e-10) probHaps[BB]=1e-10;	
     }
 
     public double roundDouble (double d){
