@@ -5,6 +5,8 @@ public class Chromosome{
 
     private String ped;
     private String individual;
+
+    private int affected;
     //genotypes[] used to be private but the accessor was wasting a lot of time when it would
     //get called literally millions of times. so we allow other classes to touch this array
     //in the interest of speed
@@ -17,22 +19,33 @@ public class Chromosome{
     static Object[] markers;
     static int trueSize;
 
-    Chromosome(String p, String i, byte[] g, String o){
+    Chromosome(String p, String i, byte[] g, String o, int a) throws HaploViewException{
         ped = p;
         individual = i;
         genotypes = g;
+        if(a < 0 || a >2) {
+            throw new HaploViewException("invalid affected status");
+        }
+        affected = a;
         origin = o;
         trueSize = genotypes.length;
     }
 
-    Chromosome(String p, String i, byte[] g){
+    Chromosome(String p, String i, byte[] g, int a) throws HaploViewException{
         ped = p;
         individual = i;
         genotypes = g;
+        if(a < 0 || a >2) {
+            throw new HaploViewException("invalid affected status");
+        }
+        affected = a;
         origin = "unknown";
         trueSize = genotypes.length;
     }
 
+    public int getAffected() {
+        return affected;
+    }
 
     public static void doFilter(boolean[] markerResults) {
         //set up the indexing to take into account skipped markers. Need
