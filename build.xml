@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Initial Set-Up -->
+
+<project name="HaploView" default="main" basedir=".">
+
+   <path id="haploview.root">
+     <pathelement location="${basedir}"/>
+   </path>
+
+
+
+<!-- Get all the files in the /lib directory and add them to the -->
+<!-- Classpath -->
+
+ <path id="library.classpath">
+   <fileset dir="lib/">
+       <include name="*.jar"/>
+       <include name="*.zip"/>
+     </fileset>
+</path>
+
+ <!-- =========================================================== -->
+ <!-- Initialization                                              -->
+ <!-- =========================================================== -->
+<!-- Setup project roots -->
+ <target name="init">
+    <property name="haploview.root" value="${basedir}"/>
+    <property name="haploview.build" value="${haploview.root}/build"/>
+    <property name="haploview.dist" value="${haploview.root}/dist"/>
+    <property name="haploview.classes" value="${haploview.build}/classes"/>
+    <property name="haploview.src" value="${haploview.root}"/>
+    <property name="haloview.lib" value="${haploview.root}/lib"/>
+    <property name="haploview.package" value="edu/mit/wi/haploview"/>
+    
+    <tstamp>
+      <format property="build.number" pattern="yyyyMMddHHmm"/>
+    </tstamp>
+</target>
+
+<!-- Prepare src directory for compilation step -->
+
+<target name="prepare-compile" depends="init">
+    <mkdir dir="${haploview.classes}"/>
+</target>
+
+<!-- Compile the Haploview application -->
+
+<target name="compile-haploview" depends="prepare-compile">
+   <javac srcdir="${haploview.src}" destdir="${haploview.classes}"
+   includes="${haploview.package}/**">
+   <classpath refid="library.classpath"/>
+   </javac>
+</target>
+
+
+<!-- Jar the application up -->
+<target name="haploview" depends="compile-haploview">
+   <jar jarfile="haploview.jar" manifest="${haploview.src}/resources/META-INF/MANIFEST.MF">
+     <fileset dir="${haploview.classes}">
+       <include name="edu/mit/wi/haploview/**"/>
+     </fileset>
+   </jar>
+</target>
+
+<target name="clean" depends="init">
+  <delete dir="${haploview.build}"/>
+</target>
+
+<target name="main" depends="haploview"/>
+
+
+
+</project>
