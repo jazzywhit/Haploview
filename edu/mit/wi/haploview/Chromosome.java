@@ -28,23 +28,27 @@ class Chromosome{
         trueSize = genotypes.length;
     }
 
-    public byte elementAt(int i){
+    public byte getFilteredGenotype(int i){
         return genotypes[realIndex[i]];
     }
 
-    public byte unfilteredElementAt(int i){
+    public byte getGenotype(int i){
         return genotypes[i];
     }
 
-    public static int getSize(){
+    public static int getFilteredSize(){
         return realIndex.length;
     }
 
-    public static int getTrueSize(){
+    public static int getSize(){
         return trueSize;
     }
 
     public static SNP getMarker(int i){
+        return (SNP)markers[i];
+    }
+
+    public static SNP getFilteredMarker(int i){
         return (SNP)markers[realIndex[i]];
     }
 

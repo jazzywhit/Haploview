@@ -1,6 +1,8 @@
 package edu.mit.wi.haploview;
 
 import javax.swing.*;
+import javax.swing.event.TableModelListener;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
 import java.awt.*;
 import java.io.*;
@@ -9,73 +11,75 @@ import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
 
 
-public class CheckDataPanel extends JPanel {
+public class CheckDataPanel extends JPanel implements TableModelListener{
 	JTable table;
 	PedFile pedfile;
+    boolean changed;
 
-	public CheckDataPanel(File file){
-		try{
-			//okay, for now we're going to assume the ped file has no header
-            Vector pedFileStrings = new Vector();
-			BufferedReader reader = new BufferedReader(new FileReader(file));
-			String line;
-			while((line = reader.readLine())!=null){
-                pedFileStrings.add(line);
-			}
-			pedfile = new PedFile();
-			pedfile.parse(pedFileStrings);
+    public CheckDataPanel(File file) throws IOException{
+        //okay, for now we're going to assume the ped file has no header
+        Vector pedFileStrings = new Vector();
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line;
+        while((line = reader.readLine())!=null){
+            pedFileStrings.add(line);
+        }
+        pedfile = new PedFile();
+        pedfile.parse(pedFileStrings);
 
-			//Vector result = data.check();
-			Vector result = pedfile.check();
+        //Vector result = data.check();
+        Vector result = pedfile.check();
 
-			int numResults = result.size();
+        int numResults = result.size();
 
-			Vector tableColumnNames = new Vector();
-			tableColumnNames.add("Name");
-			tableColumnNames.add("ObsHET");
-			tableColumnNames.add("PredHET");
-			tableColumnNames.add("HWpval");
-			tableColumnNames.add("%Geno");
-			tableColumnNames.add("FamTrio");
-			tableColumnNames.add("MendErr");
-			tableColumnNames.add("Rating");
+        Vector tableColumnNames = new Vector();
+        tableColumnNames.add("Name");
+        tableColumnNames.add("ObsHET");
+        tableColumnNames.add("PredHET");
+        tableColumnNames.add("HWpval");
+        tableColumnNames.add("%Geno");
+        tableColumnNames.add("FamTrio");
+        tableColumnNames.add("MendErr");
+        tableColumnNames.add("Rating");
 
-			Vector tableData = new Vector();
-			int[] ratingArray = new int[numResults];
-			for (int i = 0; i < numResults; i++){
-				Vector tempVect = new Vector();
-				MarkerResult currentResult = (MarkerResult)result.get(i);
-				tempVect.add(currentResult.getName());
-				tempVect.add(new Double(currentResult.getObsHet()));
-				tempVect.add(new Double(currentResult.getPredHet()));
-				tempVect.add(new Double(currentResult.getHWpvalue()));
-				tempVect.add(new Double(currentResult.getGenoPercent()));
-				tempVect.add(new Integer(currentResult.getFamTrioNum()));
-				tempVect.add(new Integer(currentResult.getMendErrNum()));
+        Vector tableData = new Vector();
+        int[] ratingArray = new int[numResults];
+        for (int i = 0; i < numResults; i++){
+            Vector tempVect = new Vector();
+            MarkerResult currentResult = (MarkerResult)result.get(i);
+            tempVect.add(currentResult.getName());
+            tempVect.add(new Double(currentResult.getObsHet()));
+            tempVect.add(new Double(currentResult.getPredHet()));
+            tempVect.add(new Double(currentResult.getHWpvalue()));
+            tempVect.add(new Double(currentResult.getGenoPercent()));
+            tempVect.add(new Integer(currentResult.getFamTrioNum()));
+            tempVect.add(new Integer(currentResult.getMendErrNum()));
 
-				if (currentResult.getRating() > 0){
-					tempVect.add(new Boolean(true));
-				}else{
-					tempVect.add(new Boolean(false));
-				}
+            if (currentResult.getRating() > 0){
+                tempVect.add(new Boolean(true));
+            }else{
+                tempVect.add(new Boolean(false));
+            }
 
-				//this value is never displayed, just kept for bookkeeping
-				ratingArray[i] = currentResult.getRating();
+            //this value is never displayed, just kept for bookkeeping
+            ratingArray[i] = currentResult.getRating();
 
-				tableData.add(tempVect.clone());
-			}
+            tableData.add(tempVect.clone());
+        }
 
-			final CheckDataTableModel tableModel = new CheckDataTableModel(tableColumnNames, tableData, ratingArray);
-			table = new JTable(tableModel);
-			final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
-			table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
-			table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
-			table.getColumnModel().getColumn(0).setPreferredWidth(100);
+        final CheckDataTableModel tableModel = new CheckDataTableModel(tableColumnNames, tableData, ratingArray);
+        tableModel.addTableModelListener(this);
+        table = new JTable(tableModel);
+        final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
+        try{
+            table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
+            table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
+        }catch (Exception e){
+        }
+        table.getColumnModel().getColumn(0).setPreferredWidth(100);
 
-			JScrollPane tableScroller = new JScrollPane(table);
-			add(tableScroller);
-		}catch (Exception e){
-		}
+        JScrollPane tableScroller = new JScrollPane(table);
+        add(tableScroller);
 	}
 
 	public PedFile getPedFile(){
@@ -86,7 +90,11 @@ public class CheckDataPanel extends JPanel {
 		return table;
 	}
 
-	class CheckDataTableModel extends AbstractTableModel {
+    public void tableChanged(TableModelEvent e) {
+        changed = true;
+    }
+
+    class CheckDataTableModel extends AbstractTableModel {
 		Vector columnNames; Vector data; int[] ratings;
 
 		public CheckDataTableModel(Vector c, Vector d, int[] r){

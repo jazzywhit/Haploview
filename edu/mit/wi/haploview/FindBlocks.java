@@ -119,7 +119,7 @@ class FindBlocks {
         //first set up a filter of markers which fail the MAF threshhold
         boolean[] skipMarker = new boolean[dPrime.length];
         for (int x = 0; x < dPrime.length; x++){
-            if (Chromosome.getMarker(x).getMAF() < mafThresh){
+            if (Chromosome.getFilteredMarker(x).getMAF() < mafThresh){
                 skipMarker[x]=true;
             }else{
                 skipMarker[x]=false;
@@ -155,7 +155,7 @@ class FindBlocks {
 
                 long sep;
                 //compute actual separation
-                sep = Chromosome.getMarker(y).getPosition() - Chromosome.getMarker(x).getPosition();
+                sep = Chromosome.getFilteredMarker(y).getPosition() - Chromosome.getFilteredMarker(x).getPosition();
 
                 addMe.add(String.valueOf(x)); addMe.add(String.valueOf(y)); addMe.add(String.valueOf(sep));
                 if (strongPairs.size() == 0){ //put first pair first

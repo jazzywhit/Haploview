@@ -37,7 +37,7 @@ class DPrimeDisplay extends JComponent{
     private Rectangle ir = new Rectangle();
     private Rectangle worldmapRect = new Rectangle(0,0,-1,-1);
     private BufferedImage worldmap;
-    private PairwiseLinkage dPrimeTable[][];
+    PairwiseLinkage dPrimeTable[][];
     private Dimension chartSize;
 
     DPrimeDisplay(PairwiseLinkage[][] t, boolean b, Vector v){
@@ -117,8 +117,8 @@ class DPrimeDisplay extends JComponent{
             //TODO: talk to kirby about locusview scaling gizmo
             int lineLeft = wide/20;
             int lineSpan = (wide/10)*9;
-            long minpos = Chromosome.getMarker(0).getPosition();
-            long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
+            long minpos = Chromosome.getFilteredMarker(0).getPosition();
+            long maxpos = Chromosome.getFilteredMarker(Chromosome.getSize()-1).getPosition();
             double spanpos = maxpos - minpos;
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
@@ -127,7 +127,7 @@ class DPrimeDisplay extends JComponent{
             g2.drawRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
 
             for (int i = 0; i < Chromosome.getSize(); i++) {
-                double pos = (Chromosome.getMarker(i).getPosition() - minpos) / spanpos;
+                double pos = (Chromosome.getFilteredMarker(i).getPosition() - minpos) / spanpos;
                 int xx = (int) (left + lineLeft + lineSpan*pos);
                 g2.setStroke(thickerStroke);
                 g.drawLine(xx, 5, xx, 5 + TICK_HEIGHT);
@@ -142,16 +142,16 @@ class DPrimeDisplay extends JComponent{
                 metrics = g.getFontMetrics();
                 ascent = metrics.getAscent();
 
-                widestMarkerName = metrics.stringWidth(Chromosome.getMarker(0).getName());
+                widestMarkerName = metrics.stringWidth(Chromosome.getFilteredMarker(0).getName());
                 for (int x = 1; x < dPrimeTable.length; x++) {
-                    int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getName());
+                    int thiswide = metrics.stringWidth(Chromosome.getFilteredMarker(x).getName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }
 
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
                 for (int x = 0; x < dPrimeTable.length; x++) {
-                    g2.drawString(Chromosome.getMarker(x).getName(),TEXT_NUMBER_GAP, x*boxSize + ascent/3);
+                    g2.drawString(Chromosome.getFilteredMarker(x).getName(),TEXT_NUMBER_GAP, x*boxSize + ascent/3);
                 }
 
                 g2.rotate(Math.PI / 2.0);
@@ -397,6 +397,7 @@ class DPrimeDisplay extends JComponent{
     }
 
     public void refreshBlocks(Vector v) {
+        //recolor the worldmap and change the blocklist
         noImage=true;
         blocks = v;
     }
@@ -469,8 +470,8 @@ class DPrimeDisplay extends JComponent{
                                 final int leftMargin = 12;
                                 String[] displayStrings = new String[5];
                                 if (markersLoaded){
-                                    displayStrings[0] = new String ("(" +Chromosome.getMarker(boxX).getName() +
-                                            ", " + Chromosome.getMarker(boxY).getName() + ")");
+                                    displayStrings[0] = new String ("(" +Chromosome.getFilteredMarker(boxX).getName() +
+                                            ", " + Chromosome.getFilteredMarker(boxY).getName() + ")");
                                 }else{
                                     displayStrings[0] = new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
                                             (Chromosome.realIndex[boxY]+1) + ")");

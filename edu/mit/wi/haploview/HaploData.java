@@ -78,7 +78,7 @@ public class HaploData{
                 double numa1 = 0; double numa2 = 0;
                 for (int i = 0; i < chromosomes.size(); i++){
                     //if there is a data point for this marker on this chromosome
-                    byte thisAllele = ((Chromosome)chromosomes.elementAt(i)).unfilteredElementAt(snpcount);
+                    byte thisAllele = ((Chromosome)chromosomes.elementAt(i)).getGenotype(snpcount);
                     if (!(thisAllele == 0)){
                         if (thisAllele == 5){
                             numa1+=0.5; numa2+=0.5;
@@ -122,15 +122,15 @@ public class HaploData{
         }else{
             double numChroms = chromosomes.size();
             Vector markerInfo = new Vector();
-            numBadGenotypes = new double[Chromosome.getTrueSize()];
-            percentBadGenotypes = new double[Chromosome.getTrueSize()];
-            for (int i = 0; i < Chromosome.getTrueSize(); i++){
+            numBadGenotypes = new double[Chromosome.getSize()];
+            percentBadGenotypes = new double[Chromosome.getSize()];
+            for (int i = 0; i < Chromosome.getSize(); i++){
                 //to compute maf, browse chrom list and count instances of each allele
                 byte a1 = 0;
                 double numa1 = 0; double numa2 = 0;
                 for (int j = 0; j < chromosomes.size(); j++){
                     //if there is a data point for this marker on this chromosome
-                    byte thisAllele = ((Chromosome)chromosomes.elementAt(j)).unfilteredElementAt(i);
+                    byte thisAllele = ((Chromosome)chromosomes.elementAt(j)).getGenotype(i);
                     if (!(thisAllele == 0)){
                         if (thisAllele == 5){
                             numa1+=0.5; numa2+=0.5;
@@ -425,7 +425,7 @@ public class HaploData{
     void generateDPrimeTable(long maxdist){
         //calculating D prime requires the number of each possible 2 marker
         //haplotype in the dataset
-        dPrimeTable = new PairwiseLinkage[Chromosome.getTrueSize()][Chromosome.getTrueSize()];
+        dPrimeTable = new PairwiseLinkage[Chromosome.getSize()][Chromosome.getSize()];
         int doublehet;
         long negMaxdist = -1*maxdist;
         int[][] twoMarkerHaplos = new int[3][3];
@@ -451,8 +451,8 @@ public class HaploData{
                 int m1a1 = 0; int m1a2 = 0; int m2a1 = 0; int m2a2 = 0; int m1H = 0; int m2H = 0;
 
                 for (int i = 0; i < chromosomes.size(); i++){
-                    byte a1 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos1);
-                    byte a2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
+                    byte a1 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos1);
+                    byte a2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
                     if (m1a1 > 0){
                         if (m1a2 == 0 && !(a1 == 5) && !(a1 == 0) && a1 != m1a1) m1a2 = a1;
                     } else if (!(a1 == 5) && !(a1 == 0)) m1a1=a1;
@@ -497,10 +497,10 @@ public class HaploData{
                 for (int i = 0; i < chromosomes.size(); i++){
                     //System.out.println(i + " " + pos1 + " " + pos2);
                     //assign alleles for each of a pair of chromosomes at a marker to four variables
-                    byte a1 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos1);
-                    byte a2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
-                    byte b1 = ((Chromosome) chromosomes.elementAt(++i)).elementAt(pos1);
-                    byte b2 = ((Chromosome) chromosomes.elementAt(i)).elementAt(pos2);
+                    byte a1 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos1);
+                    byte a2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
+                    byte b1 = ((Chromosome) chromosomes.elementAt(++i)).getGenotype(pos1);
+                    byte b2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
                     if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
                         //skip missing data
                     } else if ((a1 == 5 && a2 == 5) || (a1 == 5 && !(a2 == b2)) || (a2 == 5 && !(a1 == b1))) doublehet++;
@@ -535,6 +535,19 @@ public class HaploData{
         }
     }
 
+    PairwiseLinkage[][] getFilteredTable(PairwiseLinkage[][] fullTable){
+        //make a filtered version which doesn't include unchecked markers
+        //from ped files. this is the version which needs to be handed off to all
+        //display methods etc.
+        PairwiseLinkage[][] filt = new PairwiseLinkage[Chromosome.getFilteredSize()][Chromosome.getFilteredSize()];
+        for (int j = 1; j < filt.length; j++){
+            for (int i = 0; i < j; i++){
+               filt[i][j] = dPrimeTable[Chromosome.realIndex[i]][Chromosome.realIndex[j]];
+            }
+        }
+        return filt;
+    }
+
     Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh) throws HaploViewException{
         //TODO: output indiv hap estimates
         Haplotype[][] results = new Haplotype[blocks.size()][];
@@ -553,7 +566,7 @@ public class HaploData{
             for (int i = 0; i < chromosomes.size(); i++){
                 Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
                 for (int j = 0; j < theBlock.length; j++){
-                    byte theGeno = thisChrom.elementAt(theBlock[j]);
+                    byte theGeno = thisChrom.getFilteredGenotype(theBlock[j]);
                     if (theGeno == 5){
                         hetcount[j]++;
                     } else {
@@ -588,14 +601,14 @@ public class HaploData{
                 int missing=0;
                 int dhet=0;
                 for (int j = 0; j < theBlock.length; j++){
-                    byte theGeno = thisChrom.elementAt(theBlock[j]);
-                    byte nextGeno = nextChrom.elementAt(theBlock[j]);
+                    byte theGeno = thisChrom.getFilteredGenotype(theBlock[j]);
+                    byte nextGeno = nextChrom.getFilteredGenotype(theBlock[j]);
                     if(theGeno == 0 || nextGeno == 0) missing++;
                 }
 
                 if (! (missing > theBlock.length/2 || missing > missingLimit)){
                     for (int j = 0; j < theBlock.length; j++){
-                        byte theGeno = thisChrom.elementAt(theBlock[j]);
+                        byte theGeno = thisChrom.getFilteredGenotype(theBlock[j]);
                         if (theGeno == 5){
                             hapstr = hapstr + "h";
                         } else {
@@ -605,7 +618,7 @@ public class HaploData{
                     inputHaploVector.add(hapstr);
                     hapstr = "";
                     for (int j = 0; j < theBlock.length; j++){
-                        byte nextGeno = nextChrom.elementAt(theBlock[j]);
+                        byte nextGeno = nextChrom.getFilteredGenotype(theBlock[j]);
                         if (nextGeno == 5){
                             hapstr = hapstr + "h";
                         }else{
@@ -916,9 +929,9 @@ public class HaploData{
     void guessBlocks(int method){
         Vector returnVec = new Vector();
         switch(method){
-            case 0: returnVec = FindBlocks.doSFS(dPrimeTable); break;
-            case 1: returnVec = FindBlocks.do4Gamete(dPrimeTable,0.01); break;
-            case 2: returnVec = FindBlocks.doMJD(dPrimeTable); break;
+            case 0: returnVec = FindBlocks.doSFS(getFilteredTable(dPrimeTable)); break;
+            case 1: returnVec = FindBlocks.do4Gamete(getFilteredTable(dPrimeTable),0.01); break;
+            case 2: returnVec = FindBlocks.doMJD(getFilteredTable(dPrimeTable)); break;
         }
         blocks = returnVec;
     }
