@@ -22,7 +22,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
     JRadioButton trioButton, ccButton;
     NumberTextField maxComparisonDistField;
 
-    public ReadDataDialog(String title, HaploView h){
+    public ReadDataDialog(HaploView h, String title){
         super(h, title);
 
         JPanel contents = new JPanel();
@@ -76,15 +76,24 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 caller.assocTest = 0;
             }
 
-            String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};
-            caller.readGenotypes(returnStrings, fileType);
+            //String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};
+            HaploviewOptions.setInfoFileName(infoFileField.getText());
+            HaploviewOptions.setMaxDist(maxComparisonDistField.getText());
+            HaploviewOptions.setGenoFileType(fileType);
+            if (fileType == PED){
+                HaploviewOptions.setPedFileName(genoFileField.getText());
+            }else if (fileType == HAPS){
+                HaploviewOptions.setHapsFileName(genoFileField.getText());
+            }else if (fileType == HMP){
+                HaploviewOptions.setHapmapFileName(genoFileField.getText());
+            }
             if (caller.hapDisplay != null){
                 caller.hapDisplay.setVisible(false);
             }
 
             if (caller.dPrimeDisplay != null){
                 caller.dPrimeDisplay.setVisible(false);
-            }
+            } 
             this.dispose();
         }else if (command == "Cancel"){
             this.dispose();
