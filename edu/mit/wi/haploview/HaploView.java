@@ -450,10 +450,10 @@ public class HaploView extends JFrame implements ActionListener{
 			    }
 			};
 		    
-		    timer = new javax.swing.Timer(500, new ActionListener(){
+		    timer = new javax.swing.Timer(50, new ActionListener(){
 			    public void actionPerformed(ActionEvent evt){
 				progressMonitor.setProgress(theData.getComplete());
-				if (theData.getComplete() == theData.getToBeCompleted()){
+				if (theData.finished){
 				    timer.stop();
 				    progressMonitor.close();
 				    infoKnown=false;

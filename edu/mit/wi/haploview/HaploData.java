@@ -14,6 +14,7 @@ class HaploData{
     int missingLimit = 5;
     Vector markerInfo = new Vector();
     String[][] dPrimeTable;
+    public boolean finished = false;
     private int numCompleted, toBeCompleted;
     private double[] numBadGenotypes;
     private double[] percentBadGenotypes;
@@ -28,6 +29,7 @@ class HaploData{
     public void doMonitoredComputation(){
 	dPrimeTable = generateDPrimeTable(chromosomes);
 	blocks = guessBlocks(dPrimeTable, 0);
+	finished = true;
     }
 
     Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh) throws IOException{
