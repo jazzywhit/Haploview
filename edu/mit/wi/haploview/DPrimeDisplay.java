@@ -283,9 +283,16 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
+        g2.setColor(BG_GREY);
+        //if it's a big dataset, resize properly, if it's small make sure to fill whole background
         if (size.height < pref.height){
+            g2.fillRect(0,0,pref.width,pref.height);
             setSize(pref);
+        }else{
+            g2.fillRect(0,0,size.width, size.height);
         }
+        g2.setColor(Color.black);
+
 
         //okay so this dumb if block is to prevent the ugly repainting
         //bug when loading markers after the data are already being displayed,
@@ -314,12 +321,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         FontMetrics metrics;
         int ascent;
-        g2.setColor(BG_GREY);
-        g2.fillRect(0,0,pref.width,pref.height);
-        g2.setColor(Color.black);
-
-
-
         g2.setFont(boldMarkerNameFont);
         metrics = g2.getFontMetrics();
         ascent = metrics.getAscent();
