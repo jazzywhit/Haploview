@@ -192,23 +192,25 @@ public class HaploView extends JFrame implements ActionListener{
             readDialog.setVisible(true);
 
         }else if (command == "Continue"){
-
+        //TODO: change it so writing to a file is a checkbox on the CheckDataPanel
+            theData = new HaploData();
             JTable table = checkPanel.getTable();
             checkWindow.dispose();
             boolean[] markerResultArray = new boolean[table.getRowCount()];
             for (int i = 0; i < table.getRowCount(); i++){
                 markerResultArray[i] = ((Boolean)table.getValueAt(i,7)).booleanValue();
             }
-            //TODO: change it so writing to a file is a checkbox on the CheckDataPanel
+            /*
             try{
-                new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),filenames[0] + ".haps");
+                new TextMethods().linkageToHaps(markerResultArray,checkPanel.getPedFile(),filenames[0]+".haps");
             }catch (IOException ioexec){
                 JOptionPane.showMessageDialog(this,
                         ioexec.getMessage(),
                         "File Error",
                         JOptionPane.ERROR_MESSAGE);
-            }
-
+            } */
+            theData.linkageToChrom(markerResultArray,checkPanel.getPedFile());
+            processData();
             //processInput(new File(hapInputFileName+".haps"));
         } else if (command == READ_MARKERS){
             fc.setSelectedFile(null);
@@ -274,10 +276,22 @@ public class HaploView extends JFrame implements ActionListener{
         //filenames[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
 
         filenames = f;
-        final long maxCompDist = Long.parseLong(filenames[2])*1000;
-
+        theData = new HaploData();
         try{
-            theData = new HaploData(new File(filenames[0]));
+            theData.prepareGenotypeInput(new File(filenames[0]));
+            processData();
+        }catch(IOException ioexec) {
+            JOptionPane.showMessageDialog(this,
+                    ioexec.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+    }
+
+    void processData(){
+        final long maxCompDist = Long.parseLong(filenames[2])*1000;
+        try{
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
             final SwingWorker worker = new SwingWorker(){
@@ -307,11 +321,6 @@ public class HaploView extends JFrame implements ActionListener{
 
             worker.start();
             timer.start();
-        }catch (IOException ioexec){
-            JOptionPane.showMessageDialog(this,
-                    ioexec.getMessage(),
-                    "File Error",
-                    JOptionPane.ERROR_MESSAGE);
         }catch (RuntimeException rtexec){
             JOptionPane.showMessageDialog(this,
                     "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
@@ -542,8 +551,8 @@ public class HaploView extends JFrame implements ActionListener{
                     OutputFile = new File(hapsFile + ".SFSblocks");
                     break;
             }
-
-            theData = new HaploData(new File(hapsFile));
+            //TODO FIX THIS
+            theData = new HaploData();
             String name = hapsFile;
             String baseName = hapsFile.substring(0,name.length()-5);
             File maybeInfo = new File(baseName + ".info");
