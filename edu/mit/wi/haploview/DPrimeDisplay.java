@@ -16,6 +16,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private static final int STD_SCHEME = 1;
     private static final int SFS_SCHEME = 2;
     private static final int GAM_SCHEME = 3;
+    int currentScheme;
 
     private static final int BOX_SIZES[] = {50, 24, 12};
     private static final int BOX_RADII[] = {24, 11, 6};
@@ -166,6 +167,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
             }
         }
+        currentScheme = scheme;
     }
 
     public Image export(Image i){
