@@ -405,7 +405,7 @@ public class HaploText {
                     pedFileStrings.add(line);
                 }
 
-                ped.parse(pedFileStrings);
+                ped.parseLinkage(pedFileStrings);
 
                 if(!arg_skipCheck) {
                     result = ped.check();

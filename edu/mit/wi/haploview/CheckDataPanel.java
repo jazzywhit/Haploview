@@ -20,7 +20,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 
     boolean changed;
 
-    public CheckDataPanel(File file) throws IOException, PedFileException{
+    public CheckDataPanel(File file, int type) throws IOException, PedFileException{
+        setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
         //okay, for now we're going to assume the ped file has no header
         Vector pedFileStrings = new Vector();
         BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -30,13 +31,19 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
                 //skip blank lines
                 continue;
             }
+            if (line.startsWith("#")){
+                //skip comments
+                continue;
+            }
             pedFileStrings.add(line);
         }
         pedfile = new PedFile();
 
-
-        pedfile.parse(pedFileStrings);
-
+        if (type == 3){
+            pedfile.parseLinkage(pedFileStrings);
+        }else{
+            pedfile.parseHapMap(pedFileStrings);
+        }
         Vector result = pedfile.check();
 
         int numResults = result.size();

@@ -536,8 +536,9 @@ public class HaploData{
 
         //loop through all marker pairs
         for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
-            //clear the array
             for (int pos1 = 0; pos1 < pos2; pos1++){
+
+                //clear the array
                 long sep = Chromosome.getMarker(pos2).getPosition() - Chromosome.getMarker(pos1).getPosition();
                 if (maxdist > 0){
                     if ((sep > maxdist || sep < negMaxdist)){
@@ -545,6 +546,7 @@ public class HaploData{
                         continue;
                     }
                 }
+
                 dPrimeTable[pos1][pos2] = computeDPrime(pos1, pos2);
             }
         }
