@@ -28,11 +28,25 @@ public class TDTResult {
         if (a1 >= 5 && a2 >= 5){
             counts[cc][0]++;
             counts[cc][1]++;
+            if (allele1 == 0){
+                allele1 = (byte)(a1 - 4);
+                allele2 = (byte)(a2 - 4);
+            }
         }else{
             //seed the alleles as soon as they're found
             if (allele1 == 0){
                 allele1 = a1;
+                if (a1 != a2){
+                    allele2 = a2;
+                }
+            }else if (allele2 == 0){
+                if (a1 != allele1){
+                    allele2 = a1;
+                }else if (a2 != allele1){
+                    allele2 = a2;
+                }
             }
+
             if (a1 != 0){
                 if (a1 == allele1){
                     counts[cc][0] ++;
@@ -128,14 +142,18 @@ public class TDTResult {
         alleleCodes[4] = "T";
         String retStr;
 
-        if (this.counts[0][0] >= this.counts[0][1]){
+        if (this.counts[0][0] > this.counts[0][1]){
             retStr = alleleCodes[allele1];
+        }else if (this.counts[0][0] == this.counts[0][1]){
+            retStr = "-";
         }else{
             retStr = alleleCodes[allele2];
         }
         if (type != 1){
-            if (this.counts[1][0] >= this.counts[1][1]){
+            if (this.counts[1][0] > this.counts[1][1]){
                 retStr += (", " + alleleCodes[allele1]);
+            }else if (this.counts[1][0] == this.counts[1][1]){
+                retStr += ", -";
             }else{
                 retStr += (", " + alleleCodes[allele2]);
             }
