@@ -60,15 +60,15 @@ class DPrimeDisplay extends JComponent{
         Dimension pref = getPreferredSize();
         Rectangle visRect = getVisibleRect();
         /*
-                    boxSize = ((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
-            if (boxSize < 12){boxSize=12;}
-            if (boxSize < 25){
-                printDetails = false;
-                boxRadius = boxSize/2;
-            }else{
-                boxRadius = boxSize/2 - 1;
-            }
-            */
+        boxSize = ((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
+        if (boxSize < 12){boxSize=12;}
+        if (boxSize < 25){
+        printDetails = false;
+        boxRadius = boxSize/2;
+        }else{
+        boxRadius = boxSize/2 - 1;
+        }
+        */
 
         //okay so this dumb if block is to prevent the ugly repainting
         //bug when loading markers after the data are already being displayed,
@@ -118,7 +118,7 @@ class DPrimeDisplay extends JComponent{
             int lineLeft = wide/20;
             int lineSpan = (wide/10)*9;
             long minpos = Chromosome.getMarker(0).getPosition();
-            long maxpos = Chromosome.getMarker(Chromosome.size()-1).getPosition();
+            long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
             double spanpos = maxpos - minpos;
             g2.setStroke(thinnerStroke);
             g2.setColor(Color.white);
@@ -126,7 +126,7 @@ class DPrimeDisplay extends JComponent{
             g2.setColor(Color.black);
             g2.drawRect(left + lineLeft, 5, lineSpan, TICK_HEIGHT);
 
-            for (int i = 0; i < Chromosome.size(); i++) {
+            for (int i = 0; i < Chromosome.getSize(); i++) {
                 double pos = (Chromosome.getMarker(i).getPosition() - minpos) / spanpos;
                 int xx = (int) (left + lineLeft + lineSpan*pos);
                 g2.setStroke(thickerStroke);

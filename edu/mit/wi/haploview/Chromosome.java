@@ -10,12 +10,14 @@ class Chromosome{
 
     static int[] realIndex;
     static Object[] markers;
+    static int trueSize;
 
     Chromosome(String p, String i, byte[] g, String o){
         ped = p;
         individual = i;
         genotypes = g;
         origin = o;
+        trueSize = genotypes.length;
     }
 
     Chromosome(String p, String i, byte[] g){
@@ -23,6 +25,7 @@ class Chromosome{
         individual = i;
         genotypes = g;
         origin = "unknown";
+        trueSize = genotypes.length;
     }
 
     public byte elementAt(int i){
@@ -33,8 +36,12 @@ class Chromosome{
         return genotypes[i];
     }
 
-    public static int size(){
+    public static int getSize(){
         return realIndex.length;
+    }
+
+    public static int getTrueSize(){
+        return trueSize;
     }
 
     public static SNP getMarker(int i){

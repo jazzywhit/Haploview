@@ -361,28 +361,26 @@ public class HaploView extends JFrame implements ActionListener{
 
     void readMarkers(File inputFile){
         try {
-            int good = theData.prepareMarkerInput(inputFile,maxCompDist);
-            if (good == -1){
-                JOptionPane.showMessageDialog(this,
-                        "Number of markers in info file does not match number of markers in dataset.",
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }else{
-                infoKnown=true;
-                if (dPrimeDisplay != null){
-                    dPrimeDisplay.loadMarkers();
-                }
-            }
+            theData.prepareMarkerInput(inputFile,maxCompDist);
+        }catch (InputConflictException e){
+            JOptionPane.showMessageDialog(this,
+                    "Number of markers in info file does not match number of markers in dataset.",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }catch (IOException ioexec){
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
-        }catch (RuntimeException rtexec){
+        }/*catch (RuntimeException rtexec){
             JOptionPane.showMessageDialog(this,
                     "An error has occured. It is probably related to file format:\n"+rtexec.toString(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
+        }  */
+        infoKnown=true;
+        if (dPrimeDisplay != null){
+            dPrimeDisplay.loadMarkers();
         }
     }
 

@@ -54,75 +54,99 @@ public class HaploData{
     int[] two_n = new int[MAXLOCI];
     double[] prob;
 
-    public HaploData(){
-    }
 
-
-    /*public HaploData(File infile) throws IOException{
-        //create the data object and prepare the input
-        chromosomes = prepareGenotypeInput(infile);
-    } */
-
-
-
-
-    int prepareMarkerInput(File infile, long maxdist) throws IOException{
+    void prepareMarkerInput(File infile, long maxdist) throws IOException, InputConflictException{
         //this method is called to gather data about the markers used.
         //It is assumed that the input file is two columns, the first being
-        //the name and the second the absolute position
-        String currentLine;
-        Vector markers = new Vector();
-        long negMaxdist = -1 * maxdist;
+        //the name and the second the absolute position. the maxdist is
+        //used to determine beyond what distance comparisons will not be
+        //made. if the infile param is null, loads up "dummy info" for
+        //situation where no info file exists
 
-        //read the input file:
-        BufferedReader in = new BufferedReader(new FileReader(infile));
-        // a vector of SNP's is created and returned.
-        int snpcount = 0;
-        while ((currentLine = in.readLine()) != null){
-            //to compute maf, browse chrom list and count instances of each allele
-            byte a1 = 0;
-            double numa1 = 0; double numa2 = 0;
-            for (int i = 0; i < chromosomes.size(); i++){
-                //if there is a data point for this marker on this chromosome
-                byte thisAllele = ((Chromosome)chromosomes.elementAt(i)).unfilteredElementAt(snpcount);
-                if (!(thisAllele == 0)){
-                    if (thisAllele == 5){
-                        numa1+=0.5; numa2+=0.5;
-                    }else if (a1 == 0){
-                        a1 = thisAllele; numa1++;
-                    }else if (thisAllele == a1){
-                        numa1++;
-                    }else{
-                        numa2++;
-                    }
-                }
-            }
-            //System.out.println(numa1 + " " + numa2);
-            double maf = numa1/(numa2+numa1);
-            if (maf > 0.5) maf = 1.0-maf;
-            StringTokenizer st = new StringTokenizer(currentLine);
-            markers.add(new SNP(st.nextToken(), Long.parseLong(st.nextToken()), infile.getName(), maf));
-            snpcount ++;
-        }
+        if (infile != null){
+            String currentLine;
+            Vector markers = new Vector();
+            long negMaxdist = -1 * maxdist;
 
-        if (Chromosome.markers.length == markers.size()){
-            Chromosome.markers = markers.toArray();
-            markersLoaded = true;
-            //loop through the dprime table to null-out distant markers
-            for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
-                for (int pos1 = 0; pos1 < pos2; pos1++){
-                    long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
-                    if (maxdist > 0){
-                        if ((sep > maxdist || sep < negMaxdist)){
-                            dPrimeTable[pos1][pos2] = null;
-                            continue;
+            //read the input file:
+            BufferedReader in = new BufferedReader(new FileReader(infile));
+            // a vector of SNP's is created and returned.
+            int snpcount = 0;
+            while ((currentLine = in.readLine()) != null){
+                //to compute maf, browse chrom list and count instances of each allele
+                byte a1 = 0;
+                double numa1 = 0; double numa2 = 0;
+                for (int i = 0; i < chromosomes.size(); i++){
+                    //if there is a data point for this marker on this chromosome
+                    byte thisAllele = ((Chromosome)chromosomes.elementAt(i)).unfilteredElementAt(snpcount);
+                    if (!(thisAllele == 0)){
+                        if (thisAllele == 5){
+                            numa1+=0.5; numa2+=0.5;
+                        }else if (a1 == 0){
+                            a1 = thisAllele; numa1++;
+                        }else if (thisAllele == a1){
+                            numa1++;
+                        }else{
+                            numa2++;
                         }
                     }
                 }
+                //System.out.println(numa1 + " " + numa2);
+                double maf = numa1/(numa2+numa1);
+                if (maf > 0.5) maf = 1.0-maf;
+                StringTokenizer st = new StringTokenizer(currentLine);
+                markers.add(new SNP(st.nextToken(), Long.parseLong(st.nextToken()), infile.getName(), maf));
+                snpcount ++;
             }
-            return 1;
+
+            if (Chromosome.markers.length == markers.size()){
+                Chromosome.markers = markers.toArray();
+                markersLoaded = true;
+                if (dPrimeTable != null){
+                    //loop through the dprime table to null-out distant markers
+                    for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
+                        for (int pos1 = 0; pos1 < pos2; pos1++){
+                            long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
+                            if (maxdist > 0){
+                                if ((sep > maxdist || sep < negMaxdist)){
+                                    dPrimeTable[pos1][pos2] = null;
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                }
+            }else{
+                throw(new InputConflictException("Wrong number of markers"));
+            }
         }else{
-            return -1;
+            double numChroms = chromosomes.size();
+            Vector markerInfo = new Vector();
+            for (int i = 0; i < Chromosome.getTrueSize(); i++){
+                //to compute maf, browse chrom list and count instances of each allele
+                byte a1 = 0;
+                double numa1 = 0; double numa2 = 0;
+                for (int j = 0; j < chromosomes.size(); j++){
+                    //if there is a data point for this marker on this chromosome
+                    byte thisAllele = ((Chromosome)chromosomes.elementAt(j)).unfilteredElementAt(i);
+                    if (!(thisAllele == 0)){
+                        if (thisAllele == 5){
+                            numa1+=0.5; numa2+=0.5;
+                        }else if (a1 == 0){
+                            a1 = thisAllele; numa1++;
+                        }else if (thisAllele == a1){
+                            numa1++;
+                        }else{
+                            numa2++;
+                        }
+                    }
+                }
+                double maf = numa1/(numa2+numa1);
+                if (maf > 0.5) maf = 1.0-maf;
+                markerInfo.add(new SNP(String.valueOf(i), (i*3000), maf));
+                percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
+            }
+            Chromosome.markers = markerInfo.toArray();
         }
     }
 
@@ -167,39 +191,17 @@ public class HaploData{
             chroms.add(new Chromosome(ped, indiv, genos, infile.getName()));
             firstTime = false;
         }
-        //generate marker information in case none is subsequently available
-        //also convert sums of bad genotypes to percentages for each marker
-        double numChroms = chroms.size();
-        Vector markerInfo = new Vector();
+        chromosomes = chroms;
+
+        //initialize realIndex
         Chromosome.realIndex = new int[genos.length];
         for (int i = 0; i < genos.length; i++){
             Chromosome.realIndex[i] = i;
-            //to compute maf, browse chrom list and count instances of each allele
-            byte a1 = 0;
-            double numa1 = 0; double numa2 = 0;
-            for (int j = 0; j < chroms.size(); j++){
-                //if there is a data point for this marker on this chromosome
-                byte thisAllele = ((Chromosome)chroms.elementAt(j)).unfilteredElementAt(i);
-                if (!(thisAllele == 0)){
-                    if (thisAllele == 5){
-                        numa1+=0.5; numa2+=0.5;
-                    }else if (a1 == 0){
-                        a1 = thisAllele; numa1++;
-                    }else if (thisAllele == a1){
-                        numa1++;
-                    }else{
-                        numa2++;
-                    }
-                }
-            }
-            double maf = numa1/(numa2+numa1);
-            if (maf > 0.5) maf = 1.0-maf;
-            markerInfo.add(new SNP(String.valueOf(i), (i*3000), maf));
-            percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
         }
-        chromosomes = chroms;
-        Chromosome.markers = markerInfo.toArray();
-        //return chroms;
+        try{
+            prepareMarkerInput(null,0);
+        }catch(InputConflictException e){
+        }
     }
 
     public void linkageToChrom(boolean[] markerResults, PedFile pedFile){
@@ -396,9 +398,6 @@ public class HaploData{
                 }
             }
         }
-        double numChroms = chrom.size();
-        numBadGenotypes = new double[numMarkers];
-        percentBadGenotypes = new double[numMarkers];
 
         //set up the indexing to take into account skipped markers. Need
         //to loop through twice because first time we just count number of
@@ -417,44 +416,12 @@ public class HaploData{
                 k++;
             }
         }
-
-
-        //fake the marker info for now
-        Vector markerInfo = new Vector();
-        for (int i = 0; i < numMarkers; i++){
-            //to compute maf, browse chrom list and count instances of each allele
-            byte a1 = 0;
-            double numa1 = 0; double numa2 = 0;
-            for (int j = 0; j < chrom.size(); j++){
-                //if there is a data point for this marker on this chromosome
-                byte thisAllele = ((Chromosome)chrom.elementAt(j)).unfilteredElementAt(i);
-                if (!(thisAllele == 0)){
-                    if (thisAllele == 5){
-                        numa1+=0.5;
-                        numa2+=0.5;
-                    }else if (a1 == 0){
-                        a1 = thisAllele;
-                        numa1++;
-                    }else if (thisAllele == a1){
-                        numa1++;
-                    }else{
-                        numa2++;
-                    }
-                }
-                if (thisAllele == 0) {
-                    numBadGenotypes[i] ++;
-                }
-            }
-            double maf = numa1 / (numa2+numa1) ;
-            if (maf > 0.5) {
-                maf = 1.0-maf;
-            }
-            markerInfo.add(new SNP(String.valueOf(i), (i*3000), maf));
-            percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
-        }
         chromosomes = chrom;
-        Chromosome.markers = markerInfo.toArray();
-        //return chrom;
+        try{
+            prepareMarkerInput(null,0);
+        }catch(InputConflictException e){
+        }catch(IOException e){
+        }
     }
 
     Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh){
@@ -1034,7 +1001,7 @@ public class HaploData{
     void generateDPrimeTable(long maxdist){
         //calculating D prime requires the number of each possible 2 marker
         //haplotype in the dataset
-        dPrimeTable = new PairwiseLinkage[Chromosome.size()][Chromosome.size()];
+        dPrimeTable = new PairwiseLinkage[Chromosome.getSize()][Chromosome.getSize()];
         int doublehet;
         long negMaxdist = -1*maxdist;
         int[][] twoMarkerHaplos = new int[3][3];

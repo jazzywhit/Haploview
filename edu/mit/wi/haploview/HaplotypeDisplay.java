@@ -209,7 +209,7 @@ public class HaplotypeDisplay extends JComponent {
 
         // height for the marker digits
         int markerDigits =
-                (int) (0.0000001 + Math.log(Chromosome.size()) / Math.log(10)) + 1;
+                (int) (0.0000001 + Math.log(Chromosome.getSize()) / Math.log(10)) + 1;
         high += MARKER_CHAR_WIDTH * markerDigits;
 
         // space for the diamond
@@ -286,7 +286,7 @@ public class HaplotypeDisplay extends JComponent {
 
         // set number formatter to pad with appropriate number of zeroes
         NumberFormat nfMarker = NumberFormat.getInstance();
-        int markerCount = Chromosome.size();
+        int markerCount = Chromosome.getSize();
         // the +0.0000001 is because there is
         // some suckage where log(1000) / log(10) isn't actually 3
         int markerDigits =

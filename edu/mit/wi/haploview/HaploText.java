@@ -331,6 +331,7 @@ public class HaploText {
             new TextMethods().saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
         }
         catch(IOException e){}
+        catch(InputConflictException e){}
     }
 
 
