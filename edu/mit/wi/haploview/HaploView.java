@@ -5,6 +5,7 @@ import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
 import edu.mit.wi.haploview.TreeTable.*;
 
+//import javax.help.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -15,6 +16,7 @@ import java.io.*;
 import java.util.Vector;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.net.URL;
 
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
@@ -63,7 +65,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private HaplotypeDisplay hapDisplay;
     JTabbedPane tabs;
     CheckDataController cdc;
-
 
     public HaploView(){
         try{
@@ -236,20 +237,35 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         analysisMenu.add(customizeBlocksItem);
         analysisMenu.setEnabled(false);
 
+        //NEEDS FIXING
+ /*        JMenu helpMenu = new JMenu("Help");
+         //menuBar.add(Box.createHorizontalGlue());
+         menuBar.add(helpMenu);
+
+        menuItem = new JMenuItem("Contents");
+        HelpSet hs;
+        HelpBroker hb;
+        String helpHS = "IdeHelp_en.hs";
+        try {
+            URL hsURL = HelpSet.findHelpSet(HaploView.class.getClassLoader(), helpHS);
+            hs = new HelpSet(null, hsURL);
+        } catch (Exception ee) {
+            System.out.println( "HelpSet " + ee.getMessage());
+            System.out.println("HelpSet "+ helpHS +" not found");
+            return;
+        }
+        hb = hs.createHelpBroker();
+        menuItem.addActionListener(new CSH.DisplayHelpFromSource(hb));
+        helpMenu.add(menuItem);     */
+
+
         //color key
         keyMenu = new JMenu("Key");
         menuBar.add(Box.createHorizontalGlue());
         menuBar.add(keyMenu);
 
-        /** NEEDS FIXING
-         helpMenu = new JMenu("Help");
-         menuBar.add(Box.createHorizontalGlue());
-         menuBar.add(helpMenu);
 
-         menuItem = new JMenuItem("Tutorial");
-         menuItem.addActionListener(this);
-         helpMenu.add(menuItem);
-         **/
+
         /*
         Configuration.readConfigFile();
         if(Configuration.isCheckForUpdate()) {
@@ -335,14 +351,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             int method = Integer.valueOf(command.substring(5)).intValue();
 
             changeBlocks(method);
-            /*for (int i = 1; i < colorMenuItems.length; i++){
-            if (method+1 == i){
-            colorMenuItems[i].setEnabled(true);
-            }else{
-            colorMenuItems[i].setEnabled(false);
-            }
-            }
-            colorMenuItems[0].setSelected(true);*/
 
             //zooming clauses
         }else if (command.startsWith("zoom")){
@@ -1089,7 +1097,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             assocWriter.write(curBlock.getName() + "\n");
                             StringBuffer sb = new StringBuffer();
                             for(int j=0;j<ham.getChildCount(curBlock);j++){
-                                HaplotypeAssociationNode curHap = (HaplotypeAssociationNode) ham.getChild(curBlock,i);
+                                HaplotypeAssociationNode curHap = (HaplotypeAssociationNode) ham.getChild(curBlock,j);
                                 sb.append("\t").append(curHap.getName()).append("\t");
                                 sb.append(curHap.getFreq()).append("\t");
                                 sb.append(curHap.getCounts()).append("\t");
