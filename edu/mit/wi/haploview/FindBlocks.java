@@ -25,6 +25,10 @@ class FindBlocks {
         for (int x = 0; x < dPrime.length-1; x++){
             for (int y = x+1; y < dPrime.length; y++){
                 PairwiseLinkage thisPair = dPrime[x][y];
+                if (thisPair == null){
+                    continue;
+                }
+
                 double[] freqs = thisPair.getFreqs();
                 int numGam = 0;
                 for (int i = 0; i < freqs.length; i++){
@@ -273,6 +277,10 @@ class FindBlocks {
         for (int i = 0; i < dPrime.length; i++){
             for (int j = i+1; j < dPrime[i].length; j++){
                 PairwiseLinkage thisPair = dPrime[i][j];
+                if (thisPair == null){
+                    continue;
+                }
+
                 double d = thisPair.getDPrime();
                 double l = thisPair.getLOD();
                 Color boxColor = null;
@@ -306,6 +314,9 @@ class FindBlocks {
             //find how far LD from marker i extends
             for (int j = i+1; j < dPrime[i].length; j++){
                 PairwiseLinkage thisPair = dPrime[i][j];
+                if (thisPair == null){
+                    continue;
+                }
 
                 //LD extends if D' > 0.8
                 if (thisPair.getDPrime() < 0.8){
