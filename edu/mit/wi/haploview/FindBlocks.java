@@ -9,10 +9,11 @@ public class FindBlocks {
     static double[] cutLowCIVar = {0,0,0.80,0.50,0.50};
     static double[] maxDist = {0,0,20000,30000,1000000};
     static double recHighCI = 0.90;
+    static double informFrac = 0.95;
     static double fourGameteCutoff = 0.01;
+    static double spineDP = 0.80;
 
-    static Vector do4Gamete(PairwiseLinkage[][] dPrime, double f){
-        fourGameteCutoff = f;
+    static Vector do4Gamete(PairwiseLinkage[][] dPrime){
         Vector blocks = new Vector();
         Vector strongPairs = new Vector();
 
@@ -227,7 +228,7 @@ public class FindBlocks {
                 blockArray[z] = ((Integer)thisBlock.elementAt(z)).intValue();
             }
             //	    System.out.println(first + " " + last + " " + numStrong + " " + numRec);
-            if ((double)numStrong/(double)(numStrong + numRec) > 0.95){ //this qualifies as a block
+            if ((double)numStrong/(double)(numStrong + numRec) > informFrac){ //this qualifies as a block
                 //add to the block list, but in order by first marker number:
                 if (blocks.size() == 0){ //put first block first
                     blocks.add(blockArray);
@@ -254,7 +255,7 @@ public class FindBlocks {
 
     static Vector  doMJD(PairwiseLinkage[][] dPrime){
         // find blocks by searching for stretches between two markers A,B where
-        // D prime is > 0.8 for all informative combinations of A, (A+1...B)
+        // D prime is > a threshold for all informative combinations of A, (A+1...B)
 
         int baddies;
         int verticalExtent=0;
@@ -269,8 +270,8 @@ public class FindBlocks {
                     continue;
                 }
 
-                //LD extends if D' > 0.8
-                if (thisPair.getDPrime() < 0.8){
+                //LD extends if D' > threshold
+                if (thisPair.getDPrime() < spineDP){
                     //LD extends through one 'bad' marker
                     if (baddies < 1){
                         baddies++;
@@ -292,7 +293,7 @@ public class FindBlocks {
                         continue;
                     }
 
-                    if(thisPair.getDPrime() < 0.8){
+                    if(thisPair.getDPrime() < spineDP){
                         if (baddies < 1){
                             baddies++;
                         } else {
