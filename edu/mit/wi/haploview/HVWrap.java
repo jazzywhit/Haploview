@@ -37,6 +37,8 @@ public class HVWrap {
         String dir = System.getProperty("user.dir");
         String sep = System.getProperty("file.separator");
         String ver = System.getProperty("java.version");
+        String javaHome = System.getProperty("java.home");
+
         //TODO:do some version checking and bitch at people with old JVMs
         /*StringTokenizer st = new StringTokenizer(ver, ".");
         while (st.hasMoreTokens()){
@@ -66,7 +68,7 @@ public class HVWrap {
 
         try {
             //if the nogui flag is present we force it into headless mode
-            String runString = "java -Xmx1024m -classpath " + jarfile;
+            String runString = javaHome + sep + "bin" + sep + "java -Xmx1024m -classpath " + jarfile;
             if (headless){
                 runString += " -Djava.awt.headless=true";
             }
