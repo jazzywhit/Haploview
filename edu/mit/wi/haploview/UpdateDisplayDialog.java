@@ -59,8 +59,6 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
         this.setModal(true);
-        this.setResizable(false);
-
     }
 
     public void actionPerformed(ActionEvent e) {

@@ -55,8 +55,6 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
         this.setModal(true);
-        //this.setSize(200,400);//contents.getPreferredSize().height);
-        this.setResizable(false);
     }
 
     public void actionPerformed(ActionEvent e) {

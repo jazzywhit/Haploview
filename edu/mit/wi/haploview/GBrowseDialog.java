@@ -60,8 +60,6 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
         this.setModal(true);
-        this.setResizable(false);
-        
     }
 
     public void actionPerformed(ActionEvent e) {
