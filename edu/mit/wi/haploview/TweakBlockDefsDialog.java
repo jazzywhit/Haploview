@@ -160,7 +160,7 @@ public class TweakBlockDefsDialog extends JDialog implements ActionListener {
 
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         hv.theData.guessBlocks(hv.getCurrentBlockDef());
-        hv.dPrimeDisplay.colorDPrime(hv.currentScheme);
+        hv.dPrimeDisplay.colorDPrime();
         hv.changeBlocks(hv.getCurrentBlockDef());
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 

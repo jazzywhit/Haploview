@@ -55,7 +55,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     private int currentBlockDef = BLOX_GABRIEL;
     private TDTPanel tdtPanel;
-    int currentScheme = STD_SCHEME;
+    //int currentScheme = STD_SCHEME;
     private javax.swing.Timer timer;
     //long maxCompDist;
 
@@ -188,6 +188,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             colorMenu.add(colorMenuItems[i]);
             cg.add(colorMenuItems[i]);
         }
+        colorMenuItems[0].setSelected(true);
+
         displayMenu.add(colorMenu);
         JMenuItem spacingItem = new JMenuItem("LD Display Spacing");
         spacingItem.setMnemonic(KeyEvent.VK_S);
@@ -336,9 +338,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             //coloring clauses
         }else if (command.startsWith("color")){
-            currentScheme = Integer.valueOf(command.substring(5)).intValue()+1;
-            dPrimeDisplay.colorDPrime(currentScheme);
-            changeKey(currentScheme);
+            Options.setLDColorScheme(Integer.valueOf(command.substring(5)).intValue()+1);
+            dPrimeDisplay.colorDPrime();
+            changeKey();
             //exporting clauses
         }else if (command.equals(EXPORT_PNG)){
             export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getSize());
@@ -376,6 +378,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             CheckData.mafCut = Double.parseDouble(cut);
 
             checkPanel.redoRatings();
+            JTable jt = checkPanel.getTable();
+            jt.repaint();
         }else if (command.equals("LD Display Spacing")){
             ProportionalSpacingDialog spaceDialog = new ProportionalSpacingDialog(this, "Adjust LD Spacing");
             spaceDialog.pack();
@@ -393,7 +397,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
 
-    private void changeKey(int scheme) {
+    private void changeKey() {
+        int scheme = Options.getLDColorScheme();
         keyMenu.removeAll();
         if (scheme == WMF_SCHEME){
             JMenuItem keyItem = new JMenuItem("High D' / High LOD");
@@ -466,7 +471,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             keyItem = new JMenuItem("High D' / Low LOD");
             keyItem.setBackground(new Color(192, 192, 240));
             keyMenu.add(keyItem);
-        } else if (scheme == SFS_SCHEME){
+        } else if (scheme == GAB_SCHEME){
             JMenuItem keyItem = new JMenuItem("Strong Linkage");
             keyItem.setBackground(Color.darkGray);
             keyItem.setForeground(Color.white);
@@ -566,11 +571,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 public Object construct(){
                     dPrimeDisplay=null;
 
-                    changeKey(1);
+                    changeKey();
                     theData.generateDPrimeTable();
                     theData.guessBlocks(BLOX_GABRIEL);
                     //theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
-                    colorMenuItems[0].setSelected(true);
+
                     blockMenuItems[0].setSelected(true);
                     zoomMenuItems[0].setSelected(true);
                     theData.blocksChanged = false;
@@ -899,7 +904,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 //after editing the filtered marker list, needs to be prodded into
                 //resizing correctly
                 dPrimeDisplay.computePreferredSize();
-                dPrimeDisplay.colorDPrime(currentScheme);
+                dPrimeDisplay.colorDPrime();
 
                 hapDisplay.theData = theData;
 
@@ -1102,6 +1107,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         Options.setAssocTest(ASSOC_NONE);
         Options.setHaplotypeDisplayThreshold(1);
         Options.setMaxDistance(500);
+        Options.setLDColorScheme(STD_SCHEME);
 
         //this parses the command line arguments. if nogui mode is specified,
         //then haploText will execute whatever the user specified

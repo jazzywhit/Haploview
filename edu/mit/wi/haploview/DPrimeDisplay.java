@@ -42,7 +42,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     private final Color BG_GREY = new Color(212,208,200);
 
-    private int currentScheme;
+    //private int currentScheme;
 
     BasicStroke thickerStroke = new BasicStroke(1);
     BasicStroke thinnerStroke = new BasicStroke(0.35f);
@@ -88,7 +88,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         theData=h.theData;
         theHV = h;
         this.computePreferredSize(theHV.getGraphics());
-        this.colorDPrime(STD_SCHEME);
+        this.colorDPrime();
         this.setDoubleBuffered(true);
         addMouseListener(this);
         addMouseMotionListener(this);
@@ -98,11 +98,11 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     DPrimeDisplay(HaploData hd){
         theData = hd;
         this.computePreferredSize();
-        this.colorDPrime(STD_SCHEME);
+        this.colorDPrime();
     }
 
-    public void colorDPrime(int scheme){
-        currentScheme = scheme;
+    public void colorDPrime(){
+        int scheme = Options.getLDColorScheme();
         DPrimeTable dPrime = theData.dpTable;
         noImage = true;
 
@@ -137,7 +137,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     thisPair.setColor(boxColor);
                 }
             }
-        }else if (scheme == SFS_SCHEME){
+        }else if (scheme == GAB_SCHEME){
             for (int x = 0; x < Chromosome.getSize()-1; x++){
                 for (int y = x+1; y < Chromosome.getSize(); y++){
                     PairwiseLinkage thisPair = dPrime.getLDStats(x,y);
@@ -409,7 +409,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             showWM = false;
         }
 
-        if (zoomLevel != 0 || currentScheme == WMF_SCHEME || currentScheme == RSQ_SCHEME){
+        if (zoomLevel != 0 || Options.getLDColorScheme() == WMF_SCHEME || Options.getLDColorScheme() == RSQ_SCHEME){
             printDPrimeValues = false;
         } else{
             printDPrimeValues = true;

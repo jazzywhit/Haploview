@@ -348,6 +348,33 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-assoccc")) {
                 assocCC = true;
             }
+                     
+            else if(args[i].equalsIgnoreCase("-ldcolorscheme")) {
+                i++;
+                if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                    if(args[i].equalsIgnoreCase("default")){
+                        Options.setLDColorScheme(STD_SCHEME);
+                    }
+                    else if(args[i].equalsIgnoreCase("RSQ")){
+                        Options.setLDColorScheme(RSQ_SCHEME);
+                    }
+                    else if(args[i].equalsIgnoreCase("DPALT") ){
+                        Options.setLDColorScheme(WMF_SCHEME);
+                    }
+                    else if(args[i].equalsIgnoreCase("GAB")) {
+                        Options.setLDColorScheme(GAB_SCHEME);
+                    }
+                    else if(args[i].equalsIgnoreCase("GAM")) {
+                        Options.setLDColorScheme(GAM_SCHEME);
+                    }
+                }
+                else {
+                    //defaults to STD color scheme
+                    Options.setLDColorScheme(STD_SCHEME);
+                    i--;
+                }
+            }
+
 
             else if(args[i].equals("-q") || args[i].equals("-quiet")) {
                 quietMode = true;

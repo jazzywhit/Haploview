@@ -14,6 +14,15 @@ public class Options {
     private static double spacingThreshold;
     private static int assocTest;
     private static int haplotypeDisplayThreshold;
+    private static int LDColorScheme;
+
+    public static int getLDColorScheme() {
+        return LDColorScheme;
+    }
+
+    public static void setLDColorScheme(int LDColorScheme) {
+        Options.LDColorScheme = LDColorScheme;
+    }
 
     public static int getGenoFileType() {
         return genoFileType;

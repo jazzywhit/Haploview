@@ -57,7 +57,7 @@ public interface Constants {
     static final int STD_SCHEME = 1;
     static final int RSQ_SCHEME = 2;
     static final int WMF_SCHEME = 3;
-    static final int SFS_SCHEME = 4;
+    static final int GAB_SCHEME = 4;
     static final int GAM_SCHEME = 5;
 
     //association test modes
@@ -74,29 +74,31 @@ public interface Constants {
     static final int SHOW_HAP_RATIOS = 1;
 
 
-    static final String HELP_OUTPUT = TITLE_STRING + " command line options\n" +
-                        "-h, -help                       print this message\n" +
-                        "-nogui                          command line output only\n" +
-                        "-q, -quiet                      quiet mode- doesnt print any warnings or information to screen\n" +
-                        "-pedfile <pedfile>              specify an input file in pedigree file format\n" +
+    static final String HELP_OUTPUT = TITLE_STRING + " Command line options\n" +
+                        "-h, -help                       Print this message\n" +
+                        "-nogui                          Command line output only\n" +
+                        "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
+                        "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
                         //"         --ignoremarkers <markers> ignores the specified markers.<markers> is a comma\n" +
                         //"                                   seperated list of markers. eg. 1,5,7,19,25\n" +
-                        "-hapmap <hapmapfile>            specify an input file in HapMap format\n" +
-                        "-haps <hapsfile>                specify an input file in .haps format\n" +
-                        "-info <infofile>                specify a marker info file\n" +
-                        "-batch <batchfile>              batch mode. Each line in batch file should contain a genotype file \n"+
+                        "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
+                        "-haps <hapsfile>                Specify an input file in .haps format\n" +
+                        "-info <infofile>                Specify a marker info file\n" +
+                        "-batch <batchfile>              Batch mode. Each line in batch file should contain a genotype file \n"+
                         "                                followed by an optional info file, separated by a space.\n" +
-                        "-blocks <blockfile>             blocks file, one block per line, will force output for these blocks\n" +
-                        "-track <trackfile>              specify an input analysis track file.\n"+
-                        "-skipcheck                      skips the various genotype file checks\n" +
-                        "-dprime                         outputs LD text to <inputfile>.LD\n" +
-                        "-png                            outputs LD display to <inputfile>.LD.PNG\n"+
-                        "-compressedpng                  outputs compressed LD display to <inputfile>.LD.PNG\n"+
-                        "-check                          outputs marker checks to <inputfile>.CHECK\n" +
+                        "-blocks <blockfile>             Blocks file, one block per line, will force output for these blocks\n" +
+                        "-track <trackfile>              Specify an input analysis track file.\n"+
+                        "-skipcheck                      Skips the various genotype file checks\n" +
+                        "-dprime                         Outputs LD text to <inputfile>.LD\n" +
+                        "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
+                        "-compressedpng                  Outputs compressed LD display to <inputfile>.LD.PNG\n"+
+                        "-ldcolorscheme <argument>       Specify an LD color scheme. <argument> should be one of:\n" +
+                        "                                DEFAULT, RSQ, DPALT, GAB, GAM\n" +
+                        "-check                          Outputs marker checks to <inputfile>.CHECK\n" +
                         "                                note: -dprime  and -check default to no blocks output. \n" +
-                        "                                use -blockoutput to also output blocks\n" +
-                        "-blockoutput <GAB,GAM,SPI,ALL>  output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
-                        "-maxdistance <distance>         maximum comparison distance in kilobases (integer). default is 500\n" +
+                        "                                Use -blockoutput to also output blocks\n" +
+                        "-blockoutput <GAB,GAM,SPI,ALL>  Output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
+                        "-maxdistance <distance>         Maximum comparison distance in kilobases (integer). default is 500\n" +
                         "-hapthresh <frequency>          Only output haps with at least this frequency\n" +
                         "-spacing <threshold>            Proportional spacing of markers in LD display. <threshold> is a value\n" +
                         "                                between 0 (no spacing) and 1 (max spacing).\n"  +
@@ -109,6 +111,7 @@ public interface Constants {
                         "                                between 0 and 1. \n" + 
                         "-assocCC                        Outputs case control association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC\n" +
                         "-assocTDT                       Outputs trio association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC"
+
             ;
 
 }
