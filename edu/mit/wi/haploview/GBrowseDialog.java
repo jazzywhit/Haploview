@@ -3,6 +3,7 @@ package edu.mit.wi.haploview;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.*;
 
 
 public class GBrowseDialog extends JDialog implements ActionListener, Constants{
@@ -53,6 +54,7 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
         buttonPanel.add(okBut);
         buttonPanel.add(cancelBut);
         contents.add(buttonPanel);
+        this.getRootPane().setDefaultButton(okBut);        
 
         contents.add(new JLabel("(Note: this option requires an internet connection)"));
 
@@ -76,7 +78,17 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
                 Options.setgBrowseRight(maxpos);
                 Options.setShowGBrowse(true);
                 this.dispose();
-                hv.dPrimeDisplay.computePreferredSize();
+
+                hv.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                     public void run() {
+                         hv.dPrimeDisplay.computePreferredSize();
+                         if (hv.dPrimeDisplay != null && hv.tabs.getSelectedIndex() == VIEW_D_NUM){
+                             hv.dPrimeDisplay.repaint();
+                         }
+                         hv.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                     }
+                 });
             }catch (NumberFormatException nfe){
                 JOptionPane.showMessageDialog(this,
                     "Boundary positions formatted incorrectly",
