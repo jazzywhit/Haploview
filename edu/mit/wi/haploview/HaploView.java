@@ -1,8 +1,10 @@
 package edu.mit.wi.haploview;
 
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -313,6 +315,12 @@ public class HaploView extends JFrame implements ActionListener{
         }catch(IOException ioexec) {
             JOptionPane.showMessageDialog(this,
                     ioexec.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        catch(NumberFormatException nfe){
+            JOptionPane.showMessageDialog(this,
+                    nfe.getMessage() + "\nFile Format Error: all genotypes must be 0-4,h",
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
