@@ -11,16 +11,14 @@ import java.util.Vector;
  */
 public class DPrimeTable {
     private PairwiseLinkage[][] theTable;
-    private PairwiseLinkage[] sample;
 
     public DPrimeTable(int numMarkers){
         theTable = new PairwiseLinkage[numMarkers][];
-        sample = new PairwiseLinkage[1];
     }
 
 
     public void addMarker(Vector marker, int pos){
-        theTable[pos] = (PairwiseLinkage[]) marker.toArray(sample);
+        theTable[pos] = (PairwiseLinkage[]) marker.toArray(new PairwiseLinkage[0]);
     }
 
 
