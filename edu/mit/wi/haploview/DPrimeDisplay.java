@@ -53,6 +53,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     private boolean printDetails = true;
     private boolean forExport = false;
+    private int exportStart, exportStop;
     private boolean showWM = false;
     private int zoomLevel = 0;
     private boolean noImage = true;
@@ -167,8 +168,19 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
     }
 
-    public Image export(Image i){
+    public BufferedImage export(int start, int stop){
         forExport = true;
+        exportStart = start;
+        if (exportStart < 0){
+            exportStart = 0;
+        }
+        exportStop = stop;
+        if (exportStop > theData.filteredDPrimeTable.length){
+            exportStop = theData.filteredDPrimeTable.length;
+        }
+        Dimension pref = getPreferredSize();
+        BufferedImage i = new BufferedImage(pref.width, pref.height,
+                BufferedImage.TYPE_3BYTE_BGR);
         paintComponent(i.getGraphics());
         forExport = false;
         return i;
@@ -230,8 +242,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
-
-
+        if (size.height < pref.height){
+            setSize(pref);
+        }
 
         //okay so this dumb if block is to prevent the ugly repainting
         //bug when loading markers after the data are already being displayed,
@@ -245,7 +258,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         0);
             }
         }
-        //System.out.println(size + " " + pref);
 
         FontMetrics boxFontMetrics = g2.getFontMetrics(boxFont);
 
@@ -255,6 +267,9 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         left = H_BORDER;
         top = V_BORDER;
+        if (forExport){
+            left -= exportStart * boxSize;
+        }
 
         FontMetrics metrics;
         int ascent;
@@ -395,10 +410,10 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         if (forExport){
-            lowX = 0;
-            lowY = 0;
-            highX = dPrimeTable.length;
-            highY = dPrimeTable.length;
+            lowX = exportStart;
+            lowY = exportStart;
+            highX = exportStop;
+            highY = exportStop;
         }
 
         // draw table column by column
@@ -657,9 +672,17 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     public Dimension getPreferredSize() {
         //loop through table to find deepest non-null comparison
         PairwiseLinkage[][] dPrimeTable = theData.filteredDPrimeTable;
+        int upLim, loLim;
+        if (forExport){
+            loLim = exportStart;
+            upLim = exportStop;
+        }else{
+            loLim = 0;
+            upLim = dPrimeTable.length;
+        }
         int count = 0;
-        for (int x = 0; x < dPrimeTable.length-1; x++){
-            for (int y = x+1; y < dPrimeTable.length; y++){
+        for (int x = loLim; x < upLim-1; x++){
+            for (int y = x+1; y < upLim; y++){
                 if (dPrimeTable[x][y] != null){
                     if (count < y-x){
                         count = y-x;
@@ -680,17 +703,17 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
 
         int high = 2*V_BORDER + count*boxSize/2 + blockDispHeight;
-        chartSize = new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1),high);
+        chartSize = new Dimension(2*H_BORDER + boxSize*(upLim-1),high);
         //this dimension is just the area taken up by the dprime chart
         //it is used in drawing the worldmap
 
         if (theData.infoKnown){
-            infoHeight = TICK_BOTTOM + widestMarkerName + TEXT_GAP;
+            infoHeight = TICK_HEIGHT + TICK_BOTTOM + widestMarkerName + TEXT_GAP;
             high += infoHeight;
         }else{
             infoHeight=0;
         }
-        int wide = 2*H_BORDER + boxSize*(dPrimeTable.length-1);
+        int wide = 2*H_BORDER + boxSize*(upLim-loLim-1);
         Rectangle visRect = getVisibleRect();
         //big datasets often scroll way offscreen in zoom-out mode
         //but aren't the full height of the viewport
