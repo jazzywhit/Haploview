@@ -613,7 +613,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 result = theData.linkageToChrom(inFile, type);
             }
 
-            if(theData.getPedFile().isBogusParents()) {
+            if(type != HAPS && theData.getPedFile().isBogusParents()) {
                 JOptionPane.showMessageDialog(this,
                         "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
                         "File Error",
