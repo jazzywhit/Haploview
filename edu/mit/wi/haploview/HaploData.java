@@ -21,6 +21,7 @@ import java.text.NumberFormat;
 //import java.awt.geom.*;
 
 public class HaploData implements Constants{
+
     Vector chromosomes, blocks;
     boolean[] isInBlock;
     boolean infoKnown = false;
@@ -30,7 +31,6 @@ public class HaploData implements Constants{
     private PedFile pedFile;
     PairwiseLinkage[][] filteredDPrimeTable;
     public boolean finished = false;
-    private double[] numBadGenotypes;
     private double[] percentBadGenotypes;
     private double[] multidprimeArray;
 
@@ -98,102 +98,77 @@ public class HaploData implements Constants{
         //made. if the infile param is null, loads up "dummy info" for
         //situation where no info file exists
 
-        if (infile != null){
-            if (infile.length() < 1){
-                throw new HaploViewException("Info file is empty or does not exist: " + infile.getName());
-            }
-            String currentLine;
-            Vector markers = new Vector();
-            long negMaxdist = -1 * maxdist;
-            long prevloc = -1000000000;
-
-            //read the input file:
-            BufferedReader in = new BufferedReader(new FileReader(infile));
-            // a vector of SNP's is created and returned.
-            int snpcount = 0;
-
-
-            int lineCount = 0;
-            while ((currentLine = in.readLine()) != null){
-                StringTokenizer st = new StringTokenizer(currentLine);
-                if (st.countTokens() > 1){
-                    lineCount++;
-                }else if (st.countTokens() == 1){
-                    //complain if only one field found
-                    throw new HaploViewException("Info file format error on line "+lineCount+
-                            ":\n Info file must be of format: <markername> <markerposition>");
-                }else{
-                    //skip blank lines
-                    continue;
+        Vector names = new Vector();
+        Vector positions = new Vector();
+        try{
+            if (infile != null){
+                if (infile.length() < 1){
+                    throw new HaploViewException("Info file is empty or does not exist: " + infile.getName());
                 }
 
-                if (lineCount > Chromosome.markers.length){
+                String currentLine;
+                long negMaxdist = -1 * maxdist;
+                long prevloc = -1000000000;
+
+                //read the input file:
+                BufferedReader in = new BufferedReader(new FileReader(infile));
+
+                int lineCount = 0;
+                while ((currentLine = in.readLine()) != null){
+                    StringTokenizer st = new StringTokenizer(currentLine);
+                    if (st.countTokens() > 1){
+                        lineCount++;
+                    }else if (st.countTokens() == 1){
+                        //complain if only one field found
+                        throw new HaploViewException("Info file format error on line "+lineCount+
+                                ":\n Info file must be of format: <markername> <markerposition>");
+                    }else{
+                        //skip blank lines
+                        continue;
+                    }
+
+                    String name = st.nextToken(); String l = st.nextToken();
+                    long loc;
+                    try{
+                       loc = Long.parseLong(l);
+                    }catch (NumberFormatException nfe){
+                        throw new HaploViewException("Info file format error on line "+lineCount+
+                                ":\n\"" + l + "\" should be of type long." +
+                                "\n Info file must be of format: <markername> <markerposition>");
+                    }
+
+                    if (loc < prevloc){
+                        throw new HaploViewException("Info file out of order:\n"+
+                                name);
+                    }
+                    prevloc = loc;
+                    names.add(name);
+                    positions.add(l);
+                }
+
+                /*if (lineCount > Chromosome.markers.length){
                     throw(new HaploViewException("Info file error:\nMarker number mismatch: too many\nmarkers in info file."));
                 }
-
-                //to compute maf, browse chrom list and count instances of each allele
-                byte a1 = 0;
-                double numa1 = 0; double numa2 = 0;
-                for (int i = 0; i < chromosomes.size(); i++){
-                    //if there is a data point for this marker on this chromosome
-                    byte thisAllele = ((Chromosome)chromosomes.elementAt(i)).getGenotype(snpcount);
-                    if (!(thisAllele == 0)){
-                        if (thisAllele == 5){
-                            numa1+=0.5; numa2+=0.5;
-                        }else if (a1 == 0){
-                            a1 = thisAllele; numa1++;
-                        }else if (thisAllele == a1){
-                            numa1++;
-                        }else{
-                            numa2++;
-                        }
-                    }
-                }
-                double maf = numa1/(numa2+numa1);
-                if (maf > 0.5) maf = 1.0-maf;
-
-                String name = st.nextToken(); String loc = st.nextToken();
-                if (Long.parseLong(loc) < prevloc){
-                    throw new HaploViewException("Info file out of order:\n"+
-                            name);
-                }
-                prevloc = Long.parseLong(loc);
-
-                try{
-                    markers.add(new SNP(name, Long.parseLong(loc), infile.getName(), Math.rint(maf*100.0)/100.0));
-                }catch (NumberFormatException nfe){
-                    throw new HaploViewException("Info file format error on line "+lineCount+
-                            ":\n\"" + loc + "\" should be of type long." +
-                            "\n Info file must be of format: <markername> <markerposition>");
-                }
-                snpcount ++;
+                if (lineCount < Chromosome.markers.length){
+                    throw(new HaploViewException("Info file error:\nMarker number mismatch: too few\nmarkers in info file."));
+                }*/
+                infoKnown=true;
             }
 
-            if (lineCount < Chromosome.markers.length){
-                throw(new HaploViewException("Info file error:\nMarker number mismatch: too few\nmarkers in info file."));
-            }
-
-            Chromosome.markers = markers.toArray();
-            if (dPrimeTable != null){
-                //loop through the dprime table to null-out distant markers
-                for (int pos2 = 1; pos2 < dPrimeTable.length; pos2++){
-                    for (int pos1 = 0; pos1 < pos2; pos1++){
-                        long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
-                        if (maxdist > 0){
-                            if ((sep > maxdist || sep < negMaxdist)){
-                                dPrimeTable[pos1][pos2] = null;
-                                continue;
-                            }
-                        }
-                    }
+            if (hapmapGoodies != null){
+                //we know some stuff from the hapmap so we'll add it here
+                for (int x=0; x < hapmapGoodies.length; x++){
+                    names.add(hapmapGoodies[x][0]);
+                    positions.add(hapmapGoodies[x][1]);
                 }
-                filteredDPrimeTable = getFilteredTable();
+                infoKnown = true;
             }
-            infoKnown=true;
-        }else {
+        }catch (HaploViewException e){
+            throw(e);
+        }finally{
             double numChroms = chromosomes.size();
             Vector markerInfo = new Vector();
-            numBadGenotypes = new double[Chromosome.getSize()];
+            double[] numBadGenotypes = new double[Chromosome.getSize()];
             percentBadGenotypes = new double[Chromosome.getSize()];
             for (int i = 0; i < Chromosome.getSize(); i++){
                 //to compute maf, browse chrom list and count instances of each allele
@@ -214,15 +189,14 @@ public class HaploData implements Constants{
                         }
                     }
                     else {
-                        numBadGenotypes[i]++;
+                       numBadGenotypes[i]++;
                     }
                 }
                 double maf = numa1/(numa2+numa1);
                 if (maf > 0.5) maf = 1.0-maf;
-                if (hapmapGoodies != null){
-                    //we know some stuff from the hapmap so we'll add it here
-                    infoKnown = true;
-                    markerInfo.add(new SNP(hapmapGoodies[i][0], Long.parseLong(hapmapGoodies[i][1]),
+                if (infoKnown){
+                    markerInfo.add(new SNP((String)names.elementAt(i),
+                            Long.parseLong((String)positions.elementAt(i)),
                             Math.rint(maf*100.0)/100.0));
                 }else{
                     markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), Math.rint(maf*100.0)/100.0));
@@ -309,10 +283,6 @@ public class HaploData implements Constants{
         Chromosome.realIndex = new int[genos.length];
         for (int i = 0; i < genos.length; i++){
             Chromosome.realIndex[i] = i;
-        }
-        try{
-            prepareMarkerInput(null,0,null);
-        }catch(HaploViewException e){
         }
     }
 
@@ -594,11 +564,6 @@ public class HaploData implements Constants{
             }
         }
         chromosomes = chrom;
-        try{
-            prepareMarkerInput(null,0,pedFile.getHMInfo());
-        }catch(HaploViewException e){
-        }catch(IOException e){
-        }
         return result;
     }
 

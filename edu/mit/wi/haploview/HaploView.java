@@ -459,12 +459,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 dPrimeDisplay=null;
 
                 theData.infoKnown = false;
-                if (!(inputOptions[1].equals(""))){
-                    readMarkers(new File(inputOptions[1]), null);
+                File markerFile;
+                if (inputOptions[1].equals("")){
+                    markerFile = null;
+                }else{
+                    markerFile = new File(inputOptions[1]);
                 }
-                if (hminfo != null){
-                    readMarkers(null,hminfo);
-                }
+                readMarkers(markerFile, hminfo);
 
                 theData.generateDPrimeTable(maxCompDist);
                 theData.guessBlocks(BLOX_GABRIEL);
