@@ -283,18 +283,23 @@ public class PermutationTestSet implements Constants{
 
         BufferedWriter out = new BufferedWriter(new FileWriter(outFile));
 
-        out.write("Name\tChi Square\tPermutation p-value");
+        out.write("#"+getPermutationsPerformed()+" permutations performed.");
         out.newLine();
-        for(int i=0;i<results.size();i++) {
-            Vector tempRes = (Vector) results.get(i);
-            StringBuffer line = new StringBuffer();
-            for(int j=0;j<tempRes.size()-1;j++) {
-                line.append(tempRes.get(j));
-                line.append("\t");
-            }
-            line.append(tempRes.get(tempRes.size()-1));
-            out.write(line.toString());
+
+        if (getPermutationsPerformed() > 0){
+            out.write("Name\tChi Square\tPermutation p-value");
             out.newLine();
+            for(int i=0;i<results.size();i++) {
+                Vector tempRes = (Vector) results.get(i);
+                StringBuffer line = new StringBuffer();
+                for(int j=0;j<tempRes.size()-1;j++) {
+                    line.append(tempRes.get(j));
+                    line.append("\t");
+                }
+                line.append(tempRes.get(tempRes.size()-1));
+                out.write(line.toString());
+                out.newLine();
+            }
         }
         out.close();
     }

@@ -2,14 +2,16 @@ package edu.mit.wi.haploview.association;
 
 import edu.mit.wi.haploview.Constants;
 import edu.mit.wi.haploview.NumberTextField;
+import edu.mit.wi.haploview.BasicTableModel;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.util.Vector;
+import java.io.File;
+import java.io.IOException;
 
 import org.jfree.data.statistics.HistogramDataset;
 import org.jfree.chart.ChartFactory;
@@ -37,6 +39,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
     private JLabel scoreBoardNumPassLabel;
     private JLabel scoreBoardNumTotalLabel;
     private JPanel scoreBoardPanel;
+    private boolean finishedPerms;
 
     public PermutationTestPanel(PermutationTestSet pts) {
         if(pts == null) {
@@ -120,6 +123,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
 
     public void startPerms() {
         scoreBoardPanel.setVisible(true);
+        finishedPerms = false;
 
         if (resultsPanel != null){
             remove(resultsPanel);
@@ -161,21 +165,17 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         bestPermutationValueLabel.setText(String.valueOf(testSet.getBestPermChiSquare()));
         makeTable();
         resultsPanel.revalidate();
+        finishedPerms = true;
     }
 
     public void makeTable() {
         Vector tableData = testSet.getResults();
-        TableModel tm = new PermResultTableModel(colNames, tableData);
+        TableModel tm = new BasicTableModel(colNames, tableData);
         JTable jt = new JTable(tm);
         JScrollPane tableScroller = new JScrollPane(jt);
-        //if the table is fairly short, override java's stupid insistence on growing it to fit the
-        //container panel
         tableScroller.setMaximumSize(tableScroller.getPreferredSize());
-        JLabel sigAssocLabel = new JLabel("Significant Associations:");
-        sigAssocLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         resultsPanel = new JPanel();
         resultsPanel.setLayout(new BoxLayout(resultsPanel,BoxLayout.Y_AXIS));
-        resultsPanel.add(sigAssocLabel);
         resultsPanel.add(tableScroller);
 
         resultsPanel.add(Box.createRigidArea(new Dimension(0,5)));
@@ -198,6 +198,22 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         if (resultsPanel != null){
             this.add(blocksChangedLabel);
         }
+    }
+
+    public void export(File outfile) throws IOException{
+        //if a crazy user tries to export the data when the perms are running,
+        //we have a problem. So this stops the perms and waits for it to finish up
+        //before writing the output.
+        if (testSet.getPermutationCount() != testSet.getPermutationsPerformed()){
+            stopPerms();
+
+            //don't let it run off forever!
+            int numIterations = 0;
+            while (!finishedPerms && numIterations < 1000000){
+                numIterations++;
+            }
+        }
+        testSet.writeResultsToFile(outfile);
     }
 
     private class PermutationThread extends Thread{
@@ -230,37 +246,4 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
             } catch(InterruptedException ie) {}
         }
     }
-
-    class PermResultTableModel extends AbstractTableModel {
-        Vector columnNames; Vector data;
-
-        public PermResultTableModel(Vector c, Vector d){
-            columnNames=c;
-            data=d;
-        }
-
-
-        public String getColumnName(int i){
-            return (String)columnNames.elementAt(i);
-        }
-
-        public Class getColumnClass(int c){
-            //things look nicer if we use the String renderer to left align all the cols.
-            return String.class;
-        }
-
-        public int getColumnCount(){
-            return columnNames.size();
-        }
-
-        public int getRowCount(){
-            return data.size();
-        }
-
-        public Object getValueAt(int row, int column){
-            return ((Vector)data.elementAt(row)).elementAt(column);
-        }
-
-    }
-
 }

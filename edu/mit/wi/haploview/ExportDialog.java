@@ -4,11 +4,12 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.*;
 
 public class ExportDialog extends JDialog implements ActionListener, Constants{
 
     HaploView hv;
-    JRadioButton dpButton, hapButton, checkButton, singleAssocButton, hapAssocButton;
+    JRadioButton dpButton, hapButton, checkButton, singleAssocButton, hapAssocButton, permAssocButton;
     JRadioButton txtButton, pngButton;
     JRadioButton allButton, someButton, adjButton;
     JCheckBox compressCheckBox;
@@ -66,11 +67,20 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             g1.add(hapAssocButton);
             tabPanel.add(hapAssocButton);
 
+            permAssocButton = new JRadioButton("Permutation Results");
+            permAssocButton.setActionCommand("permtab");
+            permAssocButton.addActionListener(this);
+            g1.add(permAssocButton);
+            tabPanel.add(permAssocButton);
+
             if (currTab == VIEW_ASSOC_NUM){
-                if(((JTabbedPane)hv.tabs.getComponent(currTab)).getSelectedIndex() == VIEW_SINGLE_ASSOC){
+                Component c = ((JTabbedPane)hv.tabs.getComponent(currTab)).getSelectedComponent();
+                if(c == hv.tdtPanel){
                     singleAssocButton.setSelected(true);
-                }else{
+                }else if (c == hv.hapAssocPanel){
                     hapAssocButton.setSelected(true);
+                }else if (c == hv.permutationPanel){
+                    permAssocButton.setSelected(true);
                 }
             }
         }
@@ -195,10 +205,13 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
                 tab = VIEW_CHECK_NUM;
             } else if (singleAssocButton.isSelected()){
                 tab = VIEW_ASSOC_NUM;
-                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedIndex(VIEW_SINGLE_ASSOC);
+                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedComponent(hv.tdtPanel);
+            }else if (hapAssocButton.isSelected()){
+                tab = VIEW_ASSOC_NUM;
+                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedComponent(hv.hapAssocPanel);
             }else{
                 tab = VIEW_ASSOC_NUM;
-                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedIndex(VIEW_HAPLO_ASSOC);                
+                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedComponent(hv.permutationPanel);
             }
             this.dispose();
 

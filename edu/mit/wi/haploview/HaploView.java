@@ -54,7 +54,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     HaploData theData;
 
     private int currentBlockDef = BLOX_GABRIEL;
-    private TDTPanel tdtPanel;
     private javax.swing.Timer timer;
 
     static HaploView window;
@@ -66,8 +65,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     CheckDataController cdc;
     PermutationTestPanel permutationPanel;
     CheckDataPanel checkPanel;
-    private CustomAssocPanel custAssocPanel;
-    private HaploAssocPanel hapAssocPanel;
+    CustomAssocPanel custAssocPanel;
+    TDTPanel tdtPanel;    
+    HaploAssocPanel hapAssocPanel;
 
     public HaploView(){
         try{
@@ -1158,7 +1158,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }else if (selectedTab == hapAssocPanel){
                             hapAssocPanel.getTestSet().saveHapsToText(outfile);
                         }else if (selectedTab == permutationPanel){
-                            //todo: implement me!
+                            permutationPanel.export(outfile);
                         }else if (selectedTab == custAssocPanel){
                             //todo: implement me!
                         }
