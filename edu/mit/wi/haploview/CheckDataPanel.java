@@ -61,7 +61,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             tempVect.add(new Double(currentResult.getGenoPercent()));
             tempVect.add(new Integer(currentResult.getFamTrioNum()));
             tempVect.add(new Integer(currentResult.getMendErrNum()));
-	    tempVect.add(new Double(currentResult.getMAF()));
+            tempVect.add(new Double(currentResult.getMAF()));
 
             if (currentResult.getRating() > 0){
                 tempVect.add(new Boolean(true));
@@ -164,15 +164,18 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
     public void redoRatings(){
         try{
             Vector result = pedfile.check();
+
             for (int i = 0; i < table.getRowCount(); i++){
                 MarkerResult cur = (MarkerResult)result.get(i);
-                if (cur.getRating() > 0){
+                int curRating = cur.getRating();
+                if (curRating > 0){
                     table.setValueAt(new Boolean(true),i,STATUS_COL);
                 }else{
                     table.setValueAt(new Boolean(false),i,STATUS_COL);
                 }
+                tableModel.setRating(i,curRating);
             }
-	    changed = true;
+            changed = true;
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -207,6 +210,12 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 			return ratings[row];
 		}
 
+        public void setRating(int row, int value) {
+            if(row < ratings.length) {
+                ratings[row] = value;
+            }
+        }
+
 		public String getColumnName(int n){
 			return (String)columnNames.elementAt(n);
 		}
@@ -235,7 +244,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 			Component cell = super.getTableCellRendererComponent
 			        (table, value, isSelected, hasFocus, row, column);
 			int myRating = ((CheckDataTableModel)table.getModel()).getRating(row);
-			String thisColumnName = table.getColumnName(column);
+            String thisColumnName = table.getColumnName(column);
             cell.setForeground(Color.black);
             //bitmasking to decode the status bits
             if (myRating < 0){
@@ -269,5 +278,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 			return cell;
 		}
 	}
+
+
 
 }
