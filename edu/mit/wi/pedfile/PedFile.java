@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.34 2004/10/05 15:17:22 jcbarret Exp $
+* $Id: PedFile.java,v 1.35 2004/10/15 17:34:49 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -488,10 +488,6 @@ public class PedFile {
 
                 fam.addMember(ind);
                 this.families.put(ind.getFamilyID(),fam);
-
-                String[] indFamID = new String[2];
-                indFamID[0] = ind.getFamilyID();
-                indFamID[1] = ind.getIndividualID();
                 this.order.add(ind);
 
             }
@@ -590,10 +586,6 @@ public class PedFile {
             }
             fam.addMember(ind);
             this.families.put(ind.getFamilyID(),fam);
-
-            String[] indFamID = new String[2];
-            indFamID[0] = ind.getFamilyID();
-            indFamID[1] = ind.getIndividualID();
             this.order.add(ind);
         }
 
@@ -824,7 +816,6 @@ public class PedFile {
     public boolean isBogusParents() {
         return bogusParents;
     }
-
 }
 
 
