@@ -35,14 +35,14 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
 
         tableModel = new FilteredIndividualsTableModel(columnNames,data);
         table = new JTable(tableModel);
-        table.getColumnModel().getColumn(2).setPreferredWidth(150);
+        table.getColumnModel().getColumn(2).setPreferredWidth(300);
 
         JScrollPane tableScroller = new JScrollPane(table);
-        int tableHeight = (table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+1);
+        int tableHeight = (table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+2);
         if (tableHeight > 300){
-            tableScroller.setPreferredSize(new Dimension(300, 300));
+            tableScroller.setPreferredSize(new Dimension(400, 300));
         }else{
-            tableScroller.setPreferredSize(new Dimension(300, tableHeight));
+            tableScroller.setPreferredSize(new Dimension(400, tableHeight));
         }
         tableScroller.setBorder(BorderFactory.createEmptyBorder(2,5,2,5));
 
