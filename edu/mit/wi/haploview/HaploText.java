@@ -30,13 +30,13 @@ public class HaploText implements Constants{
     private String hapsFileName;
     private String blockFileName;
     private String trackFileName;
+    private String checkFileName;
     //private Vector ignoreMarkers;
     private static boolean quietMode;
     private static boolean noGUI;
     private boolean outputPNG;
     private boolean outputSmallPNG;
     private boolean outputDprime;
-    private boolean showCheck;
     private boolean skipCheck;
     private boolean outputCheck;
     private int outputType;
@@ -134,15 +134,9 @@ public class HaploText implements Constants{
 
         this.outputType=-1;
 
-        final Group options =
+        final Group inputOptions =
             gbuilder
-                .withName("Haploview")
-                .withOption(
-                    obuilder
-                        .withShortName("help")
-                        .withShortName("h")
-                        .withDescription("print this message")
-                        .create())
+                .withName("Input Options")
                 .withOption(
                     obuilder
                         .withShortName("pedfile")
@@ -191,7 +185,7 @@ public class HaploText implements Constants{
                                 .withMaximum(1)
                                 .create())
                         .create())
-                .withOption(
+               .withOption(
                     obuilder
                         .withShortName("info")
                         .withShortName("i")
@@ -203,16 +197,70 @@ public class HaploText implements Constants{
                                 .withMaximum(1)
                                 .create())
                         .create())
+            .create();
+
+        final Group hapOutOptions =
+            gbuilder
+                .withName("Haplotype Output Options")
+                .withOption(
+                    obuilder
+                        .withShortName("output")
+                        .withShortName("o")
+                        .withArgument(
+                            abuilder
+                                .withName("block def")
+                                .withValidator(new EnumValidator(outputOptions))
+                                .withMinimum(1)
+                                .withMaximum(1)
+                                .create())
+                        .withDescription("Haplotype output block type. GAB (gabriel),GAM (4 gamete),SPI (spine) or ALL. Default is GAB")
+                        .create())
+                .withOption(
+                    obuilder
+                        .withShortName("hapthresh")
+                        .withArgument(
+                            abuilder
+                                .withName("frequency")
+                                .withMinimum(1)
+                                .withMaximum(1)
+                                .create())
+                        .withDescription("Only output haps with at least this frequency")
+                        .create())
+           .create();
+
+        final Group checkOptions =
+            gbuilder
+                .withName("Data Quality Checks")
                 .withOption(
                     obuilder
                         .withShortName("skipcheck")
-                        .withDescription("skip the various pedfile checks")
+                        .withDescription("Skip the various pedfile checks")
                         .create())
                 .withOption(
                     obuilder
-                        .withShortName("showcheck")
-                        .withDescription("displays the results of the various pedigree integrity checks")
+                        .withShortName("check")
+                        .withShortName("c")
+                        .withArgument(
+                            abuilder
+                                .withName("file")
+                                .withMinimum(0)
+                                .withMaximum(1)
+                                .create())
+                        .withDescription("Output checkdata to (optional)<file>. Prints to screen if no file provided.")
                         .create())
+               .create();
+        final Group options =
+            gbuilder
+                .withName("Haploview")
+                .withOption(
+                    obuilder
+                        .withShortName("help")
+                        .withShortName("h")
+                        .withDescription("print this message")
+                        .create())
+                .withOption(inputOptions)
+                .withOption(hapOutOptions)
+                .withOption(checkOptions)
 /*                .withOption(
                     obuilder
                         .withShortName("ignoremarkers")
@@ -263,31 +311,14 @@ public class HaploText implements Constants{
                         .withShortName("smallpng")
                         .withDescription("output a small PNG file")
                         .create())
-                .withOption(
-                    obuilder
-                        .withShortName("output")
-                        .withShortName("o")
-                        .withArgument(
-                            abuilder
-                                .withName("output type")
-                                .withValidator(new EnumValidator(outputOptions))
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withDescription("output type. GAB (gabriel),GAM (4 gamete),SPI (spine) or ALL. default is GAB")
-                        .create())
+
                 .withOption(
                     obuilder
                         .withShortName("dprime")
                         .withShortName("d")
                         .withDescription("output dprime to <inputfile>.DPRIME")
                         .create())
-                .withOption(
-                    obuilder
-                        .withShortName("check")
-                        .withShortName("c")
-                        .withDescription("output check to <inputfile>.CHECK")
-                        .create())
+
                 .withOption(
                     obuilder
                         .withShortName("track")
@@ -299,17 +330,7 @@ public class HaploText implements Constants{
                                 .create())
                         .withDescription("use analysis track from specified file")
                         .create())
-                .withOption(
-                    obuilder
-                        .withShortName("hapthresh")
-                        .withArgument(
-                            abuilder
-                                .withName("frequency")
-                                .withMinimum(1)
-                                .withMaximum(1)
-                                .create())
-                        .withDescription("minimum haplotype frequency which is output")
-                        .create())
+
                 .withOption(
                         obuilder
                         .withShortName("update")
@@ -398,10 +419,6 @@ public class HaploText implements Constants{
                 debugPrint("No gui mode");
             }
 
-            if(line.hasOption("-showcheck")) {
-                this.showCheck = true;
-                debugPrint("showing check");
-            }
             if(line.hasOption("-skipcheck")) {
                 this.skipCheck = true;
                 debugPrint("skipping check");
@@ -452,6 +469,9 @@ public class HaploText implements Constants{
             }
             if(line.hasOption("-c")){
                 this.outputCheck = true;
+                if (line.getValue("-c") != null){
+                    this.checkFileName = (String)line.getValue("-c");
+                }
                 debugPrint("outputing check");
             }
             if(line.hasOption("-m")){
@@ -459,7 +479,7 @@ public class HaploText implements Constants{
                     maxDistance = Integer.parseInt((String)line.getValue("-m"));
                 }
                 catch(NumberFormatException nfe) {
-                    throw new HaploViewException("invalid value for maximum distance");
+                    throw new HaploViewException("Invalid value for maximum distance");
                 }
                 if(maxDistance < 0 ) {
                     throw new HaploViewException("maximum distance cannot be negative");
@@ -490,7 +510,7 @@ public class HaploText implements Constants{
 
             if( this.outputType == -1 && ( this.pedFileName != null ||
                     this.hapsFileName != null || this.batchFileName != null || this.hapmapFileName != null)
-                    && !this.outputDprime && !this.outputCheck && !this.outputPNG && !this.outputSmallPNG) {
+                    && !this.outputDprime && !this.outputPNG && !this.outputSmallPNG) {
                 this.outputType = BLOX_GABRIEL;
                 if(HaploText.noGUI && !HaploText.quietMode) {
                     System.out.println("No output type specified. Default of Gabriel will be used");
@@ -501,10 +521,10 @@ public class HaploText implements Constants{
         }
         catch( OptionException exp ) {
             // oops, something went wrong
-            System.err.println( "There was a problem with at least one of the options used: " + exp.getMessage() );
+            System.err.println( "There was a problem with at least one of the options used:\n" + exp.getMessage() );
             System.exit(1);
         }catch (HaploViewException exp){
-            System.err.println( "There was a problem with at least one of the options used: " + exp.getMessage() );
+            System.err.println( "There was a problem with at least one of the options used:\n" + exp.getMessage() );
             System.exit(1);
         }
 
@@ -647,14 +667,20 @@ public class HaploText implements Constants{
                 System.out.println("Using marker file " + infoFile.getName());
             }
 
-            if(this.showCheck && result != null) {
-                CheckDataPanel cp = new CheckDataPanel(textData, false);
-                cp.printTable(null);
-            }
-
             if(this.outputCheck && result != null){
                 CheckDataPanel cp = new CheckDataPanel(textData, false);
-                cp.printTable(new File (fileName + ".CHECK"));
+                if (batchFileName != null){
+                    //if we're in batchmode we just write the check out to a diff file for each input file
+                    cp.printTable(new File(fileName + ".CHECK"));
+                } else {
+                    if (checkFileName != null){
+                        //if a filename is provided write the check to that file
+                        cp.printTable(new File (checkFileName));
+                    }else{
+                        //else print it to screen
+                        cp.printTable(null);
+                    }
+                }
             }
             Vector cust = new Vector();
             if(outputType != -1){
