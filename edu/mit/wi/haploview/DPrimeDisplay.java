@@ -304,6 +304,33 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }
         } */
 
+        //the following values are the bounds on the boxes we want to
+        //display given that the current window is 'visRect'
+        lowX = (visRect.x-clickXShift-(visRect.y +
+                visRect.height-clickYShift))/boxSize;
+        if (lowX < 0) {
+            lowX = 0;
+        }
+        highX = ((visRect.x + visRect.width)/boxSize)+1;
+        if (highX > dPrimeTable.length-1){
+            highX = dPrimeTable.length-1;
+        }
+        lowY = ((visRect.x-clickXShift)+(visRect.y-clickYShift))/boxSize;
+        if (lowY < lowX+1){
+            lowY = lowX+1;
+        }
+        highY = (((visRect.x-clickXShift+visRect.width) +
+                (visRect.y-clickYShift+visRect.height))/boxSize)+1;
+        if (highY > dPrimeTable.length){
+            highY = dPrimeTable.length;
+        }
+        if (forExport){
+            lowX = exportStart;
+            lowY = exportStart;
+            highX = exportStop;
+            highY = exportStop;
+        }
+
         if (theData.infoKnown) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
@@ -321,7 +348,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             g2.setColor(Color.black);
             g2.drawRect(left, top, lineSpan, TICK_HEIGHT);
 
-            for (int i = 0; i < Chromosome.getFilteredSize(); i++) {
+            for (int i = 0; i < Chromosome.getFilteredSize(); i++){
                 double pos = (Chromosome.getFilteredMarker(i).getPosition() - minpos) / spanpos;
                 int xx = (int) (left + lineSpan*pos);
                 g2.setStroke(thickerStroke);
@@ -362,7 +389,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }
         top  += blockDispHeight;
 
-
         //// draw the marker numbers
         if (printDetails){
             g2.setFont(markerNumFont);
@@ -388,33 +414,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             clickYShift = top;
         }
 
-        //the following values are the bounds on the boxes we want to
-        //display given that the current window is 'visRect'
-        lowX = (visRect.x-clickXShift-(visRect.y +
-                visRect.height-clickYShift))/boxSize;
-        if (lowX < 0) {
-            lowX = 0;
-        }
-        highX = ((visRect.x + visRect.width)/boxSize)+1;
-        if (highX > dPrimeTable.length-1){
-            highX = dPrimeTable.length-1;
-        }
-        lowY = ((visRect.x-clickXShift)+(visRect.y-clickYShift))/boxSize;
-        if (lowY < lowX+1){
-            lowY = lowX+1;
-        }
-        highY = (((visRect.x-clickXShift+visRect.width) +
-                (visRect.y-clickYShift+visRect.height))/boxSize)+1;
-        if (highY > dPrimeTable.length){
-            highY = dPrimeTable.length;
-        }
-
-        if (forExport){
-            lowX = exportStart;
-            lowY = exportStart;
-            highX = exportStop;
-            highY = exportStop;
-        }
 
         // draw table column by column
         for (int x = lowX; x < highX; x++) {
@@ -461,7 +460,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
             }
         }
-
         boolean even = true;
         //highlight blocks
         g2.setFont(markerNameFont);
@@ -546,36 +544,37 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }
         }
 
+
         if (showWM && !forExport){
             //dataset is big enough to require worldmap
+            final int WM_BD_GAP = 1;
+            final int WM_BD_HEIGHT = 2;
+            final int WM_BD_TOTAL = WM_BD_HEIGHT + 2*WM_BD_GAP;
+            CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
+                    BorderFactory.createLoweredBevelBorder());
+
+            if (wmMaxWidth == 0){
+                wmMaxWidth = visRect.width/3;
+            }
+            double scalefactor;
+            scalefactor = (double)(chartSize.width)/wmMaxWidth;
+            double prefBoxSize = boxSize/(scalefactor*((double)wmMaxWidth/(double)(wmMaxWidth-WM_BD_TOTAL)));
+
             if (noImage){
                 //first time through draw a worldmap if dataset is big:
-                final int WM_BD_GAP = 1;
-                final int WM_BD_HEIGHT = 2;
-                final int WM_BD_TOTAL = WM_BD_HEIGHT + 2*WM_BD_GAP;
-                if (wmMaxWidth == 0){
-                    wmMaxWidth = visRect.width/3;
-                }
-                double scalefactor;
-                scalefactor = (double)(chartSize.width)/wmMaxWidth;
-
-                CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
-                        BorderFactory.createLoweredBevelBorder());
                 worldmap = new BufferedImage((int)(chartSize.width/scalefactor)+wmBorder.getBorderInsets(this).left*2,
                         (int)(chartSize.height/scalefactor)+wmBorder.getBorderInsets(this).top*2+WM_BD_TOTAL,
                         BufferedImage.TYPE_3BYTE_BGR);
 
                 Graphics gw = worldmap.getGraphics();
                 Graphics2D gw2 = (Graphics2D)(gw);
-                gw2.setColor(this.getBackground());
+                gw2.setColor(BG_GREY);
                 gw2.fillRect(1,1,worldmap.getWidth()-1,worldmap.getHeight()-1);
                 //make a pretty border
                 gw2.setColor(Color.black);
 
                 wmBorder.paintBorder(this,gw2,0,0,worldmap.getWidth(),worldmap.getHeight());
                 wmInteriorRect = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth(), worldmap.getHeight());
-
-                double prefBoxSize = boxSize/(scalefactor*((double)wmMaxWidth/(double)(wmMaxWidth-WM_BD_TOTAL)));
 
                 float[] smallDiamondX = new float[4];
                 float[] smallDiamondY = new float[4];
@@ -606,31 +605,35 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
                     }
                 }
-                //draw block display in worldmap
-                gw2.setColor(this.getBackground());
-                gw2.fillRect(wmBorder.getBorderInsets(this).left,
-                        wmBorder.getBorderInsets(this).top+WM_BD_GAP,
-                        wmInteriorRect.width,
-                        WM_BD_HEIGHT);
-                gw2.setColor(Color.black);
-                even = true;
-                for (int i = 0; i < blocks.size(); i++){
-                    int first = ((int[])blocks.elementAt(i))[0];
-                    int last = ((int[])blocks.elementAt(i))[((int[])blocks.elementAt(i)).length-1];
-                    int voffset;
-                    if (even){
-                        voffset = 0;
-                    }else{
-                        voffset = WM_BD_HEIGHT/2;
-                    }
-                    gw2.fillRect(wmBorder.getBorderInsets(this).left+(int)(prefBoxSize*first),
-                            wmBorder.getBorderInsets(this).top+voffset+WM_BD_GAP,
-                            (int)((last-first+1)*prefBoxSize),
-                            WM_BD_HEIGHT/2);
-                    even = !even;
-                }
                 noImage = false;
             }
+
+            //draw block display in worldmap
+            Graphics gw = worldmap.getGraphics();
+            Graphics2D gw2 = (Graphics2D)(gw);
+            gw2.setColor(BG_GREY);
+            gw2.fillRect(wmBorder.getBorderInsets(this).left,
+                    wmBorder.getBorderInsets(this).top+WM_BD_GAP,
+                    wmInteriorRect.width,
+                    WM_BD_HEIGHT);
+            gw2.setColor(Color.black);
+            even = true;
+            for (int i = 0; i < blocks.size(); i++){
+                int first = ((int[])blocks.elementAt(i))[0];
+                int last = ((int[])blocks.elementAt(i))[((int[])blocks.elementAt(i)).length-1];
+                int voffset;
+                if (even){
+                    voffset = 0;
+                }else{
+                    voffset = WM_BD_HEIGHT/2;
+                }
+                gw2.fillRect(wmBorder.getBorderInsets(this).left+(int)(prefBoxSize*first),
+                        wmBorder.getBorderInsets(this).top+voffset+WM_BD_GAP,
+                        (int)((last-first+1)*prefBoxSize),
+                        WM_BD_HEIGHT/2);
+                even = !even;
+            }
+
             wmResizeCorner = new Rectangle(visRect.x + worldmap.getWidth() - (worldmap.getWidth()-wmInteriorRect.width)/2,
                     visRect.y + visRect.height - worldmap.getHeight(),
                     (worldmap.getWidth()-wmInteriorRect.width)/2,
@@ -768,7 +771,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     int whichMarker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
                     if (theData.isInBlock[whichMarker]){
                         theData.removeFromBlock(whichMarker);
-                        refresh();
+                        repaint();
                     } else if (whichMarker > 0 && whichMarker < Chromosome.realIndex.length){
                         theData.addMarkerIntoSurroundingBlock(whichMarker);
                     }
@@ -906,7 +909,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     lastMarker = temp;
                 }
                 theData.addBlock(firstMarker, lastMarker);
-                refresh();
+                repaint();
             }
         }
     }

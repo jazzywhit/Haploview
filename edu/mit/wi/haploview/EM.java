@@ -56,7 +56,7 @@ public class EM {
         int num_loci = input_haplos[0].length;
 
         if (num_loci > MAXLOCI){
-            throw new HaploViewException("Too many loci");
+            throw new HaploViewException("Too many loci in a single block (> 100)");
         }
 
         biggest_block_size=block_size[0];

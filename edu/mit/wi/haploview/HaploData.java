@@ -625,77 +625,56 @@ public class HaploData implements Constants{
             int[] preFiltBlock = (int[])blocks.elementAt(k);
             int[] theBlock;
 
-            Vector redundantTossed = new Vector();
-            Vector redundants = new Vector();
+            int[] selectedMarkers = new int[0];
+            int[] equivClass = new int[0];
             if (preFiltBlock.length > 30){
-                Vector nonRedundant = new Vector();
-                int numAdded = 0;
+                equivClass = new int[preFiltBlock.length];
+                int classCounter = 0;
                 for (int x = 0; x < preFiltBlock.length; x++){
                     int marker1 = preFiltBlock[x];
-                    byte major1 = Chromosome.getFilteredMarker(marker1).getMajor();
 
-                    //we don't want to be "too clever" and end up only using one or two
-                    //markers for phasing, so if we've pared it enough, just use all the remaining markers
-                    if (preFiltBlock.length - redundantTossed.size() < 5){
-                        nonRedundant.add(new Integer(marker1));
+                    //already been lumped into an equivalency class
+                    if (equivClass[x] != 0){
                         continue;
                     }
 
-                    if (redundantTossed.contains(new Integer(marker1))){
-                        continue;
-                    }
-                    nonRedundant.add(new Integer(marker1));
-                    comparing:
+                    //start a new equivalency class for this SNP
+                    classCounter ++;
+                    equivClass[x] = classCounter;
+
                     for (int y = x+1; y < preFiltBlock.length; y++){
                         int marker2 = preFiltBlock[y];
-                        byte major2 = Chromosome.getFilteredMarker(marker2).getMajor();
-                        for (int chr = 0; chr < chromosomes.size(); chr++){
-                            byte gt11 = ((Chromosome)chromosomes.elementAt(chr)).getFilteredGenotype(marker1);
-                            byte gt21 = ((Chromosome)chromosomes.elementAt(chr)).getFilteredGenotype(marker2);
-                            byte gt12 = ((Chromosome)chromosomes.elementAt(++chr)).getFilteredGenotype(marker1);
-                            byte gt22 = ((Chromosome)chromosomes.elementAt(chr)).getFilteredGenotype(marker2);
-                            byte gt1, gt2;
+                        if (marker1 > marker2){
+                            int tmp = marker1; marker1 = marker2; marker2 = tmp;
+                        }
+                        if (filteredDPrimeTable[marker1][marker2].getRSquared() == 1.0){
+                            //these two SNPs are redundant
+                            equivClass[y] = classCounter;
+                        }
+                    }
+                }
 
-                            if (gt11 == 0 || gt12 == 0 || gt21 == 0 || gt22 == 0){
-                                //ignore data missing for either SNP
-                                continue;
-                            }
-
-                            if (gt11 != gt12){
-                                gt1 = 2;
-                            }else if (gt11 == major1){
-                                gt1 = 1;
-                            }else{
-                                gt1 = 3;
-                            }
-                            if (gt21 != gt22){
-                                gt2 = 2;
-                            }else if (gt21 == major2){
-                                gt2 = 1;
-                            }else{
-                                gt2 = 3;
-                            }
-
-                            if (gt1 != gt2){
-                                //these two SNPs aren't redundant
-                                continue comparing;
+                //parse equivalency classes
+                selectedMarkers = new int[classCounter];
+                for (int x = 0; x < selectedMarkers.length; x++){
+                    selectedMarkers[x] = -1;
+                }
+                for (int x = 0; x < classCounter; x++){
+                    double genoPC = 1.0;
+                    for (int y = 0; y < equivClass.length; y++){
+                        if (equivClass[y] == x+1){
+                            //int[]tossed = new int[3];
+                            if (percentBadGenotypes[preFiltBlock[y]] < genoPC){
+                                selectedMarkers[x] = preFiltBlock[y];
+                                genoPC = percentBadGenotypes[preFiltBlock[y]];
                             }
                         }
-                        //if we get here these two markers are identical
-                        int[] tossed = new int[3];
-                        //this array has [tossed marker, marker to which it is identical]
-                        tossed[0] = marker2;
-                        tossed[1] = marker1;
-                        tossed[2] = numAdded;
-                        redundants.add(tossed);
-                        redundantTossed.add(new Integer(marker2));
                     }
-                    numAdded++;
                 }
-                theBlock = new int[nonRedundant.size()];
-                for (int z = 0; z < theBlock.length; z++){
-                    theBlock[z] = ((Integer)nonRedundant.elementAt(z)).intValue();
-                }
+
+                theBlock = selectedMarkers;
+                Arrays.sort(theBlock);
+                //System.out.println("Block " + k + " " + theBlock.length + "/" + preFiltBlock.length);
             }else{
                 theBlock = preFiltBlock;
             }
@@ -811,7 +790,7 @@ public class HaploData implements Constants{
                     }
                 }
 
-                if (redundants.size() > 0){
+                if (selectedMarkers.length > 0){
                     //we need to reassemble the haplotypes
                     Hashtable hapsHash = new Hashtable();
                     //add to hash all the genotypes we phased
@@ -820,30 +799,32 @@ public class HaploData implements Constants{
                     }
                     //now add all the genotypes we didn't bother phasing, based on
                     //which marker they are identical to
-                    for (int q = 0; q < redundants.size(); q++){
-                        int[] thisTossed = (int[])redundants.elementAt(q);
+                    for (int q = 0; q < equivClass.length; q++){
+                        int currentClass = equivClass[q]-1;
+                        if (selectedMarkers[currentClass] == preFiltBlock[q]){
+                            //we alredy added the phased genotypes above
+                            continue;
+                        }
+                        int indexIntoBlock=0;
+                        for (int x = 0; x < theBlock.length; x++){
+                            if (theBlock[x] == selectedMarkers[currentClass]){
+                                indexIntoBlock = x;
+                                break;
+                            }
+                        }
                         //this (somewhat laboriously) reconstructs whether to add the minor or major allele
-                        if (Chromosome.getFilteredMarker(thisTossed[1]).getMajor() ==
-                                genos[thisTossed[2]]){
-                            hapsHash.put(new Integer(thisTossed[0]),
-                                    new Integer(Chromosome.getFilteredMarker(thisTossed[0]).getMajor()));
+                        if (Chromosome.getFilteredMarker(selectedMarkers[currentClass]).getMajor() ==
+                                genos[indexIntoBlock]){
+                            hapsHash.put(new Integer(preFiltBlock[q]),
+                                    new Integer(Chromosome.getFilteredMarker(preFiltBlock[q]).getMajor()));
                         }else{
-                            hapsHash.put(new Integer(thisTossed[0]),
-                                    new Integer(Chromosome.getFilteredMarker(thisTossed[0]).getMinor()));
+                            hapsHash.put(new Integer(preFiltBlock[q]),
+                                    new Integer(Chromosome.getFilteredMarker(preFiltBlock[q]).getMinor()));
                         }
                     }
-                    //now sort hashkeys to put everything together in the right order
-                    Enumeration keys = hapsHash.keys();
-                    int[] keyArray = new int[hapsHash.size()];
-                    int count = 0;
-                    while (keys.hasMoreElements()){
-                        keyArray[count] = ((Integer)keys.nextElement()).intValue();
-                        count++;
-                    }
-                    Arrays.sort(keyArray);
-                    genos = new int[keyArray.length];
-                    for (int q = 0; q < keyArray.length; q++){
-                        genos[q] = ((Integer)hapsHash.get(new Integer(keyArray[q]))).intValue();
+                    genos = new int[preFiltBlock.length];
+                    for (int q = 0; q < preFiltBlock.length; q++){
+                        genos[q] = ((Integer)hapsHash.get(new Integer(preFiltBlock[q]))).intValue();
                     }
                 }
 
@@ -1102,11 +1083,16 @@ public class HaploData implements Constants{
     }
 
     void guessBlocks(int method){
+        guessBlocks(method, new Vector());
+    }
+    void guessBlocks(int method, Vector custVec){
         Vector returnVec = new Vector();
         switch(method){
             case BLOX_GABRIEL: returnVec = FindBlocks.doGabriel(filteredDPrimeTable); break;
             case BLOX_4GAM: returnVec = FindBlocks.do4Gamete(filteredDPrimeTable); break;
             case BLOX_SPINE: returnVec = FindBlocks.doSpine(filteredDPrimeTable); break;
+            case BLOX_CUSTOM: returnVec = custVec; break;
+            //todo: bad! doesn't check if vector is out of bounds and stuff or blocks out of order
             default: returnVec = new Vector(); break;
         }
         blocks = returnVec;

@@ -192,7 +192,7 @@ public class HaplotypeDisplay extends JComponent {
         int numhaps = 0;
         int printable = 0;
         for (int i = 0; i < orderedHaplos.length; i++){
-            Vector tempVector = new Vector();
+                        Vector tempVector = new Vector();
             for (int j = 0; j < orderedHaplos[i].length; j++){
                 if (orderedHaplos[i][j].getPercentage()*100 > dt){
                     tempVector.add(orderedHaplos[i][j]);
@@ -217,6 +217,7 @@ public class HaplotypeDisplay extends JComponent {
 
         displayThresh = dt;
         filteredHaplos = filts;
+
         //then re-tag
         try{
             filteredHaplos = theData.generateCrossovers(filteredHaplos);

@@ -438,8 +438,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     changeKey(1);
                     theData.generateDPrimeTable();
-                    //theData.guessBlocks(BLOX_GABRIEL);
-                    theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
+                    theData.guessBlocks(BLOX_GABRIEL);
+                    //theData.guessBlocks(BLOX_NONE);  //for debugging, doesn't call blocks at first
                     colorMenuItems[0].setSelected(true);
                     blockMenuItems[0].setSelected(true);
                     zoomMenuItems[0].setSelected(true);
@@ -637,7 +637,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             blockMenuItems[BLOX_CUSTOM].setSelected(true);
         }
         theData.guessBlocks(method);
-        dPrimeDisplay.refresh();
+        dPrimeDisplay.repaint();
         currentBlockDef = method;
 
         try{

@@ -5,6 +5,7 @@ import edu.mit.wi.pedfile.PedFileException;
 
 import java.io.*;
 import java.util.Vector;
+import java.util.StringTokenizer;
 
 public class HaploText implements Constants{
 
@@ -14,6 +15,7 @@ public class HaploText implements Constants{
     private String arg_infoFileName;
     private String arg_pedfile;
     private String arg_hapmapfile;
+    private String arg_blockfile;
     private boolean arg_showCheck = false;
     private boolean arg_skipCheck = false;
     private Vector arg_ignoreMarkers = new Vector();
@@ -67,7 +69,6 @@ public class HaploText implements Constants{
         }
 
         if(!(this.arg_pedfile.equals("")) || !(this.arg_hapsfile.equals("")) || !(this.arg_hapmapfile.equals(""))){
-            //System.out.println("pedfile!\t" + pedFileName);
             if(arg_nogui){
                 processTextOnly();
             }
@@ -85,6 +86,7 @@ public class HaploText implements Constants{
         String pedFileName = "";
         String infoFileName = "";
         String hapmapFileName = "";
+        String blockFileName = "";
         boolean showCheck = false;
         boolean skipCheck = false;
         Vector ignoreMarkers = new Vector();
@@ -111,6 +113,7 @@ public class HaploText implements Constants{
                         "-l <hapsfile>                 specify an input file in .haps format\n" +
                         "-i <infofile>                 specify a marker info file\n" +
                         "-b <batchfile>                batch mode. batchfile should contain a list of files either all genotype or alternating genotype/info\n" +
+                        "-k <blockfile>                blocks file, one block per line, will force output for these blocks\n" +
                         "-d                            outputs dprime to <inputfile>.DPRIME\n" +
                         "-c                            outputs marker checks to <inputfile>.CHECK\n" +
                         "                              note: -d  and -c default to no blocks output. use -o to also output blocks\n" +
@@ -193,11 +196,21 @@ public class HaploText implements Constants{
                     hapmapFileName = args[i];
                 }
             }
+            else if(args[i].equals("-k")) {
+                i++;
+                if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                    blockFileName = args[i];
+                    outputType = BLOX_CUSTOM;
+                }else{
+                    System.out.println("-k requires a filename");
+                    System.exit(1);
+                }
+            }
             else if(args[i].equals("-o")) {
                 i++;
                 if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
                     if(outputType != -1){
-                        System.out.println("only one -o argument is allowed");
+                        System.out.println("only one output argument is allowed");
                         System.exit(1);
                     }
                     if(args[i].equals("SFS") || args[i].equals("GAB")){
@@ -292,6 +305,7 @@ public class HaploText implements Constants{
         arg_infoFileName = infoFileName;
         arg_pedfile = pedFileName;
         arg_hapmapfile = hapmapFileName;
+        arg_blockfile = blockFileName;
         arg_showCheck = showCheck;
         arg_skipCheck = skipCheck;
         arg_ignoreMarkers = ignoreMarkers;
@@ -397,7 +411,6 @@ public class HaploText implements Constants{
         try {
             int outputType;
             long maxDistance;
-            long negMaxDistance;
             HaploData textData;
             File OutputFile;
             File inputFile;
@@ -409,7 +422,6 @@ public class HaploText implements Constants{
             }
 
             maxDistance = this.arg_distance * 1000;
-            negMaxDistance = -maxDistance;
             outputType = this.arg_output;
 
 
@@ -491,6 +503,7 @@ public class HaploText implements Constants{
                 saveCheckWriter.close();
             }
 
+            Vector cust = new Vector();
             if(outputType != -1){
                 textData.generateDPrimeTable();
                 Haplotype[][] haplos;
@@ -503,6 +516,30 @@ public class HaploText implements Constants{
                         break;
                     case BLOX_SPINE:
                         OutputFile = new File(fileName + ".SPINEblocks");
+                        break;
+                    case BLOX_CUSTOM:
+                        OutputFile = new File(fileName + ".CUSTblocks");
+                        //read in the blocks file
+                        File blocksFile = new File(arg_blockfile);
+                        if (!(blocksFile.exists())){
+                            System.out.println("Blocks file " + arg_blockfile + " doesn't exist!");
+                            System.exit(1);
+                        }else{
+                            //todo:bad, bad, bad, doesn't check at all that the file is formatted properly
+                            BufferedReader in = new BufferedReader(new FileReader(blocksFile));
+                            String currentLine;
+                            while ((currentLine = in.readLine()) != null){
+                                StringTokenizer st = new StringTokenizer(currentLine);
+                                int[] thisBlock = new int[st.countTokens()];
+                                int x = 0;
+                                while (st.hasMoreTokens()){
+                                    //we're being nice to users and letting them input blocks with 1-offset
+                                    thisBlock[x] = new Integer(st.nextToken()).intValue()-1;
+                                    x++;
+                                }
+                                cust.add(thisBlock);
+                            }
+                        }
                         break;
                     default:
                         OutputFile = new File(fileName + ".GABRIELblocks");
@@ -527,7 +564,7 @@ public class HaploText implements Constants{
                     haplos = textData.generateHaplotypes(textData.blocks, 1);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }else{
-                    textData.guessBlocks(outputType);
+                    textData.guessBlocks(outputType, cust);
                     haplos = textData.generateHaplotypes(textData.blocks, 1);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }
