@@ -1,57 +1,46 @@
 package edu.mit.wi.haploview;
 
-import java.util.*;
 
-class Chromosome implements Enumeration{
+class Chromosome{
 
     private String ped;
     private String individual;
-    private Vector genotypes;
-    private int current_geno = 0;
+    private byte[] genotypes;
     private String origin;
 
-    Chromosome(String p, String i, Vector g, String o){
-	ped = p;
-	individual = i;
-	genotypes = g;
-	origin = o;
+    Chromosome(String p, String i, byte[] g, String o){
+        ped = p;
+        individual = i;
+        genotypes = g;
+        origin = o;
     }
 
-    Chromosome(String p, String i, Vector g){
-	ped = p;
-	individual = i;
-	genotypes = g;
-	origin = "unknown";
+    Chromosome(String p, String i, byte[] g){
+        ped = p;
+        individual = i;
+        genotypes = g;
+        origin = "unknown";
     }
 
-    public boolean hasMoreElements(){
-        return current_geno < genotypes.size();
+    public byte elementAt(int i){
+        return genotypes[i];
     }
-    
     public int size(){
-	return genotypes.size();
-    }
-
-    public Object nextElement(){
-        return genotypes.elementAt(current_geno++);
-    }
-
-    public Object elementAt(int i){
-	return genotypes.elementAt(i);
+        return genotypes.length;
     }
 
     public String getPed(){
-	return ped;
+        return ped;
     }
 
     public String getIndividual(){
-	return individual;
+        return individual;
     }
 
     public String getOrigin(){
-	return origin;
+        return origin;
     }
-    
+
 }
 
 
