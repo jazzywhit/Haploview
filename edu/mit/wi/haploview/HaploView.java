@@ -239,9 +239,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         analysisMenu.setEnabled(false);
 
         JMenu helpMenu = new JMenu("Help");
+        helpMenu.setMnemonic(KeyEvent.VK_H);
         menuBar.add(helpMenu);
 
-        menuItem = new JMenuItem("Help Contents");
+        JMenuItem helpContentsItem;
+        helpContentsItem = new JMenuItem("Help Contents");
         HelpSet hs;
         HelpBroker hb;
         String helpHS = "HaploviewHelp/HaploHelp.hs";
@@ -254,8 +256,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             return;
         }
         hb = hs.createHelpBroker();
-        menuItem.addActionListener(new CSH.DisplayHelpFromSource(hb));
-        helpMenu.add(menuItem);
+        helpContentsItem.addActionListener(new CSH.DisplayHelpFromSource(hb));
+        helpContentsItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
+        helpMenu.add(helpContentsItem);
 
         menuItem = new JMenuItem("About Haploview");
         menuItem.addActionListener(this);
