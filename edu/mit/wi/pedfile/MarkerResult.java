@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 1.1 2003/08/01 19:36:19 jmaller Exp $
+ * $Id: MarkerResult.java,v 1.2 2003/10/15 15:38:20 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -13,6 +13,7 @@
 package edu.mit.wi.pedfile;
 
 import java.text.*;
+import java.util.Locale;
 
 /**
  * <p>Title: MarkerResult.java </p>
@@ -34,13 +35,12 @@ public class MarkerResult {
 	private int _mendErrNum;
 	private int _rating;
 	private String _name="";
-	NumberFormat nf = NumberFormat.getInstance();
+    NumberFormat nf = NumberFormat.getInstance(Locale.US);
 
 	public MarkerResult() {
 		nf.setMinimumFractionDigits(3);
 		nf.setMaximumFractionDigits(3);
-	}
-
+    }
 	/**
 	 * Sets the marker name
 	 */
