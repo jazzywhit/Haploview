@@ -15,9 +15,9 @@ import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.CheckData;
 
 public class CheckDataPanel extends JPanel implements TableModelListener, ActionListener{
-	private JTable table;
+    private JTable table;
     private CheckDataTableModel tableModel;
-	private PedFile pedfile;
+    private PedFile pedfile;
     private HaploData theData;
 
     boolean changed;
@@ -142,13 +142,13 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         tableModel.addTableModelListener(this);
     }
 
-	public PedFile getPedFile(){
-		return pedfile;
-	}
+    public PedFile getPedFile(){
+        return pedfile;
+    }
 
-	public JTable getTable(){
-		return table;
-	}
+    public JTable getTable(){
+        return table;
+    }
 
     public void tableChanged(TableModelEvent e) {
         if (e.getColumn() == STATUS_COL){
@@ -201,7 +201,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         for (int i = 0; i < table.getRowCount(); i++){
             table.setValueAt(new Boolean(true), i, STATUS_COL);
         }
-	changed = true;
+        changed = true;
     }
 
     public void redoRatings(){
@@ -237,18 +237,35 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         }
     }
 
-    class CheckDataTableModel extends BasicTableModel {
-		Vector columnNames; Vector data; int[] ratings; int[] dups;
+    class CheckDataTableModel extends AbstractTableModel {
+        Vector columnNames; Vector data; int[] ratings; int[] dups;
 
-		public CheckDataTableModel(Vector c, Vector d, int[] r, int[] dups){
-			super(c,d);
+        public CheckDataTableModel(Vector c, Vector d, int[] r, int[] dups){
+            columnNames=c;
+            data=d;
             ratings = r;
             this.dups = dups;
-		}
+        }
 
-		public int getRating(int row){
-			return ratings[row];
-		}
+        public int getColumnCount(){
+            return columnNames.size();
+        }
+
+        public int getRowCount(){
+            return data.size();
+        }
+
+        public Object getValueAt(int row, int column){
+            return ((Vector)data.elementAt(row)).elementAt(column);
+        }
+
+        public Class getColumnClass(int c){
+            return getValueAt(0, c).getClass();
+        }
+
+        public int getRating(int row){
+            return ratings[row];
+        }
 
         public int getDupStatus(int row){
             return dups[row];
@@ -260,28 +277,32 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             }
         }
 
-		public boolean isCellEditable(int row, int col){
-			if (getColumnName(col).equals("Rating")){
-				return true;
-			}else{
-				return false;
-			}
-		}
+        public String getColumnName(int n){
+            return (String)columnNames.elementAt(n);
+        }
 
-		public void setValueAt(Object value, int row, int col){
-			((Vector)data.elementAt(row)).set(col, value);
-			fireTableCellUpdated(row, col);
-		}
-	}
+        public boolean isCellEditable(int row, int col){
+            if (getColumnName(col).equals("Rating")){
+                return true;
+            }else{
+                return false;
+            }
+        }
 
-	class CheckDataCellRenderer extends DefaultTableCellRenderer {
-		public Component getTableCellRendererComponent
-		        (JTable table, Object value, boolean isSelected,
-		         boolean hasFocus, int row, int column)
-		{
-			Component cell = super.getTableCellRendererComponent
-			        (table, value, isSelected, hasFocus, row, column);
-			int myRating = ((CheckDataTableModel)table.getModel()).getRating(row);
+        public void setValueAt(Object value, int row, int col){
+            ((Vector)data.elementAt(row)).set(col, value);
+            fireTableCellUpdated(row, col);
+        }
+    }
+
+    class CheckDataCellRenderer extends DefaultTableCellRenderer {
+        public Component getTableCellRendererComponent
+                (JTable table, Object value, boolean isSelected,
+                 boolean hasFocus, int row, int column)
+        {
+            Component cell = super.getTableCellRendererComponent
+                    (table, value, isSelected, hasFocus, row, column);
+            int myRating = ((CheckDataTableModel)table.getModel()).getRating(row);
             int myDupStatus = ((CheckDataTableModel)table.getModel()).getDupStatus(row);
             String thisColumnName = table.getColumnName(column);
             cell.setForeground(Color.black);
@@ -321,9 +342,9 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
                     }
                 }
             }
-			return cell;
-		}
-	}
+            return cell;
+        }
+    }
 
 
 
