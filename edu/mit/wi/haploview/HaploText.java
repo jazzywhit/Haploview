@@ -664,6 +664,10 @@ public class HaploText implements Constants{
                         File blocksFile = new File(blockFileName);
                         cust = textData.readBlocks(blocksFile);
                         break;
+                    case BLOX_ALL:
+                        //handled below, so we don't do anything here
+                        OutputFile = null;
+                        break;
                     default:
                         OutputFile = validateOutputFile(fileName + ".GABRIELblocks");
                         break;
@@ -701,8 +705,7 @@ public class HaploText implements Constants{
 
                 if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
                     if (blockOutputType == BLOX_ALL){
-                        System.out.println("Haplotype association results must be generated one block\n" +
-                                "definition at a time and so cannot be used with output type ALL.");
+                        System.out.println("Haplotype association results cannot be used with block output \"ALL\"");
                     }else{
                         HaploData.saveHapAssocToText(haplos, fileName + ".HAPASSOC");
                     }
