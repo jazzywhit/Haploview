@@ -11,7 +11,7 @@ public class PedParser {
     double TRIO_SCORE = 2.001;
     double TRIO_DIFFERENTIAL = TRIO_SCORE - 1;
 
-    public SimpleGraph buildGraph(Vector pedFileInds, double missingThresh) throws PedigreeException, UnrelatedException{
+    public SimpleGraph buildGraph(Vector pedFileInds, double missingThresh) throws PedigreeException{
         SimpleGraph theGraph = new SimpleGraph();
 
         Hashtable indsByID = new Hashtable();
@@ -42,7 +42,7 @@ public class PedParser {
             Individual mom = (Individual) indsByID.get(momsByID.get(ind.id));
             Individual dad = (Individual) indsByID.get(dadsByID.get(ind.id));
             if (mom != null ^ dad != null){
-                throw new PedigreeException("Individual " + ind +" has only one parent");
+                throw new PedigreeException("Individual " + ind +" has only one parent.");
             }
             if (dad != null && mom != null){
                 ind.addDad(dad);
@@ -112,11 +112,11 @@ public class PedParser {
 
         ConnectivityInspector inspectorGadget = new ConnectivityInspector(theGraph);
         if (!inspectorGadget.isGraphConnected()){
-             throw new UnrelatedException("Unrelated individuals in the same family.");
+             throw new PedigreeException("Unrelated individuals in the same family.");
         }
 
         if (usedPeople.size() != indsByID.size()){
-            throw new UnrelatedException("Unrelated individuals in the same family.");
+            throw new PedigreeException("Unrelated individuals in the same family.");
         }
         return theGraph;
     }

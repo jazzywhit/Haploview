@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.3 2005/01/31 21:04:07 jcbarret Exp $
+* $Id: PedFile.java,v 3.4 2005/02/03 17:13:32 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -16,7 +16,6 @@ import edu.mit.wi.haploview.Chromosome;
 import edu.mit.wi.haploview.Options;
 import edu.mit.wi.pedparser.PedParser;
 import edu.mit.wi.pedparser.PedigreeException;
-import edu.mit.wi.pedparser.UnrelatedException;
 
 import java.util.*;
 
@@ -689,7 +688,6 @@ public class PedFile {
 
         Iterator fitr = families.values().iterator();
         Vector useable = new Vector();
-        Vector badFamilies = new Vector();
         while (fitr.hasNext()){
             Family curFam = (Family) fitr.next();
             Enumeration indIDEnum = curFam.getMemberList();
@@ -709,9 +707,16 @@ public class PedFile {
                         }
                     }
                 }catch (PedigreeException pe){
-                    throw new PedFileException(pe.getMessage() + "\nin family " + curFam.getFamilyName());
-                }catch (UnrelatedException ue){
-                    badFamilies.add(curFam);
+                    String pem = pe.getMessage();
+                    if (pem.indexOf("one parent") != -1 ||
+                            pem.indexOf("Unrelated individuals in the same family.") != -1){
+                        indIDEnum = curFam.getMemberList();
+                        while (indIDEnum.hasMoreElements()){
+                            curFam.getMember((String) indIDEnum.nextElement()).setReasonImAxed(pem);
+                        }
+                    }else{
+                        throw new PedFileException(pem + "\nin family " + curFam.getFamilyName());
+                    }
                 }
             }else if (victor.size() == 1){
                 Individual singleton = (Individual) victor.elementAt(0);
@@ -721,17 +726,7 @@ public class PedFile {
                 }
             }
         }
-        if (badFamilies.size() > 0){
-            //todo: it should really keep going without these people or generate a warning but parse the fams correctly
-            //todo: the latter can be done with jgrapht's getConnectedSets() method in ConnectivityInspector
-            StringBuffer sb = new StringBuffer("Pedigree error: unrelated individuals in same family.\n");
-            for (int i = 0; i < badFamilies.size(); i++) {
-                Family family = (Family) badFamilies.elementAt(i);
-                sb.append(family.getFamilyName());
-                sb.append("\n");
-            }
-            throw new PedFileException(sb.toString());
-        }
+
         unrelatedIndividuals = useable;
 
         Vector indList = (Vector)allIndividuals.clone();
@@ -754,8 +749,14 @@ public class PedFile {
                 }
             }else if (!useable.contains(currentInd)){
                 axedPeople.add(currentInd);
-                currentInd.setReasonImAxed("Not a member of maximum unrelated subset.");
+                if (currentInd.getReasonImAxed() == null){
+                    currentInd.setReasonImAxed("Not a member of maximum unrelated subset.");
+                }
             }
+        }
+        if (useable.size() == 0){
+            //todo: this should be more specific about the problems.
+            throw new PedFileException("File contains zero valid individuals.");
         }
 
         CheckData cd = new CheckData(this);
