@@ -228,6 +228,16 @@ public class HaplotypeDisplay extends JComponent {
         }
         multidprimeArray = theData.getMultiDprime();
 
+        //if the haps pane exists, we want to make sure the vert scroll bar appears if necessary
+        if (this.getParent() != null){
+            if (this.getPreferredSize().height > this.getParent().getHeight()){
+                    ((JScrollPane)this.getParent().getParent()).setVerticalScrollBarPolicy(
+                            JScrollPane.VERTICAL_SCROLLBAR_ALWAYS );
+            }else{
+               ((JScrollPane)this.getParent().getParent()).setVerticalScrollBarPolicy(
+                            JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+            }
+        }
         repaint();
     }
 
