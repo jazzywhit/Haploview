@@ -4,9 +4,7 @@ import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
-//import java.awt.font.*;
-//import java.io.*;
-//import java.text.*;
+import java.util.Vector;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
@@ -35,15 +33,17 @@ class DPrimeDisplay extends JComponent{
     private boolean printDetails = true;
     private boolean noImage = true;
 
+    private Vector blocks;
     private Rectangle ir = new Rectangle();
     private Rectangle worldmapRect = new Rectangle(0,0,-1,-1);
     private BufferedImage worldmap;
     private PairwiseLinkage dPrimeTable[][];
     private Dimension chartSize;
 
-    DPrimeDisplay(PairwiseLinkage[][] t, boolean b){
+    DPrimeDisplay(PairwiseLinkage[][] t, boolean b, Vector v){
         markersLoaded = b;
         dPrimeTable = t;
+        blocks = v;
         this.setDoubleBuffered(true);
         addMouseListener(new PopMouseListener(this));
     }
@@ -103,15 +103,15 @@ class DPrimeDisplay extends JComponent{
         g2.fillRect(0,0,pref.width,pref.height);
         g2.setColor(Color.BLACK);
 
+        BasicStroke thickerStroke = new BasicStroke(1);
+        BasicStroke thinnerStroke = new BasicStroke(0.25f);
+        BasicStroke fatStroke = new BasicStroke(3.0f);
 
         if (markersLoaded) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
             //// draw the marker locations
-
-            BasicStroke thickerStroke = new BasicStroke(1);
-            BasicStroke thinnerStroke = new BasicStroke(0.25f);
 
             int wide = (dPrimeTable.length-1) * boxSize;
             //TODO: talk to kirby about locusview scaling gizmo
@@ -147,7 +147,6 @@ class DPrimeDisplay extends JComponent{
                     int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }
-                //System.out.println(widest);
 
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
@@ -170,6 +169,7 @@ class DPrimeDisplay extends JComponent{
             g.setFont(markerNumFont);
             metrics = g.getFontMetrics();
             ascent = metrics.getAscent();
+
             for (int x = 0; x < dPrimeTable.length; x++) {
                 String mark = String.valueOf(Chromosome.realIndex[x] + 1);
                 g.drawString(mark,
@@ -199,7 +199,6 @@ class DPrimeDisplay extends JComponent{
         if (highY > dPrimeTable.length){
             highY = dPrimeTable.length;
         }
-
 
         // draw table column by column
         for (int x = lowX; x < highX; x++) {
@@ -251,10 +250,41 @@ class DPrimeDisplay extends JComponent{
             }
         }
 
-        if (pref.getWidth() > visRect.width){
+        //highlight blocks
+        boolean even = true;
+        //g.setColor(new Color(153,255,153));
+        g.setColor(new Color(51,153,51));
+        g2.setStroke(fatStroke);
+        for (int i = 0; i < blocks.size(); i++){
+            int[] theBlock = (int[])blocks.elementAt(i);
+            int first = theBlock[0];
+            int last = theBlock[theBlock.length-1];
+            g.drawLine(left + (2*first + 1) * boxSize/2 - boxRadius,
+                    top + boxSize/2,
+                    left + (first + last) * boxSize/2,
+                    top + (last - first) * boxSize/2 + boxRadius);
+            g.drawLine(left + (first + last) * boxSize/2,
+                    top + (last - first) * boxSize/2 + boxRadius,
+                    left + (2*last - 1) * boxSize/2+boxRadius,
+                    top + boxSize/2);
+            for (int j = 0; j < theBlock.length-1; j++){
+                g.drawLine(left + (2*theBlock[j]+1) * boxSize/2 - boxRadius,
+                        top + boxSize/2,
+                        left + (2*theBlock[j]+1) * boxSize/2,
+                        top + boxSize/2 - boxRadius);
+                g.drawLine (left + (2*theBlock[j]+1) * boxSize/2,
+                        top + boxSize/2 - boxRadius,
+                        left + (2*theBlock[j]+1) * boxSize/2 +boxRadius,
+                        top + boxSize/2);
+            }
+        }
+        g2.setStroke(thickerStroke);
+
+        if (pref.getWidth() > (2*visRect.width)){
+            //dataset is big enough to require worldmap
             if (noImage){
                 //first time through draw a worldmap if dataset is big:
-                final int WM_MAX_WIDTH = 300;
+                final int WM_MAX_WIDTH = visRect.width/3;
                 double scalefactor;
                 scalefactor = (double)(chartSize.width)/WM_MAX_WIDTH;
 
@@ -306,7 +336,25 @@ class DPrimeDisplay extends JComponent{
                 }
                 noImage = false;
             }
-            paintWorldMap(g);
+            g.drawImage(worldmap,visRect.x,
+                    visRect.y + visRect.height - worldmap.getHeight(),
+                    this);
+            worldmapRect = new Rectangle(visRect.x,
+                    visRect.y+visRect.height-worldmap.getHeight(),
+                    worldmap.getWidth(),
+                    worldmap.getHeight());
+
+            //draw the outline of the viewport
+            g.setColor(Color.BLACK);
+            double hRatio = ir.getWidth()/pref.getWidth();
+            double vRatio = ir.getHeight()/pref.getHeight();
+            int hBump = worldmap.getWidth()-ir.width;
+            int vBump = worldmap.getHeight()-ir.height;
+            //bump a few pixels to avoid drawing on the border
+            g.drawRect((int)(visRect.x*hRatio)+hBump/2+visRect.x,
+                    (int)(visRect.y*vRatio)+vBump/2+(visRect.y + visRect.height - worldmap.getHeight()),
+                    (int)(visRect.width*hRatio),
+                    (int)(visRect.height*vRatio));
         }
     }
 
@@ -340,32 +388,6 @@ class DPrimeDisplay extends JComponent{
         return new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1), high);
     }
 
-    void paintWorldMap(Graphics g){
-        Rectangle visRect = getVisibleRect();
-        Dimension pref = getPreferredSize();
-
-        g.drawImage(worldmap,visRect.x,
-                visRect.y + visRect.height - worldmap.getHeight(),
-                this);
-        worldmapRect = new Rectangle(visRect.x,
-                visRect.y+visRect.height-worldmap.getHeight(),
-                worldmap.getWidth(),
-                worldmap.getHeight());
-
-        //draw the outline of the viewport
-        g.setColor(Color.BLACK);
-        double hRatio = ir.getWidth()/pref.getWidth();
-        double vRatio = ir.getHeight()/pref.getHeight();
-        int hBump = worldmap.getWidth()-ir.width;
-        int vBump = worldmap.getHeight()-ir.height;
-        //bump a few pixels to avoid drawing on the border
-        g.drawRect((int)(visRect.x*hRatio)+hBump/2+visRect.x,
-                (int)(visRect.y*vRatio)+vBump/2+(visRect.y + visRect.height - worldmap.getHeight()),
-                (int)(visRect.width*hRatio),
-                (int)(visRect.height*vRatio));
-
-
-    }
 
     int[] centerString(String s, FontMetrics fm) {
         int[] returnArray = new int[2];
@@ -374,8 +396,9 @@ class DPrimeDisplay extends JComponent{
         return returnArray;
     }
 
-    public void refreshWorldmap() {
+    public void refreshBlocks(Vector v) {
         noImage=true;
+        blocks = v;
     }
 
 
