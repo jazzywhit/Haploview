@@ -16,6 +16,8 @@ public class Options {
     private static int haplotypeDisplayThreshold;
     private static int LDColorScheme;
     private static boolean showGBrowse;
+    private static long gBrowseLeft;
+    private static long gBrowseRight;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -81,5 +83,21 @@ public class Options {
 
     public static void setShowGBrowse(boolean showGBrowse) {
         Options.showGBrowse = showGBrowse;
+    }
+
+    public static long getgBrowseLeft() {
+        return gBrowseLeft;
+    }
+
+    public static void setgBrowseLeft(long gBrowseLeft) {
+        Options.gBrowseLeft = gBrowseLeft;
+    }
+
+    public static long getgBrowseRight() {
+        return gBrowseRight;
+    }
+
+    public static void setgBrowseRight(long gBrowseRight) {
+        Options.gBrowseRight = gBrowseRight;
     }
 }

@@ -24,7 +24,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     boolean DEBUG = false;
 
-    JMenuItem readMarkerItem, analysisItem, blocksItem;
+    JMenuItem readMarkerItem, analysisItem, blocksItem, gbrowseItem;
     String exportItems[] = {
         EXPORT_TEXT, EXPORT_PNG, EXPORT_OPTIONS
     };
@@ -116,6 +116,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         blocksItem.addActionListener(this);
         blocksItem.setEnabled(false);
         fileMenu.add(blocksItem);
+
+        gbrowseItem = new JMenuItem(DOWNLOAD_GBROWSE);
+        gbrowseItem.addActionListener(this);
+        gbrowseItem.setEnabled(false);
+        fileMenu.add(gbrowseItem);
 
         /*
         viewMarkerItem = new JMenuItem(VIEW_MARKERS);
@@ -304,6 +309,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             if (returnVal == JFileChooser.APPROVE_OPTION){
                 readAnalysisFile(fc.getSelectedFile());
             }
+        }else if (command.equals(DOWNLOAD_GBROWSE)){
+            GBrowseDialog gbd = new GBrowseDialog(this, "Connect to HapMap Info Server");
+            gbd.pack();
+            gbd.setVisible(true);
         }else if (command.equals(READ_BLOCKS_FILE)){
             fc.setSelectedFile(new File(""));
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION){
@@ -755,8 +764,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             theData.prepareMarkerInput(inputFile, hminfo);
             if (theData.infoKnown){
                 analysisItem.setEnabled(true);
+                gbrowseItem.setEnabled(true);
             }else{
                 analysisItem.setEnabled(false);
+                gbrowseItem.setEnabled(false);
             }
             if (checkPanel != null){
                 //this is triggered when loading markers after already loading genotypes

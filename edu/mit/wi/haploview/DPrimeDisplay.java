@@ -30,7 +30,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private static final int TRACK_GAP = 5;
 
     private int widestMarkerName = 80; //default size
-    private int infoHeight = 0, blockDispHeight = 0;
+    private int blockDispHeight = 0, infoHeight = 0;
     private int boxSize = BOX_SIZES[0];
     private int boxRadius = BOX_RADII[0];
     private int lowX, highX, lowY, highY;
@@ -800,9 +800,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         if (showWM && !forExport){
             //dataset is big enough to require worldmap
-            final int WM_BD_GAP = 1;
-            final int WM_BD_HEIGHT = 2;
-            final int WM_BD_TOTAL = WM_BD_HEIGHT + 2*WM_BD_GAP;
+            final int WM_BD_GAP = 4;
+            final int WM_BD_HEIGHT = 3;
             CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
                     BorderFactory.createLoweredBevelBorder());
 
@@ -811,12 +810,12 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }
             double scalefactor;
             scalefactor = (double)(chartSize.width)/wmMaxWidth;
-            double prefBoxSize = boxSize/(scalefactor*((double)wmMaxWidth/(double)(wmMaxWidth-WM_BD_TOTAL)));
+            double prefBoxSize = boxSize/(scalefactor*((double)wmMaxWidth/(double)(wmMaxWidth)));
 
             if (noImage){
                 //first time through draw a worldmap if dataset is big:
                 worldmap = new BufferedImage((int)(chartSize.width/scalefactor)+wmBorder.getBorderInsets(this).left*2,
-                        (int)(chartSize.height/scalefactor)+wmBorder.getBorderInsets(this).top*2+WM_BD_TOTAL,
+                        (int)(chartSize.height/scalefactor)+wmBorder.getBorderInsets(this).top*2,
                         BufferedImage.TYPE_3BYTE_BGR);
 
                 Graphics gw = worldmap.getGraphics();
@@ -839,8 +838,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         }
                         double xx = ((alignedPositions[y] + alignedPositions[x])/(scalefactor*2)) +
                                 wmBorder.getBorderInsets(this).left;
-                        double yy = ((alignedPositions[y] - alignedPositions[x])/(scalefactor*2)) +
-                                wmBorder.getBorderInsets(this).top + WM_BD_TOTAL;
+                        double yy = ((alignedPositions[y] - alignedPositions[x] + infoHeight*2)/(scalefactor*2)) +
+                                wmBorder.getBorderInsets(this).top;
 
                         smallDiamondX[0] = (float)xx; smallDiamondY[0] = (float)(yy - prefBoxSize/2);
                         smallDiamondX[1] = (float)(xx + prefBoxSize/2); smallDiamondY[1] = (float)yy;
@@ -1005,18 +1004,6 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         return spp;
     }
 
-    public void updateGBrowseImage(String dataChrom, long minpos, long maxpos, double lineSpan){
-        try{
-            URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
-                    dataChrom + ":" + minpos + ".." + (maxpos+1) + ";width=" + lineSpan +
-                    ";type=genotyped_SNPs+LocusLink_genes");
-            Toolkit toolkit = Toolkit.getDefaultToolkit();
-            //getImage() caches by default so it will only download an image when the URL changes
-            gBrowseImage = toolkit.getImage(imageUrl);
-        }catch (MalformedURLException mue){
-            //this exception sucks walnuts, so I refuse to handle it on principle
-        }
-    }
 
     public void computePreferredSize(){
         this.computePreferredSize(this.getGraphics());
@@ -1062,9 +1049,17 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         int gbImageHeight = 0;
         if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null){
             try{
+                long gbleft, gbright;
+                if (Options.getgBrowseLeft() != 0 || Options.getgBrowseRight() != 0){
+                    gbleft = Options.getgBrowseLeft();
+                    gbright = Options.getgBrowseRight()+1;
+                }else{
+                    gbleft = minpos;
+                    gbright = maxpos+1;
+                }
                 URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
-                        Chromosome.getDataChrom() + ":" + minpos + ".." + (maxpos+1) + ";width=" + gblineSpan +
-                        ";type=genotyped_SNPs+LocusLink_genes");
+                        Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + gblineSpan +
+                        ";type=genotyped_SNPs+LocusLink_genes;options=genotyped_SNPs+1");
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 //getImage() caches by default so it will only download an image when the URL changes
                 gBrowseImage = toolkit.getImage(imageUrl);
@@ -1116,25 +1111,27 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }
         }
 
-        int high = 2*V_BORDER + (int)(sep/2) + blockDispHeight + gbImageHeight;
+        //"high" represents the total height of the panel. "infoheight" is the total height of the
+        //header info above the LD plot. When we draw the worldmap we want to nudge the LD plot down
+        //by a scaled factor of infoheight so that clicking lines it up properly.
+        int high = (int)(sep/2) + V_BORDER*2 + blockDispHeight;
+        if (theData.infoKnown){
+            infoHeight = TICK_HEIGHT + TICK_BOTTOM + widestMarkerName + TEXT_GAP + gbImageHeight;
+        }else{
+            infoHeight = 0;
+        }
+        if (theData.trackExists){
+            //make room for analysis track at top
+            infoHeight += TRACK_HEIGHT + TRACK_GAP;
+        }
+        high += infoHeight;
 
         //this dimension is just the area taken up by the dprime chart
         //it is used in drawing the worldmap
+        //for other elements add their heights in the next code hunk!
         chartSize = new Dimension(2*H_BORDER +(int)(alignedPositions[alignedPositions.length-1] - alignedPositions[0]),
                 high);
 
-
-        if (theData.infoKnown){
-            infoHeight = TICK_HEIGHT + TICK_BOTTOM + widestMarkerName + TEXT_GAP;
-            high += infoHeight;
-        }else{
-            infoHeight=0;
-        }
-
-        if (theData.trackExists){
-            //make room for analysis track at top
-            high += TRACK_HEIGHT + TRACK_GAP;
-        }
 
         int wide = 2*H_BORDER + (int)(alignedPositions[alignedPositions.length-1] - alignedPositions[0]);
         Rectangle visRect = getVisibleRect();
@@ -1210,9 +1207,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         (worldmap.getHeight() - wmInteriorRect.height)/2 -
                         (getVisibleRect().height-worldmap.getHeight())) *
                         chartSize.height) / wmInteriorRect.height) -
-                        getVisibleRect().height/2 + infoHeight;
+                        getVisibleRect().height/2;
 
-                //System.out.println(chartSize.height);
                 //if the clicks are near the edges, correct values
                 if (bigClickX > chartSize.width - getVisibleRect().width){
                     bigClickX = chartSize.width - getVisibleRect().width;
@@ -1220,8 +1216,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 if (bigClickX < 0){
                     bigClickX = 0;
                 }
-                if (bigClickY > chartSize.height - getVisibleRect().height + infoHeight){
-                    bigClickY = chartSize.height - getVisibleRect().height + infoHeight;
+                if (bigClickY > chartSize.height - getVisibleRect().height){
+                    bigClickY = chartSize.height - getVisibleRect().height;
                 }
                 if (bigClickY < 0){
                     bigClickY = 0;

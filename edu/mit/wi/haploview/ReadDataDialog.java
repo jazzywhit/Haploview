@@ -81,6 +81,9 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             }else{
                 Options.setShowGBrowse(false);
             }
+            Options.setgBrowseLeft(0);
+            Options.setgBrowseRight(0);
+            Chromosome.setDataChrom(null);
 
             if (maxComparisonDistField.getText().equals("")){
                 Options.setMaxDistance(0);
@@ -217,7 +220,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         if (ft == HMP){
             JPanel gBrowsePanel = new JPanel();
             gBrowsePanel.add(doGB);
-            gBrowsePanel.add(new JLabel("Download and show HapMap gene track? (requires internet connection)"));
+            gBrowsePanel.add(new JLabel("Download and show HapMap info track? (requires internet connection)"));
             contents.add(gBrowsePanel);
         }
 
