@@ -621,10 +621,10 @@ public class HaploData implements Constants{
                         }
 
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb, currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb, currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb, currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb, currentInd.getAffectedStatus()));
+                    chromTrios.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb, currentInd.getAffectedStatus()));
+                    chromTrios.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb, currentInd.getAffectedStatus()));
+                    chromTrios.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb, currentInd.getAffectedStatus()));
+                    chromTrios.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb, currentInd.getAffectedStatus()));
                     numTrios++;
                 }else if (mom.hasBothParents() && !dad.hasBothParents() && !usedParents.contains(dad)){
                     //in this case dad is a founder so we toss him in as a singleton.
