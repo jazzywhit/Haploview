@@ -1,13 +1,14 @@
 package edu.mit.wi.haploview;
 
 import java.awt.*;
+import java.awt.event.*;
 //import java.awt.font.*;
 //import java.io.*;
 //import java.text.*;
 import javax.swing.*;
 import java.util.*;
 
-class DPrimeDisplay extends JComponent {
+class DPrimeDisplay extends JComponent{
     static final int H_BORDER = 15;
     static final int V_BORDER = 15;
 
@@ -24,6 +25,7 @@ class DPrimeDisplay extends JComponent {
     boolean printDetails = true;
     int lowX, highX, lowY, highY;
     Rectangle viewRect = new Rectangle();
+    int left, top, clickXShift, clickYShift;
 
     Font boxFont = new Font("SansSerif", Font.PLAIN, 12);
     Font markerNumFont = new Font("SansSerif", Font.BOLD, 12);
@@ -38,6 +40,7 @@ class DPrimeDisplay extends JComponent {
         dPrimeTable = t;
         markers = v;
         this.setDoubleBuffered(true);
+        addMouseListener(new popMouseListener(this));
     }
 
     public void loadMarkers(Vector v){
@@ -58,12 +61,18 @@ class DPrimeDisplay extends JComponent {
         //repainting bug when loading markers after the data are already
         //being displayed, results in a little off-centering for small
         //datasets, but not too bad.
+        //clickxshift and clickyshift are used later to translate from x,y coords to the
+        //pair of markers comparison at those coords
         if (!(markersLoaded)){
             g2.translate((size.width - pref.width) / 2,
                     (size.height - pref.height) / 2);
+            clickXShift = left + (size.width-pref.width)/2;
+            clickYShift = top + (size.height - pref.height)/2;
         } else {
             g2.translate((size.width - pref.width) / 2,
                     0);
+            clickXShift = left + (size.width-pref.width)/2;
+            clickYShift = top;
         }
 
         FontMetrics boxFontMetrics = g.getFontMetrics(boxFont);
@@ -72,8 +81,8 @@ class DPrimeDisplay extends JComponent {
         int diamondY[] = new int[4];
         Polygon diamond;
 
-        int left = H_BORDER;
-        int top = V_BORDER;
+        left = H_BORDER;
+        top = V_BORDER;
 
         FontMetrics metrics;
         int ascent;
@@ -158,12 +167,12 @@ class DPrimeDisplay extends JComponent {
             top += boxRadius/2; // give a little space between numbers and boxes
         }
 
-        if (pref.getWidth() > viewRect.width){
+        //if (pref.getWidth() > viewRect.width){
             //this means that the table is bigger than the display.
             //the following values are the bounds on the boxes we want to
             //display given that the current window is 'clipRect'
 
-            lowX = (clipRect.x-left-(clipRect.y+clipRect.height-top))/boxSize;
+            lowX = (clipRect.x-clickXShift-(clipRect.y+clipRect.height-clickYShift))/boxSize;
             if (lowX < 0) {
                 lowX = 0;
             }
@@ -171,11 +180,11 @@ class DPrimeDisplay extends JComponent {
             if (highX > dPrimeTable.length-1){
                 highX = dPrimeTable.length-1;
             }
-            lowY = ((clipRect.x-left)+(clipRect.y-top))/boxSize;
+            lowY = ((clipRect.x-clickXShift)+(clipRect.y-clickYShift))/boxSize;
             if (lowY < lowX+1){
                 lowY = lowX+1;
             }
-            highY = (((clipRect.x-left+clipRect.width) + (clipRect.y-top+clipRect.height))/boxSize)+1;
+            highY = (((clipRect.x-clickXShift+clipRect.width) + (clipRect.y-clickYShift+clipRect.height))/boxSize)+1;
             if (highY > dPrimeTable.length){
                 highY = dPrimeTable.length;
             }
@@ -188,13 +197,13 @@ class DPrimeDisplay extends JComponent {
             }else{
             boxRadius = boxSize/2 - 1;
             }
-             **/
+
         } else{
             lowX = 0;
             highX = dPrimeTable.length-1;
             lowY = 0;
             highY = dPrimeTable.length;
-        }
+        }    **/
 
         // draw table column by column
         for (int x = lowX; x < highX; x++) {
@@ -249,12 +258,25 @@ class DPrimeDisplay extends JComponent {
 
 
     public Dimension getPreferredSize() {
-        int count = dPrimeTable.length;
+        //loop through table to find deepest non-null comparison
+        int count = 0;
+        for (int x = 0; x < dPrimeTable.length-1; x++){
+           for (int y = x+1; y < dPrimeTable.length; y++){
+               if (dPrimeTable[x][y] != null){
+                 if (count < y-x){
+                     count = y-x;
+                 }
+               }
+           }
+        }
+        //add one so we don't clip bottom box
+        count ++;
+
         int high = 2*V_BORDER + count*boxSize/2;
         if (markersLoaded){
             high += TICK_BOTTOM + widestMarkerName + TEXT_NUMBER_GAP;
         }
-        return new Dimension(2*H_BORDER + boxSize*(count-1), high);
+        return new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1), high);
     }
 
     int[] centerString(String s, FontMetrics fm) {
@@ -263,5 +285,61 @@ class DPrimeDisplay extends JComponent {
         returnArray[1] = 10+(30-fm.getAscent())/2;
         return returnArray;
     }
+    class popMouseListener implements MouseListener{
+        JComponent caller;
+        public popMouseListener(JComponent c){
+              caller = c;
+        }
 
+        public void mouseClicked(MouseEvent e) {
+        }
+
+        public void mousePressed (MouseEvent e) {
+            if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
+                    InputEvent.BUTTON3_MASK){
+
+                final int clickX = e.getX();
+                final int clickY = e.getY();
+                double dboxX = (double)(clickX - clickXShift - (clickY-clickYShift))/boxSize;
+                double dboxY = (double)(clickX - clickXShift + (clickY-clickYShift))/boxSize;
+                int boxX, boxY;
+                if (dboxX < 0){
+                    boxX = (int)(dboxX - 0.5);
+                } else{
+                    boxX = (int)(dboxX + 0.5);
+                }
+                if (dboxY < 0){
+                    boxY = (int)(dboxY - 0.5);
+                }else{
+                    boxY = (int)(dboxY + 0.5);
+                }
+                System.out.println(boxX + " " + boxY);
+                if ((boxX >= lowX && boxX <= highX) && (boxY > boxX && boxY < highY)){
+                    final SwingWorker worker = new SwingWorker(){
+                        public Object construct(){
+                            Graphics g = caller.getGraphics();
+
+                            g.fillRect(clickX,clickY,20,20);
+                            return "";
+                        }
+                    };
+                    worker.start();
+                }
+            }
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
+                    InputEvent.BUTTON3_MASK){
+                caller.repaint();
+            }
+        }
+
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        public void mouseExited(MouseEvent e) {
+        }
+    }
 }
+
