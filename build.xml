@@ -10,11 +10,11 @@
 
 
 
-<!-- Get all the files in the /lib directory and add them to the -->
+<!-- Get all the files in the /resources directory and add them to the -->
 <!-- Classpath -->
 
  <path id="library.classpath">
-   <fileset dir="lib/">
+   <fileset dir="resources/">
        <include name="*.jar"/>
        <include name="*.zip"/>
      </fileset>
@@ -30,7 +30,7 @@
     <property name="haploview.dist" value="${haploview.root}/dist"/>
     <property name="haploview.classes" value="${haploview.build}/classes"/>
     <property name="haploview.src" value="${haploview.root}"/>
-    <property name="haloview.lib" value="${haploview.root}/lib"/>
+    <property name="haloview.lib" value="${haploview.root}/resources"/>
     <property name="haploview.package" value="edu/mit/wi/haploview"/>
     <property name="pedfile.package" value="edu/mit/wi/pedfile"/>
     <tstamp>
