@@ -55,9 +55,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     private int currentBlockDef = BLOX_GABRIEL;
     private TDTPanel tdtPanel;
-    //int currentScheme = STD_SCHEME;
     private javax.swing.Timer timer;
-    //long maxCompDist;
 
     static HaploView window;
     JFileChooser fc;
@@ -188,7 +186,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             colorMenu.add(colorMenuItems[i]);
             cg.add(colorMenuItems[i]);
         }
-        colorMenuItems[0].setSelected(true);
+        colorMenuItems[Options.getLDColorScheme()].setSelected(true);
 
         displayMenu.add(colorMenu);
         JMenuItem spacingItem = new JMenuItem("LD Display Spacing");
