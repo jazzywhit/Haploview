@@ -703,8 +703,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     Container contents = getContentPane();
                     contents.removeAll();
 
-                    HaploviewTab currentTab = ldTab;
-
                     tabs = new JTabbedPane();
                     tabs.addChangeListener(new TabChangeListener());
 
@@ -717,6 +715,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     ldTab = new HaploviewTab(dPrimeScroller);
                     tabs.addTab(VIEW_DPRIME, ldTab);
                     viewMenuItems[VIEW_D_NUM].setEnabled(true);
+
+                    HaploviewTab currentTab = ldTab;
 
                     //compute and show haps on next tab
                     try {
