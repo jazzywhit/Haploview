@@ -5,15 +5,12 @@ import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
-//import javax.swing.event.*;
-import javax.swing.text.*;
-//import java.beans.*;
 
 
 public class ReadDataDialog extends JDialog implements ActionListener {
 
     static final String HAPMAP_DATA = "Browse HapMap data from DCC";
-    static final String RAW_DATA = "Load raw genotypes";
+    static final String RAW_DATA = "Load genotypes (linkage format)";
     static final String PHASED_DATA = "Load phased haplotypes";
     static final String MARKER_DATA_EXT = ".info";
     static final String BROWSE_GENO = "browse for geno files";
@@ -202,7 +199,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         contents.add(filePanel);
 
         JPanel prefsPanel = new JPanel();
-        maxComparisonDistField = new NumberTextField("500",4);
+        maxComparisonDistField = new NumberTextField("500",4, false);
         prefsPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
         prefsPanel.add(maxComparisonDistField);
         prefsPanel.add(new JLabel("kb apart."));
@@ -243,45 +240,5 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         this.setContentPane(contents);
         this.pack();
     }
-
-
-    class NumberTextField extends JTextField {
-
-        public NumberTextField(String str, int size){
-            super(str, size);
-        }
-
-        protected Document createDefaultModel(){
-            return new NTFDocument(this);
-        }
-
-        protected class NTFDocument extends PlainDocument {
-            NumberTextField ntf;
-
-            public NTFDocument(NumberTextField ntf){
-                super();
-                this.ntf = ntf;
-            }
-
-            public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
-                int length = ntf.getText().length();
-                char[] source = str.toCharArray();
-                String to_insert = "";
-                for (int i=0; i<source.length; i++){
-                    if (length+i > 3){
-                        Toolkit.getDefaultToolkit().beep();
-                        super.insertString(offs, to_insert, a);
-                        return;
-                    }
-                    if (Character.isDigit(source[i])) to_insert+=source[i];
-                    else Toolkit.getDefaultToolkit().beep();
-                }
-
-                super.insertString(offs, to_insert, a);
-            }
-        }
-    }
-
-
 }
 
