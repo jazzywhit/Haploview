@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 1.16 2004/08/31 19:28:25 jcbarret Exp $
+* $Id: CheckData.java,v 1.17 2004/10/04 21:15:10 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -452,9 +452,6 @@ public class CheckData {
 
     private int getRating(double genopct, double pval, double obsHet, int menderr, double maf){
         int rating = 0;
-        if (obsHet < 0.01){
-            rating -= 1;
-        }
         if (genopct < failedGenoCut){
             rating -= 2;
         }
