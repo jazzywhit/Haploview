@@ -144,10 +144,10 @@ public class HaploData implements Constants{
                                 "\n Info file must be of format: <markername> <markerposition>");
                     }
 
-                    if (loc < prevloc){
+                    /*if (loc < prevloc){
                         throw new HaploViewException("Info file out of order:\n"+
                                 name);
-                    }
+                    } */
                     prevloc = loc;
                     names.add(name);
                     positions.add(l);
@@ -171,6 +171,66 @@ public class HaploData implements Constants{
                     extras.add(null);
                 }
                 infoKnown = true;
+            }
+            else {
+                //we only sort if we read the info from an info file. if
+                //it is from a hapmap file, then the markers were already sorted
+                //when they were read in (in class Pedfile).
+
+                int numLines = names.size();
+
+                Hashtable sortHelp = new Hashtable(numLines-1,1.0f);
+                long[] pos = new long[numLines];
+                boolean needSort = false;
+
+                //this loop stores the positions of each marker in an array (pos[]) in the order they appear in the file.
+                //it also creates a hashtable with the positions as keys and their index in the pos[] array as the value
+                for (int k = 0; k < (numLines); k++){
+                    pos[k] = new Long((String)(positions.get(k))).longValue();
+                    sortHelp.put(new Long(pos[k]),new Integer(k));
+                }
+                //loop through and check if any markers are out of order
+                for (int k = 1; k < (numLines); k++){
+                    if(pos[k] < pos[k-1]) {
+                        needSort = true;
+                        break;
+                    }
+                }
+                //if any were out of order, then we need to put them in order
+                if(needSort)
+                {
+                    //sort the positions
+                    Arrays.sort(pos);
+                    Vector newNames = new Vector();
+                    Vector newExtras = new Vector();
+                    Vector newPositions = new Vector();
+                    int[] realPos = new int[numLines];
+
+                    //reorder the vectors names and extras so that they have the same order as the sorted markers
+                    for (int i = 0; i < pos.length; i++){
+                        realPos[i] = ((Integer)(sortHelp.get(new Long(pos[i])))).intValue();
+                        newNames.add(names.get(realPos[i]));
+                        newPositions.add(positions.get(realPos[i]));
+                        newExtras.add(extras.get(realPos[i]));
+                    }
+
+                    names = newNames;
+                    extras = newExtras;
+                    positions = newPositions;
+
+                    byte[] tempGenotype = new byte[pos.length];
+                    //now we reorder all the individuals genotypes according to the sorted marker order
+                    for(int j=0;j<chromosomes.size();j++){
+                        Chromosome tempChrom = (Chromosome)chromosomes.elementAt(j);
+                        for(int i =0;i<pos.length;i++){
+                            tempGenotype[i] = tempChrom.getGenotype(realPos[i]);
+                        }
+                        for(int i=0;i<pos.length;i++)
+                        {
+                            tempChrom.setGenotype(tempGenotype[i],i);
+                        }
+                    }
+                }
             }
         }catch (HaploViewException e){
             throw(e);

@@ -83,6 +83,9 @@ class Chromosome{
         return affected;
     }
 
+    public void setGenotype(byte gen,int pos){
+        this.genotypes[pos] = gen;
+    }
 }
 
 
