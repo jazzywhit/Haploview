@@ -409,7 +409,7 @@ public class HaploView extends JFrame implements ActionListener{
         //first, draw the D' picture
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        dPrimeDisplay = new DPrimeDisplay(theData.dPrimeTable, infoKnown);
+        dPrimeDisplay = new DPrimeDisplay(theData.dPrimeTable, infoKnown,theData.blocks);
         JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
         dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
         dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
@@ -541,7 +541,7 @@ public class HaploView extends JFrame implements ActionListener{
         theData.guessBlocks(methodList.getSelectedIndex());
         hapDisplay.getHaps();
         hapScroller.setViewportView(hapDisplay);
-        dPrimeDisplay.refreshWorldmap();
+        dPrimeDisplay.refreshBlocks(theData.blocks);
         if (tabs.getSelectedIndex() == 0) dPrimeDisplay.repaint();
     }
 
