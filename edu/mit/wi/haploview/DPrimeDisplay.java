@@ -142,7 +142,6 @@ class DPrimeDisplay extends JComponent{
 
                 widestMarkerName = metrics.stringWidth(Chromosome.getMarker(0).getName());
                 for (int x = 1; x < dPrimeTable.length; x++) {
-                    //TODO: fix bug with loading datasets with data and then without
                     int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }

@@ -323,6 +323,7 @@ public class HaploView extends JFrame implements ActionListener{
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
                     dPrimeDisplay=null;
+                    infoKnown = false;
                     if (!(filenames[1].equals(""))){
                         readMarkers(new File(filenames[1]));
                     }
