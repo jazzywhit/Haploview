@@ -40,7 +40,7 @@ public class HVWrap {
         boolean headless = false;
         for (int a = 0; a < args.length; a++){
             argsToBePassed = argsToBePassed.concat(" " + args[a]);
-            if (args[a].equals("-n")){
+            if (args[a].equals("-n") || args[a].equalsIgnoreCase("-nogui")){
                 headless=true;
             }
         }
