@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <jni.h>
-#include "HaploData.h"
+#include "edu_mit_wi_haploview_HaploData.h"
 
 /************************************************************
 EM algorithm for phasing and resolving haps
 ************************************************************/
 
 JNIEXPORT jstring JNICALL
-Java_HaploData_runEM(JNIEnv *env, jobject obj, jint num_haplos,
+Java_edu_mit_wi_haploview_HaploData_runEM(JNIEnv *env, jobject obj, jint num_haplos,
 		     jint num_loci, jobjectArray jinput_haplos, jint num_blocks,
 		     jintArray jblock_size)
 {
@@ -60,7 +60,7 @@ the following code is used to compute D' etc.
 *****************************************************************/
 char returnstring[40];
 JNIEXPORT jstring JNICALL
-Java_HaploData_callComputeDPrime(JNIEnv *env, jclass jcl, jint a, jint b, jint c, jint d, jint e)
+Java_edu_mit_wi_haploview_HaploData_callComputeDPrime(JNIEnv *env, jclass jcl, jint a, jint b, jint c, jint d, jint e)
 {
   double const_prob,Dprime,LOD,r2,CIlow,CIhigh;
   const_prob=0.1;

@@ -13,6 +13,8 @@ import com.sun.jimi.core.component.JimiCanvas;
 
 
 class DrawingMethods {
+
+    int labeloffset = 80;
     
     public Dimension haploGetPreferredSize(Haplotype[][] hapsInBlocks, Graphics tg){
 	int windowX = 10;
@@ -186,12 +188,17 @@ class DrawingMethods {
     }
 
 
-    public Dimension dPrimeGetPreferredSize(int size){
-	return new Dimension(size*30, size*30);
+    public Dimension dPrimeGetPreferredSize(int size, boolean info){
+	if (info){
+	    return new Dimension((labeloffset+size*30), size*30);
+	}else{
+	    return new Dimension(size*30, size*30);
+	}
     }
 
-    public void dPrimeDraw(String[][] table, Graphics g){
+    public void dPrimeDraw(String[][] table, boolean info, Vector snps, Graphics g){
 	int scale = table.length*30;
+	int activeOffset = 0;
 	float d, l, blgr;
 	Color myColor;
 	int[] shifts;
@@ -199,17 +206,44 @@ class DrawingMethods {
 	FontMetrics regfm = g.getFontMetrics(regFont);
 	Font boldFont = new Font("Lucida Sans Bold", Font.BOLD, 14);
 	FontMetrics boldfm = g.getFontMetrics(boldFont);
+
+	if (info) activeOffset = labeloffset;
+
 	//background color
 	g.setColor(new Color(192,192,192));
-	g.fillRect(0,0,scale,scale);
+	g.fillRect(0,0,scale+activeOffset,scale);
 
 	//first label:
 	g.setColor(Color.black);
 	g.setFont(boldFont);
 	shifts = centerString("1", boldfm);
-	g.drawString("1", shifts[0], shifts[1]);
+	g.drawString("1", activeOffset + shifts[0], shifts[1]);
 
-		//draw table column by column
+	//if we know the marker names, print them down the side
+	if (info){
+	    g.setFont(regFont);
+	    for (int y = 0; y < table.length; y++){
+		String name = ((SNP)snps.elementAt(y)).getName();
+		g.drawString(name, labeloffset-3-regfm.stringWidth(name), y*30 + shifts[1]);
+	    }
+
+	    //now draw a diagonal bar showing marker spacings
+	    if (table.length > 3){
+		g.drawLine(labeloffset+90,5,labeloffset+scale-5,scale-90);
+		double lineLength = Math.sqrt((scale-95)*(scale-95)*2);
+		double start = ((SNP)snps.elementAt(0)).getPosition();
+		double totalLength = ((SNP)snps.elementAt(table.length-1)).getPosition() - start;
+		int numKB = (int)(totalLength/1000);
+		g.drawString(numKB+" Kb", labeloffset+150, 30); 
+		for (int y = 0; y < table.length; y++){
+		    double fracLength = (((SNP)snps.elementAt(y)).getPosition() - start)/totalLength;
+		    double xOrYDist = Math.sqrt((fracLength*lineLength*fracLength*lineLength)/2);
+		    g.drawLine(labeloffset+25+y*30, 5+y*30,(int)(labeloffset+90+xOrYDist),(int)(5+xOrYDist));
+		}
+	    }
+	}
+
+	//draw table column by column
 	for (int x = 0; x < table.length-1; x++){
 	    for (int y = x + 1; y < table.length; y++){
 		StringTokenizer st = new StringTokenizer(table[x][y]);
@@ -235,18 +269,18 @@ class DrawingMethods {
 
 		//draw the boxes
 		g.setColor(myColor);
-		g.fillRect(x*30+1, y*30+1, 28, 28);
+		g.fillRect(x*30+1+activeOffset, y*30+1, 28, 28);
 		g.setColor(Color.black);
-		g.drawRect(x*30, y*30, 30, 30);
+		g.drawRect(x*30+activeOffset, y*30, 30, 30);
 		g.setFont(regFont);
 		shifts=centerString(Float.toString(d), regfm);
-		g.drawString(Float.toString(d), shifts[0]+(x*30) ,(y*30)+shifts[1]);
+		g.drawString(Float.toString(d), shifts[0]+(x*30)+activeOffset,(y*30)+shifts[1]);
 	    }
 	    //draw the labels
 	    g.setColor(Color.black);
 	    g.setFont(boldFont);
 	    shifts = centerString(Integer.toString(x+2), boldfm);
-	    g.drawString(Integer.toString(x+2), shifts[0]+(x+1)*30, shifts[1]+(x+1)*30);
+	    g.drawString(Integer.toString(x+2), shifts[0]+(x+1)*30+activeOffset, shifts[1]+(x+1)*30);
 	}
     }
 

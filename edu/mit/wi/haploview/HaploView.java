@@ -123,7 +123,7 @@ public class HaploView extends JFrame implements ActionListener{
 
 	//first, draw the D' picture
 	contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
-	theDPrime = new DPrimePanel(theData.dPrimeTable);
+	theDPrime = new DPrimePanel(theData.dPrimeTable, infoKnown, theData.markerInfo);
 	JPanel holderPanel = new JPanel();
 	holderPanel.add(theDPrime);
 	holderPanel.setBackground(new Color(192,192,192));
@@ -157,7 +157,7 @@ public class HaploView extends JFrame implements ActionListener{
 		int scaleSize = theData.dPrimeTable.length*30;
 		DrawingMethods dm = new DrawingMethods();
 		BufferedImage image = new BufferedImage(scaleSize, scaleSize, BufferedImage.TYPE_3BYTE_BGR);
-		dm.dPrimeDraw(theData.dPrimeTable, image.getGraphics());
+		dm.dPrimeDraw(theData.dPrimeTable, infoKnown, theData.markerInfo, image.getGraphics());
 		dm.saveImage(image, fc.getSelectedFile().getPath());
 	    } catch (IOException ioexec){
 		JOptionPane.showMessageDialog(this,
@@ -502,7 +502,7 @@ public class HaploView extends JFrame implements ActionListener{
 		try{
 		    theData.prepareMarkerInput(fc.getSelectedFile());
 		    infoKnown=true;
-		    loadInfoMenuItem.setEnabled(false);
+		    // loadInfoMenuItem.setEnabled(false);
 		    drawPicture(theData);
 		}catch (IOException ioexec){
 		    JOptionPane.showMessageDialog(this, 

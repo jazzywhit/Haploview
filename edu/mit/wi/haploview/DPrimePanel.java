@@ -8,18 +8,22 @@ import java.awt.event.*;
 class DPrimePanel extends JPanel{
     
     private String[][] table;
+    private boolean info;
+    private Vector vec;
 
-    DPrimePanel(String[][] t){
+    DPrimePanel(String[][] t, boolean b, Vector v){
 	table = t;
+	info = b;
+	vec = v;
     }
 
     public Dimension getPreferredSize(){
-	return new DrawingMethods().dPrimeGetPreferredSize(table.length);
+	return new DrawingMethods().dPrimeGetPreferredSize(table.length,info);
     }
 
     public void paintComponent(Graphics g){
 	super.paintComponent(g);
-	new DrawingMethods().dPrimeDraw(table, g);
+	new DrawingMethods().dPrimeDraw(table, info, vec, g);
     }
 
     public void showBlock(int[] markers){
