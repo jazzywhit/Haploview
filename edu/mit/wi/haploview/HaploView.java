@@ -1099,7 +1099,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         boolean nogui = false;
         //HaploView window;
         for(int i = 0;i<args.length;i++) {
-            if(args[i].equals("-n") || args[i].equals("-h") || args[i].equals("-help")) {
+            if(args[i].equals("-nogui") || args[i].equals("-n") || args[i].equals("-h") || args[i].equals("-help")) {
                 nogui = true;
             }
         }
