@@ -1213,14 +1213,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                                     jlp.remove(udp);
                                     jlp.repaint();
                                 }
-                            },6500);
+                            },6000);
 
                         }
                     }
                 }
             };
 
-            worker.start();
 
 
             //center the window on the screen
@@ -1229,6 +1228,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     (screen.height - window.getHeight()) / 2);
 
             window.setVisible(true);
+            worker.start();
+
 
             //parse command line stuff for input files or prompt data dialog
             String[] inputArray = new String[2];
