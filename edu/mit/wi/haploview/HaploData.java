@@ -1328,23 +1328,21 @@ public class HaploData{
         saveHapsWriter.close();
     }
 
-    public void saveDprimeToText(PairwiseLinkage[][] dPrimeTable, File dumpDprimeFile) throws IOException{
+    public void saveDprimeToText(File dumpDprimeFile) throws IOException{
         FileWriter saveDprimeWriter = new FileWriter(dumpDprimeFile);
-
-
         if (infoKnown){
             saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\tDist\n");
             long dist;
 
-            for (int i = 0; i < dPrimeTable.length; i++){
-                for (int j = 0; j < dPrimeTable[i].length; j++){
+            for (int i = 0; i < filteredDPrimeTable.length; i++){
+                for (int j = 0; j < filteredDPrimeTable[i].length; j++){
                     //many "slots" in table aren't filled in because it is a 1/2 matrix
                     if (i < j){
-                        if(dPrimeTable[i][j] != null) {
+                        if(filteredDPrimeTable[i][j] != null) {
                             dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
                             saveDprimeWriter.write(Chromosome.getFilteredMarker(i).getName() +
                                     "\t" + Chromosome.getFilteredMarker(j).getName() +
-                                    "\t" + dPrimeTable[i][j].toString() + "\t" + dist + "\n");
+                                    "\t" + filteredDPrimeTable[i][j].toString() + "\t" + dist + "\n");
                         }
                     }
                 }
@@ -1353,12 +1351,12 @@ public class HaploData{
         }else{
             saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\n");
 
-            for (int i = 0; i < dPrimeTable.length; i++){
-                for (int j = 0; j < dPrimeTable[i].length; j++){
+            for (int i = 0; i < filteredDPrimeTable.length; i++){
+                for (int j = 0; j < filteredDPrimeTable[i].length; j++){
                     //many "slots" in table aren't filled in because it is a 1/2 matrix
                     if (i < j){
-                        if(dPrimeTable[i][j] != null) {
-                            saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j] + "\n");
+                        if(filteredDPrimeTable[i][j] != null) {
+                            saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + filteredDPrimeTable[i][j] + "\n");
                         }
                     }
                 }

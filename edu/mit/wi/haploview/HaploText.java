@@ -520,8 +520,7 @@ public class HaploText {
                     textData.guessBlocks(2);
                     haplos = textData.generateHaplotypes(textData.blocks, 1);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
-                }
-                else {
+                }else{
                     textData.guessBlocks(outputType);
                     haplos = textData.generateHaplotypes(textData.blocks, 1);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
@@ -530,7 +529,7 @@ public class HaploText {
             if(this.arg_dprime) {
                 OutputFile = new File(fileName + ".DPRIME");
                 if (textData.filteredDPrimeTable != null){
-                    textData.saveDprimeToText(textData.filteredDPrimeTable,OutputFile);
+                    textData.saveDprimeToText(OutputFile);
                 }else{
                     //this means that we're just writing dprime so we won't
                     //keep the (potentially huge) dprime table in memory but instead

@@ -25,8 +25,8 @@ public class HaploView extends JFrame implements ActionListener{
     static final String READ_MARKERS = "Load marker data";
     JMenuItem readMarkerItem;
 
-    static final String EXPORT_TEXT = "Export data to text";
-    static final String EXPORT_PNG = "Export data to PNG";
+    static final String EXPORT_TEXT = "Export tab to text";
+    static final String EXPORT_PNG = "Export tab to PNG";
     String exportItems[] = {
         EXPORT_TEXT, EXPORT_PNG
     };
@@ -62,19 +62,17 @@ public class HaploView extends JFrame implements ActionListener{
     };
     JRadioButtonMenuItem zoomMenuItems[];
 
+    static final int PNG_MODE = 0;
+    static final int TXT_MODE = 1;
+
     //static final String DISPLAY_OPTIONS = "Display Options";
     //JMenuItem displayOptionsItem;
 
-    //start filechooser in current directory
     HaploData theData;
-    //JFrame checkWindow;
     private CheckDataPanel checkPanel;
+    private int currentBlockDef = 0;
     private TDTPanel tdtPanel;
     private boolean doTDT = false;
-    //private String hapInputFileName;
-    //private BlockDisplay theBlocks;
-    //private boolean infoKnown = false;
-    private int currentBlockDef;
     private javax.swing.Timer timer;
 
     static HaploView window;
@@ -273,7 +271,9 @@ public class HaploView extends JFrame implements ActionListener{
                 dPrimeDisplay.zoom(2);
             }
         }else if (command == EXPORT_PNG){
-            export();
+            export(tabs.getSelectedIndex(), PNG_MODE);
+        }else if (command == EXPORT_TEXT){
+            export(tabs.getSelectedIndex(), TXT_MODE);
         }else if (command == "Tutorial"){
             showHelp();
         } else if (command == QUIT){
@@ -483,7 +483,6 @@ public class HaploView extends JFrame implements ActionListener{
                     defineBlocksItem.setEnabled(true);
                     clearBlocksItem.setEnabled(true);
                     readMarkerItem.setEnabled(true);
-                    exportMenuItems[1].setEnabled(true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
             }
@@ -519,6 +518,18 @@ public class HaploView extends JFrame implements ActionListener{
 
     class TabChangeListener implements ChangeListener{
         public void stateChanged(ChangeEvent e) {
+            int tabNum = tabs.getSelectedIndex();
+            if (tabNum == VIEW_D_NUM || tabNum == VIEW_HAP_NUM){
+                exportMenuItems[0].setEnabled(true);
+                exportMenuItems[1].setEnabled(true);
+            }else if (tabNum == VIEW_TDT_NUM || tabNum == VIEW_CHECK_NUM){
+                exportMenuItems[0].setEnabled(true);
+                exportMenuItems[1].setEnabled(false);
+            }else{
+                exportMenuItems[0].setEnabled(false);
+                exportMenuItems[1].setEnabled(false);
+            }
+
             viewMenuItems[tabs.getSelectedIndex()].setSelected(true);
             if (checkPanel != null && checkPanel.changed){
                 window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -543,6 +554,16 @@ public class HaploView extends JFrame implements ActionListener{
                 }
                 theData.filteredDPrimeTable = theData.getFilteredTable();
                 theData.guessBlocks(currentBlockDef);
+
+                //after editing the filtered marker list, needs to be prodded into
+                //resizing correctly
+                Dimension size = dPrimeDisplay.getSize();
+                Dimension pref = dPrimeDisplay.getPreferredSize();
+                Rectangle visRect = dPrimeDisplay.getVisibleRect();
+                if (size.width != pref.width && size.width > visRect.width){
+                    ((JViewport)dPrimeDisplay.getParent()).setViewSize(pref);
+                }
+                dPrimeDisplay.refresh();
 
                 hapDisplay.theData = theData;
                 try{
@@ -596,15 +617,26 @@ public class HaploView extends JFrame implements ActionListener{
 
     }
 
-    void export(){
-        JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+    void export(int tabNum, int format){
+        JFileChooser fc;
+        fc = new JFileChooser(System.getProperty("user.dir"));
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
-            if (tabs.getSelectedIndex() == VIEW_D_NUM){
-                Dimension size = dPrimeDisplay.getSize();
-                Dimension pref = dPrimeDisplay.getPreferredSize();
-                BufferedImage image = new BufferedImage(pref.width, pref.height,
-                        BufferedImage.TYPE_3BYTE_BGR);
-                dPrimeDisplay.export(image);
+            if (format == PNG_MODE){
+                BufferedImage image;
+                if (tabNum == VIEW_D_NUM){
+                    Dimension pref = dPrimeDisplay.getPreferredSize();
+                    image = new BufferedImage(pref.width, pref.height,
+                            BufferedImage.TYPE_3BYTE_BGR);
+                    dPrimeDisplay.export(image);
+                }else if (tabNum == VIEW_HAP_NUM){
+                    Dimension size = hapDisplay.getPreferredSize();
+                    image = new BufferedImage(size.width, size.height,
+                            BufferedImage.TYPE_3BYTE_BGR);
+                    hapDisplay.export(image);
+                }else{
+                    image = new BufferedImage(1,1,BufferedImage.TYPE_3BYTE_BGR);
+                }
+
                 try{
                     String filename = fc.getSelectedFile().getPath();
                     if (! (filename.endsWith(".png") || filename.endsWith(".PNG"))){
@@ -614,6 +646,21 @@ public class HaploView extends JFrame implements ActionListener{
                 }catch(JimiException je){
                     JOptionPane.showMessageDialog(this,
                             je.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } else if (format == TXT_MODE){
+                try{
+                    if (tabNum == VIEW_D_NUM){
+                        theData.saveDprimeToText(fc.getSelectedFile());
+                    }else if (tabNum == VIEW_HAP_NUM){
+                        theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray,fc.getSelectedFile());
+                    }else if (tabNum == VIEW_CHECK_NUM){
+                        //TODO: add check table dump
+                    }
+                }catch(IOException ioe){
+                    JOptionPane.showMessageDialog(this,
+                            ioe.getMessage(),
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -651,24 +698,6 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
 
-    void saveDprimeToText(){
-        JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-        fc.setSelectedFile(null);
-        try{
-            fc.setSelectedFile(null);
-            int returnVal = fc.showSaveDialog(this);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                theData.saveDprimeToText(theData.filteredDPrimeTable, fc.getSelectedFile());
-            }
-        }catch (IOException ioexec){
-            JOptionPane.showMessageDialog(this,
-                    ioexec.getMessage(),
-                    "File Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-
     void defineBlocks() throws HaploViewException{
         String[] methodStrings = {"95% of informative pairwise comparisons show strong LD via confidence intervals (SFS)",
                                   "Four Gamete Rule",
@@ -685,6 +714,7 @@ public class HaploView extends JFrame implements ActionListener{
             hapScroller.setViewportView(hapDisplay);
         }
         dPrimeDisplay.refresh();
+        currentBlockDef = methodList.getSelectedIndex();
     }
 
 

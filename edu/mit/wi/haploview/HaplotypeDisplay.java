@@ -19,6 +19,7 @@ public class HaplotypeDisplay extends JComponent {
     int displayThresh = 1;
     int thinThresh = 1;
     int thickThresh = 10;
+    private boolean forExport = false;
 
 
     public HaplotypeDisplay(HaploData h) throws HaploViewException {
@@ -34,6 +35,12 @@ public class HaplotypeDisplay extends JComponent {
         // }
     }
 
+    public Image export(Image i){
+        forExport = true;
+        paintComponent(i.getGraphics());
+        forExport = false;
+        return i;
+    }
 
     public void getHaps() throws HaploViewException{
         if (theData.blocks == null) {return;}
@@ -261,8 +268,13 @@ public class HaplotypeDisplay extends JComponent {
         //System.out.println(getSize());
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
-        g.translate((size.width - pref.width) / 2,
-                (size.height - pref.height) / 2);
+        g.setColor(this.getBackground());
+        g.fillRect(0,0,pref.width, pref.height);
+
+        if (!forExport){
+            g.translate((size.width - pref.width) / 2,
+                    (size.height - pref.height) / 2);
+        }
 
         //g.drawRect(0, 0, pref.width, pref.height);
 

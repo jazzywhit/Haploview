@@ -135,21 +135,19 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
 
-        //after editing the filtered marker list, needs to be prodded into
-        //resizing correctly
-        if (size.width > pref.width && size.width > visRect.width){
-            ((JViewport)this.getParent()).setViewSize(pref);
-        }
+
 
         //okay so this dumb if block is to prevent the ugly repainting
         //bug when loading markers after the data are already being displayed,
         //results in a little off-centering for small datasets, but not too bad.
-        if (!(theData.infoKnown)){
-            g2.translate((size.width - pref.width) / 2,
-                    (size.height - pref.height) / 2);
-        } else {
-            g2.translate((size.width - pref.width) / 2,
-                    0);
+        if (!forExport){
+            if (!theData.infoKnown){
+                g2.translate((size.width - pref.width) / 2,
+                        (size.height - pref.height) / 2);
+            } else {
+                g2.translate((size.width - pref.width) / 2,
+                        0);
+            }
         }
         //System.out.println(size + " " + pref);
 
