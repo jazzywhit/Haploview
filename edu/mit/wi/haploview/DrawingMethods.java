@@ -212,9 +212,6 @@ class DrawingMethods {
 	FontMetrics regfm = g.getFontMetrics(regFont);
 	Font boldFont = new Font("Lucida Sans Bold", Font.BOLD, 14);
 	FontMetrics boldfm = g.getFontMetrics(boldFont);	
-	NumberFormat nf = NumberFormat.getInstance();
-	nf.setMinimumFractionDigits(2);
-	nf.setMaximumFractionDigits(2);
 
 	if (info) activeOffset = labeloffset;
 
@@ -256,7 +253,7 @@ class DrawingMethods {
 	for (int x = 0; x < table.length-1; x++){
 	    for (int y = x + 1; y < table.length; y++){
 		StringTokenizer st = new StringTokenizer(table[x][y]);
-		d = Float.parseFloat(nf.format(Float.parseFloat(st.nextToken())));
+		d = Float.parseFloat(st.nextToken());
 		l = Float.parseFloat(st.nextToken());
 		//set coloring based on LOD and D'
 		if (l > 2){

@@ -3,6 +3,7 @@ package edu.mit.wi.haploview;
 import java.io.*;
 import java.lang.*;
 import java.util.*;
+import java.text.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.*;
@@ -620,11 +621,15 @@ class HaploData{
 	/* we've computed D', its' LOD, and r^2 - let's store them and then compute confidence intervals */
 	
 	String returnStr = new String("");
-	returnStr += dprime;
+	NumberFormat nf = NumberFormat.getInstance();
+	nf.setMinimumFractionDigits(2);
+	nf.setMaximumFractionDigits(2);
+	
+	returnStr += nf.format(dprime);
 	returnStr += "\t";
-	returnStr += loglike1-loglike0;
+	returnStr += nf.format(loglike1-loglike0);
 	returnStr += "\t";
-	returnStr += r2;	
+	returnStr += nf.format(r2);	
 	returnStr += "\t";
 	
 	real_dprime=dprime;
