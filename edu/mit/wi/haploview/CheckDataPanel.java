@@ -52,8 +52,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             MarkerResult currentResult = (MarkerResult)result.get(i);
             tempVect.add(new Integer(i+1));
             if (theData.infoKnown){
-                tempVect.add(Chromosome.getMarker(i).getName());
-                tempVect.add(new Long(Chromosome.getMarker(i).getPosition()));
+                tempVect.add(Chromosome.getUnfilteredMarker(i).getName());
+                tempVect.add(new Long(Chromosome.getUnfilteredMarker(i).getPosition()));
             }
             tempVect.add(new Double(currentResult.getObsHet()));
             tempVect.add(new Double(currentResult.getPredHet()));

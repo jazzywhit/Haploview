@@ -6,17 +6,17 @@ import java.util.Vector;
 public class TDT {
     public static Vector calcCCTDT(Vector chromosomes){
         Vector results = new Vector();
-        int numMarkers = Chromosome.getSize();
+        int numMarkers = Chromosome.getUnfilteredSize();
         for (int i = 0; i < numMarkers; i++){
-            TDTResult thisResult = new TDTResult(Chromosome.getMarker(i));
+            TDTResult thisResult = new TDTResult(Chromosome.getUnfilteredMarker(i));
             for (int j = 0; j < chromosomes.size()-1; j++){
                 Chromosome theChrom = (Chromosome)chromosomes.get(j);
                 j++;
                 Chromosome nextChrom = (Chromosome)chromosomes.get(j);
                 if (theChrom.getAffected()){
-                    thisResult.tallyCCInd(theChrom.getGenotype(i), nextChrom.getGenotype(i), 0);
+                    thisResult.tallyCCInd(theChrom.getUnfilteredGenotype(i), nextChrom.getUnfilteredGenotype(i), 0);
                 }else{
-                    thisResult.tallyCCInd(theChrom.getGenotype(i), nextChrom.getGenotype(i), 1);
+                    thisResult.tallyCCInd(theChrom.getUnfilteredGenotype(i), nextChrom.getUnfilteredGenotype(i), 1);
                 }
             }
             results.add(thisResult);
@@ -27,10 +27,10 @@ public class TDT {
 
     public static Vector calcTrioTDT(Vector chromosomes) {
         Vector results = new Vector();
-        int numMarkers = Chromosome.getSize();
+        int numMarkers = Chromosome.getUnfilteredSize();
 
         for(int k=0;k<numMarkers;k++){
-            results.add(new TDTResult(Chromosome.getMarker(k)));
+            results.add(new TDTResult(Chromosome.getUnfilteredMarker(k)));
         }
 
         for(int i=0;i<chromosomes.size()-3;i++){
@@ -50,10 +50,10 @@ public class TDT {
 
             for(int j=0;j<numMarkers;j++){
                 if(!chrom1T.kidMissing[j] && !chrom2T.kidMissing[j]) {
-                    byte allele1T = chrom1T.getGenotype(j);
-                    byte allele1U = chrom1U.getGenotype(j);
-                    byte allele2T = chrom2T.getGenotype(j);
-                    byte allele2U = chrom2U.getGenotype(j);
+                    byte allele1T = chrom1T.getUnfilteredGenotype(j);
+                    byte allele1U = chrom1U.getUnfilteredGenotype(j);
+                    byte allele2T = chrom2T.getUnfilteredGenotype(j);
+                    byte allele2U = chrom2U.getUnfilteredGenotype(j);
 
                     if( !(allele1T == 0 || allele1U == 0 || allele2T == 0 || allele2U == 0) ){
                         TDTResult curRes = (TDTResult)results.get(j);

@@ -525,7 +525,7 @@ public class HaploText implements Constants{
 
                 //this handles output type ALL
                 int start = 0;
-                int stop = Chromosome.getFilteredSize();
+                int stop = Chromosome.getSize();
                 if(outputType == BLOX_ALL) {
                     OutputFile = new File(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
@@ -548,9 +548,9 @@ public class HaploText implements Constants{
             if(this.arg_dprime) {
                 OutputFile = new File(fileName + ".DPRIME");
                 if (textData.dpTable != null){
-                    textData.saveDprimeToText(OutputFile, TABLE_TYPE, 0, Chromosome.getFilteredSize());
+                    textData.saveDprimeToText(OutputFile, TABLE_TYPE, 0, Chromosome.getSize());
                 }else{
-                    textData.saveDprimeToText(OutputFile, LIVE_TYPE, 0, Chromosome.getFilteredSize());
+                    textData.saveDprimeToText(OutputFile, LIVE_TYPE, 0, Chromosome.getSize());
                 }
             }
             if (this.arg_png || this.arg_smallpng){
@@ -563,7 +563,7 @@ public class HaploText implements Constants{
                     textData.readAnalysisTrack(new File(arg_trackName));
                 }
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
-                BufferedImage i = dpd.export(0,Chromosome.getFilteredSize(),this.arg_smallpng);
+                BufferedImage i = dpd.export(0,Chromosome.getSize(),this.arg_smallpng);
                 try{
                     Jimi.putImage("image/png", i, OutputFile.getName());
                 }catch(JimiException je){

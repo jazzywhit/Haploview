@@ -250,7 +250,7 @@ public class HaplotypeDisplay extends JComponent {
 
         // height for the marker digits
         int markerDigits =
-                (int) (0.0000001 + Math.log(Chromosome.getSize()) / Math.log(10)) + 1;
+                (int) (0.0000001 + Math.log(Chromosome.getUnfilteredSize()) / Math.log(10)) + 1;
         high += MARKER_CHAR_WIDTH * markerDigits;
 
         // space for the diamond
@@ -283,7 +283,7 @@ public class HaplotypeDisplay extends JComponent {
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
 
-        //System.out.println(getSize());
+        //System.out.println(getUnfilteredSize());
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
         g.setColor(this.getBackground());
@@ -333,7 +333,7 @@ public class HaplotypeDisplay extends JComponent {
 
         // set number formatter to pad with appropriate number of zeroes
         NumberFormat nfMarker = NumberFormat.getInstance(Locale.US);
-        int markerCount = Chromosome.getSize();
+        int markerCount = Chromosome.getUnfilteredSize();
         // the +0.0000001 is because there is
         // some suckage where log(1000) / log(10) isn't actually 3
         int markerDigits =
@@ -397,7 +397,7 @@ public class HaplotypeDisplay extends JComponent {
             //figure out which allele is the major allele for each marker
             int[] majorAllele = new int[filteredHaplos[i][0].getGeno().length];
             for (int k = 0; k < majorAllele.length; k++){
-                majorAllele[k] = Chromosome.getFilteredMarker(markerNums[k]).getMajor();
+                majorAllele[k] = Chromosome.getMarker(markerNums[k]).getMajor();
             }
 
             for (int j = 0; j < filteredHaplos[i].length; j++){

@@ -104,7 +104,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
         if (scheme == STD_SCHEME){
             // set coloring based on LOD and D'
-            for (int i = 0; i < Chromosome.getFilteredSize()-1; i++){
+            for (int i = 0; i < Chromosome.getSize()-1; i++){
                 for (int j = i+1; j < dPrime.getFilteredLength(i)+i; j++){
                     PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                     if (thisPair == null){
@@ -135,8 +135,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
             }
         }else if (scheme == SFS_SCHEME){
-            for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
-                for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+            for (int x = 0; x < Chromosome.getSize()-1; x++){
+                for (int y = x+1; y < Chromosome.getSize(); y++){
                     PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                     if (thisPair == null){
                         continue;
@@ -156,8 +156,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
             }
         }else if (scheme == GAM_SCHEME){
-            for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
-                for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+            for (int x = 0; x < Chromosome.getSize()-1; x++){
+                for (int y = x+1; y < Chromosome.getSize(); y++){
                     PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                     if (thisPair == null) {
                         continue;
@@ -186,7 +186,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
             double max_l = 0.0;
 
-            for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+            for (int i = 0; i < Chromosome.getSize(); i++){
                 for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                     if (thisPair == null){
@@ -200,7 +200,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             // cap the max LOD score
             if (max_l > 5.0) max_l = 5.0;
 
-            for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+            for (int i = 0; i < Chromosome.getSize(); i++){
                 for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                     if (thisPair == null){
@@ -257,7 +257,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         }else if (scheme == RSQ_SCHEME){
             // set coloring based on R-squared values
 
-            for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+            for (int i = 0; i < Chromosome.getSize(); i++){
                 for (int j = i+1; j < dPrime.getFilteredLength(i); j++){
                     PairwiseLinkage thisPair = dPrime.getFilteredDPrime(i,j);
                     if (thisPair == null){
@@ -286,8 +286,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             exportStart = 0;
         }
         exportStop = stop;
-        if (exportStop > Chromosome.getFilteredSize()){
-            exportStop = Chromosome.getFilteredSize();
+        if (exportStop > Chromosome.getSize()){
+            exportStop = Chromosome.getSize();
         }
 
         int startBS = boxSize;
@@ -367,7 +367,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
 
     public void paintComponent(Graphics g){
         DPrimeTable dPrimeTable = theData.dpTable;
-        if (Chromosome.getFilteredSize() == 0){
+        if (Chromosome.getSize() == 0){
             //if there are no valid markers, but info is known we don't want
             //to paint any of that stuff.
             printDPrimeValues = false;
@@ -428,8 +428,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
         int diamondY[] = new int[4];
         Polygon diamond;
 
-        //System.out.println(Chromosome.dataChrom + " " + Chromosome.getFilteredMarker(0).getPosition() + " " +
-        //        Chromosome.getFilteredMarker(Chromosome.getFilteredSize()-1).getPosition());
+        //System.out.println(Chromosome.dataChrom + " " + Chromosome.getMarker(0).getPosition() + " " +
+        //        Chromosome.getMarker(Chromosome.getSize()-1).getPosition());
         /*
 #################
 START OF SIMON'S HACKS
@@ -444,8 +444,8 @@ for more info on GBrowse img.
         URL imgUrl;
         int imgHeight = 0;
         int gbLineSpan = (dPrimeTable.length-1) * boxSize;
-        long gbminpos = Chromosome.getFilteredMarker(0).getPosition();
-        long gbmaxpos = Chromosome.getFilteredMarker(Chromosome.getFilteredSize()-1).getPosition();
+        long gbminpos = Chromosome.getMarker(0).getPosition();
+        long gbmaxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
 
 
 
@@ -508,7 +508,7 @@ END OF HIS HACKS
 
         //TODO: finish implementing scaling gizmo
         /*//deal with adding some space to better display data with large gaps
-        int cumulativeGap[] = new int[Chromosome.getFilteredSize()];
+        int cumulativeGap[] = new int[Chromosome.getSize()];
         for (int i = 0; i < cumulativeGap.length; i++){
             cumulativeGap[i] = 0;
         }
@@ -517,7 +517,7 @@ END OF HIS HACKS
             = (((SNP)Chromosome.markers[Chromosome.markers.length-1]).getPosition() -
                     ((SNP)Chromosome.markers[0]).getPosition())/Chromosome.markers.length-1;
             for (int i = 1; i < cumulativeGap.length; i++){
-                double sep = Chromosome.getMarker(i).getPosition() - Chromosome.getMarker(i-1).getPosition();
+                double sep = Chromosome.getUnfilteredMarker(i).getPosition() - Chromosome.getUnfilteredMarker(i-1).getPosition();
                 if (sep > mean*10){
                     cumulativeGap[i] = cumulativeGap[i-1] + (int)(sep/mean)*4;
                 }else{
@@ -534,8 +534,8 @@ END OF HIS HACKS
             lowX = 0;
         }
         highX = ((visRect.x + visRect.width)/boxSize)+1;
-        if (highX > Chromosome.getFilteredSize()-1){
-            highX = Chromosome.getFilteredSize()-1;
+        if (highX > Chromosome.getSize()-1){
+            highX = Chromosome.getSize()-1;
         }
         lowY = ((visRect.x-clickXShift)+(visRect.y-clickYShift))/boxSize;
         if (lowY < lowX+1){
@@ -543,8 +543,8 @@ END OF HIS HACKS
         }
         highY = (((visRect.x-clickXShift+visRect.width) +
                 (visRect.y-clickYShift+visRect.height))/boxSize)+1;
-        if (highY > Chromosome.getFilteredSize()){
-            highY = Chromosome.getFilteredSize();
+        if (highY > Chromosome.getSize()){
+            highY = Chromosome.getSize();
         }
         if (forExport){
             lowX = exportStart;
@@ -553,9 +553,9 @@ END OF HIS HACKS
             highY = exportStop;
         }
 
-        int lineSpan = (Chromosome.getFilteredSize()-1) * boxSize;
-        long minpos = Chromosome.getFilteredMarker(0).getPosition();
-        long maxpos = Chromosome.getFilteredMarker(Chromosome.getFilteredSize()-1).getPosition();
+        int lineSpan = (Chromosome.getSize()-1) * boxSize;
+        long minpos = Chromosome.getMarker(0).getPosition();
+        long maxpos = Chromosome.getMarker(Chromosome.getSize()-1).getPosition();
 
         double spanpos = maxpos - minpos;
 
@@ -612,48 +612,48 @@ END OF HIS HACKS
             g2.setColor(Color.black);
             g2.drawRect(left, top, lineSpan, TICK_HEIGHT);
 
-            for (int i = 0; i < Chromosome.getFilteredSize(); i++){
-                double pos = (Chromosome.getFilteredMarker(i).getPosition() - minpos) / spanpos;
+            for (int i = 0; i < Chromosome.getSize(); i++){
+                double pos = (Chromosome.getMarker(i).getPosition() - minpos) / spanpos;
 
                 int xx = (int) (left + lineSpan*pos);
 
                 // if we're zoomed, use the line color to indicate whether there is extra data available
                 // (since the marker names are not displayed when zoomed)
 
-                if (Chromosome.getFilteredMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(green);
+                if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(green);
 
                 g2.setStroke(thickerStroke);
                 g2.drawLine(xx, top, xx, top + TICK_HEIGHT);
 
-                if (Chromosome.getFilteredMarker(i).getExtra() != null && zoomLevel != 0) g2.setStroke(thickerStroke);
+                if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setStroke(thickerStroke);
                 else g2.setStroke(thinnerStroke);
                 g2.drawLine(xx, top + TICK_HEIGHT,
                         left + i*boxSize, top+TICK_BOTTOM);
 
-                if (Chromosome.getFilteredMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(Color.black);
+                if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(Color.black);
             }
 
             top += TICK_BOTTOM + TICK_HEIGHT;
 
             //// draw the marker names
             if (printMarkerNames){
-                widestMarkerName = metrics.stringWidth(Chromosome.getFilteredMarker(0).getName());
-                for (int x = 1; x < Chromosome.getFilteredSize(); x++) {
-                    int thiswide = metrics.stringWidth(Chromosome.getFilteredMarker(x).getName());
+                widestMarkerName = metrics.stringWidth(Chromosome.getMarker(0).getName());
+                for (int x = 1; x < Chromosome.getSize(); x++) {
+                    int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }
 
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
-                for (int x = 0; x < Chromosome.getFilteredSize(); x++) {
+                for (int x = 0; x < Chromosome.getSize(); x++) {
                     if (theData.isInBlock[x]){
                         g2.setFont(boldMarkerNameFont);
                     }else{
                         g2.setFont(markerNameFont);
                     }
-                    if (Chromosome.getFilteredMarker(x).getExtra() != null) g2.setColor(green);
-                    g2.drawString(Chromosome.getFilteredMarker(x).getName(),TEXT_GAP, x*boxSize + ascent/3);
-                    if (Chromosome.getFilteredMarker(x).getExtra() != null) g2.setColor(Color.black);
+                    if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(green);
+                    g2.drawString(Chromosome.getMarker(x).getName(),TEXT_GAP, x*boxSize + ascent/3);
+                    if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(Color.black);
                 }
 
                 g2.rotate(Math.PI / 2.0);
@@ -675,7 +675,7 @@ END OF HIS HACKS
             metrics = g2.getFontMetrics();
             ascent = metrics.getAscent();
 
-            for (int x = 0; x < Chromosome.getFilteredSize(); x++) {
+            for (int x = 0; x < Chromosome.getSize(); x++) {
                 String mark = String.valueOf(Chromosome.realIndex[x] + 1);
                 g2.drawString(mark,
                         left + x*boxSize - metrics.stringWidth(mark)/2,
@@ -789,8 +789,8 @@ END OF HIS HACKS
             if (printMarkerNames){
                 String labelString = new String ("Block " + (i+1));
                 if (theData.infoKnown){
-                    long blockSize = Chromosome.getFilteredMarker(last).getPosition() -
-                            Chromosome.getFilteredMarker(first).getPosition();
+                    long blockSize = Chromosome.getMarker(last).getPosition() -
+                            Chromosome.getMarker(first).getPosition();
                     labelString += " (" + blockSize/1000 + " kb)";
                 }
                 g2.drawString(labelString, left+first*boxSize-boxSize/2+TEXT_GAP, top-boxSize/3);
@@ -860,8 +860,8 @@ END OF HIS HACKS
                 float[] smallDiamondX = new float[4];
                 float[] smallDiamondY = new float[4];
                 GeneralPath gp;
-                for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
-                    for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+                for (int x = 0; x < Chromosome.getSize()-1; x++){
+                    for (int y = x+1; y < Chromosome.getSize(); y++){
                         if (dPrimeTable.getFilteredDPrime(x,y) == null){
                             continue;
                         }
@@ -967,7 +967,7 @@ END OF HIS HACKS
             upLim = exportStop;
         }else{
             loLim = 0;
-            upLim = Chromosome.getFilteredSize();
+            upLim = Chromosome.getSize();
         }
         int count = 0;
         for (int x = loLim; x < upLim-1; x++){
@@ -1056,7 +1056,7 @@ END OF HIS HACKS
             }else{
                 theHV.changeBlocks(BLOX_CUSTOM);
                 Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
-                        (Chromosome.getFilteredSize()*boxSize), boxSize);
+                        (Chromosome.getSize()*boxSize), boxSize);
                 if(blockselector.contains(clickX,clickY)){
                     int whichMarker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
                     if (theData.isInBlock[whichMarker]){
@@ -1072,7 +1072,7 @@ END OF HIS HACKS
 
     public void mousePressed (MouseEvent e) {
         Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
-                (Chromosome.getFilteredSize()*boxSize), boxSize);
+                (Chromosome.getSize()*boxSize), boxSize);
 
         //if users right clicks & holds, pop up the info
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
@@ -1105,10 +1105,10 @@ END OF HIS HACKS
                     displayStrings = new String[10];
 
                     if (theData.infoKnown){
-                        displayStrings[0] = new String ("(" +Chromosome.getFilteredMarker(boxX).getName() +
-                                ", " + Chromosome.getFilteredMarker(boxY).getName() + ")");
-                        int sep = (int)((Chromosome.getFilteredMarker(boxY).getPosition() -
-                                Chromosome.getFilteredMarker(boxX).getPosition())/1000);
+                        displayStrings[0] = new String ("(" +Chromosome.getMarker(boxX).getName() +
+                                ", " + Chromosome.getMarker(boxY).getName() + ")");
+                        int sep = (int)((Chromosome.getMarker(boxY).getPosition() -
+                                Chromosome.getMarker(boxX).getPosition())/1000);
                         displayStrings[5] = new Long(sep).toString() + " kb";
                     }else{
                         displayStrings[0] = new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
@@ -1125,26 +1125,26 @@ END OF HIS HACKS
                     String[] alleleStrings = new String[4];
                     String[] alleleMap = {"", "A","C","G","T"};
                     if (freqs[0] + freqs[1] > freqs[2] + freqs[3]){
-                        alleleStrings[0] = alleleMap[Chromosome.getFilteredMarker(boxX).getMajor()];
-                        alleleStrings[1] = alleleMap[Chromosome.getFilteredMarker(boxX).getMajor()];
-                        alleleStrings[2] = alleleMap[Chromosome.getFilteredMarker(boxX).getMinor()];
-                        alleleStrings[3] = alleleMap[Chromosome.getFilteredMarker(boxX).getMinor()];
+                        alleleStrings[0] = alleleMap[Chromosome.getMarker(boxX).getMajor()];
+                        alleleStrings[1] = alleleMap[Chromosome.getMarker(boxX).getMajor()];
+                        alleleStrings[2] = alleleMap[Chromosome.getMarker(boxX).getMinor()];
+                        alleleStrings[3] = alleleMap[Chromosome.getMarker(boxX).getMinor()];
                     }else{
-                        alleleStrings[0] = alleleMap[Chromosome.getFilteredMarker(boxX).getMinor()];
-                        alleleStrings[1] = alleleMap[Chromosome.getFilteredMarker(boxX).getMinor()];
-                        alleleStrings[2] = alleleMap[Chromosome.getFilteredMarker(boxX).getMajor()];
-                        alleleStrings[3] = alleleMap[Chromosome.getFilteredMarker(boxX).getMajor()];
+                        alleleStrings[0] = alleleMap[Chromosome.getMarker(boxX).getMinor()];
+                        alleleStrings[1] = alleleMap[Chromosome.getMarker(boxX).getMinor()];
+                        alleleStrings[2] = alleleMap[Chromosome.getMarker(boxX).getMajor()];
+                        alleleStrings[3] = alleleMap[Chromosome.getMarker(boxX).getMajor()];
                     }
                     if (freqs[0] + freqs[3] > freqs[1] + freqs[2]){
-                        alleleStrings[0] += alleleMap[Chromosome.getFilteredMarker(boxY).getMajor()];
-                        alleleStrings[1] += alleleMap[Chromosome.getFilteredMarker(boxY).getMinor()];
-                        alleleStrings[2] += alleleMap[Chromosome.getFilteredMarker(boxY).getMinor()];
-                        alleleStrings[3] += alleleMap[Chromosome.getFilteredMarker(boxY).getMajor()];
+                        alleleStrings[0] += alleleMap[Chromosome.getMarker(boxY).getMajor()];
+                        alleleStrings[1] += alleleMap[Chromosome.getMarker(boxY).getMinor()];
+                        alleleStrings[2] += alleleMap[Chromosome.getMarker(boxY).getMinor()];
+                        alleleStrings[3] += alleleMap[Chromosome.getMarker(boxY).getMajor()];
                     }else{
-                        alleleStrings[0] += alleleMap[Chromosome.getFilteredMarker(boxY).getMinor()];
-                        alleleStrings[1] += alleleMap[Chromosome.getFilteredMarker(boxY).getMajor()];
-                        alleleStrings[2] += alleleMap[Chromosome.getFilteredMarker(boxY).getMajor()];
-                        alleleStrings[3] += alleleMap[Chromosome.getFilteredMarker(boxY).getMinor()];
+                        alleleStrings[0] += alleleMap[Chromosome.getMarker(boxY).getMinor()];
+                        alleleStrings[1] += alleleMap[Chromosome.getMarker(boxY).getMajor()];
+                        alleleStrings[2] += alleleMap[Chromosome.getMarker(boxY).getMajor()];
+                        alleleStrings[3] += alleleMap[Chromosome.getMarker(boxY).getMinor()];
                     }
 
                     displayStrings[5] = new String("Frequencies:");
@@ -1159,20 +1159,20 @@ END OF HIS HACKS
                 int marker = (int)(0.5 + (double)((clickX - clickXShift))/boxSize);
                 int size = 2;
 
-                if (Chromosome.getFilteredMarker(marker).getExtra() != null) size++;
+                if (Chromosome.getMarker(marker).getExtra() != null) size++;
 
                 displayStrings = new String[size];
 
                 int count = 0;
 
                 if (theData.infoKnown){
-                    displayStrings[count++] = new String (Chromosome.getFilteredMarker(marker).getName());
+                    displayStrings[count++] = new String (Chromosome.getMarker(marker).getName());
                 }else{
                     displayStrings[count++] = new String("Marker " + (Chromosome.realIndex[marker]+1));
                 }
-                displayStrings[count++] = new String ("MAF: " + Chromosome.getFilteredMarker(marker).getMAF());
-                if (Chromosome.getFilteredMarker(marker).getExtra() != null)
-                    displayStrings[count++] = new String (Chromosome.getFilteredMarker(marker).getExtra());
+                displayStrings[count++] = new String ("MAF: " + Chromosome.getMarker(marker).getMAF());
+                if (Chromosome.getMarker(marker).getExtra() != null)
+                    displayStrings[count++] = new String (Chromosome.getMarker(marker).getExtra());
                 popupExists = true;
             }
             if (popupExists){

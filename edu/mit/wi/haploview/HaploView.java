@@ -300,9 +300,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             changeKey(currentScheme);
             //exporting clauses
         }else if (command == EXPORT_PNG){
-            export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getFilteredSize());
+            export(tabs.getSelectedIndex(), PNG_MODE, 0, Chromosome.getSize());
         }else if (command == EXPORT_TEXT){
-            export(tabs.getSelectedIndex(), TXT_MODE, 0, Chromosome.getFilteredSize());
+            export(tabs.getSelectedIndex(), TXT_MODE, 0, Chromosome.getSize());
         }else if (command == EXPORT_OPTIONS){
             ExportDialog exDialog = new ExportDialog(this);
             exDialog.pack();

@@ -81,28 +81,38 @@ public class Chromosome{
         }
     }
 
+    //all of these accessors below (getGenotype, getSize and getMarker) are for the filtered
+    //array of markers because after the data are loaded one usually wants to only be looking
+    //at the markers that haven't been filtered out of subsequent analyses. the getUnfiltered
+    //versions of same are mostly used in the early processing steps
 
-    public byte getFilteredGenotype(int i){
+    public byte getGenotype(int i){
+        //gets genotype from filtered position i
         return genotypes[realIndex[i]];
     }
 
-    public byte getGenotype(int i){
+    public byte getUnfilteredGenotype(int i){
+        //gets genotype from unfiltered position i
         return genotypes[i];
     }
 
-    public static int getFilteredSize(){
+    public static int getSize(){
+        //get number of filtered markers
         return realIndex.length;
     }
 
-    public static int getSize(){
+    public static int getUnfilteredSize(){
+        //get total number of markers (i.e. without filtering)
         return trueSize;
     }
 
-    public static SNP getMarker(int i){
+    public static SNP getUnfilteredMarker(int i){
+        //get SNP at unfiltered position i
         return (SNP)markers[i];
     }
 
-    public static SNP getFilteredMarker(int i){
+    public static SNP getMarker(int i){
+        //get SNP at filtered position i
         return (SNP)markers[realIndex[i]];
     }
 

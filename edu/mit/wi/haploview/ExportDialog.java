@@ -187,7 +187,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             }
             this.dispose();
             if (allButton.isSelected()){
-                hv.export(tab,format,0,Chromosome.getFilteredSize());
+                hv.export(tab,format,0,Chromosome.getSize());
             }else if (someButton.isSelected()){
                 try{
                     hv.export(tab,format,Integer.parseInt(lowRange.getText())-1, Integer.parseInt(upperRange.getText()));

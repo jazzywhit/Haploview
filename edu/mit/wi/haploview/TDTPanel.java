@@ -35,7 +35,7 @@ public class TDTPanel extends JPanel {
 
     public void refreshNames() {
         for (int i = 0; i < table.getRowCount(); i++){
-            table.setValueAt(Chromosome.getMarker(i).getName(),i,1);
+            table.setValueAt(Chromosome.getUnfilteredMarker(i).getName(),i,1);
         }
     }
 
@@ -47,7 +47,7 @@ public class TDTPanel extends JPanel {
         this.removeAll();
         Vector tableData = new Vector();
 
-        int numRes = Chromosome.getFilteredSize();
+        int numRes = Chromosome.getSize();
         for (int i = 0; i < numRes; i++){
             Vector tempVect = new Vector();
             TDTResult currentResult = (TDTResult)result.get(Chromosome.realIndex[i]);

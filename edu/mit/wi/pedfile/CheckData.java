@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 1.13 2004/08/13 20:58:50 jmaller Exp $
+* $Id: CheckData.java,v 1.14 2004/08/16 18:35:03 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -106,11 +106,11 @@ public class CheckData {
                         //make sure entry has parents
                         if(!(currentInd.getMomID().equals("0") || currentInd.getDadID().equals("0"))){
                             //do mendel check
-                            //byte[] marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getMomID())).getMarker(loc);
+                            //byte[] marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getMomID())).getUnfilteredMarker(loc);
                             byte[] marker = (currentFamily.getMember(currentInd.getMomID())).getMarker(loc);
                             int momAllele1 = marker[0];
                             int momAllele2 = marker[1];
-                            //marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getDadID())).getMarker(loc);
+                            //marker = ((Individual)pedFileHash.get(familyID + " " + currentInd.getDadID())).getUnfilteredMarker(loc);
                             marker = (currentFamily.getMember(currentInd.getDadID())).getMarker(loc);
                             int dadAllele1 = marker[0];
                             int dadAllele2 = marker[1];

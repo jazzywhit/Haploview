@@ -18,8 +18,8 @@ public class FindBlocks {
         Vector strongPairs = new Vector();
 
         //first make a list of marker pairs with < 4 gametes, sorted by distance apart
-        for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
-            for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+        for (int x = 0; x < Chromosome.getSize()-1; x++){
+            for (int y = x+1; y < Chromosome.getSize(); y++){
                 PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                 if (thisPair == null) {
                     continue;
@@ -54,7 +54,7 @@ public class FindBlocks {
         }
 
         //now take this list of pairs with 3 gametes and construct blocks
-        boolean[] usedInBlock = new boolean[Chromosome.getFilteredSize() + 1];
+        boolean[] usedInBlock = new boolean[Chromosome.getSize() + 1];
         for (int v = 0; v < strongPairs.size(); v++){
             boolean isABlock = true;
             int first = Integer.parseInt((String)((Vector)strongPairs.elementAt(v)).elementAt(0));
@@ -111,9 +111,9 @@ public class FindBlocks {
         Vector strongPairs = new Vector();
 
         //first set up a filter of markers which fail the MAF threshhold
-        boolean[] skipMarker = new boolean[Chromosome.getFilteredSize()];
-        for (int x = 0; x < Chromosome.getFilteredSize(); x++){
-            if (Chromosome.getFilteredMarker(x).getMAF() < mafThresh){
+        boolean[] skipMarker = new boolean[Chromosome.getSize()];
+        for (int x = 0; x < Chromosome.getSize(); x++){
+            if (Chromosome.getMarker(x).getMAF() < mafThresh){
                 skipMarker[x]=true;
             }else{
                 skipMarker[x]=false;
@@ -121,8 +121,8 @@ public class FindBlocks {
         }
 
         //next make a list of marker pairs in "strong LD", sorted by distance apart
-        for (int x = 0; x < Chromosome.getFilteredSize()-1; x++){
-            for (int y = x+1; y < Chromosome.getFilteredSize(); y++){
+        for (int x = 0; x < Chromosome.getSize()-1; x++){
+            for (int y = x+1; y < Chromosome.getSize(); y++){
                 PairwiseLinkage thisPair = dPrime.getFilteredDPrime(x,y);
                 if (thisPair == null){
                         continue;
@@ -140,7 +140,7 @@ public class FindBlocks {
 
                 long sep;
                 //compute actual separation
-                sep = Math.abs(Chromosome.getFilteredMarker(y).getPosition() - Chromosome.getFilteredMarker(x).getPosition());
+                sep = Math.abs(Chromosome.getMarker(y).getPosition() - Chromosome.getMarker(x).getPosition());
 
                 addMe.add(String.valueOf(x)); addMe.add(String.valueOf(y)); addMe.add(String.valueOf(sep));
                 if (strongPairs.size() == 0){ //put first pair first
@@ -161,7 +161,7 @@ public class FindBlocks {
         }
 
         //now take this list of pairs with "strong LD" and construct blocks
-        boolean[] usedInBlock = new boolean[Chromosome.getFilteredSize() + 1];
+        boolean[] usedInBlock = new boolean[Chromosome.getSize() + 1];
         Vector thisBlock;
         int[] blockArray;
         for (int v = 0; v < strongPairs.size(); v++){
@@ -259,7 +259,7 @@ public class FindBlocks {
         int verticalExtent=0;
         int horizontalExtent=0;
         Vector blocks = new Vector();
-        for (int i = 0; i < Chromosome.getFilteredSize(); i++){
+        for (int i = 0; i < Chromosome.getSize(); i++){
             baddies=0;
             //find how far LD from marker i extends
             for (int j = i+1; j < dPrime.getFilteredLength(i); j++){

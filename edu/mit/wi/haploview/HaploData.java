@@ -156,10 +156,10 @@ public class HaploData implements Constants{
                     extras.add(extra);
                 }
 
-                if (lineCount > Chromosome.getSize()){
+                if (lineCount > Chromosome.getUnfilteredSize()){
                     throw(new HaploViewException("Info file error:\nMarker number mismatch: too many\nmarkers in info file compared to data file."));
                 }
-                if (lineCount < Chromosome.getSize()){
+                if (lineCount < Chromosome.getUnfilteredSize()){
                     throw(new HaploViewException("Info file error:\nMarker number mismatch: too few\nmarkers in info file compared to data file."));
                 }
                 infoKnown=true;
@@ -225,7 +225,7 @@ public class HaploData implements Constants{
                     for(int j=0;j<chromosomes.size();j++){
                         Chromosome tempChrom = (Chromosome)chromosomes.elementAt(j);
                         for(int i =0;i<pos.length;i++){
-                            tempGenotype[i] = tempChrom.getGenotype(realPos[i]);
+                            tempGenotype[i] = tempChrom.getUnfilteredGenotype(realPos[i]);
                         }
                         for(int i=0;i<pos.length;i++)
                         {
@@ -239,15 +239,15 @@ public class HaploData implements Constants{
         }finally{
             double numChroms = chromosomes.size();
             Vector markerInfo = new Vector();
-            double[] numBadGenotypes = new double[Chromosome.getSize()];
-            percentBadGenotypes = new double[Chromosome.getSize()];
-            for (int i = 0; i < Chromosome.getSize(); i++){
+            double[] numBadGenotypes = new double[Chromosome.getUnfilteredSize()];
+            percentBadGenotypes = new double[Chromosome.getUnfilteredSize()];
+            for (int i = 0; i < Chromosome.getUnfilteredSize(); i++){
                 //to compute maf, browse chrom list and count instances of each allele
                 byte a1 = 0; byte a2 = 0;
                 double numa1 = 0; double numa2 = 0;
                 for (int j = 0; j < chromosomes.size(); j++){
                     //if there is a data point for this marker on this chromosome
-                    byte thisAllele = ((Chromosome)chromosomes.elementAt(j)).getGenotype(i);
+                    byte thisAllele = ((Chromosome)chromosomes.elementAt(j)).getUnfilteredGenotype(i);
                     if (!(thisAllele == 0)){
                         if (thisAllele >= 5){
                             numa1+=0.5; numa2+=0.5;
@@ -652,17 +652,17 @@ public class HaploData implements Constants{
         //calculating D prime requires the number of each possible 2 marker
         //haplotype in the dataset
 
-        dpTable = new DPrimeTable(Chromosome.getSize());
+        dpTable = new DPrimeTable(Chromosome.getUnfilteredSize());
 
-        totalComps = (Chromosome.getSize()*(Chromosome.getSize()-1))/2;
+        totalComps = (Chromosome.getUnfilteredSize()*(Chromosome.getUnfilteredSize()-1))/2;
         compsDone =0;
 
         //loop through all marker pairs
-        for (int pos1 = 0; pos1 < Chromosome.getSize()-1; pos1++){
+        for (int pos1 = 0; pos1 < Chromosome.getUnfilteredSize()-1; pos1++){
             Vector dpTemp= new Vector();
-            for (int pos2 = pos1 + 1; pos2 < Chromosome.getSize(); pos2++){
+            for (int pos2 = pos1 + 1; pos2 < Chromosome.getUnfilteredSize(); pos2++){
                 //if the markers are too far apart don't try to compare them
-                long sep = Chromosome.getMarker(pos2).getPosition() - Chromosome.getMarker(pos1).getPosition();
+                long sep = Chromosome.getUnfilteredMarker(pos2).getPosition() - Chromosome.getUnfilteredMarker(pos1).getPosition();
                 if (maxdist > 0){
                     if (sep <= maxdist){
                         dpTemp.add(computeDPrime(pos1,pos2));
@@ -677,7 +677,7 @@ public class HaploData implements Constants{
         //make a filtered version which doesn't include unchecked markers
         //from ped files. this is the version which needs to be handed off to all
         //display methods etc.
-        PairwiseLinkage[][] filt = new PairwiseLinkage[Chromosome.getFilteredSize()][Chromosome.getFilteredSize()];
+        PairwiseLinkage[][] filt = new PairwiseLinkage[Chromosome.getSize()][Chromosome.getSize()];
         for (int j = 1; j < filt.length; j++){
             for (int i = 0; i < j; i++){
                 filt[i][j] = dPrimeTable[Chromosome.realIndex[i]][Chromosome.realIndex[j]];
@@ -789,8 +789,8 @@ public class HaploData implements Constants{
                 for (int n = 0; n < block_size.length; n++){
                     int missing = 0;
                     for (int j = 0; j < block_size[n]; j++){
-                        byte theGeno = thisChrom.getFilteredGenotype(theBlock[segmentShift+j]);
-                        byte nextGeno = nextChrom.getFilteredGenotype(theBlock[segmentShift+j]);
+                        byte theGeno = thisChrom.getGenotype(theBlock[segmentShift+j]);
+                        byte nextGeno = nextChrom.getGenotype(theBlock[segmentShift+j]);
                         if(theGeno == 0 || nextGeno == 0) missing++;
                     }
                     segmentShift += block_size[n];
@@ -804,9 +804,9 @@ public class HaploData implements Constants{
                 //whole block (second term)
                 if (!tooManyMissingInASegment && totalMissing <= 1+theBlock.length/3){
                     for (int j = 0; j < theBlock.length; j++){
-                        byte a1 = Chromosome.getFilteredMarker(theBlock[j]).getMajor();
-                        byte a2 = Chromosome.getFilteredMarker(theBlock[j]).getMinor();
-                        byte theGeno = thisChrom.getFilteredGenotype(theBlock[j]);
+                        byte a1 = Chromosome.getMarker(theBlock[j]).getMajor();
+                        byte a2 = Chromosome.getMarker(theBlock[j]).getMinor();
+                        byte theGeno = thisChrom.getGenotype(theBlock[j]);
                         if (theGeno >= 5){
                             thisHap[j] = 'h';
                         } else {
@@ -822,9 +822,9 @@ public class HaploData implements Constants{
                     inputHaploVector.add(thisHap);
                     thisHap = new byte[theBlock.length];
                     for (int j = 0; j < theBlock.length; j++){
-                        byte a1 = Chromosome.getFilteredMarker(theBlock[j]).getMajor();
-                        byte a2 = Chromosome.getFilteredMarker(theBlock[j]).getMinor();
-                        byte nextGeno = nextChrom.getFilteredGenotype(theBlock[j]);
+                        byte a1 = Chromosome.getMarker(theBlock[j]).getMajor();
+                        byte a2 = Chromosome.getMarker(theBlock[j]).getMinor();
+                        byte nextGeno = nextChrom.getGenotype(theBlock[j]);
                         if (nextGeno >= 5){
                             thisHap[j] = 'h';
                         } else {
@@ -865,12 +865,12 @@ public class HaploData implements Constants{
                 for (int j = 0; j < aString.length(); j++){
                     byte returnBit = Byte.parseByte(aString.substring(j,j+1));
                     if (returnBit == 1){
-                        genos[j] = Chromosome.getFilteredMarker(theBlock[j]).getMajor();
+                        genos[j] = Chromosome.getMarker(theBlock[j]).getMajor();
                     }else{
-                        if (Chromosome.getFilteredMarker(theBlock[j]).getMinor() == 0){
+                        if (Chromosome.getMarker(theBlock[j]).getMinor() == 0){
                             genos[j] = 8;
                         }else{
-                            genos[j] = Chromosome.getFilteredMarker(theBlock[j]).getMinor();
+                            genos[j] = Chromosome.getMarker(theBlock[j]).getMinor();
                         }
                     }
                 }
@@ -900,26 +900,26 @@ public class HaploData implements Constants{
                         //this (somewhat laboriously) reconstructs whether to add the minor or major allele
                         //for markers with MAF close to 0.50 we can't use major/minor alleles to match
                         //'em up 'cause these might change given missing data
-                        if (Chromosome.getFilteredMarker(selectedMarkers[currentClass]).getMAF() > 0.4){
+                        if (Chromosome.getMarker(selectedMarkers[currentClass]).getMAF() > 0.4){
                             for (int i = 0; i < chromosomes.size(); i++){
                                 Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
                                 Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++i);
-                                int theGeno = thisChrom.getFilteredGenotype(selectedMarkers[currentClass]);
-                                int nextGeno = nextChrom.getFilteredGenotype(selectedMarkers[currentClass]);
+                                int theGeno = thisChrom.getGenotype(selectedMarkers[currentClass]);
+                                int nextGeno = nextChrom.getGenotype(selectedMarkers[currentClass]);
                                 if (theGeno == nextGeno && theGeno == genos[indexIntoBlock]
-                                        && thisChrom.getFilteredGenotype(preFiltBlock[q]) != 0){
+                                        && thisChrom.getGenotype(preFiltBlock[q]) != 0){
                                     hapsHash.put(new Integer(preFiltBlock[q]),
-                                            new Integer(thisChrom.getFilteredGenotype(preFiltBlock[q])));
+                                            new Integer(thisChrom.getGenotype(preFiltBlock[q])));
                                 }
                             }
                         }else{
-                            if (Chromosome.getFilteredMarker(selectedMarkers[currentClass]).getMajor() ==
+                            if (Chromosome.getMarker(selectedMarkers[currentClass]).getMajor() ==
                                     genos[indexIntoBlock]){
                                 hapsHash.put(new Integer(preFiltBlock[q]),
-                                        new Integer(Chromosome.getFilteredMarker(preFiltBlock[q]).getMajor()));
+                                        new Integer(Chromosome.getMarker(preFiltBlock[q]).getMajor()));
                             }else{
                                 hapsHash.put(new Integer(preFiltBlock[q]),
-                                        new Integer(Chromosome.getFilteredMarker(preFiltBlock[q]).getMinor()));
+                                        new Integer(Chromosome.getMarker(preFiltBlock[q]).getMinor()));
                             }
                         }
                     }
@@ -1200,7 +1200,7 @@ public class HaploData implements Constants{
         blocksChanged = true;
 
         //keep track of which markers are in a block
-        isInBlock = new boolean[Chromosome.getFilteredSize()];
+        isInBlock = new boolean[Chromosome.getSize()];
         for (int i = 0; i < isInBlock.length; i++){
             isInBlock[i] = false;
         }
@@ -1314,7 +1314,7 @@ public class HaploData implements Constants{
     }
 
     public PairwiseLinkage computeDPrime(int pos1, int pos2){
-        long sep = Chromosome.getMarker(pos2).getPosition() - Chromosome.getMarker(pos1).getPosition();
+        long sep = Chromosome.getUnfilteredMarker(pos2).getPosition() - Chromosome.getUnfilteredMarker(pos1).getPosition();
         if (maxdist > 0){
             if (sep > maxdist){
                 return null;
@@ -1332,18 +1332,18 @@ public class HaploData implements Constants{
         }
 
         //check for non-polymorphic markers
-        if (Chromosome.getMarker(pos1).getMAF() == 0 || Chromosome.getMarker(pos2).getMAF() == 0){
+        if (Chromosome.getUnfilteredMarker(pos1).getMAF() == 0 || Chromosome.getUnfilteredMarker(pos2).getMAF() == 0){
             return null;
         }
 
         int[] marker1num = new int[5]; int[] marker2num = new int[5];
 
         marker1num[0]=0;
-        marker1num[Chromosome.getMarker(pos1).getMajor()]=1;
-        marker1num[Chromosome.getMarker(pos1).getMinor()]=2;
+        marker1num[Chromosome.getUnfilteredMarker(pos1).getMajor()]=1;
+        marker1num[Chromosome.getUnfilteredMarker(pos1).getMinor()]=2;
         marker2num[0]=0;
-        marker2num[Chromosome.getMarker(pos2).getMajor()]=1;
-        marker2num[Chromosome.getMarker(pos2).getMinor()]=2;
+        marker2num[Chromosome.getUnfilteredMarker(pos2).getMajor()]=1;
+        marker2num[Chromosome.getUnfilteredMarker(pos2).getMinor()]=2;
 
         byte a1,a2,b1,b2;
         //iterate through all chromosomes in dataset
@@ -1636,15 +1636,15 @@ public class HaploData implements Constants{
         boolean adj = false;
         if (start == -1 && stop == -1){
             //user selected "adjacent markers" option
-            start = 0; stop = Chromosome.getFilteredSize();
+            start = 0; stop = Chromosome.getSize();
             adj = true;
         }
 
         if (start < 0){
             start = 0;
         }
-        if (stop > Chromosome.getFilteredSize()){
-            stop = Chromosome.getFilteredSize();
+        if (stop > Chromosome.getSize()){
+            stop = Chromosome.getSize();
         }
 
         PairwiseLinkage currComp = null;
@@ -1667,7 +1667,7 @@ public class HaploData implements Constants{
                         //these are adjacent markers so we'll put in the t-int stat
                         for (int x = 0; x < 5; x++){
                             for (int y = 1; y < 6; y++){
-                                if (i-x < 0 || i+y >= Chromosome.getFilteredSize()){
+                                if (i-x < 0 || i+y >= Chromosome.getSize()){
                                     continue;
                                 }
                                 PairwiseLinkage tintPair = null;
@@ -1685,9 +1685,9 @@ public class HaploData implements Constants{
                         tInt = String.valueOf(roundDouble(LODSum));
                     }
                     if (infoKnown){
-                        dist = (Chromosome.getFilteredMarker(j)).getPosition() - (Chromosome.getFilteredMarker(i)).getPosition();
-                        saveDprimeWriter.write(Chromosome.getFilteredMarker(i).getName() +
-                                "\t" + Chromosome.getFilteredMarker(j).getName() +
+                        dist = (Chromosome.getMarker(j)).getPosition() - (Chromosome.getMarker(i)).getPosition();
+                        saveDprimeWriter.write(Chromosome.getMarker(i).getName() +
+                                "\t" + Chromosome.getMarker(j).getName() +
                                 "\t" + currComp.toString() + "\t" + dist + "\t" + tInt +"\n");
                     }else{
                         saveDprimeWriter.write((Chromosome.realIndex[i]+1) + "\t" + (Chromosome.realIndex[j]+1) +
@@ -1773,7 +1773,7 @@ public class HaploData implements Constants{
                 int thisBlock[] = new int[goodies.size()];
                 for (int x = 0; x < goodies.size(); x++){
                     thisBlock[x] = ((Integer)goodies.elementAt(x)).intValue();
-                    if (thisBlock[x] > Chromosome.getSize() || thisBlock[x] < 0){
+                    if (thisBlock[x] > Chromosome.getUnfilteredSize() || thisBlock[x] < 0){
                         throw new HaploViewException("Error, marker in block out of bounds: " + thisBlock[x] +
                                 "\non line " + lineCount);
                     }
@@ -1828,7 +1828,7 @@ public class HaploData implements Constants{
     if (begin){
     hap1.append(" "); hap2.append(" ");
     }
-    byte[] thisMarker = currentInd.getMarker(i);
+    byte[] thisMarker = currentInd.getUnfilteredMarker(i);
     if (thisMarker[0] == thisMarker[1]){
     hap1.append(thisMarker[0]);
     hap2.append(thisMarker[1]);
@@ -1860,14 +1860,14 @@ public class HaploData implements Constants{
     if (begin){
     dadT+=" ";dadU+=" ";momT+=" ";momU+=" ";
     }
-    byte[] thisMarker = currentInd.getMarker(i);
+    byte[] thisMarker = currentInd.getUnfilteredMarker(i);
     int kid1 = thisMarker[0];
     int kid2 = thisMarker[1];
 
-    thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
+    thisMarker = (currentFamily.getMember(currentInd.getMomID())).getUnfilteredMarker(i);
     int mom1 = thisMarker[0];
     int mom2 = thisMarker[1];
-    thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
+    thisMarker = (currentFamily.getMember(currentInd.getDadID())).getUnfilteredMarker(i);
     int dad1 = thisMarker[0];
     int dad2 = thisMarker[1];
 
