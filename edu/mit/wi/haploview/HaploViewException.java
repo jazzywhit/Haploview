@@ -1,7 +1,7 @@
 package edu.mit.wi.haploview;
 
 public class HaploViewException extends Exception {
-         HaploViewException(String s){
+         public HaploViewException(String s){
              super(s);
          }
 }
