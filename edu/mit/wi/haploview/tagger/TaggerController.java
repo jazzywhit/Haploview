@@ -84,6 +84,10 @@ public class TaggerController {
         return tagger.taggedSoFar;
     }
 
+    public int getUntaggableCount() {
+        return tagger.getUntaggableCount();
+    }
+
     public Vector getForceIncludeds(){
         return tagger.getForceInclude();
     }
@@ -96,8 +100,14 @@ public class TaggerController {
         res.add(name);
         if (snpHash.containsKey(name)){
             edu.mit.wi.tagger.SNP ts = (edu.mit.wi.tagger.SNP)snpHash.get(name);
-            res.add(ts.getBestTag().getName());
-            res.add(String.valueOf(tagger.getPairwiseCompRsq(ts,ts.getBestTag().getSequence())));
+            TagSequence bestTag = ts.getBestTag();
+            if(bestTag != null) {
+                res.add(bestTag.getName());
+                res.add(String.valueOf(tagger.getPairwiseCompRsq(ts,ts.getBestTag().getSequence())));
+            } else {
+                res.add("Untaggable");
+                res.add(new String());
+            }
         }else{
             res.add(new String());
             res.add(new String());
@@ -106,41 +116,6 @@ public class TaggerController {
         return res;
     }
 
-/*    public void setExcluded(Vector e) {
-        if(e == null) {
-            tagger.clearExclude();
-        }else {
-            Vector temp = new Vector();
-
-            //we have a list of snp names, so we need to turn that into a list
-            // of the Tagger.SNP objects corresponding to those names
-            for(int i=0;i<e.size();i++) {
-                if(snpHash.containsKey(e.get(i))){
-                    temp.add(snpHash.get(e.get(i)));
-                }
-            }
-
-            tagger.setExclude(temp);
-        }
-    }*/
-
-
-   /* public void setIncluded(Vector e) {
-        if(e == null) {
-            tagger.clearInclude();
-        }else {
-            Vector temp = new Vector();
-
-            //we have a list of snp names, so we need to turn that into a list
-            // of the Tagger.SNP objects corresponding to those names
-            for(int i=0;i<e.size();i++) {
-                if(snpHash.containsKey(e.get(i))){
-                    temp.add(snpHash.get(e.get(i)));
-                }
-            }
-            tagger.setInclude(temp);
-        }
-    }*/
     private void taggingFinished() {
         taggingCompleted = true;
     }
@@ -157,10 +132,6 @@ public class TaggerController {
         if(taggingCompleted) {
             tagger.saveResultToFile(outFile);
         }
-    }
-
-    public void newTagger(Vector excluded, Vector included, Vector sitesToCapture){
-
     }
 
     private class TagThread extends Thread{

@@ -99,6 +99,18 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         listsPanel.add(topListPanel);
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
         listsPanel.add(bottomListPanel);
+
+        String resString = "Tagged " + t.getTaggedSoFar() + " SNPS using " + t.getResults().size() + " tags.";
+        JLabel resultsLabel = new JLabel(resString);
+        listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
+        listsPanel.add(resultsLabel);
+        if(t.getUntaggableCount() > 0) {
+            String cantTag = "Unable to tag " + t.getUntaggableCount() + " SNPS (shown in red).";
+            JLabel cantTagLabel = new JLabel(cantTag);
+            listsPanel.add(cantTagLabel);
+        }
+
+
         JPanel bufferPanel = new JPanel();
         bufferPanel.add(listsPanel);
 
@@ -146,6 +158,8 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
 
             if (column == 0 && table.getValueAt(row,1).equals("")){
                 cell.setForeground(Color.lightGray);
+            }else if ((column == 0 || column == 1) && table.getValueAt(row,1).equals("Untaggable")){
+                cell.setForeground(Color.red);
             }else if (!isSelected){
                 cell.setForeground(Color.black);
             }
