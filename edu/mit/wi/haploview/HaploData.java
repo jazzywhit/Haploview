@@ -25,6 +25,7 @@ import java.text.NumberFormat;
 public class HaploData{
     Vector chromosomes, blocks;
     boolean[] isInBlock;
+    boolean infoKnown = false;
     int missingLimit = 5;
     private PairwiseLinkage[][] dPrimeTable;
     PairwiseLinkage[][] filteredDPrimeTable;
@@ -168,7 +169,7 @@ public class HaploData{
                 }
                 double maf = numa1/(numa2+numa1);
                 if (maf > 0.5) maf = 1.0-maf;
-                markerInfo.add(new SNP(String.valueOf(i), (i*3000), maf));
+                markerInfo.add(new SNP(String.valueOf(i+1), (i*3000), maf));
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
             Chromosome.markers = markerInfo.toArray();
@@ -968,6 +969,7 @@ public class HaploData{
             case 0: returnVec = FindBlocks.doSFS(filteredDPrimeTable); break;
             case 1: returnVec = FindBlocks.do4Gamete(filteredDPrimeTable,0.01); break;
             case 2: returnVec = FindBlocks.doMJD(filteredDPrimeTable); break;
+            case 3: returnVec = new Vector();break;
         }
         blocks = returnVec;
 

@@ -38,6 +38,8 @@ public class HaploView extends JFrame implements ActionListener{
     JMenuItem exportMenuItems[];
 
     static final String DEFINE_BLOCKS = "Define blocks";
+    static final String CLEAR_BLOCKS = "Clear all blocks";
+    JMenuItem clearBlocksItem;
     JMenuItem defineBlocksItem;
 
     static final String QUIT = "Quit";
@@ -68,7 +70,7 @@ public class HaploView extends JFrame implements ActionListener{
     private CheckDataPanel checkPanel;
     //private String hapInputFileName;
     //private BlockDisplay theBlocks;
-    private boolean infoKnown = false;
+    //private boolean infoKnown = false;
     private int currentBlockDef;
     private javax.swing.Timer timer;
 
@@ -163,6 +165,11 @@ public class HaploView extends JFrame implements ActionListener{
         defineBlocksItem.addActionListener(this);
         defineBlocksItem.setEnabled(false);
         analysisMenu.add(defineBlocksItem);
+        clearBlocksItem = new JMenuItem(CLEAR_BLOCKS);
+        setAccelerator(clearBlocksItem, 'C', false);
+        clearBlocksItem.addActionListener(this);
+        clearBlocksItem.setEnabled(false);
+        analysisMenu.add(clearBlocksItem);
 
         // maybe
         //displayMenu.addSeparator();
@@ -216,8 +223,18 @@ public class HaploView extends JFrame implements ActionListener{
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 readMarkers(fc.getSelectedFile());
             }
-        }else if (command == "Clear All Blocks"){
-            //theBlocks.clearBlocks();
+        }else if (command == CLEAR_BLOCKS){
+            theData.guessBlocks(3);
+            dPrimeDisplay.refresh();
+            try{
+                hapDisplay.getHaps();
+            }catch(HaploViewException hve){
+                JOptionPane.showMessageDialog(this,
+                        hve.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+            hapScroller.setViewportView(hapDisplay);
         }else if (command == DEFINE_BLOCKS){
             try {
                 defineBlocks();
@@ -335,7 +352,7 @@ public class HaploView extends JFrame implements ActionListener{
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
                     dPrimeDisplay=null;
-                    infoKnown = false;
+                    theData.infoKnown = false;
                     if (!(inputOptions[1].equals(""))){
                         readMarkers(new File(inputOptions[1]));
                     }
@@ -357,7 +374,7 @@ public class HaploView extends JFrame implements ActionListener{
                     //first, draw the D' picture
                     JPanel panel = new JPanel();
                     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                    dPrimeDisplay = new DPrimeDisplay(theData, infoKnown);
+                    dPrimeDisplay = new DPrimeDisplay(theData);
                     JScrollPane dPrimeScroller = new JScrollPane(dPrimeDisplay);
                     dPrimeScroller.getViewport().setScrollMode(JViewport.BLIT_SCROLL_MODE);
                     dPrimeScroller.getVerticalScrollBar().setUnitIncrement(60);
@@ -421,6 +438,7 @@ public class HaploView extends JFrame implements ActionListener{
                     if (theData.finished){
                         timer.stop();
                         defineBlocksItem.setEnabled(true);
+                        clearBlocksItem.setEnabled(true);
                         readMarkerItem.setEnabled(true);
                         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
@@ -457,12 +475,11 @@ public class HaploView extends JFrame implements ActionListener{
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }  */
-        infoKnown=true;
+        theData.infoKnown=true;
         if (dPrimeDisplay != null){
-            dPrimeDisplay.loadMarkers();
+            dPrimeDisplay.refresh();
         }
     }
-
 
 
     class TabChangeListener implements ChangeListener{
@@ -566,7 +583,7 @@ public class HaploView extends JFrame implements ActionListener{
             fc.setSelectedFile(null);
             int returnVal = fc.showSaveDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                theData.saveDprimeToText(theData.filteredDPrimeTable, fc.getSelectedFile(), infoKnown, new Vector());
+                theData.saveDprimeToText(theData.filteredDPrimeTable, fc.getSelectedFile(), theData.infoKnown, new Vector());
             }
         }catch (IOException ioexec){
             JOptionPane.showMessageDialog(this,

@@ -30,7 +30,6 @@ class DPrimeDisplay extends JComponent{
     private Font markerNameFont = new Font("Default", Font.PLAIN, 12);
     private Font boldMarkerNameFont = new Font("Default", Font.BOLD, 12);
 
-    private boolean markersLoaded;
     private boolean printDetails = true;
     private boolean noImage = true;
 
@@ -40,16 +39,15 @@ class DPrimeDisplay extends JComponent{
     private HaploData theData;
     private Dimension chartSize;
 
-    DPrimeDisplay(HaploData h, boolean b){
-        markersLoaded = b;
+    DPrimeDisplay(HaploData h){
         theData=h;
         this.setDoubleBuffered(true);
         addMouseListener(new PopMouseListener(this));
     }
 
-    public void loadMarkers(){
+
+    public void refresh(){
         noImage = true;
-        markersLoaded = true;
         repaint();
     }
 
@@ -77,7 +75,7 @@ class DPrimeDisplay extends JComponent{
         //results in a little off-centering for small datasets, but not too bad.
         //clickxshift and clickyshift are used later to translate from x,y coords
         //to the pair of markers comparison at those coords
-        if (!(markersLoaded)){
+        if (!(theData.infoKnown)){
             g2.translate((size.width - pref.width) / 2,
                     (size.height - pref.height) / 2);
             clickXShift = left + (size.width-pref.width)/2;
@@ -119,7 +117,7 @@ class DPrimeDisplay extends JComponent{
         metrics = g2.getFontMetrics();
         ascent = metrics.getAscent();
 
-        if (markersLoaded) {
+        if (theData.infoKnown) {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -400,7 +398,7 @@ class DPrimeDisplay extends JComponent{
                     }
                 }
                 //draw block display in worldmap
-                gw2.setColor(Color.white);
+                gw2.setColor(this.getBackground());
                 gw2.fillRect(wmBorder.getBorderInsets(this).left,
                         wmBorder.getBorderInsets(this).top,
                         ir.width,
@@ -467,7 +465,7 @@ class DPrimeDisplay extends JComponent{
         //this dimension is just the area taken up by the dprime chart
         //it is used in drawing the worldmap
 
-        if (markersLoaded){
+        if (theData.infoKnown){
             infoHeight = TICK_BOTTOM + widestMarkerName + TEXT_GAP;
             high += infoHeight;
         }else{
@@ -543,7 +541,7 @@ class DPrimeDisplay extends JComponent{
                             public Object construct(){
                                 final int leftMargin = 12;
                                 String[] displayStrings = new String[5];
-                                if (markersLoaded){
+                                if (theData.infoKnown){
                                     displayStrings[0] = new String ("(" +Chromosome.getFilteredMarker(boxX).getName() +
                                             ", " + Chromosome.getFilteredMarker(boxY).getName() + ")");
                                 }else{
