@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.8 2003/11/14 16:16:45 jcbarret Exp $
+* $Id: PedFile.java,v 1.9 2003/12/17 21:50:12 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -320,9 +320,24 @@ public class PedFile {
 
         //enumerate indivs
         StringTokenizer st = new StringTokenizer((String)lines.get(0), "\n\t\" \"");
-        for (int skip=0; skip < 7; skip++){
+        int numMetaColumns = 0;
+        boolean doneMeta = false;
+        while(!doneMeta){
+            String thisfield = st.nextToken();
+            numMetaColumns++;
+            //so currently the first person ID always starts with NA (Coriell ID) but
+            //will this be true with AA samples etc?
+            if (thisfield.startsWith("NA")){
+                doneMeta = true;
+            }
+        }
+        numMetaColumns--;
+
+        st = new StringTokenizer((String)lines.get(0), "\n\t\" \"");
+        for (int i = 0; i < numMetaColumns; i++){
             st.nextToken();
         }
+
         StringTokenizer dt;
         while (st.hasMoreTokens()){
             ind = new Individual();
@@ -377,7 +392,7 @@ public class PedFile {
 
             if(tokenizer.hasMoreTokens()){
                 hminfo[k-1] = new String[2];
-                for (int skip = 0; skip < 7; skip++){
+                for (int skip = 0; skip < numMetaColumns; skip++){
                     //meta-data crap
                     String s = tokenizer.nextToken().trim();
 
