@@ -511,15 +511,15 @@ public class HaploData implements Constants{
                                 dadTb[i] = dad1;
                                 dadUb[i] = dad1;
                             } else if (dad1 != 0 && dad2 != 0) {
-                                dadTb[i] = 0;
-                                dadUb[i] = 0;
+                                dadTb[i] = (byte)(4+dad1);
+                                dadUb[i] = (byte)(4+dad2);
                             }
                             if (mom1 == mom2) {
                                 momTb[i] = mom1;
                                 momUb[i] = mom1;
                             } else if (mom1 != 0 && mom2 != 0){
-                                momTb[i] = 0;
-                                momUb[i] = 0;
+                                momTb[i] = (byte)(4+mom1);
+                                momUb[i] = (byte)(4+mom2);
                             }
                         } else if (kid1 == kid2) {
                             //kid homozygous
