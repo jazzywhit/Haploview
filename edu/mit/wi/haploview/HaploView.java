@@ -814,8 +814,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }
 
                         AssociationTestSet permSet;
+                        boolean cust = false;
                         if (custAssocPanel != null){
                             permSet = custAssocPanel.getTestSet();
+                            cust = true;
                         }else{
                             permSet = new AssociationTestSet();
                             permSet.cat(tdtPanel.getTestSet());
@@ -823,7 +825,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         }
 
                         permutationPanel = new PermutationTestPanel(new PermutationTestSet(0,theData.getSavedEMs(),
-                                theData.getPedFile(),permSet));
+                                theData.getPedFile(),permSet), cust);
                         metaAssoc.add(permutationPanel,"Permutation Tests");
 
 

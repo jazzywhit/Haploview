@@ -43,7 +43,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
     private JPanel bestObsPanel;
     private JPanel bestPermPanel;
 
-    public PermutationTestPanel(PermutationTestSet pts) {
+    public PermutationTestPanel(PermutationTestSet pts, boolean cust) {
         if(pts == null) {
             throw new NullPointerException();
         }
@@ -59,6 +59,15 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         permCountPanel.add(permCountField);
         permCountPanel.setMaximumSize(permCountPanel.getPreferredSize());
         this.add(permCountPanel);
+
+        JLabel testDescriptor = new JLabel();
+        testDescriptor.setAlignmentX(Component.CENTER_ALIGNMENT);
+        if (cust){
+            testDescriptor.setText("[permuting custom test set]");
+        }else{
+            testDescriptor.setText("[permuting unfiltered markers and block haplotypes]");
+        }
+        add(testDescriptor);
 
         JPanel buttonPanel = new JPanel();
         doPermutationsButton = new JButton("Do Permutations");
