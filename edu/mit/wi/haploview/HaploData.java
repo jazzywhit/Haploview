@@ -179,14 +179,10 @@ public class HaploData implements Constants{
                 int numLines = names.size();
 
                 class SortingHelper implements Comparable{
-                    String name;
                     long pos;
-                    String extra;
                     int orderInFile;
 
-                    public SortingHelper(String name, String extra, long pos, int order){
-                        this.name = name;
-                        this.extra = extra;
+                    public SortingHelper(long pos, int order){
                         this.pos = pos;
                         this.orderInFile = order;
                     }
@@ -207,8 +203,9 @@ public class HaploData implements Constants{
                 Vector sortHelpers = new Vector();
 
                 for (int k = 0; k < (numLines); k++){
-                    sortHelpers.add(new SortingHelper((String)names.get(k),(String)extras.get(k),Long.parseLong((String)positions.get(k)),k));
+                    sortHelpers.add(new SortingHelper(Long.parseLong((String)positions.get(k)),k));
                 }
+
                 //loop through and check if any markers are out of order
                 for (int k = 1; k < (numLines); k++){
                     if(((SortingHelper)sortHelpers.get(k)).compareTo(sortHelpers.get(k-1)) < 0) {
