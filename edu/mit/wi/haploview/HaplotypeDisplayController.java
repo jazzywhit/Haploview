@@ -3,11 +3,7 @@ package edu.mit.wi.haploview;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-//import java.awt.event.*;
-//import java.beans.*;
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
 
 
 public class HaplotypeDisplayController extends JPanel {
@@ -17,6 +13,7 @@ public class HaplotypeDisplayController extends JPanel {
     NumberTextField minDisplayField;
     NumberTextField minThickField;
     NumberTextField minThinField;
+    JCheckBox numericAlleles;
     JButton goButton;
     Dimension fieldSize;
 
@@ -30,7 +27,7 @@ public class HaplotypeDisplayController extends JPanel {
         JPanel hapPercentPanel = new JPanel();
         hapPercentPanel.add(new JLabel("Examine haplotypes above "));
             hapPercentPanel.add(minDisplayField =
-                    new NumberTextField(String.valueOf(parent.displayThresh), 3));
+                    new NumberTextField(String.valueOf(parent.displayThresh), 3, false));
 
         hapPercentPanel.add(new JLabel("%"));
         add(hapPercentPanel);
@@ -38,16 +35,19 @@ public class HaplotypeDisplayController extends JPanel {
         JPanel thinPanel = new JPanel();
         thinPanel.add(new JLabel("Connect with thin lines if > "));
         thinPanel.add(minThinField =
-                new NumberTextField(String.valueOf(parent.thinThresh), 3));
+                new NumberTextField(String.valueOf(parent.thinThresh), 3, false));
         thinPanel.add(new JLabel("%"));
         add(thinPanel);
 
         JPanel thickPanel = new JPanel();
         thickPanel.add(new JLabel("Connect with thick lines if > "));
         thickPanel.add(minThickField =
-                new NumberTextField(String.valueOf(parent.thickThresh), 3));
+                new NumberTextField(String.valueOf(parent.thickThresh), 3, false));
         thickPanel.add(new JLabel("%"));
         add(thickPanel);
+
+        numericAlleles = new JCheckBox("Display alleles as numbers.");
+        add(numericAlleles);
 
         goButton = new JButton("Go");
         goButton.addActionListener(new ActionListener(){
@@ -55,11 +55,17 @@ public class HaplotypeDisplayController extends JPanel {
                 setDisplayThresh(Integer.parseInt(minDisplayField.getText()));
                 setThinThresh(Integer.parseInt(minThinField.getText()));
                 setThickThresh(Integer.parseInt(minThickField.getText()));
+                setNumericAlls(numericAlleles.isSelected());
+                paintIt();
             }
         });
         add(goButton);
 
         fieldSize = minDisplayField.getPreferredSize();
+    }
+
+    private void setNumericAlls(boolean selected) {
+        parent.numAlls = selected;
     }
 
 
@@ -71,11 +77,13 @@ public class HaplotypeDisplayController extends JPanel {
 
     public void setThinThresh(int amount) {
         parent.thinThresh = amount;
-        parent.repaint();
     }
 
     public void setThickThresh(int amount) {
         parent.thickThresh = amount;
+    }
+
+    public void paintIt(){
         parent.repaint();
     }
 
@@ -86,45 +94,5 @@ public class HaplotypeDisplayController extends JPanel {
     }
 
 
-    class NumberTextField extends JTextField {
 
-        public NumberTextField(String str, int size) {
-            super(str, size);
-        }
-
-        protected Document createDefaultModel(){
-            return new NumberTextFieldDocument(this);
-        }
-
-        protected class NumberTextFieldDocument extends PlainDocument {
-            NumberTextField ntf;
-
-            public NumberTextFieldDocument(NumberTextField ntf) {
-                super();
-                this.ntf = ntf;
-            }
-
-            public void insertString(int offs, String str, AttributeSet a)
-                    throws BadLocationException {
-
-                int length = ntf.getText().length();
-                char[] source = str.toCharArray();
-                int index = 0;
-
-                for (int i = 0; i < source.length; i++){
-                    if (length+i > 1) {
-                        Toolkit.getDefaultToolkit().beep();
-                        super.insertString(offs, new String(source, 0, index), a);
-                        return;
-                    }
-                    if (Character.isDigit(source[i])) {
-                        source[index++] = source[i];
-                    } else {
-                        Toolkit.getDefaultToolkit().beep();
-                    }
-                }
-                super.insertString(offs, new String(source, 0, index), a);
-            }
-        }
-    }
 }
