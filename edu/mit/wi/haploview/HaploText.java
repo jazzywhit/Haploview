@@ -494,15 +494,13 @@ public class HaploText {
                     case 2:
                         OutputFile = new File(fileName + ".MJDblocks");
                         break;
-                    //case 3:
-                        //TODO: need to do all three here
-                    //    break;
                     default:
                         OutputFile = new File(fileName + ".SFSblocks");
                         break;
 
                 }
 
+                //this handles output type ALL
                 if(outputType == 3) {
                     OutputFile = new File(fileName + ".SFSblocks");
                     textData.guessBlocks(0);
