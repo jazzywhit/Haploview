@@ -456,7 +456,7 @@ public class HaploData{
         int[][] twoMarkerHaplos = new int[3][3];
 
         totalComps = (Chromosome.getSize()*(Chromosome.getSize()-1))/2;
-        System.out.println(totalComps);
+        //System.out.println(totalComps);
         compsDone =0;
 
         //loop through all marker pairs
@@ -554,7 +554,7 @@ public class HaploData{
                 c1 = twoMarkerHaplos[1][1] + twoMarkerHaplos[2][1];
                 c2 = twoMarkerHaplos[1][2] + twoMarkerHaplos[2][2];
                 if ( (r1==0 || r2==0 || c1==0 || c2==0) && doublehet == 0){
-                    dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,0,0,0,0,nullArray);
+                    dPrimeTable[pos1][pos2] = new PairwiseLinkage(1,0,0,0,0,new double[0]);
                     continue;
                 }
 
@@ -588,7 +588,7 @@ public class HaploData{
 
         this.totalBlocks = blocks.size();
         this.blocksDone = 0;
-        System.out.println("well, i made it this far");
+        //System.out.println("well, i made it this far");
         for (int k = 0; k < blocks.size(); k++){
             this.blocksDone++;
             int[] theBlock = (int[])blocks.elementAt(k);
