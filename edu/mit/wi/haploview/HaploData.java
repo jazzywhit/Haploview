@@ -150,10 +150,10 @@ public class HaploData implements Constants{
                 }
 
                 if (lineCount > Chromosome.getSize()){
-                    throw(new HaploViewException("Info file error:\nMarker number mismatch: too many\nmarkers in info file."));
+                    throw(new HaploViewException("Info file error:\nMarker number mismatch: too many\nmarkers in info file compared to data file."));
                 }
                 if (lineCount < Chromosome.getSize()){
-                    throw(new HaploViewException("Info file error:\nMarker number mismatch: too few\nmarkers in info file."));
+                    throw(new HaploViewException("Info file error:\nMarker number mismatch: too few\nmarkers in info file compared to data file."));
                 }
                 infoKnown=true;
             }
@@ -253,8 +253,13 @@ public class HaploData implements Constants{
             even = !even;
             StringTokenizer st = new StringTokenizer(currentLine);
             //first two tokens are expected to be ped, indiv
-            ped = st.nextToken();
-            indiv = st.nextToken();
+            if (st.hasMoreTokens()){
+                ped = st.nextToken();
+                indiv = st.nextToken();
+            }else{
+                throw new HaploViewException("Genotype file error:\nLine " + lineCount +
+                        " appears to have an incorrect number of entries");
+            }
 
             //all other tokens are loaded into a vector (they should all be genotypes)
             genos = new byte[st.countTokens()];
