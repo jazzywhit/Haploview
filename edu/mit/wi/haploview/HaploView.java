@@ -3,6 +3,7 @@ package edu.mit.wi.haploview;
 
 import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
+import edu.mit.wi.haploview.TreeTable.*;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -1010,23 +1011,50 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         checkPanel.printTable(outfile);
                     }else if (tabNum == VIEW_TDT_NUM){
                         JTable table = tdtPanel.getTable();
-                        FileWriter checkWriter = new FileWriter(outfile);
+                        JTreeTable jtt = ((HaploAssocPanel)((JTabbedPane)tabs.getComponent(tabNum)).
+                                getComponent(1)).jtt;
+                        FileWriter assocWriter = new FileWriter(outfile);
                         int numCols = table.getColumnCount();
-                        StringBuffer header = new StringBuffer();
+                        StringBuffer header = new StringBuffer("Single Marker Association\n");
                         for (int i = 0; i < numCols; i++){
                             header.append(table.getColumnName(i)).append("\t");
                         }
                         header.append("\n");
-                        checkWriter.write(header.toString());
+                        assocWriter.write(header.toString());
                         for (int i = 0; i < table.getRowCount(); i++){
                             StringBuffer sb = new StringBuffer();
                             for (int j = 0; j < numCols; j++){
                                 sb.append(table.getValueAt(i,j)).append("\t");
                             }
                             sb.append("\n");
-                            checkWriter.write(sb.toString());
+                            assocWriter.write(sb.toString());
                         }
-                        checkWriter.close();
+
+                        //now we write the haplotype association
+                        numCols = jtt.getColumnCount();
+                        header = new StringBuffer("\nHaplotype Association\n\t");
+                        for (int i = 0; i < numCols; i++){
+                            header.append(jtt.getColumnName(i)).append("\t");
+                        }
+                        header.append("\n");
+                        assocWriter.write(header.toString());
+                        HaplotypeAssociationModel ham = (HaplotypeAssociationModel) jtt.getTree().getModel();
+                        HaplotypeAssociationNode root = (HaplotypeAssociationNode) ham.getRoot();
+                        for(int i=0;i<ham.getChildCount(root);i++) {
+                            HaplotypeAssociationNode curBlock = (HaplotypeAssociationNode) ham.getChild(root,i);
+                            assocWriter.write(curBlock.getName() + "\n");
+                            StringBuffer sb = new StringBuffer();
+                            for(int j=0;j<ham.getChildCount(curBlock);j++){
+                                HaplotypeAssociationNode curHap = (HaplotypeAssociationNode) ham.getChild(curBlock,i);
+                                sb.append("\t").append(curHap.getName()).append("\t");
+                                sb.append(curHap.getFreq()).append("\t");
+                                sb.append(curHap.getCounts()).append("\t");
+                                sb.append(curHap.getChiSq()).append("\t");
+                                sb.append(curHap.getPVal()).append("\n");
+                            }
+                            assocWriter.write(sb.toString());
+                        }
+                        assocWriter.close();
                     }
                 }catch(IOException ioe){
                     JOptionPane.showMessageDialog(this,
