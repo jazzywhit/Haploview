@@ -14,6 +14,7 @@ A clean, pruned checkout of the code should have the following:
 edu/ -- the source tree
 examples/ -- some sample input files 
 resources/ -- some helper files
+docs/ -- files related to program documentation
 build.xml -- the ant build instruction file
 README -- this file
 
