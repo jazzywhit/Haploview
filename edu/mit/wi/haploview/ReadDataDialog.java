@@ -68,8 +68,6 @@ public class ReadDataDialog extends JDialog implements ActionListener {
             browse(GENO);
         }else if (command == BROWSE_INFO){
             browse(INFO);
-        }else if (command == HAPMAP_DATA){
-            //hapmap
         }else if (command == "OK"){
             HaploView caller = (HaploView)this.getParent();
 
@@ -162,7 +160,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         JPanel botFilePanel = new JPanel();
         genoFileField = new JTextField("",20);
 
-        //workaround for dumb Swing can't requestfocus until shown bug
+        //workaround for dumb Swing can't requestFocus until shown bug
         //this one seems to throw a harmless exception in certain versions of the linux JRE
         try{
             SwingUtilities.invokeLater( new Runnable(){
