@@ -147,7 +147,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         SwingUtilities.invokeLater( new Runnable(){
             public void run()
             {
-                genoFileField.requestFocusInWindow();
+                genoFileField.requestFocus();
             }
         });
 
