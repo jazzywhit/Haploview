@@ -132,7 +132,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 ccButton.setEnabled(false);
                 browseAssocButton.setEnabled(false);
                 testFileField.setEnabled(false);
-                testFileField.setBackground(Color.lightGray);
+                testFileField.setBackground(this.getBackground());
                 testFileLabel.setEnabled(false);
             }
         }
@@ -272,7 +272,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
         testFileField = new JTextField("",20);
         testFileField.setEnabled(false);
-        testFileField.setBackground(Color.lightGray);
+        testFileField.setBackground(this.getBackground());
         browseAssocButton = new JButton("Browse");
         browseAssocButton.setActionCommand(BROWSE_ASSOC);
         browseAssocButton.addActionListener(this);
