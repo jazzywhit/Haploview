@@ -117,7 +117,7 @@ public class Chromosome{
         return (SNP)markers.get(realIndex[i]);
     }
 
-    public static Vector getMarkers(){
+    public static Vector getAllMarkers(){
         return markers;
     }
 

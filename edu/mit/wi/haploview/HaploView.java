@@ -608,6 +608,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         final AssociationTestSet customAssocSet;
 
         try {
+            if (inputOptions[2] != null && inputOptions[1] == null){
+                throw new HaploViewException("A marker information file is required if a tests file is specified.");
+            }
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             if (inFile.length() < 1){
                 throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
@@ -754,7 +757,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     if(Options.getAssocTest() != ASSOC_NONE) {
                         JTabbedPane metaAssoc = new JTabbedPane();
                         try{
-                            tdtPanel = new TDTPanel(new AssociationTestSet(theData.getPedFile(), null, Chromosome.getMarkers()));
+                            tdtPanel = new TDTPanel(new AssociationTestSet(theData.getPedFile(), null, Chromosome.getAllMarkers()));
                         } catch(PedFileException e) {
                             JOptionPane.showMessageDialog(window,
                                     e.getMessage(),

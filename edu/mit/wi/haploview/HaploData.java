@@ -33,7 +33,7 @@ public class HaploData implements Constants{
     Vector analysisPositions = new Vector();
     Vector analysisValues = new Vector();
     boolean trackExists = false;
-    boolean dupsToBeFlagged = false;
+    boolean dupsToBeFlagged = false, dupNames = false;
 
     //stuff for computing d prime
     private int AA = 0;
@@ -70,10 +70,12 @@ public class HaploData implements Constants{
         //and the detailed data can be viewed with a mouse press.
 
         Vector names = new Vector();
+        HashSet dupCheck = new HashSet();
         Vector positions = new Vector();
         Vector extras = new Vector();
 
         dupsToBeFlagged = false;
+        dupNames = false;
         try{
             if (infile != null){
                 if (infile.length() < 1){
@@ -120,9 +122,35 @@ public class HaploData implements Constants{
                                 name + "\nPlease reload data file and info file together.");
                     }
                     prevloc = loc;
+
+                    if (names.contains(name)){
+                        dupCheck.add(name);
+                    }
                     names.add(name);
                     positions.add(l);
                     extras.add(extra);
+                }
+
+                //check for duplicate names
+                Iterator ditr = dupCheck.iterator();
+                while (ditr.hasNext()){
+                    String n = (String) ditr.next();
+                    int numdups = 1;
+                    for (int i = 0; i < names.size(); i++){
+                        if (names.get(i).equals(n)){
+                            //leave the first instance of the duplicate name the same
+                            if (numdups > 1){
+                                String newName = n + "." + numdups;
+                                while (names.contains(newName)){
+                                    numdups++;
+                                    newName = n + "." + numdups;
+                                }
+                                names.setElementAt(newName,i);
+                                dupNames = true;
+                            }
+                            numdups++;
+                        }
+                    }
                 }
 
                 if (lineCount > Chromosome.getUnfilteredSize()){

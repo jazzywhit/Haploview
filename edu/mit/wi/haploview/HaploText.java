@@ -801,7 +801,7 @@ public class HaploText implements Constants{
             }
 
             if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC){
-                new AssociationTestSet(textData.getPedFile(),null,Chromosome.getMarkers()).saveSNPsToText(validateOutputFile(fileName + ".ASSOC"));
+                new AssociationTestSet(textData.getPedFile(),null,Chromosome.getAllMarkers()).saveSNPsToText(validateOutputFile(fileName + ".ASSOC"));
             }
 
         }

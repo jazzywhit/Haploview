@@ -291,47 +291,68 @@ public class AssociationTestSet implements Constants{
         BufferedReader in = new BufferedReader(new FileReader(testListFile));
 
         String currentLine;
-        int lineCount =0;
+        int lineCount = 0;
+
+        //we need to be able to identify marker index by name
+        Hashtable indicesByName = new Hashtable();
+        Iterator mitr = Chromosome.getAllMarkers().iterator();
+        int count = 0;
+        while (mitr.hasNext()){
+            SNP n = (SNP) mitr.next();
+            indicesByName.put(n.getName(),new Integer(count));
+            count++;
+        }
 
         while ((currentLine = in.readLine()) != null){
             lineCount++;
-            try {
-                StringTokenizer st = new StringTokenizer(currentLine, " ");
-
-                if (st.countTokens() == 0){
-                    //skip blank lines
-                    continue;
-                } else {
-                    AssociationTest t = new AssociationTest();
-                    while (st.hasMoreTokens()) {
-                        String currentToken = st.nextToken();
-
-                        if(currentToken.indexOf("-") != -1) {
-                            //this is a range of markers
-                            int firstMarker = Integer.parseInt(currentToken.substring(0,currentToken.indexOf("-")));
-                            int secondMarker = Integer.parseInt(currentToken.substring(currentToken.indexOf("-")+1));
-
-                            for(int i=firstMarker;i<=secondMarker;i++) {
-                                if(i > Chromosome.getUnfilteredSize()) {
-                                    throw new HaploViewException("Invalid marker on line " + lineCount + " in association test file.");
-                                }
-                                t.addMarker(new Integer(i));
-                            }
-                        }else {
-                            //if its not a range, then it should be a reference to a single marker
-                            Integer nt = new Integer(currentToken);
-                            if(nt.intValue() > Chromosome.getUnfilteredSize()) {
-                                throw new HaploViewException("Invalid marker on line " + lineCount + " in association test file.");
-                            }
-                            t.addMarker(nt);
-                        }
-                    }
-                    tests.add(t);
-                }
-            }catch (NumberFormatException nfe) {
-                throw new HaploViewException("Format error on line " + lineCount + " in " + testListFile.getName());
+            //first determine if a tab specifies a specific allele for a multi-marker test
+            StringTokenizer st = new StringTokenizer(currentLine, "\t");
+            String markerNames;
+            String alleles;
+            if (st.countTokens() == 0){
+                //skip blank lines
+                continue;
+            }else if (st.countTokens() == 1){
+                //this is just a list of markers
+                markerNames = st.nextToken();
+                alleles = null;
+            }else if (st.countTokens() == 2){
+                //this has markers and alleles
+                markerNames = st.nextToken();
+                alleles = st.nextToken();
+            }else{
+                //this is *!&#ed up
+                markerNames = null;
+                alleles = null;
+                throw new HaploViewException("Format error on line " + lineCount + " of tests file.");
             }
 
+            StringTokenizer mst = new StringTokenizer(markerNames, ", ");
+            AssociationTest t = new AssociationTest();
+            while (mst.hasMoreTokens()) {
+                String currentToken = mst.nextToken();
+                if (!indicesByName.containsKey(currentToken)){
+                    throw new HaploViewException("I don't know anything about marker " + currentToken +
+                            " in custom tests file.");
+                }
+
+                Integer nt = (Integer) indicesByName.get(currentToken);
+                t.addMarker(nt);
+            }
+            tests.add(t);
+
+            if (alleles != null){
+                //we have alleles
+                StringBuffer asb = new StringBuffer();
+                StringTokenizer ast = new StringTokenizer(alleles, ", ");
+                if (ast.countTokens() != t.getNumMarkers()){
+                    throw new HaploViewException("Allele and marker name mismatch on line " + lineCount + " of tests file.");
+                }
+                while (ast.hasMoreTokens()){
+                    asb.append(ast.nextToken());
+                }
+                t.specifyAllele(asb.toString());
+            }
         }
 
     }
@@ -360,7 +381,25 @@ public class AssociationTestSet implements Constants{
             AssociationTest currentTest = (AssociationTest) tests.get(i);
             if(currentTest.getNumMarkers() > 1) {
                 //grab the next block result from above
-                res.add(britr.next());
+                //check to see if a specific allele was given
+                HaplotypeAssociationResult har = (HaplotypeAssociationResult) britr.next();
+                if (currentTest.getAllele() != null){
+                    boolean foundAllele = false;
+                    for (int j = 0; j < har.getAlleleCount(); j++){
+                        if (har.getNumericAlleleName(j).equals(currentTest.getAllele())){
+                            Haplotype[] filtHaps = {har.getHaps()[j]};
+                            res.add(new HaplotypeAssociationResult(filtHaps,0,har.getName()));
+                            foundAllele = true;
+                            break;
+                        }
+                    }
+                    if (!foundAllele){
+                        throw new HaploViewException(currentTest.getAllele() + ": no such allele for test:\n" +
+                                har.getName());
+                    }
+                }else{
+                    res.add(har);
+                }
             }else if (currentTest.getNumMarkers() == 1){
                 //grab appropriate single marker result.
                 res.add(inputSNPResults.get(currentTest.getMarkerArray()[0]));
@@ -437,6 +476,7 @@ public class AssociationTestSet implements Constants{
 
     class AssociationTest {
         Vector markers;
+        String allele;
 
         public AssociationTest() {
             markers = new Vector();
@@ -446,7 +486,7 @@ public class AssociationTestSet implements Constants{
             if(m != null) {
                 markers.add(m);
             }
-            whitelist.add(Chromosome.getUnfilteredMarker(m.intValue() - 1));
+            whitelist.add(Chromosome.getUnfilteredMarker(m.intValue()));
         }
 
         int getNumMarkers() {
@@ -457,7 +497,7 @@ public class AssociationTestSet implements Constants{
             int[] tempArray = new int[markers.size()];
 
             for(int i =0; i<tempArray.length;i++) {
-                tempArray[i] = ((Integer)markers.get(i)).intValue()-1;
+                tempArray[i] = ((Integer)markers.get(i)).intValue();
             }
             return tempArray;
         }
@@ -467,7 +507,7 @@ public class AssociationTestSet implements Constants{
             //method chokes.
             int[] tempArray = new int[markers.size()];
             for(int i = 0; i < tempArray.length; i++){
-                tempArray[i] = Chromosome.filterIndex[((Integer)markers.get(i)).intValue()-1];
+                tempArray[i] = Chromosome.filterIndex[((Integer)markers.get(i)).intValue()];
             }
             return tempArray;
         }
@@ -475,11 +515,19 @@ public class AssociationTestSet implements Constants{
         String getName(){
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < markers.size(); i++){
-                sb.append(((Integer)markers.get(i)).intValue());
+                sb.append(((Integer)markers.get(i)).intValue()+1);
                 sb.append(" ");
             }
 
             return sb.toString();
+        }
+
+        public void specifyAllele(String s) {
+            allele = s;
+        }
+
+        public String getAllele() {
+            return allele;
         }
     }
 

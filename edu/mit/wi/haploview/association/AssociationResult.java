@@ -50,6 +50,10 @@ public abstract class AssociationResult implements Constants{
         return ((Haplotype) alleles.get(i)).toString();
     }
 
+    public String getNumericAlleleName(int i){
+        return ((Haplotype) alleles.get(i)).toNumericString();
+    }
+
     public abstract String getDisplayName(int i);
 
     /**

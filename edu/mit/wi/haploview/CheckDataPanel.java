@@ -79,6 +79,14 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
                     "Duplicate SNPs",
                     JOptionPane.INFORMATION_MESSAGE);
         }
+
+        if (theData.dupNames){
+            JOptionPane.showMessageDialog(hv,
+                    "Two or more SNPs have identical names. They have been renamed with\n"+
+                    ".X extensions where X is an integer unique to each duplicate.",
+                    "Duplicate SNPs",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public CheckDataPanel(HaploData hd){

@@ -17,7 +17,7 @@ public class CustomAssocPanel extends JPanel implements Constants{
         testSet = ats;
 
         Vector colNames = new Vector();
-        colNames.add("Name");
+        colNames.add("Test");
         colNames.add("Allele");
         colNames.add("Frequency");
         if (Options.getAssocTest() == ASSOC_TRIO){

@@ -113,4 +113,13 @@ public class Haplotype{
 
         return curHap.toString();
     }
+
+    public String toNumericString() {
+        StringBuffer curHap = new StringBuffer(genotypes.length);
+        for(int k=0;k<genotypes.length;k++) {
+            curHap.append(genotypes[k]);
+        }
+
+        return curHap.toString();
+    }
 }
