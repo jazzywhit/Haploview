@@ -2,7 +2,6 @@ package edu.mit.wi.haploview;
 
 import javax.swing.*;
 import java.util.Vector;
-import java.awt.*;
 
 public class TDTPanel extends JPanel {
 
