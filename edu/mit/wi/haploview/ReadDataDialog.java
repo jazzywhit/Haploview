@@ -52,7 +52,6 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         this.setModal(true);
     }
 
-
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command.equals(RAW_DATA)){
@@ -138,15 +137,13 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         }
     }
 
-
     void browse(int browseType){
         String name;
         String markerInfoName = "";
-        HaploView h = (HaploView) this.getParent();
-        h.fc.setSelectedFile(new File(""));
-        int returned = h.fc.showOpenDialog(this);
+        HaploView.fc.setSelectedFile(new File(""));
+        int returned = HaploView.fc.showOpenDialog(this);
         if (returned != JFileChooser.APPROVE_OPTION) return;
-        File file = h.fc.getSelectedFile();
+        File file = HaploView.fc.getSelectedFile();
 
         if (browseType == GENO_FILE){
             name = file.getName();

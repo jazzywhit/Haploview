@@ -58,7 +58,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private javax.swing.Timer timer;
 
     static HaploView window;
-    JFileChooser fc;
+    public static JFileChooser fc;
     DPrimeDisplay dPrimeDisplay;
     private JScrollPane hapScroller;
     private HaplotypeDisplay hapDisplay;
