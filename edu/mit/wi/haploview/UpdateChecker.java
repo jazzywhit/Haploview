@@ -47,10 +47,10 @@ public class UpdateChecker {
             int response = con.getResponseCode();
 
             if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
-
+                //if something went wrong
             }
             else {
-
+                //all is well
                 InputStream inputStream = con.getInputStream();
                 byte[] buf = new byte[200];
                 int size = con.getContentLength();

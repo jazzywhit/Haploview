@@ -82,6 +82,8 @@ public class TweakBlockDefsDialog extends JDialog implements ActionListener {
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
         this.setModal(true);
+        this.setResizable(false);
+        
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -158,7 +160,7 @@ public class TweakBlockDefsDialog extends JDialog implements ActionListener {
             FindBlocks.spineDP = sdpV;
         }
 
-        
+
         //note that this will only apply to the cursor in this dialog, but java seems touchy
         //about setting a "global" cursor
         setCursor(new Cursor(Cursor.WAIT_CURSOR));

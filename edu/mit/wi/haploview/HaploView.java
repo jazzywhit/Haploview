@@ -13,6 +13,8 @@ import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.io.*;
 import java.util.Vector;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -140,13 +142,20 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             fileMenu.add(exportMenuItems[i]);
         }
 
+        //update menu item
         fileMenu.addSeparator();
-        fileMenu.setMnemonic(KeyEvent.VK_F);
+        menuItem = new JMenuItem("Check for update");
+        menuItem.addActionListener(this);
+        fileMenu.add(menuItem);
 
+
+        fileMenu.addSeparator();
         menuItem = new JMenuItem("Quit");
         setAccelerator(menuItem, 'Q', false);
         menuItem.addActionListener(this);
         fileMenu.add(menuItem);
+
+        fileMenu.setMnemonic(KeyEvent.VK_F);
 
         /// display menu
         displayMenu = new JMenu("Display");
@@ -395,7 +404,33 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             spaceDialog.setVisible(true);
         }else if (command.equals("Tutorial")){
             showHelp();
-        } else if (command.equals("Quit")){
+        } else if(command.equals("Check for update")) {
+            final SwingWorker worker = new SwingWorker(){
+                UpdateChecker uc;
+                public Object construct() {
+                    uc = new UpdateChecker();
+                    uc.checkForUpdate();
+                    return null;
+                }
+                public void finished() {
+                    if(uc != null) {
+                        if(uc.isNewVersionAvailable()) {
+                            UpdateDisplayDialog udp = new UpdateDisplayDialog(window,"Update Check",uc);
+                            udp.pack();
+                            udp.setVisible(true);
+                        } else {
+                            JOptionPane.showMessageDialog(window,
+                                    "Your version of Haploview is up to date.",
+                                    "Update Check",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    }
+                    window.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+            };
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            worker.start();
+        }else if (command.equals("Quit")){
             quit();
         } else {
             for (int i = 0; i < viewItems.length; i++) {
@@ -1132,6 +1167,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             window  =  new HaploView();
 
+            //setup view object
+            window.setTitle(TITLE_STRING);
+            window.setSize(800,600);
 
             final SwingWorker worker = new SwingWorker(){
                 UpdateChecker uc;
@@ -1144,14 +1182,38 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     if(uc != null) {
                         if(uc.isNewVersionAvailable()) {
                             //theres an update available so lets pop some crap up
-                            JLayeredPane jlp = window.getLayeredPane();
-                            JLabel updateLabel = new JLabel("test");
-                            updateLabel.setBounds(100,100,200,200);
-                            updateLabel.setOpaque(true);
-                            updateLabel.setBackground(Color.red);
-                            //updateLabel.setBorder(BorderFactory.createCompoundBorder());
-                            jlp.add(updateLabel, JLayeredPane.POPUP_LAYER);
-                            window.setLayeredPane(jlp);
+                            final JLayeredPane jlp = window.getLayeredPane();
+
+                            final JPanel udp = new JPanel();
+                            udp.setLayout(new BoxLayout(udp, BoxLayout.Y_AXIS));
+                            double version = uc.getNewVersion();
+                            Font detailsFont = new Font("Default", Font.BOLD, 12);
+                            JLabel announceLabel = new JLabel("A newer version of Haploview (" +version+") is available.");
+                            announceLabel.setFont(detailsFont);
+                            JLabel detailsLabel = new JLabel("See \"Check for update\" in the file menu for details.");
+                            detailsLabel.setFont(detailsFont);
+                            udp.add(announceLabel);
+                            udp.add(detailsLabel);
+
+                            udp.setBorder(BorderFactory.createRaisedBevelBorder());
+                            int width = udp.getPreferredSize().width;
+                            int height = udp.getPreferredSize().height;
+                            int borderwidth = udp.getBorder().getBorderInsets(udp).right;
+                            int borderheight = udp.getBorder().getBorderInsets(udp).bottom;
+                            udp.setBounds(jlp.getWidth()-width-borderwidth, jlp.getHeight()-height-borderheight,
+                                   udp.getPreferredSize().width, udp.getPreferredSize().height);
+                            udp.setOpaque(true);
+
+                            jlp.add(udp, JLayeredPane.POPUP_LAYER);
+
+                            java.util.Timer updateTimer = new Timer();
+                            //show this update message for 6.5 seconds
+                            updateTimer.schedule(new TimerTask() {
+                                public void run() {
+                                    jlp.remove(udp);
+                                    jlp.repaint();
+                                }
+                            },6500);
 
                         }
                     }
@@ -1160,9 +1222,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             worker.start();
 
-            //setup view object
-            window.setTitle(TITLE_STRING);
-            window.setSize(800,600);
 
             //center the window on the screen
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
