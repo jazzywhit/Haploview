@@ -514,7 +514,7 @@ public class HaploView extends JFrame implements ActionListener{
                     readMarkers(null,hminfo);
                 }
                 theData.generateDPrimeTable(maxCompDist);
-                theData.guessBlocks(3);
+                theData.guessBlocks(0);
                 colorMenuItems[0].setSelected(true);
                 colorMenuItems[1].setEnabled(true);
                 theData.blocksChanged = false;
