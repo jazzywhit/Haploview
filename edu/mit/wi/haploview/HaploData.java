@@ -4,9 +4,7 @@ package edu.mit.wi.haploview;
 import edu.mit.wi.pedfile.*;
 
 import java.io.*;
-//import java.lang.*;
 import java.util.*;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -15,10 +13,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.text.NumberFormat;
 
-//import java.text.*;
-//import javax.swing.*;
-//import java.awt.*;
-//import java.awt.geom.*;
 
 public class HaploData implements Constants{
 
@@ -26,7 +20,7 @@ public class HaploData implements Constants{
     boolean[] isInBlock;
     boolean infoKnown = false;
     boolean blocksChanged = false;
-    int missingLimit = 5;
+    int missingLimit = 4;
     private PairwiseLinkage[][] dPrimeTable;
     private PedFile pedFile;
     PairwiseLinkage[][] filteredDPrimeTable;
@@ -687,21 +681,57 @@ public class HaploData implements Constants{
                 theBlock = preFiltBlock;
             }
 
+            //break up large blocks if needed
+            int[] block_size;
+            if (theBlock.length < 9){
+                block_size = new int[1];
+                block_size[0] = theBlock.length;
+            } else {
+                //some base-8 arithmetic
+                int ones = theBlock.length%8;
+                int eights = (theBlock.length - ones)/8;
+                if (ones == 0){
+                    block_size = new int[eights];
+                    for (int i = 0; i < eights; i++){
+                        block_size[i]=8;
+                    }
+                } else {
+                    block_size = new int[eights+1];
+                    for (int i = 0; i < eights-1; i++){
+                        block_size[i]=8;
+                    }
+                    block_size[eights-1] = (8+ones)/2;
+                    block_size[eights] = 8+ones-block_size[eights-1];
+                }
+            }
+
+
             byte[] thisHap;
             Vector inputHaploVector = new Vector();
             for (int i = 0; i < chromosomes.size(); i++){
                 thisHap = new byte[theBlock.length];
                 Chromosome thisChrom = (Chromosome)chromosomes.elementAt(i);
                 Chromosome nextChrom = (Chromosome)chromosomes.elementAt(++i);
-                int missing=0;
-                //int dhet=0;
-                for (int j = 0; j < theBlock.length; j++){
-                    byte theGeno = thisChrom.getFilteredGenotype(theBlock[j]);
-                    byte nextGeno = nextChrom.getFilteredGenotype(theBlock[j]);
-                    if(theGeno == 0 || nextGeno == 0) missing++;
+                boolean tooManyMissingInASegment = false;
+                int totalMissing = 0;
+                int segmentShift = 0;
+                for (int n = 0; n < block_size.length; n++){
+                    int missing = 0;
+                    for (int j = 0; j < block_size[n]; j++){
+                        byte theGeno = thisChrom.getFilteredGenotype(theBlock[segmentShift+j]);
+                        byte nextGeno = nextChrom.getFilteredGenotype(theBlock[segmentShift+j]);
+                        if(theGeno == 0 || nextGeno == 0) missing++;
+                    }
+                    segmentShift += block_size[n];
+                    if (missing >= missingLimit){
+                        tooManyMissingInASegment = true;
+                    }
+                    totalMissing += missing;
                 }
-
-                if (! (missing > theBlock.length/2 || missing > missingLimit)){
+                //we want to use chromosomes without too many missing genotypes in a given
+                //subsegment (first term) or without too many missing genotypes in the
+                //whole block (second term)
+                if (!tooManyMissingInASegment && totalMissing <= 1+theBlock.length/3){
                     for (int j = 0; j < theBlock.length; j++){
                         byte a1 = Chromosome.getFilteredMarker(theBlock[j]).getMajor();
                         byte a2 = Chromosome.getFilteredMarker(theBlock[j]).getMinor();
@@ -741,29 +771,6 @@ public class HaploData implements Constants{
             }
             byte[][] input_haplos = (byte[][])inputHaploVector.toArray(new byte[0][0]);
 
-            //break up large blocks if needed
-            int[] block_size;
-            if (theBlock.length < 9){
-                block_size = new int[1];
-                block_size[0] = theBlock.length;
-            } else {
-                //some base-8 arithmetic
-                int ones = theBlock.length%8;
-                int eights = (theBlock.length - ones)/8;
-                if (ones == 0){
-                    block_size = new int[eights];
-                    for (int i = 0; i < eights; i++){
-                        block_size[i]=8;
-                    }
-                } else {
-                    block_size = new int[eights+1];
-                    for (int i = 0; i < eights-1; i++){
-                        block_size[i]=8;
-                    }
-                    block_size[eights-1] = (8+ones)/2;
-                    block_size[eights] = 8+ones-block_size[eights-1];
-                }
-            }
 
 
             String EMreturn = new String("");

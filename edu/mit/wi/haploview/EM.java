@@ -8,8 +8,17 @@ public class EM {
     double PSEUDOCOUNT = 0.1;
     OBS data[];
     SUPER_OBS superdata[];
-    int[] two_n = new int[MAXLOCI];
+    int[] two_n = new int[32];
     double[] prob;
+
+    EM(){
+
+        //an old-school speedup courtesy of mjdaly
+        two_n[0]=1;
+        for (int i=1; i<31; i++){
+            two_n[i]=2*two_n[i-1];
+        }
+    }
 
 
     class RECOVERY {
@@ -64,12 +73,8 @@ public class EM {
             if (block_size[i] > biggest_block_size) biggest_block_size=block_size[i];
         }
 
-        two_n[0]=1;
-        for (i=1; i<31; i++) two_n[i]=2*two_n[i-1];
-
         num_poss = two_n[biggest_block_size];
         data = new OBS[num_haplos/2];
-        //todo: this is in a bad way. doesn't always allocate enough mem, but if you bump it up, slows everything down
         for (i=0; i<num_haplos/2; i++) data[i]= new OBS(num_poss*two_n[max_missing]);
         superdata = new SUPER_OBS[num_haplos/2];
         for (i=0; i<num_haplos/2; i++) superdata[i]= new SUPER_OBS(num_blocks);
@@ -193,14 +198,7 @@ public class EM {
 
         for (i=0; i<num_indivs; i++) {
             if (superdata[i].nsuper==1) {
-                //TODO: somehow fix this so that it doesn't break with weird trio hh00 stuff... maybe not fix here.
-                SUPER_OBS foo = superdata[i];
-                int bar = foo.superposs[0].h1;
-
-                //System.out.println("i= " + i);
-                superprob[bar] += 1.0;
-
-                //superprob[superdata[i].superposs[0].h1]+=1.0;
+                superprob[superdata[i].superposs[0].h1]+=1.0;
                 superprob[superdata[i].superposs[0].h2]+=1.0;
                 total+=2.0;
             }
@@ -399,7 +397,6 @@ public class EM {
                         } else {
                             //printf("error - attempting to flip missing !=0\n");
                         }
-//TODO: deal with problem here when certain indivs have boatloads of missing data
                         data[num_indivs].poss[num_poss+j].h1=h1;
                         data[num_indivs].poss[num_poss+j].h2=h2;
                         data[num_indivs].poss[num_poss+j].p=0.0f;
