@@ -668,6 +668,7 @@ public class HaploData implements Constants{
                         dpTemp.add(computeDPrime(pos1,pos2));
                     }
                 }else{
+                    //maxdist==0 is the convention used to force us to compare all the markers
                     dpTemp.add(computeDPrime(pos1,pos2));
                 }
             }

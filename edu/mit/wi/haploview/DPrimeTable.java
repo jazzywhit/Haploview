@@ -31,15 +31,18 @@ public class DPrimeTable {
         return theTable[pos1][pos2-pos1-1];
     }
     public PairwiseLinkage getFilteredDPrime(int pos1, int pos2){
-        //as above we need to convert the input of an absoulte position into the relative position
+        //as above we need to convert the input of an absolute position into the relative position
         //to index into the DP array. here we jump through the additional hoop of un-filtering the input
         //numbers
         int x = Chromosome.realIndex[pos1];
         int y = Chromosome.realIndex[pos2] - x - 1;
-        if(y < theTable[x].length) {
-            return theTable[x][y];
-        }
-        else {
+        if (x < theTable.length-1){
+            if (y < theTable[x].length){
+                return theTable[x][y];
+            }else{
+                return null;
+            }
+        }else{
             return null;
         }
     }
