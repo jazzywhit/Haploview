@@ -35,12 +35,8 @@ public class TDT {
                     byte allele2T = chrom2T.getGenotype(j);
                     byte allele2U = chrom2U.getGenotype(j);
 
-                    if( !(allele1T == 0 && allele1U ==0 && allele2T == 5 && allele2U == 5)
-                         && !(allele2T == 0 && allele2U ==0 && allele1T == 5 && allele1U == 5) ){
+                    if( !(allele1T == 0 || allele1U == 0 || allele2T == 0 || allele2U == 0) ){
                         TDTResult curRes = (TDTResult)results.get(j);
-                        //if(j==21){
-                        //    System.out.println("marker "+ j + ":\t "  + allele1T + "\t" + allele1U + "\t" + allele2T + "\t" + allele2U);
-                        //}
                         curRes.tallyInd(allele1T,allele1U);
                         curRes.tallyInd(allele2T,allele2U);
                     }
