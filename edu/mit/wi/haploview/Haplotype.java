@@ -8,6 +8,10 @@ class Haplotype{
     private boolean[] tags;
     private double percentage;
     private double[] crossovers;
+    private double transCount;
+    private double untransCount;
+    private double caseFreq;
+    private double controlFreq;
 
     Haplotype(int[] g, double p, int[] m){
         genotypes=g;
@@ -57,5 +61,37 @@ class Haplotype{
 
     public void setListOrder(int slo){
         listorder = slo;
+    }
+
+    public double getTransCount() {
+        return transCount;
+    }
+
+    public void setTransCount(double transCount) {
+        this.transCount = transCount;
+    }
+
+    public double getUntransCount() {
+        return untransCount;
+    }
+
+    public void setUntransCount(double untransCount) {
+        this.untransCount = untransCount;
+    }
+
+    public double getCaseFreq() {
+        return caseFreq;
+    }
+
+    public void setCaseFreq(double caseFreq) {
+        this.caseFreq = caseFreq;
+    }
+
+    public double getControlFreq() {
+        return controlFreq;
+    }
+
+    public void setControlFreq(double controlFreq) {
+        this.controlFreq = controlFreq;
     }
 }

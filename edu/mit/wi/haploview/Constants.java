@@ -23,7 +23,7 @@ public interface Constants {
     public static final String VIEW_HAPLOTYPES = "Haplotypes";
     public static final String VIEW_LOD = "Genotyping completeness";
     public static final String VIEW_CHECK_PANEL = "Check Markers";
-    public static final String VIEW_TDT = "Association";
+    public static final String VIEW_TDT = "Single Marker";
 
     //main frame tab numbers
     public static final int VIEW_D_NUM = 0;
@@ -59,6 +59,12 @@ public interface Constants {
     static final int WMF_SCHEME = 3;
     static final int SFS_SCHEME = 4;
     static final int GAM_SCHEME = 5;
+
+    //association test modes
+    static final int ASSOC_NONE = 0;
+    static final int ASSOC_TRIO = 1;
+    static final int ASSOC_CC = 2;
+
 
     static final String HELP_OUTPUT = TITLE_STRING + " command line options\n" +
                         "-h, -help                     print this message\n" +

@@ -13,6 +13,7 @@ public class Options {
     private static double missingThreshold;
     private static double spacingThreshold;
     private static int assocTest;
+    private static int haplotypeDisplayThreshold;
 
     public static int getGenoFileType() {
         return genoFileType;
@@ -27,7 +28,8 @@ public class Options {
     }
 
     public static void setMaxDistance(int maxDistance) {
-        Options.maxDistance = maxDistance;
+        //takes in max separation in kilobases and converts it to bp
+        Options.maxDistance = maxDistance*1000;
     }
 
     public static double getMissingThreshold() {
@@ -52,5 +54,13 @@ public class Options {
 
     public static void setAssocTest(int assocTest) {
         Options.assocTest = assocTest;
+    }
+
+    public static int getHaplotypeDisplayThreshold() {
+        return haplotypeDisplayThreshold;
+    }
+
+    public static void setHaplotypeDisplayThreshold(int haplotypeDisplayThreshold) {
+        Options.haplotypeDisplayThreshold = haplotypeDisplayThreshold;
     }
 }

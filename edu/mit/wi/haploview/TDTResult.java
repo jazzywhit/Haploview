@@ -8,7 +8,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 
-public class TDTResult {
+public class TDTResult implements Constants{
     int[][] counts;
     SNP theSNP;
     private byte allele1=0,allele2=0;
@@ -112,7 +112,7 @@ public class TDTResult {
 
     public double getChiSq(int type) {
         if(!this.chiSet){
-            if (type == 1){
+            if (type == ASSOC_TRIO){
                 this.chiSqVal = Math.pow( (this.counts[0][0] - this.counts[0][1]),2) / (this.counts[0][0] + this.counts[0][1]);
             }else{
                 int N = counts[0][0] + counts[0][1] + counts[1][0] + counts[1][1];
@@ -130,7 +130,7 @@ public class TDTResult {
     }
 
     public String getTURatio(int type) {
-        if (type == 1){
+        if (type == ASSOC_TRIO){
             if (this.counts[0][0] > this.counts[0][1]){
                 return this.counts[0][0] + ":" + this.counts[0][1];
             }else{
@@ -173,7 +173,7 @@ public class TDTResult {
         }else{
             retStr = alleleCodes[allele2];
         }
-        if (type != 1){
+        if (type != ASSOC_TRIO){
             if (this.counts[1][0] > this.counts[1][1]){
                 retStr += (", " + alleleCodes[allele1]);
             }else if (this.counts[1][0] == this.counts[1][1]){

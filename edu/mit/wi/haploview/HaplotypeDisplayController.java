@@ -32,7 +32,7 @@ public class HaplotypeDisplayController extends JPanel {
         JPanel hapPercentPanel = new JPanel();
         hapPercentPanel.add(new JLabel("Examine haplotypes above "));
             hapPercentPanel.add(minDisplayField =
-                    new NumberTextField(String.valueOf(parent.displayThresh), 3, false));
+                    new NumberTextField(String.valueOf(Options.getHaplotypeDisplayThreshold()), 3, false));
 
         hapPercentPanel.add(new JLabel("%"));
         leftPanel.add(hapPercentPanel);
@@ -97,8 +97,9 @@ public class HaplotypeDisplayController extends JPanel {
 
 
     public void setDisplayThresh(int amount){
-        if (parent.displayThresh != amount){
-            parent.adjustDisplay(amount);
+        if (Options.getHaplotypeDisplayThreshold() != amount){
+            Options.setHaplotypeDisplayThreshold(amount);
+            parent.adjustDisplay();
         }
     }
 

@@ -7,14 +7,14 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.util.Vector;
 
-public class TDTPanel extends JPanel {
+public class TDTPanel extends JPanel implements Constants {
 
     Vector result;
     JTable table;
     Vector tableColumnNames = new Vector();
 
     public TDTPanel(PedFile pf) throws PedFileException{
-        if (Options.getAssocTest() == 1){
+        if (Options.getAssocTest() == ASSOC_TRIO){
             result = TDT.calcTrioTDT(pf);
         }else{
             result = TDT.calcCCTDT(pf);
@@ -22,7 +22,7 @@ public class TDTPanel extends JPanel {
 
         tableColumnNames.add("#");
         tableColumnNames.add("Name");
-        if (Options.getAssocTest() == 1){
+        if (Options.getAssocTest() == ASSOC_TRIO){
             tableColumnNames.add("Overtransmitted");
             tableColumnNames.add("T:U");
         }else{
@@ -68,7 +68,7 @@ public class TDTPanel extends JPanel {
 
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
         table.getColumnModel().getColumn(1).setPreferredWidth(100);
-        if (Options.getAssocTest() != 1){
+        if (Options.getAssocTest() != ASSOC_TRIO){
             table.getColumnModel().getColumn(3).setPreferredWidth(160);
         }
         table.getColumnModel().getColumn(2).setPreferredWidth(100);
@@ -84,6 +84,14 @@ public class TDTPanel extends JPanel {
 		public TDTTableModel(Vector c, Vector d){
 			columnNames=c;
 			data=d;
+		}
+
+        public String getColumnName(int i){
+            return (String)columnNames.elementAt(i);
+        }
+
+        public Class getColumnClass(int c){
+			return getValueAt(0, c).getClass();
 		}
 
 		public int getColumnCount(){

@@ -17,18 +17,16 @@ import java.text.NumberFormat;
 public class HaploData implements Constants{
 
     private Vector chromosomes;
+    private Haplotype[][] haplotypes;
     Vector blocks;
     boolean[] isInBlock;
     boolean infoKnown = false;
     boolean blocksChanged = false;
-    //private PairwiseLinkage[][] dPrimeTable;
     DPrimeTable dpTable;
     private PedFile pedFile;
-    //PairwiseLinkage[][] filteredDPrimeTable;
     public boolean finished = false;
     private double[] percentBadGenotypes;
     private double[] multidprimeArray;
-    //private long maxdist;
     Vector analysisPositions = new Vector();
     Vector analysisValues = new Vector();
     boolean trackExists = false;
@@ -419,7 +417,6 @@ public class HaploData implements Constants{
             throw new IllegalArgumentException();
         }
 
-
         Vector indList = pedFile.getOrder();
         int numMarkers = 0;
         numSingletons = 0;
@@ -685,8 +682,6 @@ public class HaploData implements Constants{
         }
 
 
-
-
         //set up the indexing to take into account skipped markers. Need
         //to loop through twice because first time we just count number of
         //unskipped markers
@@ -740,7 +735,7 @@ public class HaploData implements Constants{
         return filt;
     }*/
 
-    Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh) throws HaploViewException{
+    Haplotype[][] generateHaplotypes(Vector blocks, int hapthresh, boolean crossover) throws HaploViewException{
         //TODO: output indiv hap estimates
         Haplotype[][] results = new Haplotype[blocks.size()][];
         //String raw = new String();
@@ -809,7 +804,7 @@ public class HaploData implements Constants{
             //kirby patch
             EM theEM = new EM(chromosomes,numTrios);
             theEM.doEM(theBlock);
-                                    
+
             int p = 0;
             Haplotype[] tempArray = new Haplotype[theEM.numHaplos()];
             int[][] returnedHaplos = theEM.getHaplotypes();
@@ -893,7 +888,17 @@ public class HaploData implements Constants{
             results[k] = new Haplotype[p];
             for (int z = 0; z < p; z++){
                 results[k][z] = tempArray[z];
+                if (Options.getAssocTest() == ASSOC_TRIO){
+                    results[k][z].setTransCount(theEM.getTransCount(z));
+                    results[k][z].setUntransCount(theEM.getUntransCount(z));
+                }else if (Options.getAssocTest() == ASSOC_CC){
+                    results[k][z].setCaseFreq(theEM.getCaseFreq(z));
+                    results[k][z].setControlFreq(theEM.getControlFreq(z));
+                }
             }
+        }
+        if (!crossover){
+            haplotypes = results;
         }
         return results;
     }
@@ -950,7 +955,7 @@ public class HaploData implements Constants{
             }
             inputVector.add(intArray);
 
-            Haplotype[] crossHaplos = generateHaplotypes(inputVector, 1)[0];  //get haplos of gap
+            Haplotype[] crossHaplos = generateHaplotypes(inputVector, 1,true)[0];  //get haplos of gap
             double[][] multilocusTable = new double[haplos[gap].length][];
             double[] rowSum = new double[haplos[gap].length];
             double[] colSum = new double[haplos[gap+1].length];
@@ -1840,6 +1845,10 @@ public class HaploData implements Constants{
             }
         }
         return cust;
+    }
+
+    public Haplotype[][] getHaplotypes() {
+        return haplotypes;
     }
 
     //this whole method is broken at the very least because it doesn't check for zeroing

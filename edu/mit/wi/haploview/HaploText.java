@@ -662,19 +662,19 @@ public class HaploText implements Constants{
                 if(outputType == BLOX_ALL) {
                     OutputFile = new File(fileName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1, false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                     OutputFile = new File(fileName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1,false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                     OutputFile = new File(fileName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1,false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }else{
                     textData.guessBlocks(outputType, cust);
-                    haplos = textData.generateHaplotypes(textData.blocks, 1);
+                    haplos = textData.generateHaplotypes(textData.blocks, 1,false);
                     textData.saveHapsToText(orderHaps(haplos, textData), textData.getMultiDprime(), OutputFile);
                 }
             }

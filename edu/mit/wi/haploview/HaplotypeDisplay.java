@@ -16,7 +16,6 @@ public class HaplotypeDisplay extends JComponent {
     double multidprimeArray[];
     int missingLimit = 5;
     boolean useThickness = true;
-    int displayThresh = 1;
     int thinThresh = 1;
     int thickThresh = 10;
     private boolean forExport = false;
@@ -52,7 +51,7 @@ public class HaplotypeDisplay extends JComponent {
     public void getHaps() throws HaploViewException{
         if (theData.blocks == null) {return;}
 
-        Haplotype[][] haplos = theData.generateHaplotypes(theData.blocks, 0);
+        Haplotype[][] haplos = theData.generateHaplotypes(theData.blocks, 0,false);
 
         orderedHaplos = new Haplotype[haplos.length][];
         for (int i = 0; i < haplos.length; i++) {
@@ -78,7 +77,7 @@ public class HaplotypeDisplay extends JComponent {
             orderedHaplos[i] = new Haplotype[orderedHaps.size()];
             orderedHaps.copyInto(orderedHaplos[i]);
         }
-        adjustDisplay(displayThresh);
+        adjustDisplay();
     }
 
 
@@ -180,7 +179,7 @@ public class HaplotypeDisplay extends JComponent {
         }
     }
 
-    public void adjustDisplay(int dt){
+    public void adjustDisplay(){
         //this is called when the controller wants to change the haps
         //displayed, instead of directly repainting so that none of this math
         //is done when the screen repaints for other reasons (resizing, focus change, etc)
@@ -194,7 +193,7 @@ public class HaplotypeDisplay extends JComponent {
         for (int i = 0; i < orderedHaplos.length; i++){
                         Vector tempVector = new Vector();
             for (int j = 0; j < orderedHaplos[i].length; j++){
-                if (orderedHaplos[i][j].getPercentage()*100 > dt){
+                if (orderedHaplos[i][j].getPercentage()*100 > Options.getHaplotypeDisplayThreshold()){
                     tempVector.add(orderedHaplos[i][j]);
                     numhaps++;
                 }
@@ -209,13 +208,12 @@ public class HaplotypeDisplay extends JComponent {
         // if user sets display thresh higher than most common hap in any given block
         if (!(printable == filts.length)){
             JOptionPane.showMessageDialog(this.getParent(),
-                    "Error: At least one block has too few haplotypes of frequency > " + dt,
+                    "Error: At least one block has too few haplotypes of frequency > " + Options.getHaplotypeDisplayThreshold(),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        displayThresh = dt;
         filteredHaplos = filts;
 
         //then re-tag

@@ -56,7 +56,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private TDTPanel tdtPanel;
     int currentScheme = STD_SCHEME;
     private javax.swing.Timer timer;
-    long maxCompDist;
+    //long maxCompDist;
 
     static HaploView window;
     JFileChooser fc;
@@ -71,7 +71,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         //set defaults
         Options.setMissingThreshold(1.0);
         Options.setSpacingThreshold(0.0);
-        Options.setAssocTest(0);
+        Options.setAssocTest(ASSOC_NONE);
+        Options.setHaplotypeDisplayThreshold(1);
+        Options.setMaxDistance(500);
 
         try{
             fc = new JFileChooser(System.getProperty("user.dir"));
@@ -519,20 +521,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     }
 
     void readGenotypes(String[] inputOptions, int type){
-        //input is a 3 element array with
+        //input is a 2 element array with
         //inputOptions[0] = ped file
         //inputOptions[1] = info file (null if none)
-        //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
         //type is either 3 or 4 for ped and hapmap files respectively
 
         final File inFile = new File(inputOptions[0]);
-
-        //deal with max comparison distance
-        if (inputOptions[2].equals("")){
-            inputOptions[2] = "0";
-        }
-        maxCompDist = Long.parseLong(inputOptions[2])*1000;
-
 
         try {
             if (inFile.length() < 1){
@@ -543,7 +537,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 //these are not available for non ped files
                 viewMenuItems[VIEW_CHECK_NUM].setEnabled(false);
                 viewMenuItems[VIEW_TDT_NUM].setEnabled(false);
-                Options.setAssocTest(0);
+                Options.setAssocTest(ASSOC_NONE);
             }
             theData = new HaploData();
 
@@ -670,10 +664,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }
 
                     //TDT panel
-                    if(Options.getAssocTest() > 0) {
+                    if(Options.getAssocTest() != ASSOC_NONE) {
                         //optionalTabCount++;
                         //VIEW_TDT_NUM = optionalTabCount;
                         //viewItems[VIEW_TDT_NUM] = VIEW_TDT;
+                        JTabbedPane metaAssoc = new JTabbedPane();
                         try{
                             tdtPanel = new TDTPanel(theData.getPedFile());
                         } catch(PedFileException e) {
@@ -682,7 +677,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                                     "Error",
                                     JOptionPane.ERROR_MESSAGE);
                         }
-                        tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
+                        metaAssoc.add(viewItems[VIEW_TDT_NUM], tdtPanel);
+
+                        HaploTDTPanel htp = new HaploTDTPanel(theData.getHaplotypes());
+                        metaAssoc.add("Haplotypes", htp);
+
+                        tabs.addTab("Association Results", metaAssoc);
                         viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
                     }
 
@@ -845,6 +845,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }else{
                 exportMenuItems[0].setEnabled(false);
                 exportMenuItems[1].setEnabled(false);
+            }
+
+            //if we've adjusted the haps display thresh we need to change the haps ass panel
+            if (tabNum == VIEW_TDT_NUM){
+                JTabbedPane metaAssoc= (JTabbedPane)tabs.getComponentAt(tabNum);
+                //this is the haps ass tab inside the assoc super-tab
+                HaploTDTPanel htp = (HaploTDTPanel) metaAssoc.getComponent(1);
+                if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
+                    metaAssoc.remove(1);
+                    metaAssoc.add("Haplotypes", new HaploTDTPanel(theData.getHaplotypes()));
+                }
             }
 
             if (tabNum == VIEW_D_NUM){
@@ -1067,21 +1078,18 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             //parse command line stuff for input files or prompt data dialog
             HaploText argParser = new HaploText(args);
-            String[] inputArray = new String[3];
+            String[] inputArray = new String[2];
             if (argParser.getHapsFileName() != null){
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
-                inputArray[2] = String.valueOf(Options.getMaxDistance());
                 window.readGenotypes(inputArray, HAPS);
             }else if (argParser.getPedFileName() != null){
                 inputArray[0] = argParser.getPedFileName();
                 inputArray[1] = argParser.getInfoFileName();
-                inputArray[2] = String.valueOf(Options.getMaxDistance());
                 window.readGenotypes(inputArray, PED);
             }else if (argParser.getHapmapFileName() != null){
                 inputArray[0] = argParser.getHapmapFileName();
                 inputArray[1] = "";
-                inputArray[2] = String.valueOf(Options.getMaxDistance());
                 window.readGenotypes(inputArray, HMP);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);

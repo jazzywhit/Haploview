@@ -3,7 +3,7 @@ package edu.mit.wi.haploview;
 import java.util.Vector;
 //import java.util.Enumeration;
 
-public class EM {
+public class EM implements Constants {
     //results fields
     private int[][] haplotypes;
     private double[] frequencies;
@@ -240,7 +240,12 @@ public class EM {
         affTrios.addAll(affSingletons);
         byte[][] input_haplos = (byte[][])inputHaploTrios.toArray(new byte[0][0]);
 
+
+
+
         full_em_breakup(input_haplos, block_size, trioCount, affTrios);
+
+
     }
 
     private void full_em_breakup( byte[][] input_haplos, int[] block_size, int numTrios, Vector affStatus) throws HaploViewException{
@@ -283,7 +288,7 @@ public class EM {
         prob = new double[num_poss];
 
         /* for trio option */
-        if (Options.getAssocTest() == 2) {
+        if (Options.getAssocTest() == ASSOC_TRIO) {
             ambighet = new int[(num_haplos/4)][num_loci];
             store_dhet_status(num_haplos,num_loci,input_haplos);
         }
@@ -489,7 +494,7 @@ return(-5);
         Vector caseFreqs = new Vector();
         Vector controlFreqs = new Vector(); //suffers from OCD :)
         double[] tempCase, tempControl, totalCase, totalControl;
-        if (Options.getAssocTest() == 1){
+        if (Options.getAssocTest() == ASSOC_CC){
             tempCase = new double[poss_full];
             tempControl = new double[poss_full];
             totalCase = new double[poss_full];
@@ -529,7 +534,7 @@ return(-5);
         double[] tempT,totalT,tempU,totalU;
         Vector obsT = new Vector();
         Vector obsU = new Vector();
-        if(Options.getAssocTest() == 2)
+        if(Options.getAssocTest() == ASSOC_TRIO)
         {
             double tempnorm=0,product;
             tempT = new double[poss_full];
@@ -605,10 +610,10 @@ return(-5);
 
         this.haplotypes = (int[][])haplos_present.toArray(new int[0][0]);
         this.frequencies = freqs;
-        if (Options.getAssocTest() == 2){
+        if (Options.getAssocTest() == ASSOC_TRIO){
             this.obsT = obsT;
             this.obsU = obsU;
-        } else if (Options.getAssocTest() == 1){
+        } else if (Options.getAssocTest() == ASSOC_CC){
             this.caseFreqs = caseFreqs;
             this.controlFreqs = controlFreqs;
         }
@@ -979,32 +984,32 @@ return(s.toString());
         this.frequencies = frequencies;
     }
 
-    public Vector getObsT() {
-        return obsT;
+    public double getTransCount(int i) {
+        return ((Double)obsT.elementAt(i)).doubleValue();
     }
 
     public void setObsT(Vector obsT) {
         this.obsT = obsT;
     }
 
-    public Vector getObsU() {
-        return obsU;
+    public double getUntransCount(int i) {
+        return ((Double)obsU.elementAt(i)).doubleValue();
     }
 
     public void setObsU(Vector obsU) {
         this.obsU = obsU;
     }
 
-    public Vector getControlFreqs() {
-        return controlFreqs;
+    public double getControlFreq(int i) {
+        return ((Double)controlFreqs.elementAt(i)).doubleValue();
     }
 
     public void setControlFreqs(Vector controlFreqs) {
         this.controlFreqs = controlFreqs;
     }
 
-    public Vector getCaseFreqs() {
-        return caseFreqs;
+    public double getCaseFreq(int i) {
+        return ((Double)caseFreqs.elementAt(i)).doubleValue();
     }
 
     public void setCaseFreqs(Vector caseFreqs) {

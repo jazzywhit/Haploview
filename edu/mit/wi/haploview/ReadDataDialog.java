@@ -68,15 +68,21 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
             if (doTDT.isSelected()){
                 if (trioButton.isSelected()){
-                    Options.setAssocTest(1);
+                    Options.setAssocTest(ASSOC_TRIO);
                 } else {
-                    Options.setAssocTest(2);
+                    Options.setAssocTest(ASSOC_CC);
                 }
             }else{
-                Options.setAssocTest(0);
+                Options.setAssocTest(ASSOC_NONE);
             }
 
-            String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};
+            if (maxComparisonDistField.getText().equals("")){
+                Options.setMaxDistance(0);
+            }else{
+                Options.setMaxDistance(Integer.parseInt(maxComparisonDistField.getText()));
+            }
+            
+            String[] returnStrings = {genoFileField.getText(), infoFileField.getText()};
             if (returnStrings[1].equals("")) returnStrings[1] = null;
 
             //if a dataset was previously loaded during this session, discard the display panes for it.
