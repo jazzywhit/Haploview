@@ -999,6 +999,49 @@ public class HaploData{
       }
     }
 
+    public void addBlock(int firstMarker, int lastMarker) {
+        if (firstMarker < 0){
+            firstMarker = 0;
+        }
+        if (lastMarker >= Chromosome.realIndex.length){
+            lastMarker = Chromosome.realIndex.length-1;
+        }
+        if (lastMarker - firstMarker < 1){
+            return;
+        }
+
+        int inArray[] = new int[lastMarker-firstMarker+1];
+        for (int i = 0; i < inArray.length; i++){
+            inArray[i] = firstMarker+i;
+            this.isInBlock[firstMarker+i] = true;
+        }
+        blocksChanged = true;
+        if (blocks.size() != 0){
+            boolean placed = false;
+            for (int i = 0; i < blocks.size(); i++){
+                int currentBlock[] = (int[])blocks.elementAt(i);
+                //trim out any blocks that are overlapped
+                if ((lastMarker >= currentBlock[0] && firstMarker <= currentBlock[currentBlock.length-1]) ||
+                        firstMarker <= currentBlock[currentBlock.length-1] && firstMarker >= currentBlock[0]){
+                    blocks.removeElementAt(i);
+                    i--;
+                }
+            }
+            for (int i = 0; i < blocks.size(); i++){
+                int currentBlock[] = (int[])blocks.elementAt(i);
+                if (firstMarker <= currentBlock[0] && !placed){
+                    blocks.insertElementAt(inArray,i);
+                    placed = true;
+                }
+            }
+            if (!placed){
+                blocks.add(inArray);
+            }
+        }else{
+            blocks.add(inArray);
+        }
+    }
+
     public PairwiseLinkage computeDPrime(int pos1, int pos2){
         compsDone++;
         int doublehet = 0;
@@ -1511,6 +1554,8 @@ public class HaploData{
         linkageToHapsWriter.close();
 
     }
+
+
 
 
 }

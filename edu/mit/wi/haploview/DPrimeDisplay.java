@@ -38,6 +38,10 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             BasicStroke.CAP_BUTT,
             BasicStroke.JOIN_MITER,
             5.0f, dash1, 0.0f);
+    BasicStroke dashedThinStroke = new BasicStroke(0.35f,
+            BasicStroke.CAP_BUTT,
+            BasicStroke.JOIN_MITER,
+            5.0f, dash1, 0.0f);
     private Font boxFont = new Font("SansSerif", Font.PLAIN, 12);
     private Font markerNumFont = new Font("SansSerif", Font.BOLD, 12);
     private Font markerNameFont = new Font("Default", Font.PLAIN, 12);
@@ -48,7 +52,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private boolean showWM = false;
     private int zoomLevel = 0;
     private boolean noImage = true;
-    private boolean popupExists, resizeRectExists = false;
+    private boolean popupExists, resizeRectExists, blockRectExists = false;
 
     private Rectangle ir = new Rectangle();
     private Rectangle wmResizeCorner = new Rectangle(0,0,-1,-1);
@@ -59,6 +63,8 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private HaploData theData;
     private Dimension chartSize=null;
     private int wmMaxWidth=0;
+    private Rectangle blockRect = new Rectangle(0,0,-1,-1);
+    private int blockStartX = 0;
 
     DPrimeDisplay(HaploData h){
         theData=h;
@@ -553,6 +559,14 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     resizeWMRect.width,
                     resizeWMRect.height);
         }
+
+        //see if we're drawing a block selector rect
+        if (blockRectExists){
+            g2.setColor(Color.black);
+            g2.setStroke(dashedThinStroke);
+            g2.drawRect(blockRect.x, blockRect.y,
+                    blockRect.width, blockRect.height);
+        }
     }
 
     public Dimension getPreferredSize() {
@@ -713,6 +727,16 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                     repaint();
                 }
             }
+        }else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
+                InputEvent.BUTTON1_MASK){
+            Rectangle blockselector = new Rectangle(clickXShift-boxRadius,clickYShift - boxRadius,
+                    (Chromosome.getFilteredSize()*boxSize), boxSize);
+            int x = e.getX();
+            int y = e.getY();
+            if (blockselector.contains(x,y)){
+                setCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+                blockStartX = x;
+            }
         }
     }
 
@@ -731,7 +755,21 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 if (resizeWMRect.width > 20){
                     wmMaxWidth = resizeWMRect.width;
                 }
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 repaint();
+            }
+            if (getCursor() == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)){
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                blockRectExists = false;
+                int firstMarker = (int)(0.5 + (double)((blockStartX - clickXShift))/boxSize);
+                int lastMarker = (int)(0.5 + (double)((e.getX() - clickXShift))/boxSize);
+                if (firstMarker > lastMarker){
+                    int temp = firstMarker;
+                    firstMarker = lastMarker;
+                    lastMarker = temp;
+                }
+                theData.addBlock(firstMarker, lastMarker);
+                refresh();
             }
         }
     }
@@ -739,7 +777,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     public void mouseDragged(MouseEvent e) {
         if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
                 InputEvent.BUTTON1_MASK) {
-            //conveniently, we can tell if this drag started in the resize corner
+            //conveniently, we can tell what do do with the drag event
             //based on what the cursor is
             if (getCursor() == Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR)){
                 int width = e.getX() - worldmapRect.x;
@@ -751,6 +789,20 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                         width,
                         height-1);
                 resizeRectExists = true;
+                repaint();
+            }else if (getCursor() == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR)){
+                int xcorner,width;
+                if (e.getX() < blockStartX){
+                    //we're dragging right to left, so flip it.
+                    xcorner = e.getX() - clickXShift + left;
+                    width =  blockStartX - e.getX();
+                }else{
+                    xcorner = blockStartX - clickXShift + left;
+                    width = e.getX() - blockStartX;
+                }
+                blockRect = new Rectangle(xcorner, top - boxRadius/2 - TEXT_GAP,
+                        width,boxRadius);
+                blockRectExists=true;
                 repaint();
             }
         }
