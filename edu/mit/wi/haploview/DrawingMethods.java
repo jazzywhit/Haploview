@@ -43,13 +43,6 @@ class DrawingMethods {
 			  int mycolorThresh, int mycrossThinThresh, int mycrossThickThresh,
 			  double[] gapDPrime, Haplotype[][] hapsInBlocks){
 
-	NumberFormat nf = NumberFormat.getInstance();
-	NumberFormat nfMulti = NumberFormat.getInstance();
-	nf.setMinimumFractionDigits(3);
-	nf.setMaximumFractionDigits(3);
-	nfMulti.setMinimumFractionDigits(2);
-	nfMulti.setMaximumFractionDigits(2);
-
 	Graphics2D g = (Graphics2D) gr;
 	final BasicStroke stroke = new BasicStroke(1.0f);
 	final BasicStroke wideStroke = new BasicStroke(2.0f);
@@ -65,6 +58,13 @@ class DrawingMethods {
 	int x = 10;
 	int y = verticalOffset;
 	int totalWidth = 0;
+	NumberFormat nf = NumberFormat.getInstance();
+	NumberFormat nfMulti = NumberFormat.getInstance();
+	nf.setMinimumFractionDigits(3);
+	nf.setMaximumFractionDigits(3);
+	nfMulti.setMinimumFractionDigits(2);
+	nfMulti.setMaximumFractionDigits(2);
+
 	
 	int[][]lookupPos = new int[hapsInBlocks.length][];
 	for (int p = 0; p < lookupPos.length; p++){
@@ -210,7 +210,10 @@ class DrawingMethods {
 	Font regFont = new Font("Lucida Sans Regular", Font.PLAIN, 10);
 	FontMetrics regfm = g.getFontMetrics(regFont);
 	Font boldFont = new Font("Lucida Sans Bold", Font.BOLD, 14);
-	FontMetrics boldfm = g.getFontMetrics(boldFont);
+	FontMetrics boldfm = g.getFontMetrics(boldFont);	
+	NumberFormat nf = NumberFormat.getInstance();
+	nf.setMinimumFractionDigits(2);
+	nf.setMaximumFractionDigits(2);
 
 	if (info) activeOffset = labeloffset;
 
@@ -252,7 +255,7 @@ class DrawingMethods {
 	for (int x = 0; x < table.length-1; x++){
 	    for (int y = x + 1; y < table.length; y++){
 		StringTokenizer st = new StringTokenizer(table[x][y]);
-		d = Float.parseFloat(st.nextToken());
+		d = Float.parseFloat(nf.format(Float.parseFloat(st.nextToken())));
 		l = Float.parseFloat(st.nextToken());
 		//set coloring based on LOD and D'
 		if (l > 2){
