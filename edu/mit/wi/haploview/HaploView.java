@@ -2,6 +2,8 @@ package edu.mit.wi.haploview;
 
 
 import edu.mit.wi.pedfile.PedFileException;
+import edu.mit.wi.pedfile.CheckData;
+
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -18,21 +20,20 @@ public class HaploView extends JFrame implements ActionListener{
     boolean DEBUG = false;
 
     //some constants etc.
-    static final String MARKER_DATA_EXT = ".info";
-
-    static final String READ_GENOTYPES = "Open genotype data";
-    static final String READ_MARKERS = "Load marker data";
+    private static final String READ_GENOTYPES = "Open genotype data";
+    private static final String READ_MARKERS = "Load marker data";
     JMenuItem readMarkerItem;
 
-    static final String EXPORT_TEXT = "Export current tab to text";
-    static final String EXPORT_PNG = "Export current tab to PNG";
+    private static final String EXPORT_TEXT = "Export current tab to text";
+    private static final String EXPORT_PNG = "Export current tab to PNG";
     String exportItems[] = {
         EXPORT_TEXT, EXPORT_PNG
     };
     JMenuItem exportMenuItems[];
     JMenu keyMenu;
 
-    static final String CLEAR_BLOCKS = "Clear all blocks";
+    private static final String CLEAR_BLOCKS = "Clear all blocks";
+    private static final String CUST_BLOCKS = "Customize Block Definitions";
     JMenuItem clearBlocksItem;
 
     static final String QUIT = "Quit";
@@ -74,6 +75,7 @@ public class HaploView extends JFrame implements ActionListener{
 
     HaploData theData;
     private CheckDataPanel checkPanel;
+
     private int currentBlockDef = 0;
     private TDTPanel tdtPanel;
     int assocTest = 0;
@@ -86,9 +88,11 @@ public class HaploView extends JFrame implements ActionListener{
     private HaplotypeDisplay hapDisplay;
     private JTabbedPane tabs;
     private String[] inputOptions;
+    NumberTextField hwcut, genocut, mendcut;
 
     //COMMAND LINE ARGUMENTS
     private HaploText argParser;
+
 
     public HaploView(){
         //menu setup
@@ -218,10 +222,13 @@ public class HaploView extends JFrame implements ActionListener{
         clearBlocksItem.addActionListener(this);
         clearBlocksItem.setEnabled(false);
         analysisMenu.add(clearBlocksItem);
+        JMenuItem customizeBlocksItem = new JMenuItem(CUST_BLOCKS);
+        customizeBlocksItem.addActionListener(this);
+        analysisMenu.add(customizeBlocksItem);
 
         //color key
         keyMenu = new JMenu("Key");
-        changeColor(1);
+        changeKey(1);
         menuBar.add(Box.createHorizontalGlue());
         menuBar.add(keyMenu);
 
@@ -262,7 +269,6 @@ public class HaploView extends JFrame implements ActionListener{
         menuItem.setAccelerator(KeyStroke.getKeyStroke(what, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() | (shift ? ActionEvent.SHIFT_MASK : 0)));
     }
 
-
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command == READ_GENOTYPES){
@@ -276,51 +282,29 @@ public class HaploView extends JFrame implements ActionListener{
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 readMarkers(fc.getSelectedFile());
             }
+        }else if (command == CUST_BLOCKS){
+            TweakBlockDefsDialog tweakDialog = new TweakBlockDefsDialog("Customize Blocks", this);
+            tweakDialog.pack();
+            tweakDialog.setVisible(true);
         }else if (command == CLEAR_BLOCKS){
-            theData.guessBlocks(3);
             colorMenuItems[0].setSelected(true);
             for (int i = 1; i< colorMenuItems.length; i++){
                 colorMenuItems[i].setEnabled(false);
             }
-            dPrimeDisplay.refresh(1);
-            changeColor(1);
-            try{
-                hapDisplay.getHaps();
-            }catch(HaploViewException hve){
-                JOptionPane.showMessageDialog(this,
-                        hve.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-            hapScroller.setViewportView(hapDisplay);
+            changeBlocks(3,1);
 
         //blockdef clauses
         }else if (command.startsWith("block")){
-            try {
-                int method = Integer.valueOf(command.substring(5)).intValue();
-                theData.guessBlocks(method);
-                for (int i = 1; i < colorMenuItems.length; i++){
-                    if (method+1 == i){
-                        colorMenuItems[i].setEnabled(true);
-                    }else{
-                        colorMenuItems[i].setEnabled(false);
-                    }
+            int method = Integer.valueOf(command.substring(5)).intValue();
+            changeBlocks(method,1);
+            for (int i = 1; i < colorMenuItems.length; i++){
+                if (method+1 == i){
+                    colorMenuItems[i].setEnabled(true);
+                }else{
+                    colorMenuItems[i].setEnabled(false);
                 }
-                colorMenuItems[0].setSelected(true);
-                dPrimeDisplay.refresh(1);
-                changeColor(1);
-                if (tabs.getSelectedIndex() == VIEW_HAP_NUM){
-                    hapDisplay.getHaps();
-                    hapScroller.setViewportView(hapDisplay);
-                }
-                currentBlockDef = method;
-
-            }catch(HaploViewException hve) {
-                JOptionPane.showMessageDialog(this,
-                        hve.getMessage(),
-                        "Error",
-                        JOptionPane.ERROR_MESSAGE);
             }
+            colorMenuItems[0].setSelected(true);
 
         //zooming clauses
         }else if (command.startsWith("zoom")){
@@ -329,7 +313,7 @@ public class HaploView extends JFrame implements ActionListener{
         //coloring clauses
         }else if (command.startsWith("color")){
             dPrimeDisplay.refresh(Integer.valueOf(command.substring(5)).intValue()+1);
-            changeColor(Integer.valueOf(command.substring(5)).intValue()+1);
+            changeKey(Integer.valueOf(command.substring(5)).intValue()+1);
 
         //exporting clauses
         }else if (command == EXPORT_PNG){
@@ -342,6 +326,28 @@ public class HaploView extends JFrame implements ActionListener{
             if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                 export(tabs.getSelectedIndex(), TXT_MODE, fc.getSelectedFile());
             }
+        }else if (command == "Select All"){
+            checkPanel.selectAll();
+        }else if (command == "Rescore Markers"){
+            String cut = hwcut.getText();
+            if (cut.equals("")){
+                cut = "0";
+            }
+            CheckData.hwCut = Double.parseDouble(cut);
+
+            cut = genocut.getText();
+            if (cut.equals("")){
+                cut="0";
+            }
+            CheckData.failedGenoCut = Integer.parseInt(cut);
+
+            cut = mendcut.getText();
+            if (cut.equals("")){
+                cut="0";
+            }
+            CheckData.numMendErrCut = Integer.parseInt(cut);
+
+            checkPanel.redoRatings();
         }else if (command == "Tutorial"){
             showHelp();
         } else if (command == QUIT){
@@ -353,7 +359,7 @@ public class HaploView extends JFrame implements ActionListener{
         }
     }
 
-    private void changeColor(int scheme) {
+    private void changeKey(int scheme) {
         keyMenu.removeAll();
         if (scheme == 1){
             JMenuItem keyItem = new JMenuItem("High D'");
@@ -398,12 +404,10 @@ public class HaploView extends JFrame implements ActionListener{
         }
     }
 
-
     void quit(){
         //any handling that might need to take place here
         System.exit(0);
     }
-
 
     void readPedGenotypes(String[] f){
         //input is a 3 element array with
@@ -485,6 +489,9 @@ public class HaploView extends JFrame implements ActionListener{
     }
 
     void processData() {
+        if (inputOptions[2].equals("")){
+            inputOptions[2] = "0";
+        }
         maxCompDist = Long.parseLong(inputOptions[2])*1000;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
@@ -537,6 +544,8 @@ public class HaploView extends JFrame implements ActionListener{
                 HaplotypeDisplayController hdc =
                         new HaplotypeDisplayController(hapDisplay);
                 hapScroller = new JScrollPane(hapDisplay);
+                hapScroller.getVerticalScrollBar().setUnitIncrement(60);
+                hapScroller.getHorizontalScrollBar().setUnitIncrement(60);
                 panel.add(hapScroller);
                 panel.add(hdc);
                 tabs.addTab(viewItems[VIEW_HAP_NUM], panel);
@@ -544,7 +553,48 @@ public class HaploView extends JFrame implements ActionListener{
 
                 //check data panel
                 if (checkPanel != null){
-                    tabs.addTab(viewItems[VIEW_CHECK_NUM], checkPanel);
+                    JPanel metaCheckPanel = new JPanel();
+                    metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
+                    JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
+                            + theData.numTrios + " trios from "
+                            + theData.numPeds + " families.");
+                    if (theData.numTrios + theData.numSingletons == 0){
+                        countsLabel.setForeground(Color.red);
+                    }
+                    countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    metaCheckPanel.add(countsLabel);
+                    metaCheckPanel.add(checkPanel);
+
+                    JPanel failPanel = new JPanel();
+                    failPanel.setLayout(new BoxLayout(failPanel,BoxLayout.Y_AXIS));
+                    JPanel holdPanel = new JPanel();
+                    holdPanel.add(new JLabel("HW p-value cutoff: "));
+                    hwcut = new NumberTextField(String.valueOf(CheckData.hwCut),6,true);
+                    holdPanel.add(hwcut);
+                    failPanel.add(holdPanel);
+                    holdPanel = new JPanel();
+                    holdPanel.add(new JLabel("Min genotype %: "));
+                    genocut = new NumberTextField(String.valueOf(CheckData.failedGenoCut),2, false);
+                    holdPanel.add(genocut);
+                    failPanel.add(holdPanel);
+                    holdPanel = new JPanel();
+                    holdPanel.add(new JLabel("Max # mendel errors: "));
+                    mendcut = new NumberTextField(String.valueOf(CheckData.numMendErrCut),2,false);
+                    holdPanel.add(mendcut);
+                    failPanel.add(holdPanel);
+                    JButton rescore = new JButton("Rescore Markers");
+                    rescore.addActionListener(window);
+                    failPanel.add(rescore);
+
+                    JButton selAll = new JButton("Select All");
+                    selAll.addActionListener(window);
+
+                    JPanel ctrlPanel = new JPanel();
+                    ctrlPanel.add(failPanel);
+                    ctrlPanel.add(selAll);
+                    metaCheckPanel.add(ctrlPanel);
+
+                    tabs.addTab(viewItems[VIEW_CHECK_NUM], metaCheckPanel);
                     viewMenuItems[VIEW_CHECK_NUM].setEnabled(true);
                     currentTab=VIEW_CHECK_NUM;
                 }
@@ -585,7 +635,6 @@ public class HaploView extends JFrame implements ActionListener{
         timer.start();
     }
 
-
     void readMarkers(File inputFile){
         try {
             theData.prepareMarkerInput(inputFile,maxCompDist);
@@ -606,11 +655,33 @@ public class HaploView extends JFrame implements ActionListener{
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-        if (dPrimeDisplay != null){
+        if (dPrimeDisplay != null && tabs.getSelectedIndex() == VIEW_D_NUM){
             dPrimeDisplay.refresh(0);
         }
     }
 
+    public int getCurrentBlockDef() {
+        return currentBlockDef;
+    }
+
+    public void changeBlocks(int method, int color){
+        theData.guessBlocks(method);
+        dPrimeDisplay.refresh(color);
+        changeKey(color);
+        currentBlockDef = method;
+
+        try{
+            if (tabs.getSelectedIndex() == VIEW_HAP_NUM){
+                hapDisplay.getHaps();
+            }
+        }catch(HaploViewException hve) {
+            JOptionPane.showMessageDialog(this,
+                    hve.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        hapScroller.setViewportView(hapDisplay);
+    }
 
     class TabChangeListener implements ChangeListener{
         public void stateChanged(ChangeEvent e) {
@@ -655,7 +726,6 @@ public class HaploView extends JFrame implements ActionListener{
                     }
                 }
                 theData.filteredDPrimeTable = theData.getFilteredTable();
-                theData.guessBlocks(currentBlockDef);
 
                 //after editing the filtered marker list, needs to be prodded into
                 //resizing correctly
@@ -665,17 +735,11 @@ public class HaploView extends JFrame implements ActionListener{
                 if (size.width != pref.width && pref.width > visRect.width){
                     ((JViewport)dPrimeDisplay.getParent()).setViewSize(pref);
                 }
-                dPrimeDisplay.refresh(dPrimeDisplay.currentScheme);
 
                 hapDisplay.theData = theData;
-                try{
-                    hapDisplay.getHaps();
-                }catch(HaploViewException hv){
-                    JOptionPane.showMessageDialog(window,
-                            hv.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
+
+                changeBlocks(currentBlockDef, dPrimeDisplay.currentScheme);
+
                 if (tdtPanel != null){
                     tdtPanel.refreshTable();
                 }
@@ -700,7 +764,6 @@ public class HaploView extends JFrame implements ActionListener{
             }
         }
     }
-
 
     class ResizeListener implements ComponentListener{
         public void componentResized(ComponentEvent e) {
@@ -838,7 +901,6 @@ public class HaploView extends JFrame implements ActionListener{
         helpFrame.pack();
         helpFrame.setVisible(true);
     }
-
 
     public static void main(String[] args) {
         boolean nogui = false;
