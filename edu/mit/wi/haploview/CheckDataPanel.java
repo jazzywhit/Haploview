@@ -7,6 +7,8 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.io.*;
 import java.util.Vector;
+import java.util.Locale;
+
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.PedFileException;

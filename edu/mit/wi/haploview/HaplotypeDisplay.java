@@ -292,14 +292,14 @@ public class HaplotypeDisplay extends JComponent {
         //int totalWidth = 0;
 
         // percentages for each haplotype
-        NumberFormat nf = NumberFormat.getInstance();
+        NumberFormat nf = NumberFormat.getInstance(Locale.US);
         nf.setMinimumFractionDigits(3);
         nf.setMaximumFractionDigits(3);
         nf.setMinimumIntegerDigits(0);
         nf.setMaximumIntegerDigits(0);
 
         // multi reading, between the columns
-        NumberFormat nfMulti = NumberFormat.getInstance();
+        NumberFormat nfMulti = NumberFormat.getInstance(Locale.US);
         nfMulti.setMinimumFractionDigits(2);
         nfMulti.setMaximumFractionDigits(2);
         nfMulti.setMinimumIntegerDigits(0);
@@ -314,7 +314,7 @@ public class HaplotypeDisplay extends JComponent {
         }
 
         // set number formatter to pad with appropriate number of zeroes
-        NumberFormat nfMarker = NumberFormat.getInstance();
+        NumberFormat nfMarker = NumberFormat.getInstance(Locale.US);
         int markerCount = Chromosome.getSize();
         // the +0.0000001 is because there is
         // some suckage where log(1000) / log(10) isn't actually 3

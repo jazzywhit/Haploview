@@ -125,7 +125,7 @@ public class HaploData{
                 }
 
                 if (lineCount > Chromosome.markers.length){
-                    throw(new HaploViewException("Info file error:\nToo many markers"));
+                    throw(new HaploViewException("Info file error:\nMarker number mismatch: too many\nmarkers in info file."));
                 }
 
                 //to compute maf, browse chrom list and count instances of each allele
@@ -161,7 +161,7 @@ public class HaploData{
             }
 
             if (lineCount < Chromosome.markers.length){
-                throw(new HaploViewException("Info file error:\nNot enough markers"));
+                throw(new HaploViewException("Info file error:\nMarker number mismatch: too few\nmarkers in info file."));
             }
 
             Chromosome.markers = markers.toArray();
@@ -1365,7 +1365,7 @@ public class HaploData{
 
         if (finishedHaplos == null) return;
 
-        NumberFormat nf = NumberFormat.getInstance();
+        NumberFormat nf = NumberFormat.getInstance(Locale.US);
         nf.setMinimumFractionDigits(3);
         nf.setMaximumFractionDigits(3);
 

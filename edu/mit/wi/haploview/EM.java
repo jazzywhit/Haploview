@@ -81,7 +81,6 @@ public class EM {
 
         end_locus=-1;
         for (block=0; block<num_blocks; block++) {
-
             start_locus=end_locus+1;
             end_locus=start_locus+block_size[block]-1;
             num_poss=two_n[block_size[block]];
@@ -167,6 +166,7 @@ public class EM {
         for (block=0; block<num_blocks; block++) {
             poss_full *= num_hlist[block];
         }
+        //TODO:System.out.println(poss_full);
 
         /* LIGATE and finish this mess :) */
 

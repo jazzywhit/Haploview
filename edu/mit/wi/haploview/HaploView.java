@@ -11,7 +11,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.io.*;
-
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 
@@ -83,6 +82,7 @@ public class HaploView extends JFrame implements ActionListener{
     long maxCompDist;
 
     static HaploView window;
+    JFileChooser fc;
     DPrimeDisplay dPrimeDisplay;
     private JScrollPane hapScroller;
     private HaplotypeDisplay hapDisplay;
@@ -95,6 +95,7 @@ public class HaploView extends JFrame implements ActionListener{
 
 
     public HaploView(){
+        fc = new JFileChooser(System.getProperty("user.dir"));
         //menu setup
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -276,7 +277,7 @@ public class HaploView extends JFrame implements ActionListener{
             readDialog.pack();
             readDialog.setVisible(true);
         } else if (command == READ_MARKERS){
-            JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
+            //JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
             fc.setSelectedFile(null);
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
