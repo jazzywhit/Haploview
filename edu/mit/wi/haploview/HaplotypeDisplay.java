@@ -300,6 +300,7 @@ public class HaplotypeDisplay extends JComponent {
 
         // set number formatter to pad with appropriate number of zeroes
         NumberFormat nfMarker = NumberFormat.getInstance(Locale.US);
+        nfMarker.setGroupingUsed(false);
         int markerCount = Chromosome.getUnfilteredSize();
         // the +0.0000001 is because there is
         // some suckage where log(1000) / log(10) isn't actually 3
