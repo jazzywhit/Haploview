@@ -202,9 +202,6 @@ public class HaploView extends JFrame implements ActionListener{
             colorMenuItems[i].setActionCommand("color" + i);
             colorMenu.add(colorMenuItems[i]);
             cg.add(colorMenuItems[i]);
-            if (i != 0){
-                colorMenuItems[i].setEnabled(false);
-            }
         }
         displayMenu.add(colorMenu);
 
@@ -296,24 +293,20 @@ public class HaploView extends JFrame implements ActionListener{
             tweakDialog.pack();
             tweakDialog.setVisible(true);
         }else if (command == CLEAR_BLOCKS){
-            colorMenuItems[0].setSelected(true);
-            for (int i = 1; i< colorMenuItems.length; i++){
-                colorMenuItems[i].setEnabled(false);
-            }
-            changeBlocks(3,1);
+            changeBlocks(3);
 
         //blockdef clauses
         }else if (command.startsWith("block")){
             int method = Integer.valueOf(command.substring(5)).intValue();
-            changeBlocks(method,1);
-            for (int i = 1; i < colorMenuItems.length; i++){
+            changeBlocks(method);
+            /*for (int i = 1; i < colorMenuItems.length; i++){
                 if (method+1 == i){
                     colorMenuItems[i].setEnabled(true);
                 }else{
                     colorMenuItems[i].setEnabled(false);
                 }
             }
-            colorMenuItems[0].setSelected(true);
+            colorMenuItems[0].setSelected(true);*/
 
         //zooming clauses
         }else if (command.startsWith("zoom")){
@@ -512,7 +505,8 @@ public class HaploView extends JFrame implements ActionListener{
                 theData.generateDPrimeTable(maxCompDist);
                 theData.guessBlocks(0);
                 colorMenuItems[0].setSelected(true);
-                colorMenuItems[1].setEnabled(true);
+                blockMenuItems[0].setSelected(true);
+                zoomMenuItems[0].setSelected(true);
                 theData.blocksChanged = false;
                 Container contents = getContentPane();
                 contents.removeAll();
@@ -663,10 +657,9 @@ public class HaploView extends JFrame implements ActionListener{
         return currentBlockDef;
     }
 
-    public void changeBlocks(int method, int color){
+    public void changeBlocks(int method){
         theData.guessBlocks(method);
-        dPrimeDisplay.refresh(color);
-        changeKey(color);
+        dPrimeDisplay.refresh(0);
         currentBlockDef = method;
 
         try{
@@ -737,7 +730,7 @@ public class HaploView extends JFrame implements ActionListener{
 
                 hapDisplay.theData = theData;
 
-                changeBlocks(currentBlockDef, dPrimeDisplay.currentScheme);
+                changeBlocks(currentBlockDef);
 
                 if (tdtPanel != null){
                     tdtPanel.refreshTable();
