@@ -401,15 +401,26 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         } else if(command.equals("Check for update")) {
             final SwingWorker worker = new SwingWorker(){
                 UpdateChecker uc;
+                String unableToConnect;
                 public Object construct() {
                     uc = new UpdateChecker();
-                    uc.checkForUpdate();
+                    try {
+                        uc.checkForUpdate();
+                    } catch(IOException ioe) {
+                        unableToConnect = ioe.getMessage();
+                    }
                     return null;
                 }
                 public void finished() {
                     window.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                     if(uc != null) {
-                        if(uc.isNewVersionAvailable()) {
+                        if(unableToConnect != null) {
+                            JOptionPane.showMessageDialog(window,
+                                    "An error occured while checking for update.\n " + unableToConnect ,
+                                    "Update Check",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                        else if(uc.isNewVersionAvailable()) {
                             UpdateDisplayDialog udp = new UpdateDisplayDialog(window,"Update Check",uc);
                             udp.pack();
                             udp.setVisible(true);
@@ -1160,7 +1171,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 UpdateChecker uc;
                 public Object construct() {
                     uc = new UpdateChecker();
-                    uc.checkForUpdate();
+                    try {
+                        uc.checkForUpdate();
+                    } catch(IOException ioe) {
+                        //this means we couldnt connect but we want it to die quietly
+                    }
                     return null;
                 }
                 public void finished() {

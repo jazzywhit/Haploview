@@ -37,7 +37,7 @@ public class UpdateChecker {
         this.newVersion = newVersion;
     }
 
-    public boolean checkForUpdate(){
+    public boolean checkForUpdate() throws IOException{
 
         try {
             URL url = new URL("http://18.157.34.100:8080/haploview.txt");
@@ -84,8 +84,6 @@ public class UpdateChecker {
 
         } catch(MalformedURLException mue) {
             //System.err.println("the following url exception occured:" + mue);
-        } catch(IOException ioe) {
-            //System.err.println("ioexception: " + ioe);
         }
 
 
