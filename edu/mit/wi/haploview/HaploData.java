@@ -523,7 +523,7 @@ class HaploData{
     Vector guessBlocks(PairwiseLinkage[][] dPrime, int method){
 	Vector returnVec = new Vector();
 	switch(method){
-	case 0: returnVec = new FindBlocks(dPrime).doSFS(); break;
+	case 0: returnVec = new FindBlocks(dPrime, markerInfo).doSFS(); break;
 	case 1: returnVec = new FindBlocks(dPrime).do4Gamete(); break;
 	case 2: returnVec = new FindBlocks(dPrime).doMJD(); break;
 	}

@@ -4,10 +4,16 @@ import java.util.*;
 
 class FindBlocks {
     PairwiseLinkage[][] dPrime;
+    Vector markerInfo;
     double fourGameteCutoff = 0.01;
 
     FindBlocks(PairwiseLinkage[][] data){
 	dPrime = data;
+    }
+
+    FindBlocks(PairwiseLinkage[][] data, Vector info){
+	dPrime=data;
+	markerInfo = info;
     }
     
     Vector do4Gamete(){
@@ -110,7 +116,11 @@ class FindBlocks {
 		if (highCI < cutHighCI || lowCI < cutLowCI) continue; //must pass "strong LD" test
 
 		Vector addMe = new Vector(); //a vector of x, y, separation
-		int sep = y - x - 1; //compute separation of two markers
+
+		long sep;
+		//compute actual separation
+		sep = ((SNP)markerInfo.elementAt(y)).getPosition() - ((SNP)markerInfo.elementAt(x)).getPosition();
+
 		addMe.add(String.valueOf(x)); addMe.add(String.valueOf(y)); addMe.add(String.valueOf(sep));
 		if (strongPairs.size() == 0){ //put first pair first
 		    strongPairs.add(addMe);
@@ -122,6 +132,7 @@ class FindBlocks {
 			    break;
 			}
 		    }
+		    strongPairs.add(addMe);
 		}
 	    }
 	}
