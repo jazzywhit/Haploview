@@ -308,7 +308,7 @@ public class EM implements Constants {
         int num_poss, iter;//, maxk, numk;
         double total;//, maxprob;
         int block, start_locus, end_locus, biggest_block_size;
-        int poss_full;//, best, h1, h2;
+        long poss_full;//, best, h1, h2;
         int num_indivs=0;
 
         int num_blocks = block_size.length;
@@ -341,7 +341,6 @@ public class EM implements Constants {
         int[][] hlist = new int[num_blocks][num_poss];
         int[] num_hlist = new int[num_blocks];
         int[] hint = new int[num_poss];
-        //double[] prob = new double[num_poss];
 
         MapWrap probMap = new MapWrap(PSEUDOCOUNT);
 
@@ -415,18 +414,14 @@ public class EM implements Constants {
                 iter++;
             }
 
-            Iterator pitr = probMap.getKeySet().iterator();
             int m=0;
-            while(pitr.hasNext()) {
-                Long next = (Long) pitr.next();
-
-                hint[next.intValue()]=-1;
-                //todo: this hard coded threshold suxorz (probably elsewhere too)
-                if (probMap.get(next) > .001) {
+            for(long j=0;j<num_poss; j++){
+                hint[(int)j]=-1;
+                if (probMap.get(new Long(j)) > .001) {
                     // printf("haplo %s   p = %.4lf\n",haplo_str(j,block_size[block]),prob[j]);
-                    hlist[block][m]=next.intValue();
-                    hprob[block][m]=probMap.get(next);
-                    hint[next.intValue()]=m;
+                    hlist[block][m]=(int)j;
+                    hprob[block][m]=probMap.get(new Long(j));
+                    hint[(int)j]=m;
                     m++;
                 }
             }
@@ -458,7 +453,6 @@ return(-5);
         /* run standard EM on supercombos */
 
         /* start prob array with probabilities from full observations */
-
 
         total=(double)poss_full;
         total *= PSEUDOCOUNT;
@@ -545,7 +539,7 @@ return(-5);
         Vector haplos_present = new Vector();
         Vector haplo_freq= new Vector();
 
-        for (int j=0; j<poss_full; j++) {
+        for (long  j=0; j<poss_full; j++) {
             if (fullProbMap.get(new Long(j)) > .001) {
                 haplos_present.addElement(decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
 
@@ -562,7 +556,6 @@ return(-5);
 
         this.haplotypes = (int[][])haplos_present.toArray(new int[0][0]);
         this.frequencies = freqs;
-
 
         /*
         if (dump_phased_haplos) {
