@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 public class ExportDialog extends JDialog implements ActionListener, Constants{
 
     HaploView hv;
-    JRadioButton dpButton, hapButton, checkButton, assocButton;
+    JRadioButton dpButton, hapButton, checkButton, singleAssocButton, hapAssocButton;
     JRadioButton txtButton, pngButton;
     JRadioButton allButton, someButton, adjButton;
     JCheckBox compressCheckBox;
@@ -54,13 +54,24 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             }
         }
         if (Options.getAssocTest() != ASSOC_NONE){
-            assocButton = new JRadioButton("Association Tests");
-            assocButton.setActionCommand("assoctab");
-            assocButton.addActionListener(this);
-            g1.add(assocButton);
-            tabPanel.add(assocButton);
+            singleAssocButton = new JRadioButton("Single Marker Association Tests");
+            singleAssocButton.setActionCommand("singleassoctab");
+            singleAssocButton.addActionListener(this);
+            g1.add(singleAssocButton);
+            tabPanel.add(singleAssocButton);
+
+            hapAssocButton = new JRadioButton("Haplotype Association Tests");
+            hapAssocButton.setActionCommand("hapassoctab");
+            hapAssocButton.addActionListener(this);
+            g1.add(hapAssocButton);
+            tabPanel.add(hapAssocButton);
+
             if (currTab == VIEW_TDT_NUM){
-                assocButton.setSelected(true);
+                if(((JTabbedPane)hv.tabs.getComponent(currTab)).getSelectedIndex() == VIEW_SINGLE_ASSOC){
+                    singleAssocButton.setSelected(true);
+                }else{
+                    hapAssocButton.setSelected(true);
+                }
             }
         }
         contents.add(tabPanel);
@@ -162,7 +173,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
 
         if (command.equals("ldtab") || command.equals("haptab")){
             pngButton.setEnabled(true);
-        }else if (command.equals("checktab") || command.equals("assoctab")){
+        }else if (command.equals("checktab") || command.equals("singleassoctab") || command.equals("hapassoctab")){
             pngButton.setEnabled(false);
             txtButton.setSelected(true);
         }else if (command.equals("OK")){
@@ -182,8 +193,12 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
                 tab = VIEW_HAP_NUM;
             } else if (checkButton.isSelected()){
                 tab = VIEW_CHECK_NUM;
-            } else {
+            } else if (singleAssocButton.isSelected()){
                 tab = VIEW_TDT_NUM;
+                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedIndex(VIEW_SINGLE_ASSOC);
+            }else{
+                tab = VIEW_TDT_NUM;
+                ((JTabbedPane)hv.tabs.getComponent(tab)).setSelectedIndex(VIEW_HAPLO_ASSOC);                
             }
             this.dispose();
 
