@@ -15,6 +15,7 @@ import edu.mit.wi.pedfile.PedFileException;
 public class CheckDataPanel extends JPanel implements TableModelListener{
 	JTable table;
 	PedFile pedfile;
+
     boolean changed;
 
     public CheckDataPanel(File file) throws IOException, PedFileException{
@@ -34,7 +35,6 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 
         pedfile.parse(pedFileStrings);
 
-        //Vector result = data.check();
         Vector result = pedfile.check();
 
         int numResults = result.size();
@@ -109,6 +109,28 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
         }
     }
 
+    public void selectAll(){
+        for (int i = 0; i < table.getRowCount(); i++){
+            table.setValueAt(new Boolean(true), i, 7);
+        }
+    }
+
+    public void redoRatings(){
+        try{
+            Vector result = pedfile.check();
+            for (int i = 0; i < table.getRowCount(); i++){
+                MarkerResult cur = (MarkerResult)result.get(i);
+                int rating = cur.getRating();
+                if (rating > 0){
+                    table.setValueAt(new Boolean(true),i,7);
+                }else{
+                    table.setValueAt(new Boolean(false),i,7);
+                }
+            }
+        }catch (PedFileException pfe){
+        }
+    }
+
     class CheckDataTableModel extends AbstractTableModel {
 		Vector columnNames; Vector data; int[] ratings;
 
@@ -165,18 +187,32 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 			        (table, value, isSelected, hasFocus, row, column);
 			int myRating = ((CheckDataTableModel)table.getModel()).getRating(row);
 			String thisColumnName = table.getColumnName(column);
-			if(myRating == -1 && thisColumnName.equals("ObsHET")){
-				cell.setForeground(Color.red);
-			}else if (myRating == -2 && thisColumnName.equals("%Geno")){
-				cell.setForeground(Color.red);
-			}else if (myRating == -3 && thisColumnName.equals("HWpval")){
-				cell.setForeground(Color.red);
-			}else if (myRating == -4 && thisColumnName.equals("MendErr")){
-				cell.setForeground(Color.red);
-			}else{
-				cell.setForeground(Color.black);
-			}
+            cell.setForeground(Color.black);
+            //bitmasking to decode the status bits
+            if (myRating < 0){
+                if (myRating%(-2) != 0){
+                    myRating++;
+                    if(thisColumnName.equals("ObsHET")){
+                        cell.setForeground(Color.red);
+                    }
+                }
+                if (myRating%(-4) != 0){
+                    myRating += 2;
+                    if (thisColumnName.equals("%Geno")){
+                        cell.setForeground(Color.red);
+                    }
+                }
+                if (myRating%(-8) != 0){
+                    myRating += 4;
+                    if (thisColumnName.equals("HWpval")){
+                        cell.setForeground(Color.red);
+                    }
+                }
+                if (myRating < -7 && thisColumnName.equals("MendErr")){
+                    cell.setForeground(Color.red);
+                }
 
+            }
 			return cell;
 		}
 	}
