@@ -509,7 +509,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     void readGenotypes(String[] inputOptions, int type){
         //input is a 3 element array with
         //inputOptions[0] = ped file
-        //inputOptions[1] = info file ("" if none)
+        //inputOptions[1] = info file (null if none)
         //inputOptions[2] = max comparison distance (don't compute d' if markers are greater than this dist apart)
         //type is either 3 or 4 for ped and hapmap files respectively
 
@@ -544,7 +544,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             //deal with marker information
             theData.infoKnown = false;
             File markerFile;
-            if (inputOptions[1].equals("")){
+            if (inputOptions[1] == null){
                 markerFile = null;
             }else{
                 markerFile = new File(inputOptions[1]);

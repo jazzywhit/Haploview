@@ -77,6 +77,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             }
 
             String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};
+            if (returnStrings[1].equals("")) returnStrings[1] = null;
 
             //if a dataset was previously loaded during this session, discard the display panes for it.
             if (caller.dPrimeDisplay != null){
