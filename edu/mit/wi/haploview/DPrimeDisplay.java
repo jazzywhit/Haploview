@@ -58,11 +58,10 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
     private boolean noImage = true;
     private boolean popupExists, resizeRectExists, blockRectExists = false;
 
-    private Rectangle ir = new Rectangle();
+    private Rectangle wmInteriorRect = new Rectangle();
     private Rectangle wmResizeCorner = new Rectangle(0,0,-1,-1);
     private Rectangle resizeWMRect = new Rectangle(0,0,-1,-1);
     private Rectangle popupDrawRect = new Rectangle(0,0,-1,-1);
-    private Rectangle worldmapRect = new Rectangle(0,0,-1,-1);
     private BufferedImage worldmap;
     private HaploData theData;
     private Dimension chartSize=null;
@@ -554,7 +553,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 gw2.setColor(Color.black);
 
                 wmBorder.paintBorder(this,gw2,0,0,worldmap.getWidth(),worldmap.getHeight());
-                ir = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth(), worldmap.getHeight());
+                wmInteriorRect = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth(), worldmap.getHeight());
 
                 double prefBoxSize = boxSize/(scalefactor*((double)wmMaxWidth/(double)(wmMaxWidth-WM_BD_TOTAL)));
 
@@ -591,7 +590,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 gw2.setColor(this.getBackground());
                 gw2.fillRect(wmBorder.getBorderInsets(this).left,
                         wmBorder.getBorderInsets(this).top+WM_BD_GAP,
-                        ir.width,
+                        wmInteriorRect.width,
                         WM_BD_HEIGHT);
                 gw2.setColor(Color.black);
                 even = true;
@@ -612,25 +611,24 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 }
                 noImage = false;
             }
-            wmResizeCorner = new Rectangle(visRect.x + worldmap.getWidth() - (worldmap.getWidth()-ir.width)/2,
+            wmResizeCorner = new Rectangle(visRect.x + worldmap.getWidth() - (worldmap.getWidth()-wmInteriorRect.width)/2,
                     visRect.y + visRect.height - worldmap.getHeight(),
-                    (worldmap.getWidth()-ir.width)/2,
-                    (worldmap.getHeight() -ir.height)/2);
+                    (worldmap.getWidth()-wmInteriorRect.width)/2,
+                    (worldmap.getHeight() -wmInteriorRect.height)/2);
 
             g2.drawImage(worldmap,visRect.x,
                     visRect.y + visRect.height - worldmap.getHeight(),
                     this);
-            worldmapRect = new Rectangle(visRect.x,
-                    visRect.y+visRect.height-worldmap.getHeight(),
-                    worldmap.getWidth(),
-                    worldmap.getHeight());
+            wmInteriorRect.x = visRect.x + (worldmap.getWidth() - wmInteriorRect.width);
+            wmInteriorRect.y = visRect.y+visRect.height-worldmap.getHeight() +
+                    (worldmap.getHeight() - wmInteriorRect.height);
 
             //draw the outline of the viewport
             g2.setColor(Color.black);
-            double hRatio = ir.getWidth()/pref.getWidth();
-            double vRatio = ir.getHeight()/pref.getHeight();
-            int hBump = worldmap.getWidth()-ir.width;
-            int vBump = worldmap.getHeight()-ir.height;
+            double hRatio = wmInteriorRect.getWidth()/pref.getWidth();
+            double vRatio = wmInteriorRect.getHeight()/pref.getHeight();
+            int hBump = worldmap.getWidth()-wmInteriorRect.width;
+            int vBump = worldmap.getHeight()-wmInteriorRect.height;
             //bump a few pixels to avoid drawing on the border
             g2.drawRect((int)(visRect.x*hRatio)+hBump/2+visRect.x,
                     (int)(visRect.y*vRatio)+vBump/2+(visRect.y + visRect.height - worldmap.getHeight()),
@@ -707,15 +705,18 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
                 InputEvent.BUTTON1_MASK) {
             int clickX = e.getX();
             int clickY = e.getY();
-            if (showWM && worldmapRect.contains(clickX,clickY)){
+            if (showWM && wmInteriorRect.contains(clickX,clickY)){
                 //convert a click on the worldmap to a point on the big picture
-                int bigClickX = (((clickX - getVisibleRect().x) * chartSize.width) /
-                        worldmap.getWidth())-getVisibleRect().width/2;
+                int bigClickX = (((clickX - getVisibleRect().x - (worldmap.getWidth()-wmInteriorRect.width)/2)
+                        * chartSize.width) /
+                        wmInteriorRect.width)-getVisibleRect().width/2;
                 int bigClickY = (((clickY - getVisibleRect().y -
+                        (worldmap.getHeight() - wmInteriorRect.height)/2 -
                         (getVisibleRect().height-worldmap.getHeight())) *
-                        chartSize.height) / worldmap.getHeight()) -
+                        chartSize.height) / wmInteriorRect.height) -
                         getVisibleRect().height/2 + infoHeight;
 
+                //System.out.println(chartSize.height);
                 //if the clicks are near the edges, correct values
                 if (bigClickX > chartSize.width - getVisibleRect().width){
                     bigClickX = chartSize.width - getVisibleRect().width;
@@ -775,7 +776,7 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             }
             if ((boxX >= lowX && boxX <= highX) &&
                     (boxY > boxX && boxY < highY) &&
-                    !(worldmapRect.contains(clickX,clickY))){
+                    !(wmInteriorRect.contains(clickX,clickY))){
                 if (dPrimeTable[boxX][boxY] != null){
                     displayStrings = new String[5];
                     if (theData.infoKnown){
@@ -883,12 +884,12 @@ class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionList
             //conveniently, we can tell what do do with the drag event
             //based on what the cursor is
             if (getCursor() == Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR)){
-                int width = e.getX() - worldmapRect.x;
+                int width = e.getX() - wmInteriorRect.x;
                 double ratio = (double)width/(double)worldmap.getWidth();
                 int height = (int)(ratio*worldmap.getHeight());
 
-                resizeWMRect = new Rectangle(worldmapRect.x+1,
-                        worldmapRect.y + worldmapRect.height - height,
+                resizeWMRect = new Rectangle(wmInteriorRect.x+1,
+                        wmInteriorRect.y + wmInteriorRect.height - height,
                         width,
                         height-1);
                 resizeRectExists = true;
