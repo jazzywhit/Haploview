@@ -25,7 +25,7 @@ public class TDTResult {
 
     public void tallyCCInd(byte a1, byte a2, int cc){
         //case = 0, control = 1 for int cc
-        if (a1 == 5 && a2 == 5){
+        if (a1 >= 5 && a2 >= 5){
             counts[cc][0]++;
             counts[cc][1]++;
         }else{
@@ -51,7 +51,7 @@ public class TDTResult {
     }
 
     public void tallyTrioInd(byte alleleT, byte alleleU) {
-        if(alleleT == 5 && alleleU == 5) {
+        if(alleleT >= 5 && alleleU >= 5) {
             if(tallyHet){
                 counts[0][0]++;
                 counts[1][1]++;
