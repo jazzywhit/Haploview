@@ -1031,9 +1031,11 @@ public class HaploData{
             //clear the array
             for (int pos1 = 0; pos1 < pos2; pos1++){
                 long sep = Chromosome.getMarker(pos1).getPosition() - Chromosome.getMarker(pos2).getPosition();
-                if ((sep > maxdist || sep < negMaxdist) && markersLoaded){
-                    dPrimeTable[pos1][pos2] = null;//new PairwiseLinkage(0,-99,0,0,0,nullArray);
-                    continue;
+                if (maxdist > 0){
+                    if ((sep > maxdist || sep < negMaxdist)){
+                        dPrimeTable[pos1][pos2] = null;
+                        continue;
+                    }
                 }
                 for (int i = 0; i < twoMarkerHaplos.length; i++){
                     for (int j = 0; j < twoMarkerHaplos[i].length; j++){

@@ -1,40 +1,42 @@
 package edu.mit.wi.haploview;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.awt.event.*;
 //import java.awt.font.*;
 //import java.io.*;
 //import java.text.*;
 import javax.swing.*;
-import java.util.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.CompoundBorder;
 
 class DPrimeDisplay extends JComponent{
-    static final int H_BORDER = 15;
-    static final int V_BORDER = 15;
+    private static final int H_BORDER = 15;
+    private static final int V_BORDER = 15;
+    private static final int TEXT_NUMBER_GAP = 3;
 
-    static final int DEFAULT_BOX_SIZE = 50;
-    static final int DEFAULT_BOX_RADIUS = 24;
-    static final int TICK_HEIGHT = 8;
-    static final int TICK_BOTTOM = 50;
+    private static final int DEFAULT_BOX_SIZE = 50;
+    private static final int DEFAULT_BOX_RADIUS = 24;
+    private static final int TICK_HEIGHT = 8;
+    private static final int TICK_BOTTOM = 50;
 
-    static final int TEXT_NUMBER_GAP = 3;
+    private int widestMarkerName = 80; //default size
+    private int boxSize = DEFAULT_BOX_SIZE;
+    private int boxRadius = DEFAULT_BOX_RADIUS;
+    private int lowX, highX, lowY, highY;
+    private int left, top, clickXShift, clickYShift;
 
-    int widestMarkerName = 80; //default size
-    int boxSize = DEFAULT_BOX_SIZE;
-    int boxRadius = DEFAULT_BOX_RADIUS;
-    boolean printDetails = true;
-    int lowX, highX, lowY, highY;
-    Rectangle viewRect = new Rectangle();
-    Rectangle clipRect;
-    int left, top, clickXShift, clickYShift;
+    private Font boxFont = new Font("SansSerif", Font.PLAIN, 12);
+    private Font markerNumFont = new Font("SansSerif", Font.BOLD, 12);
+    private Font markerNameFont = new Font("Default", Font.PLAIN, 12);
 
-    Font boxFont = new Font("SansSerif", Font.PLAIN, 12);
-    Font markerNumFont = new Font("SansSerif", Font.BOLD, 12);
-    Font markerNameFont = new Font("Default", Font.PLAIN, 12);
+    private boolean markersLoaded;
+    private boolean printDetails = true;
+    private boolean noImage = true;
 
-    boolean markersLoaded;
-    PairwiseLinkage dPrimeTable[][];
-    //Vector markers;
+    private BufferedImage worldmap;
+    private PairwiseLinkage dPrimeTable[][];
 
     DPrimeDisplay(PairwiseLinkage[][] t, boolean b){
         markersLoaded = b;
@@ -52,16 +54,23 @@ class DPrimeDisplay extends JComponent{
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
-        clipRect = (Rectangle)g.getClip();
-        //first paint grab the cliprect for the whole viewport
-        if (viewRect.width == 0){viewRect=clipRect;}
+        Rectangle visRect = getVisibleRect();
+        /*
+                    boxSize = ((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
+            if (boxSize < 12){boxSize=12;}
+            if (boxSize < 25){
+                printDetails = false;
+                boxRadius = boxSize/2;
+            }else{
+                boxRadius = boxSize/2 - 1;
+            }
+            */
 
-        //okay so this dumb if block is to prevent the ugly
-        //repainting bug when loading markers after the data are already
-        //being displayed, results in a little off-centering for small
-        //datasets, but not too bad.
-        //clickxshift and clickyshift are used later to translate from x,y coords to the
-        //pair of markers comparison at those coords
+        //okay so this dumb if block is to prevent the ugly repainting
+        //bug when loading markers after the data are already being displayed,
+        //results in a little off-centering for small datasets, but not too bad.
+        //clickxshift and clickyshift are used later to translate from x,y coords
+        //to the pair of markers comparison at those coords
         if (!(markersLoaded)){
             g2.translate((size.width - pref.width) / 2,
                     (size.height - pref.height) / 2);
@@ -166,36 +175,26 @@ class DPrimeDisplay extends JComponent{
             top += boxRadius/2; // give a little space between numbers and boxes
         }
 
-       /** if (pref.getWidth() > viewRect.width){
-            //this means that the table is bigger than the display.
-            boxSize = ((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
-            if (boxSize < 12){boxSize=12;}
-            if (boxSize < 25){
-                printDetails = false;
-                boxRadius = boxSize/2;
-            }else{
-                boxRadius = boxSize/2 - 1;
-            }
-        }**/
-
-            //the following values are the bounds on the boxes we want to
-            //display given that the current window is 'clipRect
-            lowX = (clipRect.x-clickXShift-(clipRect.y+clipRect.height-clickYShift))/boxSize;
-            if (lowX < 0) {
-                lowX = 0;
-            }
-            highX = ((clipRect.x + clipRect.width)/boxSize)+1;
-            if (highX > dPrimeTable.length-1){
-                highX = dPrimeTable.length-1;
-            }
-            lowY = ((clipRect.x-clickXShift)+(clipRect.y-clickYShift))/boxSize;
-            if (lowY < lowX+1){
-                lowY = lowX+1;
-            }
-            highY = (((clipRect.x-clickXShift+clipRect.width) + (clipRect.y-clickYShift+clipRect.height))/boxSize)+1;
-            if (highY > dPrimeTable.length){
-                highY = dPrimeTable.length;
-            }
+        //the following values are the bounds on the boxes we want to
+        //display given that the current window is 'visRect'
+        lowX = (visRect.x-clickXShift-(visRect.y +
+                visRect.height-clickYShift))/boxSize;
+        if (lowX < 0) {
+            lowX = 0;
+        }
+        highX = ((visRect.x + visRect.width)/boxSize)+1;
+        if (highX > dPrimeTable.length-1){
+            highX = dPrimeTable.length-1;
+        }
+        lowY = ((visRect.x-clickXShift)+(visRect.y-clickYShift))/boxSize;
+        if (lowY < lowX+1){
+            lowY = lowX+1;
+        }
+        highY = (((visRect.x-clickXShift+visRect.width) +
+                (visRect.y-clickYShift+visRect.height))/boxSize)+1;
+        if (highY > dPrimeTable.length){
+            highY = dPrimeTable.length;
+        }
 
 
         // draw table column by column
@@ -210,6 +209,7 @@ class DPrimeDisplay extends JComponent{
                 if (dPrimeTable[x][y] == null){
                     continue;
                 }
+                //TODO:if you load data then info it doesn't handle selective drawing correctly
                 double d = dPrimeTable[x][y].getDPrime();
                 //double l = dPrimeTable[x][y].getLOD();
                 Color boxColor = dPrimeTable[x][y].getColor();
@@ -247,6 +247,43 @@ class DPrimeDisplay extends JComponent{
                 }
             }
         }
+
+        if (pref.getWidth() > visRect.width){
+            Rectangle ir = new Rectangle();
+            if (noImage){
+                //first time through draw a worldmap if dataset is big:
+                final int WM_MAX_WIDTH = 300;
+                final int WM_MAX_HEIGHT = 150;
+                int scalefactor;
+
+                if (pref.getWidth()/WM_MAX_WIDTH > pref.getHeight()/WM_MAX_HEIGHT){
+                    scalefactor = pref.width/WM_MAX_WIDTH;
+                }else{
+                    scalefactor = pref.height/WM_MAX_HEIGHT;
+                }
+                worldmap = new BufferedImage(pref.width/scalefactor, pref.height/scalefactor,
+                        BufferedImage.TYPE_3BYTE_BGR);
+
+                Graphics gw = worldmap.getGraphics();
+                /*boxSize = ((visRect.width-2*H_BORDER)/dPrimeTable.length-1);
+                if (boxSize < 12){boxSize=12;}
+                if (boxSize < 25){
+                printDetails = false;
+                boxRadius = boxSize/2;
+                }else{
+                boxRadius = boxSize/2 - 1;
+                } */
+                gw.setColor(this.getBackground());
+                gw.fillRect(1,1,worldmap.getWidth()-2,worldmap.getHeight()-2);
+                //make a pretty border
+                gw.setColor(Color.BLACK);
+                CompoundBorder wmBorder = new CompoundBorder(BorderFactory.createRaisedBevelBorder(),
+                        BorderFactory.createLoweredBevelBorder());
+                wmBorder.paintBorder(this,gw,0,0,worldmap.getWidth()-1,worldmap.getHeight()-1);
+                ir = wmBorder.getInteriorRectangle(this,0,0,worldmap.getWidth()-1, worldmap.getHeight()-1);
+            }
+            paintWorldMap(g, ir);
+        }
     }
 
 
@@ -272,12 +309,37 @@ class DPrimeDisplay extends JComponent{
         return new Dimension(2*H_BORDER + boxSize*(dPrimeTable.length-1), high);
     }
 
+    void paintWorldMap(Graphics g, Rectangle ir){
+        Rectangle visRect = getVisibleRect();
+        Dimension pref = getPreferredSize();
+
+        Graphics gw = worldmap.getGraphics();
+
+        //draw the outline of the viewport
+        gw.setColor(Color.BLACK);
+        double hRatio = ir.getWidth()/pref.getWidth();
+        double vRatio = ir.getHeight()/pref.getHeight();
+        int hBump = worldmap.getWidth()-ir.width;
+        int vBump = worldmap.getHeight()-ir.height;
+        //bump a few pixels to avoid drawing on the border
+        gw.drawRect((int)(visRect.x*hRatio)+hBump/2,
+                (int)(visRect.y*vRatio)+vBump/2,
+                (int)(visRect.width*hRatio),
+                (int)(visRect.height*vRatio));
+
+        g.drawImage(worldmap,visRect.x,
+                visRect.y + visRect.height - worldmap.getHeight(),
+                this);
+    }
+
     int[] centerString(String s, FontMetrics fm) {
         int[] returnArray = new int[2];
         returnArray[0] = (30-fm.stringWidth(s))/2;
         returnArray[1] = 10+(30-fm.getAscent())/2;
         return returnArray;
     }
+
+
     class PopMouseListener implements MouseListener{
         JComponent caller;
         public PopMouseListener(JComponent c){
@@ -336,15 +398,15 @@ class DPrimeDisplay extends JComponent{
                                 }
 
                                 //edge shifts prevent window from popping up partially offscreen
-                                int clipRightBound = (int)(clipRect.getWidth() + clipRect.getX());
-                                int clipBotBound = (int)(clipRect.getHeight() + clipRect.getY());
+                                int visRightBound = (int)(caller.getVisibleRect().getWidth() + caller.getVisibleRect().getX());
+                                int visBotBound = (int)(caller.getVisibleRect().getHeight() + caller.getVisibleRect().getY());
                                 int rightEdgeShift = 0;
-                                if (clickX + strlen + leftMargin +5 > clipRightBound){
-                                    rightEdgeShift = clickX + strlen + leftMargin + 10 - clipRightBound;
+                                if (clickX + strlen + leftMargin +5 > visRightBound){
+                                    rightEdgeShift = clickX + strlen + leftMargin + 10 - visRightBound;
                                 }
                                 int botEdgeShift = 0;
-                                if (clickY + 5*metrics.getHeight()+10 > clipBotBound){
-                                    botEdgeShift = clickY + 5*metrics.getHeight()+15 - clipBotBound;
+                                if (clickY + 5*metrics.getHeight()+10 > visBotBound){
+                                    botEdgeShift = clickY + 5*metrics.getHeight()+15 - visBotBound;
                                 }
 
                                 g.setColor(Color.WHITE);

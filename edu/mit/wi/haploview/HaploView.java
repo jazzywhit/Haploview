@@ -407,7 +407,6 @@ public class HaploView extends JFrame implements ActionListener{
         dPrimeScroller.getHorizontalScrollBar().setUnitIncrement(60);
         panel.add(dPrimeScroller);
         tabs.addTab(viewItems[0], panel);
-        System.out.println(dPrimeScroller.getSize());
 
         //compute and show haps on next tab
         panel = new JPanel();
