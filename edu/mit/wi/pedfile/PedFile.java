@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.7 2003/11/07 22:02:53 jcbarret Exp $
+* $Id: PedFile.java,v 1.8 2003/11/14 16:16:45 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -222,8 +222,8 @@ public class PedFile {
         for(int k=0; k<numLines; k++){
             StringTokenizer tokenizer = new StringTokenizer((String)pedigrees.get(k), "\n\t\" \"");
             //reading the first line
-            if(colNum < 0){
-                //only check column number count for the first line
+            if(colNum < 1){
+                //only check column number count for the first nonblank line
                 colNum = tokenizer.countTokens();
                 if(colNum%2==1) {
                     withOptionalColumn = true;
