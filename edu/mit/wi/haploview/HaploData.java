@@ -1200,7 +1200,7 @@ public class HaploData implements Constants{
         blocksChanged = true;
 
         //keep track of which markers are in a block
-        isInBlock = new boolean[Chromosome.getSize()];
+        isInBlock = new boolean[Chromosome.getFilteredSize()];
         for (int i = 0; i < isInBlock.length; i++){
             isInBlock[i] = false;
         }

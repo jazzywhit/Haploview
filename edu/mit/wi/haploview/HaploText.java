@@ -563,7 +563,7 @@ public class HaploText implements Constants{
                     textData.readAnalysisTrack(new File(arg_trackName));
                 }
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
-                BufferedImage i = dpd.export(0,Chromosome.getSize(),this.arg_smallpng);
+                BufferedImage i = dpd.export(0,Chromosome.getFilteredSize(),this.arg_smallpng);
                 try{
                     Jimi.putImage("image/png", i, OutputFile.getName());
                 }catch(JimiException je){
