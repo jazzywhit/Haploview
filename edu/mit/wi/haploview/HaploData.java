@@ -408,10 +408,10 @@ public class HaploData{
                                 }
                             }
 
-                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb));
-                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb));
-                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb));
-                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb,true));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb,false));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb,true));
+                            chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb,false));
 
 
                             usedParents.add(currentInd.getFamilyID()+" "+currentInd.getDadID());
@@ -1220,8 +1220,10 @@ public class HaploData{
                 for (int j = 0; j < dPrimeTable[i].length; j++){
                     //many "slots" in table aren't filled in because it is a 1/2 matrix
                     if (i < j){
-                        dist = ((SNP)markerinfo.elementAt(j)).getPosition() - ((SNP)markerinfo.elementAt(i)).getPosition();
-                        saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j].toString() + "\t" + dist + "\n");
+                        if(dPrimeTable[i][j] != null) {
+                            dist = ((SNP)markerinfo.elementAt(j)).getPosition() - ((SNP)markerinfo.elementAt(i)).getPosition();
+                            saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j].toString() + "\t" + dist + "\n");
+                        }
                     }
                 }
             }
@@ -1233,7 +1235,9 @@ public class HaploData{
                 for (int j = 0; j < dPrimeTable[i].length; j++){
                     //many "slots" in table aren't filled in because it is a 1/2 matrix
                     if (i < j){
-                        saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j] + "\n");
+                        if(dPrimeTable[i][j] != null) {
+                            saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + dPrimeTable[i][j] + "\n");
+                        }
                     }
                 }
             }

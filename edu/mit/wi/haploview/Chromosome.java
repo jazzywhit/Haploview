@@ -8,6 +8,9 @@ class Chromosome{
     private byte[] genotypes;
     private String origin;
 
+
+    private boolean transmitted = false;
+
     static int[] realIndex;
     static Object[] markers;
     static int trueSize;
@@ -27,6 +30,16 @@ class Chromosome{
         origin = "unknown";
         trueSize = genotypes.length;
     }
+
+    Chromosome(String p, String i, byte[] g, boolean isTransmitted){
+        ped = p;
+        individual = i;
+        genotypes = g;
+        origin = "unknown";
+        trueSize = genotypes.length;
+        transmitted = isTransmitted;
+    }
+
 
     public byte getFilteredGenotype(int i){
         return genotypes[realIndex[i]];
@@ -63,6 +76,15 @@ class Chromosome{
     public String getOrigin(){
         return origin;
     }
+
+    public boolean isTransmitted() {
+        return transmitted;
+    }
+
+    public void setTransmitted(boolean transmitted) {
+        this.transmitted = transmitted;
+    }
+
 
 }
 
