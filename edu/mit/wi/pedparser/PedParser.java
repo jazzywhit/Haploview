@@ -11,7 +11,7 @@ public class PedParser {
     double TRIO_SCORE = 2.001;
     double TRIO_DIFFERENTIAL = TRIO_SCORE - 1;
 
-    public SimpleGraph buildGraph(Vector pedFileInds, double missingThresh) throws PedigreeException{
+    public SimpleGraph buildGraph(Vector pedFileInds, double missingThresh) throws PedigreeException, UnrelatedException{
         SimpleGraph theGraph = new SimpleGraph();
 
         Hashtable indsByID = new Hashtable();
@@ -112,11 +112,11 @@ public class PedParser {
 
         ConnectivityInspector inspectorGadget = new ConnectivityInspector(theGraph);
         if (!inspectorGadget.isGraphConnected()){
-             throw new PedigreeException("Invalid pedigree structure: unrelated individuals in the same family.");
+             throw new UnrelatedException("Unrelated individuals in the same family.");
         }
 
         if (usedPeople.size() != indsByID.size()){
-            throw new PedigreeException("Unrelated individuals in same family");
+            throw new UnrelatedException("Unrelated individuals in the same family.");
         }
         return theGraph;
     }

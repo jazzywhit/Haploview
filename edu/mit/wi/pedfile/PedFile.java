@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.1 2005/01/31 20:10:48 jcbarret Exp $
+* $Id: PedFile.java,v 3.2 2005/01/31 20:52:12 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -16,6 +16,7 @@ import edu.mit.wi.haploview.Chromosome;
 import edu.mit.wi.haploview.Options;
 import edu.mit.wi.pedparser.PedParser;
 import edu.mit.wi.pedparser.PedigreeException;
+import edu.mit.wi.pedparser.UnrelatedException;
 
 import java.util.*;
 
@@ -688,6 +689,7 @@ public class PedFile {
 
         Iterator fitr = families.values().iterator();
         Vector useable = new Vector();
+        Vector badFamilies = new Vector();
         while (fitr.hasNext()){
             Family curFam = (Family) fitr.next();
             Enumeration indIDEnum = curFam.getMemberList();
@@ -708,6 +710,8 @@ public class PedFile {
                     }
                 }catch (PedigreeException pe){
                     throw new PedFileException(pe.getMessage() + "\nin family " + curFam.getFamilyName());
+                }catch (UnrelatedException ue){
+                    badFamilies.add(curFam);
                 }
             }else if (victor.size() == 1){
                 Individual singleton = (Individual) victor.elementAt(0);
@@ -716,6 +720,17 @@ public class PedFile {
                     useable.addAll(victor);
                 }
             }
+        }
+        if (badFamilies.size() > 0){
+            //todo: it should really keep going without these people or generate a warning but parse the fams correctly
+            //todo: the latter can be done with jgrapht's getConnectedSets() method in ConnectivityInspector
+            StringBuffer sb = new StringBuffer("Pedigree error: unrelated individuals in same family.\n");
+            for (int i = 0; i < badFamilies.size(); i++) {
+                Family family = (Family) badFamilies.elementAt(i);
+                sb.append(family.getFamilyName());
+                sb.append("\n");
+            }
+            throw new PedFileException(sb.toString());
         }
         unrelatedIndividuals = useable;
 

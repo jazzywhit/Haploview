@@ -4,7 +4,7 @@ package edu.mit.wi.haploview;
 public interface Constants {
 
     //main jframe setup stuff & labels.
-    public static final double VERSION = 3.1;
+    public static final double VERSION = 3.11;
     public static final String TITLE_STRING = "Haploview "+VERSION;
     public static final String RELEASE_DATE = "27 January, 2005";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
