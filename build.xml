@@ -55,6 +55,17 @@
    <copy file="resources/orator.raw" todir="build/classes/edu/mit/wi/haploview/"/>
 </target>
 
+<target name="compile-debug-haploview" depends="prepare-compile">
+   <javac srcdir="${haploview.src}" destdir="${haploview.classes}"
+   includes="${haploview.package}/** ${pedfile.package}/**" debug="on">
+   <classpath refid="library.classpath"/>
+   </javac>
+
+   <copy file="resources/orator.raw" todir="build/classes/edu/mit/wi/haploview/"/>
+</target>
+
+
+
 <!-- this target makes the jar with HVWrap as the main class, which -->
 <!-- uses automagic -Xmx stuff, and suppresses error output -->
 <target name = "haploview-release" depends="compile-haploview">
@@ -74,13 +85,49 @@
 
 <!-- Jar the application up -->
 <target name="haploview" depends="compile-haploview">
-   <jar jarfile="Haploview.jar" manifest="${haploview.src}/resources/META-INF/MANIFEST.MF">
+   <jar jarfile="Haploview.jar">
      <fileset dir="${haploview.classes}">
        <include name="edu/mit/wi/**/**"/>
      </fileset>
+     <manifest>
+       <attribute name="Built-By" value="${user.name}"/>
+       <attribute name="Main-Class" value="edu.mit.wi.haploview.HaploView"/>
+       <attribute name="Class-Path" value="resources/JimiProClasses.zip"/>
+     </manifest>
+
      <zipfileset src="resources/JimiProClasses.zip"/>
    </jar>
 </target>
+
+<target name="haploview-release-debug" depends="compile-debug-haploview">
+   <jar jarfile="Haploview.jar">
+     <fileset dir="${haploview.classes}">
+       <include name="edu/mit/wi/**/**"/>
+     </fileset>
+     <manifest>
+       <attribute name="Built-By" value="${user.name}"/>
+       <attribute name="Main-Class" value="edu.mit.wi.haploview.HVWrap"/>
+       <attribute name="Class-Path" value="resources/JimiProClasses.zip"/>
+     </manifest>
+     <zipfileset src="resources/JimiProClasses.zip"/>
+   </jar>
+</target>
+
+<target name="haploview-debug" depends="compile-debug-haploview">
+   <jar jarfile="Haploview.jar">
+     <fileset dir="${haploview.classes}">
+       <include name="edu/mit/wi/**/**"/>
+     </fileset>
+     <manifest>
+       <attribute name="Built-By" value="${user.name}"/>
+       <attribute name="Main-Class" value="edu.mit.wi.haploview.HaploView"/>
+       <attribute name="Class-Path" value="resources/JimiProClasses.zip"/>
+     </manifest>
+     <zipfileset src="resources/JimiProClasses.zip"/>
+   </jar>
+</target>
+
+
 
 <target name="clean" depends="init">
   <delete dir="${haploview.build}"/>
@@ -94,7 +141,9 @@
   <echo message="compile-haploview --> compiles the haploview classes
   only"/>
   <echo message="haploview-release --> makes 'wrapped' jar with auto Xmx and error suppression"/>
+  <echo message="haploview-release-debug --> makes release jar with debug info"/>
   <echo message="haploview --> makes the executable jar file"/>
+  <echo message="haploview-debug --> makes jar with debug info" />
   <echo message="clean --> cleans up after itself removing the build directory"/>
   <echo message="------------------------------------------------------------"/>
 </target>
