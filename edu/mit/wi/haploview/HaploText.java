@@ -331,6 +331,8 @@ public class HaploText implements Constants{
         File batchFile;
         File dataFile;
         String line;
+        StringTokenizer tok;
+        String infoMaybe ="";
 
         files = new Vector();
         batchFile = new File(this.arg_batchMode);
@@ -348,32 +350,29 @@ public class HaploText implements Constants{
             br.close();
 
             for(int i = 0;i<files.size();i++){
-                dataFile = new File((String)files.get(i));
-                if(dataFile.exists()) {
-                    String name = dataFile.getName();
-                    String infoMaybe ="";
-                    if(files.size()>(i+1)) {
-                        infoMaybe = (String)files.get(i+1);
-                        if(infoMaybe.substring(infoMaybe.length()-5,infoMaybe.length()).equals(".info") ) {
-                            //the file on the next line ends in .info, so we assume its the marker info file
-                            //for the file on the current line
-                            i++;
-                        }
-                        else {
-                            infoMaybe = "";
-                        }
+                line = (String)files.get(i);
+                tok = new StringTokenizer(line);
+                infoMaybe = "";
+                if(tok.hasMoreTokens()){
+                    dataFile = new File(tok.nextToken());
+                    if(tok.hasMoreTokens()){
+                        infoMaybe = tok.nextToken();
                     }
 
-                    if( name.substring(name.length()-4,name.length()).equals(".ped") ) {
-                        processFile(name,1,infoMaybe);
+                    if(dataFile.exists()) {
+                        String name = dataFile.getName();
+
+                        if( name.substring(name.length()-4,name.length()).equals(".ped") ) {
+                            processFile(name,1,infoMaybe);
+                        }
+                        else {
+                            processFile(name,0,infoMaybe);
+                        }
                     }
                     else {
-                        processFile(name,0,infoMaybe);
-                    }
-                }
-                else {
-                    if(!arg_quiet){
-                        System.out.println("file " + dataFile.getName() + " listed in the batch file could not be found");
+                        if(!arg_quiet){
+                            System.out.println("file " + dataFile.getName() + " listed in the batch file could not be found");
+                        }
                     }
                 }
 
