@@ -58,7 +58,7 @@
 
 <!-- Jar the application up -->
 <target name="haploview" depends="compile-haploview">
-   <jar jarfile="haploview.jar" manifest="${haploview.src}/resources/META-INF/MANIFEST.MF">
+   <jar jarfile="Haploview.jar" manifest="${haploview.src}/resources/META-INF/MANIFEST.MF">
      <fileset dir="${haploview.classes}">
        <include name="edu/mit/wi/**/**"/>
      </fileset>
