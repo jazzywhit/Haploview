@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 1.6 2004/09/29 14:20:52 jmaller Exp $
+ * $Id: MarkerResult.java,v 1.7 2004/10/07 20:52:27 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -38,7 +38,7 @@ public class MarkerResult {
     NumberFormat nf = NumberFormat.getInstance(Locale.US);
     NumberFormat pctNF = NumberFormat.getInstance(Locale.US);
 
-	public MarkerResult() {
+    public MarkerResult() {
 		nf.setMinimumFractionDigits(3);
 		nf.setMaximumFractionDigits(3);
 
@@ -187,6 +187,4 @@ public class MarkerResult {
 		buffer.append(this._rating);
 		return buffer.toString();
 	}
-
-
 }
