@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.12 2004/04/12 17:32:37 jcbarret Exp $
+* $Id: PedFile.java,v 1.13 2004/04/27 17:20:40 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -328,11 +328,11 @@ public class PedFile {
         StringTokenizer st = new StringTokenizer((String)lines.get(0), "\n\t\" \"");
         int numMetaColumns = 0;
         boolean doneMeta = false;
-        while(!doneMeta){
+        while(!doneMeta && st.hasMoreTokens()){
             String thisfield = st.nextToken();
             numMetaColumns++;
             //so currently the first person ID always starts with NA (Coriell ID) but
-            //will this be true with AA samples etc?
+            //todo: will this be true with AA samples etc?
             if (thisfield.startsWith("NA")){
                 doneMeta = true;
             }
