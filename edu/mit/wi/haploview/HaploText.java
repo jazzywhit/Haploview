@@ -5,6 +5,7 @@ import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.pedfile.CheckData;
 import edu.mit.wi.haploview.association.*;
 import edu.mit.wi.haploview.tagger.TaggerController;
+import edu.mit.wi.tagger.Tagger;
 
 import java.io.*;
 import java.util.Vector;
@@ -1041,7 +1042,8 @@ public class HaploText implements Constants{
                     System.out.println("Starting tagging.");
                 }
 
-                TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture);
+                TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture,
+                        Tagger.AGGRESSIVE_TRIPLE);
                 tc.runTagger();
 
                 while(!tc.isTaggingCompleted()) {

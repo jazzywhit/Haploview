@@ -6,6 +6,9 @@ import java.io.*;
 public class Tagger {
     public static final double DEFAULT_RSQ_CUTOFF = 0.8;
     public static final double DEFAULT_LOD_CUTOFF = 3.0;
+    public static final int PAIRWISE_ONLY = 0;
+    public static final int AGGRESSIVE_DUPLE = 1;
+    public static final int AGGRESSIVE_TRIPLE = 2;
 
     //vector of SNP objects, which contains every SNP (tags and non-tags)
     private Vector snps;
@@ -21,6 +24,7 @@ public class Tagger {
     private AlleleCorrelator alleleCorrelator;
     private double minRSquared;
     private Hashtable snpHash;
+    private int aggression;
 
     //Vector of Tag objects determined by the most recent call to findTags()
     private Vector tags;
@@ -28,15 +32,16 @@ public class Tagger {
     //vector of sites which arent tagged by anything in the tags vector
     private Vector untagged;
 
-
     public int taggedSoFar;
 
+
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac){
-        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF);
+        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE);
     }
 
-    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut) {
+    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut, int aggressionLevel) {
         minRSquared = rsqCut;
+        aggression = aggressionLevel;
 
         if(s != null) {
             snps = s;
@@ -237,10 +242,12 @@ public class Tagger {
         System.out.println("tagged " + countTagged + " SNPS using " + tags.size() +" tags" );
         System.out.println("# of SNPs that could not be tagged: " + untagged.size());
 
-        //peelback starting with the worst tag (i.e. the one that tags the fewest other snps.
-        Vector tags2BPeeled = (Vector)tags.clone();
-        Collections.reverse(tags2BPeeled);
-        peelBack(tags2BPeeled);
+        if (aggression != PAIRWISE_ONLY){
+            //peelback starting with the worst tag (i.e. the one that tags the fewest other snps.
+            Vector tags2BPeeled = (Vector)tags.clone();
+            Collections.reverse(tags2BPeeled);
+            peelBack(tags2BPeeled);
+        }
 
         return new Vector(tags);
     }
@@ -341,21 +348,26 @@ public class Tagger {
             HashSet hs = new HashSet(curTag.getLDList());
             hs.retainAll(tagsInLD);
             Vector victor = new Vector(hs);
-            for (int i = 0; i < victor.size(); i++) {
-                Vector block = new Vector();
-                block.add(curTag);
-                block.add(victor.get(i));
-                tests.add(new Block(block));
-                for(int j=i+1;j<victor.size();j++) {
-                    //make sure these two snps are in LD with each other
-                    if (((SNP)victor.get(i)).getLDList().contains(victor.get(j))){
-                        Vector block2 = (Vector) block.clone();
-                        block2.add(victor.get(j));
-                        tests.add(new Block(block2));
+            if (aggression == AGGRESSIVE_DUPLE || aggression == AGGRESSIVE_TRIPLE){
+                //2 marker blocks
+                for (int i = 0; i < victor.size(); i++) {
+                    Vector block = new Vector();
+                    block.add(curTag);
+                    block.add(victor.get(i));
+                    tests.add(new Block(block));
+                    if (aggression == AGGRESSIVE_TRIPLE){
+                        //3 marker blocks
+                        for(int j=i+1;j<victor.size();j++) {
+                            //make sure these two snps are in LD with each other
+                            if (((SNP)victor.get(i)).getLDList().contains(victor.get(j))){
+                                Vector block2 = (Vector) block.clone();
+                                block2.add(victor.get(j));
+                                tests.add(new Block(block2));
+                            }
+                        }
                     }
                 }
             }
-
         }
 
         return new Vector(tests);

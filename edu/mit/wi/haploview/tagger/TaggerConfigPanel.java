@@ -9,6 +9,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.*;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.io.File;
@@ -29,6 +30,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
     private HaploData theData;
     private Hashtable snpsByName;
     private NumberTextField rsqField, lodField;
+    private ButtonGroup aggressiveGroup;
 
     public TaggerConfigPanel(HaploData hd)  {
         theData = hd;
@@ -94,17 +96,44 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         scrollPane.setMaximumSize(scrollPane.getPreferredSize());
         add(scrollPane);
 
+        JPanel optsRightPanel = new JPanel();
+        optsRightPanel.setLayout(new BoxLayout(optsRightPanel, BoxLayout.Y_AXIS));
+
         JPanel rsqPanel = new JPanel();
-        rsqPanel.add(new JLabel("r\u00b2 threshold"));
+        JLabel rsqLabel = new JLabel("r\u00b2 threshold");
+        rsqPanel.add(rsqLabel);
         rsqField = new NumberTextField(String.valueOf(Options.getTaggerRsqCutoff()),5,true);
         rsqPanel.add(rsqField);
-        add(rsqPanel);
+        optsRightPanel.add(rsqPanel);
 
         JPanel lodPanel = new JPanel();
-        lodPanel.add(new JLabel("LOD threshold for multi-marker tests"));
+        JLabel lodLabel = new JLabel("LOD threshold for multi-marker tests");
+        lodPanel.add(lodLabel);
         lodField = new NumberTextField(String.valueOf(Options.getTaggerLODCutoff()),5,true);
         lodPanel.add(lodField);
-        add(lodPanel);
+        optsRightPanel.add(lodPanel);
+
+        JPanel optsLeftPanel = new JPanel();
+        optsLeftPanel.setLayout(new BoxLayout(optsLeftPanel, BoxLayout.Y_AXIS));
+        JRadioButton pairwiseButton = new JRadioButton("pairwise tagging only");
+        pairwiseButton.setActionCommand(String.valueOf(Tagger.PAIRWISE_ONLY));
+        optsLeftPanel.add(pairwiseButton);
+        JRadioButton dupleButton = new JRadioButton("aggressive tagging: use 2-marker haplotypes");
+        dupleButton.setActionCommand(String.valueOf(Tagger.AGGRESSIVE_DUPLE));
+        optsLeftPanel.add(dupleButton);
+        JRadioButton tripleButton = new JRadioButton("aggressive tagging: use 2- and 3-marker haplotypes");
+        tripleButton.setActionCommand(String.valueOf(Tagger.AGGRESSIVE_TRIPLE));
+        optsLeftPanel.add(tripleButton);
+        aggressiveGroup = new ButtonGroup();
+        aggressiveGroup.add(pairwiseButton);
+        aggressiveGroup.add(dupleButton);
+        aggressiveGroup.add(tripleButton);
+        pairwiseButton.setSelected(true);
+
+        JPanel optsPanel = new JPanel();
+        optsPanel.add(optsLeftPanel);
+        optsPanel.add(optsRightPanel);
+        add(optsPanel);
 
         runTaggerButton = new JButton("Run Tagger");
         runTaggerButton.addActionListener(this);
@@ -172,7 +201,8 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                 }
             }
 
-            tagControl = new TaggerController(theData,include,exclude,capture);
+            tagControl = new TaggerController(theData,include,exclude,capture,
+                    Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue());
             //tagControl.setIncluded(include);
             //tagControl.setExcluded(exclude);
             tagControl.runTagger();
