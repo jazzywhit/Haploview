@@ -44,7 +44,6 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.table.*;
 
-import java.awt.Dimension;
 import java.awt.Component;
 import java.awt.Graphics;
 
