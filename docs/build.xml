@@ -75,6 +75,7 @@
 
 <target name="doc-javahelp" depends="init">
     <delete dir="${out.doc.javahelp}"/>
+    <delete file="${doc.javahelp.jar}"/>
     <java classname="${xslt.processor.class}" 
 	      fork="yes" 
 	      failonerror="true">
