@@ -1,6 +1,8 @@
 package edu.mit.wi.haploview;
 
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 //import java.awt.event.*;
 //import java.beans.*;
 import javax.swing.*;
@@ -15,10 +17,10 @@ public class HaplotypeDisplayController extends JPanel {
     NumberTextField minDisplayField;
     NumberTextField minThickField;
     NumberTextField minThinField;
+    JButton goButton;
     Dimension fieldSize;
 
     HaplotypeDisplay parent;
-
 
     public HaplotypeDisplayController(HaplotypeDisplay parent){
         this.parent = parent;
@@ -27,15 +29,9 @@ public class HaplotypeDisplayController extends JPanel {
 
         JPanel hapPercentPanel = new JPanel();
         hapPercentPanel.add(new JLabel("Examine haplotypes above "));
-        hapPercentPanel.add(minDisplayField =
-                new NumberTextField(String.valueOf(parent.displayThresh), 3));
-        minDisplayField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e){
-                    setDisplayThresh(Integer.parseInt(minDisplayField.getText()));
-            }
-            public void changedUpdate(DocumentEvent e) { }
-            public void removeUpdate(DocumentEvent e) { }
-        });
+            hapPercentPanel.add(minDisplayField =
+                    new NumberTextField(String.valueOf(parent.displayThresh), 3));
+
         hapPercentPanel.add(new JLabel("%"));
         add(hapPercentPanel);
 
@@ -43,13 +39,6 @@ public class HaplotypeDisplayController extends JPanel {
         thinPanel.add(new JLabel("Connect with thin lines if > "));
         thinPanel.add(minThinField =
                 new NumberTextField(String.valueOf(parent.thinThresh), 3));
-        minThinField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                setThinThresh(Integer.parseInt(minThinField.getText()));
-            }
-            public void changedUpdate(DocumentEvent e) { }
-            public void removeUpdate(DocumentEvent e) { }
-        });
         thinPanel.add(new JLabel("%"));
         add(thinPanel);
 
@@ -57,23 +46,27 @@ public class HaplotypeDisplayController extends JPanel {
         thickPanel.add(new JLabel("Connect with thick lines if > "));
         thickPanel.add(minThickField =
                 new NumberTextField(String.valueOf(parent.thickThresh), 3));
-        minThickField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) {
-                setThickThresh(Integer.parseInt(minThickField.getText()));
-            }
-            public void changedUpdate(DocumentEvent e) { }
-            public void removeUpdate(DocumentEvent e) { }
-        });
         thickPanel.add(new JLabel("%"));
         add(thickPanel);
+
+        goButton = new JButton("Go");
+        goButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e) {
+                setDisplayThresh(Integer.parseInt(minDisplayField.getText()));
+                setThinThresh(Integer.parseInt(minThinField.getText()));
+                setThickThresh(Integer.parseInt(minThickField.getText()));
+            }
+        });
+        add(goButton);
 
         fieldSize = minDisplayField.getPreferredSize();
     }
 
 
-    public void setDisplayThresh(int amount) {
-        parent.displayThresh = amount;
-        parent.adjustDisplay();
+    public void setDisplayThresh(int amount){
+        if (parent.displayThresh != amount){
+            parent.adjustDisplay(amount);
+        }
     }
 
     public void setThinThresh(int amount) {

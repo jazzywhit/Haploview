@@ -56,6 +56,10 @@ public class HaploView extends JFrame implements ActionListener{
         VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_TDT, VIEW_CHECK_PANEL
     };
     JRadioButtonMenuItem viewMenuItems[];
+    String zoomItems[] = {
+        "Zoomed", "Medium", "Unzoomed"
+    };
+    JRadioButtonMenuItem zoomMenuItems[];
 
     //static final String DISPLAY_OPTIONS = "Display Options";
     //JMenuItem displayOptionsItem;
@@ -157,6 +161,21 @@ public class HaploView extends JFrame implements ActionListener{
             viewMenuItems[i].setEnabled(false);
             group.add(viewMenuItems[i]);
         }
+        displayMenu.addSeparator();
+        //a submenu
+        ButtonGroup zg = new ButtonGroup();
+        JMenu zoomMenu = new JMenu("D prime zoom");
+        zoomMenuItems = new JRadioButtonMenuItem[zoomItems.length];
+        for (int i = 0; i < zoomItems.length; i++){
+            zoomMenuItems[i] = new JRadioButtonMenuItem(zoomItems[i], i==0);
+            zoomMenuItems[i].addActionListener(this);
+            zoomMenu.add(zoomMenuItems[i]);
+            zg.add(zoomMenuItems[i]);
+        }
+        displayMenu.add(zoomMenu);
+
+        //displayOptionsItem = new JMenuItem(DISPLAY_OPTIONS);
+        //setAccelerator(displayOptionsItem, 'D', false);
 
         //analysis menu
         JMenu analysisMenu = new JMenu("Analysis");
@@ -172,10 +191,7 @@ public class HaploView extends JFrame implements ActionListener{
         clearBlocksItem.setEnabled(false);
         analysisMenu.add(clearBlocksItem);
 
-        // maybe
-        //displayMenu.addSeparator();
-        //displayOptionsItem = new JMenuItem(DISPLAY_OPTIONS);
-        //setAccelerator(displayOptionsItem, 'D', false);
+
 
         /** NEEDS FIXING
          helpMenu = new JMenu("Help");
@@ -246,6 +262,18 @@ public class HaploView extends JFrame implements ActionListener{
                         hve.getMessage(),
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
+            }
+        }else if (command == "Zoomed"){
+            if (dPrimeDisplay != null){
+                dPrimeDisplay.zoom(0);
+            }
+        }else if (command == "Medium"){
+            if (dPrimeDisplay != null){
+                dPrimeDisplay.zoom(1);
+            }
+        }else if (command == "Unzoomed"){
+            if (dPrimeDisplay != null){
+                dPrimeDisplay.zoom(2);
             }
         }else if (command == "Tutorial"){
             showHelp();
@@ -512,10 +540,6 @@ public class HaploView extends JFrame implements ActionListener{
                 }
                 theData.filteredDPrimeTable = theData.getFilteredTable();
                 theData.guessBlocks(currentBlockDef);
-
-                //hack-y way to refresh the image
-                dPrimeDisplay.setVisible(false);
-                dPrimeDisplay.setVisible(true);
 
                 hapDisplay.theData = theData;
                 try{

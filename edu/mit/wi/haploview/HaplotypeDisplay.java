@@ -64,7 +64,7 @@ public class HaplotypeDisplay extends JComponent {
             orderedHaplos[i] = new Haplotype[orderedHaps.size()];
             orderedHaps.copyInto(orderedHaplos[i]);
         }
-        adjustDisplay();
+        adjustDisplay(displayThresh);
     }
 
 
@@ -166,33 +166,43 @@ public class HaplotypeDisplay extends JComponent {
         }
     }
 
-    public void adjustDisplay() {
+    public void adjustDisplay(int dt){
         //this is called when the controller wants to change the haps
         //displayed, instead of directly repainting so that none of this math
         //is done when the screen repaints for other reasons (resizing, focus change, etc)
 
+
         //first filter haps on displaythresh
-        filteredHaplos = new Haplotype[orderedHaplos.length][];
-        boolean atLeastOneHap = false;
+        Haplotype[][] filts;
+        filts = new Haplotype[orderedHaplos.length][];
+        int numhaps = 0;
         int printable = 0;
         for (int i = 0; i < orderedHaplos.length; i++){
             Vector tempVector = new Vector();
             for (int j = 0; j < orderedHaplos[i].length; j++){
-                if (orderedHaplos[i][j].getPercentage()*100 > displayThresh){
+                if (orderedHaplos[i][j].getPercentage()*100 > dt){
                     tempVector.add(orderedHaplos[i][j]);
-                    atLeastOneHap=true;
+                    numhaps++;
                 }
             }
-            if (atLeastOneHap){
-                printable++; atLeastOneHap=false;
+            if (numhaps > 1){
+                printable++; numhaps=0;
             }
-            filteredHaplos[i] = new Haplotype[tempVector.size()];
-            tempVector.copyInto(filteredHaplos[i]);
+            filts[i] = new Haplotype[tempVector.size()];
+            tempVector.copyInto(filts[i]);
         }
 
         // if user sets display thresh higher than most common hap in any given block
-        if (!(printable == filteredHaplos.length)) return;
+        if (!(printable == filts.length)){
+            JOptionPane.showMessageDialog(this.getParent(),
+                    "Error: At least one block has too few haplotypes of frequency > " + dt,
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
+        displayThresh = dt;
+        filteredHaplos = filts;
         //then re-tag
         try{
             filteredHaplos = theData.generateCrossovers(filteredHaplos);

@@ -135,7 +135,6 @@ public class HaploData{
                         }
                     }
                 }
-                //System.out.println(numa1 + " " + numa2);
                 double maf = numa1/(numa2+numa1);
                 if (maf > 0.5) maf = 1.0-maf;
 
@@ -523,7 +522,6 @@ public class HaploData{
         int[][] twoMarkerHaplos = new int[3][3];
 
         totalComps = (Chromosome.getSize()*(Chromosome.getSize()-1))/2;
-        //System.out.println(totalComps);
         compsDone =0;
 
         //loop through all marker pairs
@@ -657,7 +655,6 @@ public class HaploData{
 
         this.totalBlocks = blocks.size();
         this.blocksDone = 0;
-        //System.out.println("well, i made it this far");
         for (int k = 0; k < blocks.size(); k++){
             this.blocksDone++;
             int[] theBlock = (int[])blocks.elementAt(k);
@@ -785,7 +782,6 @@ public class HaploData{
                 String aString = st.nextToken();
                 int[] genos = new int[aString.length()];
                 for (int j = 0; j < aString.length(); j++){
-                    //System.out.println(j + " " + aString.length() + " " + k);
                     genos[j] = unconvert[j][Integer.parseInt(aString.substring(j, j+1))];
                 }
                 double tempPerc = Double.parseDouble(st.nextToken());
@@ -961,6 +957,7 @@ public class HaploData{
                 }
             }
             double multidprime = 0;
+            boolean noDivByZero = false;
             for (int i = 0; i < rowSum.length; i++){
                 for (int j = 0; j < colSum.length; j++){
                     double num = (multilocusTable[i][j]/multilocusTotal) - (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal);
@@ -982,10 +979,17 @@ public class HaploData{
                             denom = denom2;
                         }
                     }
-                    multidprime += (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal)*Math.abs(num/denom);
+                    if (denom != 0){
+                        noDivByZero = true;
+                        multidprime += (rowSum[i]/multilocusTotal)*(colSum[j]/multilocusTotal)*Math.abs(num/denom);
+                    }
                 }
             }
-            multidprimeArray[gap] = multidprime;
+            if (noDivByZero){
+                multidprimeArray[gap] = multidprime;
+            }else{
+                multidprimeArray[gap] = 1.00;
+            }
         }
         return haplos;
     }
