@@ -25,6 +25,7 @@ class DPrimeDisplay extends JComponent{
     boolean printDetails = true;
     int lowX, highX, lowY, highY;
     Rectangle viewRect = new Rectangle();
+    Rectangle clipRect;
     int left, top, clickXShift, clickYShift;
 
     Font boxFont = new Font("SansSerif", Font.PLAIN, 12);
@@ -53,7 +54,7 @@ class DPrimeDisplay extends JComponent{
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
         Dimension pref = getPreferredSize();
-        Rectangle clipRect = (Rectangle)g.getClip();
+        clipRect = (Rectangle)g.getClip();
         //first paint grab the cliprect for the whole viewport
         if (viewRect.width == 0){viewRect=clipRect;}
 
@@ -167,11 +168,20 @@ class DPrimeDisplay extends JComponent{
             top += boxRadius/2; // give a little space between numbers and boxes
         }
 
-        //if (pref.getWidth() > viewRect.width){
+       /** if (pref.getWidth() > viewRect.width){
             //this means that the table is bigger than the display.
-            //the following values are the bounds on the boxes we want to
-            //display given that the current window is 'clipRect'
+            boxSize = ((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
+            if (boxSize < 12){boxSize=12;}
+            if (boxSize < 25){
+                printDetails = false;
+                boxRadius = boxSize/2;
+            }else{
+                boxRadius = boxSize/2 - 1;
+            }
+        }**/
 
+            //the following values are the bounds on the boxes we want to
+            //display given that the current window is 'clipRect
             lowX = (clipRect.x-clickXShift-(clipRect.y+clipRect.height-clickYShift))/boxSize;
             if (lowX < 0) {
                 lowX = 0;
@@ -188,22 +198,7 @@ class DPrimeDisplay extends JComponent{
             if (highY > dPrimeTable.length){
                 highY = dPrimeTable.length;
             }
-            /**
-            boxSize = (int)((clipRect.width-2*H_BORDER)/dPrimeTable.length-1);
-            if (boxSize < 12){boxSize=12;}
-            if (boxSize < 25){
-            printDetails = false;
-            boxRadius = boxSize/2;
-            }else{
-            boxRadius = boxSize/2 - 1;
-            }
 
-        } else{
-            lowX = 0;
-            highX = dPrimeTable.length-1;
-            lowY = 0;
-            highY = dPrimeTable.length;
-        }    **/
 
         // draw table column by column
         for (int x = lowX; x < highX; x++) {
@@ -340,12 +335,33 @@ class DPrimeDisplay extends JComponent{
                                         strlen = metrics.stringWidth(displayStrings[x]);
                                     }
                                 }
+
+                                //edge shifts prevent window from popping up partially offscreen
+                                int clipRightBound = (int)(clipRect.getWidth() + clipRect.getX());
+                                int clipBotBound = (int)(clipRect.getHeight() + clipRect.getY());
+                                int rightEdgeShift = 0;
+                                if (clickX + strlen + leftMargin +5 > clipRightBound){
+                                    rightEdgeShift = clickX + strlen + leftMargin + 10 - clipRightBound;
+                                }
+                                int botEdgeShift = 0;
+                                if (clickY + 5*metrics.getHeight()+10 > clipBotBound){
+                                    botEdgeShift = clickY + 5*metrics.getHeight()+15 - clipBotBound;
+                                }
+
                                 g.setColor(Color.WHITE);
-                                g.fillRect(clickX+1,clickY+1,strlen+leftMargin+4,5*metrics.getHeight()+9);
+                                g.fillRect(clickX+1-rightEdgeShift,
+                                        clickY+1-botEdgeShift,
+                                        strlen+leftMargin+4,
+                                        5*metrics.getHeight()+9);
                                 g.setColor(Color.BLACK);
-                                g.drawRect(clickX,clickY,strlen+leftMargin+5,5*metrics.getHeight()+10);
+                                g.drawRect(clickX-rightEdgeShift,
+                                        clickY-botEdgeShift,
+                                        strlen+leftMargin+5,
+                                        5*metrics.getHeight()+10);
+
                                 for (int x = 0; x < 5; x++){
-                                    g.drawString(displayStrings[x],clickX + leftMargin, clickY+5+((x+1)*metrics.getHeight()));
+                                    g.drawString(displayStrings[x],clickX + leftMargin - rightEdgeShift,
+                                            clickY+5+((x+1)*metrics.getHeight())-botEdgeShift);
                                 }
                                 return "";
                             }
