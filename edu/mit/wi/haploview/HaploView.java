@@ -24,8 +24,8 @@ public class HaploView extends JFrame implements ActionListener{
     static final String READ_MARKERS = "Load marker data";
     JMenuItem readMarkerItem;
 
-    static final String EXPORT_TEXT = "Export tab to text";
-    static final String EXPORT_PNG = "Export tab to PNG";
+    static final String EXPORT_TEXT = "Export current tab to text";
+    static final String EXPORT_PNG = "Export current tab to PNG";
     String exportItems[] = {
         EXPORT_TEXT, EXPORT_PNG
     };
@@ -62,9 +62,9 @@ public class HaploView extends JFrame implements ActionListener{
     };
     JRadioButtonMenuItem colorMenuItems[];
     JRadioButtonMenuItem blockMenuItems[];
-    String blockItems[] = {"95% of informative pairwise comparisons show strong LD via confidence intervals (SFS)",
+    String blockItems[] = {"Confidence intervals (Gabriel et al)",
                                   "Four Gamete Rule",
-                                  "Solid block of strong LD via D prime (MJD)"};
+                                  "Solid spine of LD"};
 
     static final int PNG_MODE = 0;
     static final int TXT_MODE = 1;
@@ -76,7 +76,7 @@ public class HaploView extends JFrame implements ActionListener{
     private CheckDataPanel checkPanel;
     private int currentBlockDef = 0;
     private TDTPanel tdtPanel;
-    boolean doTDT = false;
+    int assocTest = 0;
     private javax.swing.Timer timer;
     long maxCompDist;
 
@@ -423,7 +423,7 @@ public class HaploView extends JFrame implements ActionListener{
             checkPanel = new CheckDataPanel(pedFile);
             checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            theData = new HaploData();
+            theData = new HaploData(assocTest);
             JTable table = checkPanel.getTable();
             boolean[] markerResultArray = new boolean[table.getRowCount()];
             for (int i = 0; i < table.getRowCount(); i++){
@@ -462,7 +462,7 @@ public class HaploView extends JFrame implements ActionListener{
         viewMenuItems[VIEW_CHECK_NUM].setEnabled(false);
         viewMenuItems[VIEW_TDT_NUM].setEnabled(false);
         checkPanel = null;
-        doTDT = false;
+        assocTest = 0;
 
 
         inputOptions = f;
@@ -550,8 +550,8 @@ public class HaploView extends JFrame implements ActionListener{
                 }
 
                 //TDT panel
-                if(doTDT) {
-                    tdtPanel = new TDTPanel(theData.chromosomes);
+                if(assocTest > 0) {
+                    tdtPanel = new TDTPanel(theData.chromosomes, assocTest);
                     tabs.addTab(viewItems[VIEW_TDT_NUM], tdtPanel);
                     viewMenuItems[VIEW_TDT_NUM].setEnabled(true);
                 }
@@ -626,6 +626,12 @@ public class HaploView extends JFrame implements ActionListener{
                 exportMenuItems[1].setEnabled(false);
             }
 
+            if (tabNum == VIEW_D_NUM){
+                keyMenu.setEnabled(true);
+            }else{
+                keyMenu.setEnabled(false);
+            }
+
             viewMenuItems[tabs.getSelectedIndex()].setSelected(true);
             if (checkPanel != null && checkPanel.changed){
                 window.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -656,10 +662,10 @@ public class HaploView extends JFrame implements ActionListener{
                 Dimension size = dPrimeDisplay.getSize();
                 Dimension pref = dPrimeDisplay.getPreferredSize();
                 Rectangle visRect = dPrimeDisplay.getVisibleRect();
-                if (size.width != pref.width && size.width > visRect.width){
+                if (size.width != pref.width && pref.width > visRect.width){
                     ((JViewport)dPrimeDisplay.getParent()).setViewSize(pref);
                 }
-                dPrimeDisplay.refresh(0);
+                dPrimeDisplay.refresh(dPrimeDisplay.currentScheme);
 
                 hapDisplay.theData = theData;
                 try{
@@ -670,8 +676,9 @@ public class HaploView extends JFrame implements ActionListener{
                             "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
-                tdtPanel.refreshTable();
-                //System.out.println(tabs.getComponentAt(VIEW_TDT_NUM));
+                if (tdtPanel != null){
+                    tdtPanel.refreshTable();
+                }
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 checkPanel.changed=false;
             }
@@ -848,7 +855,7 @@ public class HaploView extends JFrame implements ActionListener{
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) { }
-            System.setProperty("swing.disableFileChooserSpeedFix", "true");
+            //System.setProperty("swing.disableFileChooserSpeedFix", "true");
 
             window  =  new HaploView();
             window.argHandler(args);

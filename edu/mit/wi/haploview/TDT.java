@@ -4,8 +4,28 @@ import java.util.Vector;
 
 
 public class TDT {
+    public static Vector calcCCTDT(Vector chromosomes){
+        Vector results = new Vector();
+        int numMarkers = Chromosome.getSize();
+        for (int i = 0; i < numMarkers; i++){
+            TDTResult thisResult = new TDTResult(Chromosome.getMarker(i));
+            for (int j = 0; j < chromosomes.size()-1; j++){
+                Chromosome theChrom = (Chromosome)chromosomes.get(j);
+                j++;
+                Chromosome nextChrom = (Chromosome)chromosomes.get(j);
+                if (theChrom.getAffected()){
+                    thisResult.tallyCCInd(theChrom.getGenotype(i), nextChrom.getGenotype(i), 0);
+                }else{
+                    thisResult.tallyCCInd(theChrom.getGenotype(i), nextChrom.getGenotype(i), 1);
+                }
+            }
+            results.add(thisResult);
+        }
 
-    public static Vector calcTDT(Vector chromosomes) {
+        return results;
+    }
+
+    public static Vector calcTrioTDT(Vector chromosomes) {
         Vector results = new Vector();
         int numMarkers = Chromosome.getSize();
 
@@ -37,17 +57,12 @@ public class TDT {
 
                     if( !(allele1T == 0 || allele1U == 0 || allele2T == 0 || allele2U == 0) ){
                         TDTResult curRes = (TDTResult)results.get(j);
-                        curRes.tallyInd(allele1T,allele1U);
-                        curRes.tallyInd(allele2T,allele2U);
+                        curRes.tallyTrioInd(allele1T,allele1U);
+                        curRes.tallyTrioInd(allele2T,allele2U);
                     }
                 }
             }
 
-        }
-        for(int i=0;i<results.size();i++){
-            TDTResult tempRes = (TDTResult)results.get(i);
-            int[][] counts = tempRes.counts;
-            //System.out.println( counts[0][0] + "\t" + counts[1][1] + "\t" + counts[0][1] + "\t" + counts[1][0]);
         }
         return results;
     }

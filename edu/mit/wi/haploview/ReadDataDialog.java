@@ -26,6 +26,7 @@ public class ReadDataDialog extends JDialog implements ActionListener {
     int fileType;
     JTextField genoFileField, infoFileField;
     JCheckBox doTDT;
+    JRadioButton trioButton, ccButton;
     NumberTextField maxComparisonDistField;
 
     public ReadDataDialog(String title, HaploView h){
@@ -73,19 +74,38 @@ public class ReadDataDialog extends JDialog implements ActionListener {
             //hapmap
         }else if (command == "OK"){
             HaploView caller = (HaploView)this.getParent();
+
+            if (doTDT.isSelected()){
+                if (trioButton.isSelected()){
+                    caller.assocTest = 1;
+                } else {
+                    caller.assocTest = 2;
+                }
+            }else{
+                caller.assocTest = 0;
+            }
+
             String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), maxComparisonDistField.getText()};
             if (fileType == HAPS){
                 caller.readPhasedGenotypes(returnStrings);
             }else if (fileType == PED){
                 caller.readPedGenotypes(returnStrings);
             }
-            caller.doTDT = this.doTDT.isSelected();
+
             if (caller.dPrimeDisplay != null){
                 caller.dPrimeDisplay.setVisible(false);
             }
             this.dispose();
         }else if (command == "Cancel"){
             this.dispose();
+        }else if (command == "tdt"){
+            if(this.doTDT.isSelected()){
+                trioButton.setEnabled(true);
+                ccButton.setEnabled(true);
+            }else{
+                trioButton.setEnabled(false);
+                ccButton.setEnabled(false);
+            }
         }
     }
 
@@ -188,13 +208,26 @@ public class ReadDataDialog extends JDialog implements ActionListener {
         prefsPanel.add(new JLabel("kb apart."));
         contents.add(prefsPanel);
 
-        doTDT = new JCheckBox();
+        doTDT = new JCheckBox();//"Do association test?");
         doTDT.setSelected(false);
+        doTDT.setActionCommand("tdt");
+        doTDT.addActionListener(this);
+        trioButton = new JRadioButton("Family trio data", true);
+        trioButton.setEnabled(false);
+        ccButton = new JRadioButton("Case/Control data");
+        ccButton.setEnabled(false);
+        ButtonGroup group = new ButtonGroup();
+        group.add(trioButton);
+        group.add(ccButton);
         if (ft == PED){
-            JPanel tdtPanel = new JPanel();
-            tdtPanel.add(new JLabel("Run family trio TDT? "));
-            tdtPanel.add(doTDT);
-            contents.add(tdtPanel);
+            JPanel tdtOptsPanel = new JPanel();
+            JPanel tdtCheckBoxPanel = new JPanel();
+            tdtCheckBoxPanel.add(doTDT);
+            tdtCheckBoxPanel.add(new JLabel("Do association test?"));
+            tdtOptsPanel.add(trioButton);
+            tdtOptsPanel.add(ccButton);
+            contents.add(tdtCheckBoxPanel);
+            contents.add(tdtOptsPanel);
         }
 
         JPanel choicePanel = new JPanel();

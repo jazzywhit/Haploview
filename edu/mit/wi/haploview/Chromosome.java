@@ -8,45 +8,37 @@ class Chromosome{
     private byte[] genotypes;
     private String origin;
     boolean[] kidMissing;
-
-    private boolean transmitted = false;
+    private boolean affected = false;
 
     static int[] realIndex;
     static Object[] markers;
     static int trueSize;
 
-    Chromosome(String p, String i, byte[] g, String o){
+    Chromosome(String p, String i, byte[] g, boolean a, String o){
         ped = p;
         individual = i;
         genotypes = g;
+        affected = a;
         origin = o;
         trueSize = genotypes.length;
     }
 
-    Chromosome(String p, String i, byte[] g){
+    Chromosome(String p, String i, byte[] g, boolean a){
         ped = p;
         individual = i;
         genotypes = g;
+        affected = a;
         origin = "unknown";
         trueSize = genotypes.length;
     }
 
-    Chromosome(String p, String i, byte[] g, boolean isTransmitted){
+    Chromosome(String p, String i, byte[] g, boolean a, boolean[] isKidMissing){
         ped = p;
         individual = i;
         genotypes = g;
+        affected = a;
         origin = "unknown";
         trueSize = genotypes.length;
-        transmitted = isTransmitted;
-    }
-
-    Chromosome(String p, String i, byte[] g, boolean isTransmitted,boolean[] isKidMissing){
-        ped = p;
-        individual = i;
-        genotypes = g;
-        origin = "unknown";
-        trueSize = genotypes.length;
-        transmitted = isTransmitted;
         kidMissing = isKidMissing;
     }
 
@@ -87,14 +79,9 @@ class Chromosome{
         return origin;
     }
 
-    public boolean isTransmitted() {
-        return transmitted;
+    public boolean getAffected(){
+        return affected;
     }
-
-    public void setTransmitted(boolean transmitted) {
-        this.transmitted = transmitted;
-    }
-
 
 }
 

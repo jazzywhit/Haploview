@@ -9,12 +9,22 @@ public class TDTPanel extends JPanel {
     Vector result;
     JTable table;
     Vector tableColumnNames = new Vector();
+    private int type;
 
-    public TDTPanel(Vector chromosomes) {
-        result = TDT.calcTDT(chromosomes);
+    public TDTPanel(Vector chromosomes, int t) {
+        type = t;
+        if (type == 1){
+            result = TDT.calcTrioTDT(chromosomes);
+        }else{
+            result = TDT.calcCCTDT(chromosomes);
+        }
 
         tableColumnNames.add("Name");
-        tableColumnNames.add("T:U");
+        if (type == 1){
+            tableColumnNames.add("T:U");
+        }else{
+            tableColumnNames.add("Case, Control Ratios");
+        }
         tableColumnNames.add("Chi Squared");
         tableColumnNames.add("p value");
 
@@ -40,9 +50,9 @@ public class TDTPanel extends JPanel {
             Vector tempVect = new Vector();
             TDTResult currentResult = (TDTResult)result.get(Chromosome.realIndex[i]);
             tempVect.add(currentResult.getName());
-            tempVect.add(currentResult.getTURatio());
-            tempVect.add(new Double(currentResult.getChiSq()));
-            tempVect.add(new Double(currentResult.getPValue()));
+            tempVect.add(currentResult.getTURatio(type));
+            tempVect.add(new Double(currentResult.getChiSq(type)));
+            tempVect.add(currentResult.getPValue());
 
             tableData.add(tempVect.clone());
         }

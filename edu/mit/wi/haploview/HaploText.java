@@ -563,7 +563,6 @@ public class HaploText {
                         saveDprimeWriter.write("L1\tL2\tD'\tLOD\tr^2\tCIlow\tCIhi\n");
                         long dist;
                         PairwiseLinkage linkageResult;
-
                         for (int i = 0; i < Chromosome.getFilteredSize(); i++){
                             for (int j = 0; j < Chromosome.getFilteredSize(); j++){
                                 //many "slots" in table aren't filled in because it is a 1/2 matrix
@@ -586,8 +585,8 @@ public class HaploText {
                 }
             }
             if(fileType){
-                TDT myTDT = new TDT();
-                myTDT.calcTDT(textData.chromosomes);
+                //TDT.calcTrioTDT(textData.chromosomes);
+                //TODO: Deal with this.  why do we calc TDT? and make sure not to do it except when appropriate
             }
         }
         catch(IOException e){
