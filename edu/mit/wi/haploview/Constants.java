@@ -6,6 +6,14 @@ public interface Constants {
     //main jframe setup stuff & labels.
     public static final double VERSION = 2.05;
     public static final String TITLE_STRING = "Haploview "+VERSION;
+    public static final String RELEASE_DATE = "12 October, 2004";
+    public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
+    public static final String ABOUT_STRING = TITLE_STRING + "\n" + RELEASE_DATE + "\n" +
+            WEBSITE_STRING + "\n\n" +
+            "Daly Lab at the Whitehead Insititute\n" +
+            "Cambridge, MA 02142, USA\n\n"+
+            "Jeffrey Barrett (jcbarret@broad.mit.edu)\n" +
+            "Julian Maller (jules@broad.mit.edu)\n";
 
     public static final String READ_GENOTYPES = "Open genotype data";
     public static final String READ_MARKERS = "Load marker data";

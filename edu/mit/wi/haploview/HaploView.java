@@ -238,10 +238,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         analysisMenu.add(customizeBlocksItem);
         analysisMenu.setEnabled(false);
 
-        //NEEDS FIXING
         JMenu helpMenu = new JMenu("Help");
-         //menuBar.add(Box.createHorizontalGlue());
-         menuBar.add(helpMenu);
+        menuBar.add(helpMenu);
 
         menuItem = new JMenuItem("Help Contents");
         HelpSet hs;
@@ -257,6 +255,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
         hb = hs.createHelpBroker();
         menuItem.addActionListener(new CSH.DisplayHelpFromSource(hb));
+        helpMenu.add(menuItem);
+
+        menuItem = new JMenuItem("About Haploview");
+        menuItem.addActionListener(this);
         helpMenu.add(menuItem);
 
 
@@ -405,8 +407,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             ProportionalSpacingDialog spaceDialog = new ProportionalSpacingDialog(this, "Adjust LD Spacing");
             spaceDialog.pack();
             spaceDialog.setVisible(true);
-        }else if (command.equals("Tutorial")){
-            showHelp();
+        }else if (command.equals("About Haploview")){
+            JOptionPane.showMessageDialog(this,
+                    ABOUT_STRING,
+                    "About Haploview",
+                    JOptionPane.INFORMATION_MESSAGE);
         } else if(command.equals("Check for update")) {
             final SwingWorker worker = new SwingWorker(){
                 UpdateChecker uc;
@@ -1138,35 +1143,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }
             }
         }
-    }
-
-    void showHelp(){
-
-        //Help Text:
-        String helpText = new String();
-        try{
-            File helpFile = new File(System.getProperty("java.class.path") + File.separator + "haplohelp.txt");
-            BufferedReader inHelp = new BufferedReader(new FileReader(helpFile));
-            helpText = inHelp.readLine();
-            String currentLine = new String();
-            while ((currentLine = inHelp.readLine()) != null){
-                helpText += ("\n" + currentLine);
-            }
-            inHelp.close();
-        }catch (IOException ioexec){
-            helpText = "Help file not found.\n";
-        }
-
-        JFrame helpFrame = new JFrame("HaploView Help");
-        JTextArea helpTextArea = new JTextArea();
-        JScrollPane helpDisplayPanel = new JScrollPane(helpTextArea);
-        helpDisplayPanel.setBackground(Color.white);
-        helpTextArea.setText(helpText);
-        helpDisplayPanel.setOpaque(true);
-        helpDisplayPanel.setPreferredSize(new Dimension(450,500));
-        helpFrame.setContentPane(helpDisplayPanel);
-        helpFrame.pack();
-        helpFrame.setVisible(true);
     }
 
     public static void main(String[] args) {
