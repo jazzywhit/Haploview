@@ -2,7 +2,6 @@ package edu.mit.wi.haploview;
 
 
 import edu.mit.wi.pedfile.PedFileException;
-
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -12,7 +11,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Vector;
 
 public class HaploView extends JFrame implements ActionListener{
 
@@ -63,8 +61,7 @@ public class HaploView extends JFrame implements ActionListener{
     //JMenuItem displayOptionsItem;
 
     //start filechooser in current directory
-    final JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
-
+    JFileChooser fc;
     HaploData theData;
     //JFrame checkWindow;
     private CheckDataPanel checkPanel;
@@ -87,6 +84,7 @@ public class HaploView extends JFrame implements ActionListener{
     private HaploText argParser;
 
     public HaploView(){
+         fc = new JFileChooser(System.getProperty("user.dir"));
 
         //menu setup
         JMenuBar menuBar = new JMenuBar();
@@ -652,7 +650,7 @@ public class HaploView extends JFrame implements ActionListener{
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) { }
 
-            window =  new HaploView();
+            window  =  new HaploView();
             window.argHandler(args);
 
             //setup view object

@@ -17,7 +17,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
 	PedFile pedfile;
     boolean changed;
 
-    public CheckDataPanel(File file) throws IOException,PedFileException{
+    public CheckDataPanel(File file) throws IOException, PedFileException{
         //okay, for now we're going to assume the ped file has no header
         Vector pedFileStrings = new Vector();
         BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -26,6 +26,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener{
             pedFileStrings.add(line);
         }
         pedfile = new PedFile();
+
 
         pedfile.parse(pedFileStrings);
 
