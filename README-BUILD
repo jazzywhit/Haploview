@@ -1,0 +1,44 @@
+Welcome to HaploView!!
+
+Introduction:
+
+HaploView is designed to simplify and expedite the process of haplotype analysis by 
+providing a common interface to several tasks relating to such analyses. HaploView currently allows users to      
+examine block structures, generate haploypes in these blocks and save the data in a number of formats.
+All functionalities are highly customizable.
+
+
+Dependencies:
+
+HaploView can be built using the jakarta-ant build tool. Please download this tool at:
+
+http://jakarta.apache.org
+
+
+Building:
+
+After installing ant and putting the ant executable script in your path:
+
+BASH export PATH=$PATH:<path_to_ant_bin_directory>
+
+CSH setenv PATH $PATH:<path_to_ant_bin_directory>
+
+simply type:
+
+	ant 
+
+The build file will then tell you can do with it.
+
+For the lazy:
+
+For those who hate README's simply execute the following command after installing ant and putting it
+into you path environment variable:
+
+	ant haploview 
+
+Questions??
+
+e-mail:
+
+Brian Gilman
+gilmanb@genome.wi.mit.edu
