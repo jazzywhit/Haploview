@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.2 2003/08/14 15:06:48 jmaller Exp $
+* $Id: PedFile.java,v 1.3 2003/08/15 14:31:31 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -45,65 +45,65 @@ public class PedFile {
         return order;
     }
 
-	/**
-	 *
-	 * @return enumeration containing a list of familyID's in the families hashtable
-	 */
+    /**
+     *
+     * @return enumeration containing a list of familyID's in the families hashtable
+     */
     public Enumeration getFamList(){
         return this.families.keys();
     }
-   /**
-    *
-    * @param familyID id of desired family
-    * @return Family identified by familyID in families hashtable
-    */
+    /**
+     *
+     * @param familyID id of desired family
+     * @return Family identified by familyID in families hashtable
+     */
     public Family getFamily(String familyID){
         return (Family)this.families.get(familyID);
     }
 
-	/**
-	 *
-	 * @return the number of Family objects in the families hashtable
-	 */
+    /**
+     *
+     * @return the number of Family objects in the families hashtable
+     */
     public int getNumFamilies(){
         return this.families.size();
     }
 
-	/**
-	 * this method iterates through each family in Hashtable families and adds up
-	 * the number of individuals in total across all families
-	 * @return the total number of individuals in all the family objects in the families hashtable
-	 */
-	public int getNumIndividuals(){
-		Enumeration enum = this.families.elements();
-		int total =0;
-		while (enum.hasMoreElements()) {
-			Family fam = (Family) enum.nextElement();
-			total += fam.getNumMembers();
-		}
-		return total;
-	}
+    /**
+     * this method iterates through each family in Hashtable families and adds up
+     * the number of individuals in total across all families
+     * @return the total number of individuals in all the family objects in the families hashtable
+     */
+    public int getNumIndividuals(){
+        Enumeration enum = this.families.elements();
+        int total =0;
+        while (enum.hasMoreElements()) {
+            Family fam = (Family) enum.nextElement();
+            total += fam.getNumMembers();
+        }
+        return total;
+    }
 
-	/**
-	 * finds the first individual in the first family and returns the number of markers for that individual
-	 * @return the number of markers
-	 */
-	public int getNumMarkers(){
-		Enumeration famList = this.families.elements();
-		int numMarkers = 0;
-		while (famList.hasMoreElements()) {
-			Family fam = (Family) famList.nextElement();
-			Enumeration indList = fam.getMemberList();
-			while(indList.hasMoreElements()){
-				Individual ind = fam.getMember((String)indList.nextElement());
-				numMarkers = ind.getNumMarkers();
-				if(numMarkers > 0){
-					return numMarkers;
-				}
-			}
-		}
-		return 0;
-	}
+    /**
+     * finds the first individual in the first family and returns the number of markers for that individual
+     * @return the number of markers
+     */
+    public int getNumMarkers(){
+        Enumeration famList = this.families.elements();
+        int numMarkers = 0;
+        while (famList.hasMoreElements()) {
+            Family fam = (Family) famList.nextElement();
+            Enumeration indList = fam.getMemberList();
+            while(indList.hasMoreElements()){
+                Individual ind = fam.getMember((String)indList.nextElement());
+                numMarkers = ind.getNumMarkers();
+                if(numMarkers > 0){
+                    return numMarkers;
+                }
+            }
+        }
+        return 0;
+    }
 
 
     /**
@@ -133,20 +133,27 @@ public class PedFile {
                 //this line has a different number of columns
                 //should send some sort of error message
                 //TODO: add something which stores number of markers for all lines and checks that they're consistent
+                throw new PedFileException("line number mismatch in pedfile. line " + (k+1));
             }
 
             ind = new Individual();
 
             if(tokenizer.hasMoreTokens()){
+
                 ind.setFamilyID(tokenizer.nextToken().trim());
                 ind.setIndividualID(tokenizer.nextToken().trim());
                 ind.setDadID(tokenizer.nextToken().trim());
                 ind.setMomID(tokenizer.nextToken().trim());
-                ind.setGender(Integer.parseInt(tokenizer.nextToken().trim()));
-                ind.setAffectedStatus(Integer.parseInt(tokenizer.nextToken().trim()));
-                if(withOptionalColumn) {
-                    ind.setLiability(Integer.parseInt(tokenizer.nextToken().trim()));
+                try {
+                    ind.setGender(Integer.parseInt(tokenizer.nextToken().trim()));
+                    ind.setAffectedStatus(Integer.parseInt(tokenizer.nextToken().trim()));
+                    if(withOptionalColumn) {
+                        ind.setLiability(Integer.parseInt(tokenizer.nextToken().trim()));
+                    }
+                }catch(NumberFormatException nfe) {
+                    throw new PedFileException("Pedfile error: invalid gender or affected status on line " + (k+1));
                 }
+
                 boolean isTyped = false;
                 while(tokenizer.hasMoreTokens()){
                     try {
@@ -161,11 +168,11 @@ public class PedFile {
                         markers[0] = (byte)allele1;
                         markers[1]= (byte)allele2;
                         ind.addMarker(markers);
-                    }
-                    catch(NumberFormatException nfe) {
+                    }catch(NumberFormatException nfe) {
                         throw new PedFileException("Pedigree file input error: invalid genotype on line " + k );
                     }
                 }
+
                 //note whether this is a real indiv (true) or a "dummy" (false)
                 ind.setIsTyped(isTyped);
 
@@ -187,16 +194,16 @@ public class PedFile {
         }
     }
 
-	public Vector check() {
-		CheckData cd = new CheckData(this);
-		Vector results = cd.check();
-		/*int size = results.size();
-		for (int i = 0; i < size; i++) {
-			MarkerResult markerResult = (MarkerResult) results.elementAt(i);
-			System.out.println(markerResult.toString());
-		}*/
+    public Vector check() {
+        CheckData cd = new CheckData(this);
+        Vector results = cd.check();
+        /*int size = results.size();
+        for (int i = 0; i < size; i++) {
+        MarkerResult markerResult = (MarkerResult) results.elementAt(i);
+        System.out.println(markerResult.toString());
+        }*/
         return results;
-	}
+    }
 
 }
 
