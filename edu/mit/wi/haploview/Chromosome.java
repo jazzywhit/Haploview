@@ -5,7 +5,10 @@ class Chromosome{
 
     private String ped;
     private String individual;
-    private byte[] genotypes;
+    //genotypes[] used to be private but the accessor was wasting a lot of time when it would
+    //get called literally millions of times. so we allow other classes to touch this array
+    //in the interest of speed
+    byte[] genotypes;
     private String origin;
     boolean[] kidMissing;
     private boolean affected = false;
