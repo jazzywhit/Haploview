@@ -576,13 +576,8 @@ public class HaploText implements Constants{
         }
 
         if(doTagging) {
-            if(infoFileName == null) {
+            if(infoFileName == null && hapmapFileName == null) {
                 System.out.println("A marker info file must be specified when using -doTagging");
-                System.exit(1);
-            }
-
-            if(blockOutputType == -1) {
-                System.out.println("a block output type must be specified when using tagger");
                 System.exit(1);
             }
 
@@ -1082,6 +1077,11 @@ public class HaploText implements Constants{
 
 
             if(doTagging) {
+
+                if(textData.dpTable == null) {
+                    textData.generateDPrimeTable();
+                }
+
                 Vector snps = Chromosome.getAllMarkers();
                 HashSet names = new HashSet();
                 Hashtable idsByName = new Hashtable();
