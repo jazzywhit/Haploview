@@ -776,6 +776,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 if (size.width != pref.width && pref.width > visRect.width){
                     ((JViewport)dPrimeDisplay.getParent()).setViewSize(pref);
                 }
+                dPrimeDisplay.colorDPrime(currentScheme);
 
                 hapDisplay.theData = theData;
 
