@@ -121,6 +121,7 @@ public class EM implements Constants {
                 int missingA = 0;
                 int missingB = 0;
                 for (int j = 0; j < block_size[n]; j++){
+                    //todo: bug here from big encode dataset
                     byte AFirstGeno = parentAFirst.getGenotype(theBlock[segmentShift+j]);
                     byte ASecondGeno = parentASecond.getGenotype(theBlock[segmentShift+j]);
                     byte BFirstGeno = parentBFirst.getGenotype(theBlock[segmentShift+j]);
