@@ -12,7 +12,7 @@ public class TDTPanel extends JPanel {
     Vector tableColumnNames = new Vector();
     private int type;
 
-    public TDTPanel(PedFile pf, int t) {
+    public TDTPanel(PedFile pf, int t){
         type = t;
         if (type == 1){
             result = TDT.calcTrioTDT(pf);
