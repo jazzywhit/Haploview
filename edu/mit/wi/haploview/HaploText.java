@@ -290,7 +290,7 @@ public class HaploText implements Constants{
             System.out.println("Only one genotype input file may be specified on the command line.");
             System.exit(1);
         }
-        else if(countOptions == 0) {
+        else if(countOptions == 0 && nogui) {
             System.out.println("You must specify a genotype input file.");
             System.exit(1);
         }
