@@ -14,6 +14,7 @@ public class AssociationTestSet implements Constants{
     private Vector tests;
     private Vector results;
     private HashSet whitelist;
+    private Vector filterAlleles;
 
     public AssociationTestSet(){
         results = new Vector();
@@ -268,6 +269,7 @@ public class AssociationTestSet implements Constants{
     }
 
     public AssociationTestSet(Haplotype[][] haplos, Vector names){
+        //use this constructor for default hap tests so you can filter by display freq
         whitelist = new HashSet();
         Vector results = new Vector();
         if (haplos != null){
@@ -279,6 +281,25 @@ public class AssociationTestSet implements Constants{
                     blockname = (String) names.get(i);
                 }
                 results.add(new HaplotypeAssociationResult(haplos[i], Options.getHaplotypeDisplayThreshold(),blockname));
+            }
+        }
+        this.results = results;
+    }
+
+    public AssociationTestSet(Haplotype[][] haplos, Vector names, Vector alleles) throws HaploViewException{
+        //use this constructor for custom tests so you can filter on alleles
+        whitelist = new HashSet();
+        this.filterAlleles = alleles;
+        Vector results = new Vector();
+        if (haplos != null){
+            for (int i = 0; i < haplos.length; i++){
+                String blockname;
+                if (names == null){
+                    blockname = "Block " + (i+1);
+                }else{
+                    blockname = (String) names.get(i);
+                }
+                results.add(new HaplotypeAssociationResult(haplos[i], (String)alleles.get(i),blockname));
             }
         }
         this.results = results;
@@ -365,42 +386,27 @@ public class AssociationTestSet implements Constants{
 
         Vector blocks = new Vector();
         Vector names = new Vector();
+        Vector alleles = new Vector();
         for(int i=0;i<tests.size();i++) {
             //first go through and get all the multimarker tests to package up to hand to theData.generateHaplotypes()
             AssociationTest currentTest = (AssociationTest) tests.get(i);
             if(currentTest.getNumMarkers() > 1) {
                 blocks.add(currentTest.getFilteredMarkerArray());
                 names.add(currentTest.getName());
+                alleles.add(currentTest.getAllele());
             }
         }
+        this.filterAlleles = alleles;
         Haplotype[][] blockHaps = theData.generateHaplotypes(blocks, true);
-        Vector blockResults = new AssociationTestSet(blockHaps, names).getResults();
+        Vector blockResults = new AssociationTestSet(blockHaps, names, alleles).getResults();
         Iterator britr = blockResults.iterator();
 
         for (int i = 0; i < tests.size(); i++){
             AssociationTest currentTest = (AssociationTest) tests.get(i);
             if(currentTest.getNumMarkers() > 1) {
                 //grab the next block result from above
-                //check to see if a specific allele was given
                 HaplotypeAssociationResult har = (HaplotypeAssociationResult) britr.next();
-                //todo: this is borken. needs count of all other alleles.
-                if (currentTest.getAllele() != null){
-                    boolean foundAllele = false;
-                    for (int j = 0; j < har.getAlleleCount(); j++){
-                        if (har.getNumericAlleleName(j).equals(currentTest.getAllele())){
-                            Haplotype[] filtHaps = {har.getHaps()[j]};
-                            res.add(new HaplotypeAssociationResult(filtHaps,0,har.getName()));
-                            foundAllele = true;
-                            break;
-                        }
-                    }
-                    if (!foundAllele){
-                        throw new HaploViewException(currentTest.getAllele() + ": no such allele for test:\n" +
-                                har.getName());
-                    }
-                }else{
-                    res.add(har);
-                }
+                res.add(har);
             }else if (currentTest.getNumMarkers() == 1){
                 //grab appropriate single marker result.
                 res.add(inputSNPResults.get(currentTest.getMarkerArray()[0]));
@@ -465,6 +471,10 @@ public class AssociationTestSet implements Constants{
         }
 
         return ret;
+    }
+
+    public Vector getFilterAlleles() {
+        return filterAlleles;
     }
 
     public HashSet getWhitelist() {

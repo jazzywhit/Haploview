@@ -14,7 +14,7 @@ public class MarkerAssociationResult extends AssociationResult{
         for (int i = 0; i < locusHaplos.length; i++){
             alleles.add(locusHaplos[i]);
         }
-        setFrequencyCutoff(0);
+        filterByFrequency(0);
         name = n;
 
         this.snp = snp;

@@ -76,7 +76,7 @@ public abstract class AssociationResult implements Constants{
 
     public abstract String getFreqString(int i);
 
-    public void setFrequencyCutoff(double f) {
+    public void filterByFrequency(double f) {
         filteredAlleles.removeAllElements();
         if(f >= 0 && f<=1) {
             frequencyCutoff = f;

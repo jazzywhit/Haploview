@@ -18,7 +18,6 @@ public class PermutationTestSet implements Constants{
     private double bestObsChiSq;
     private String bestObsName;
 
-    //private Haplotype[][] haplotypes;
     private Vector theEMs;
     private PedFile pedFile;
     private AssociationTestSet testSet;
@@ -91,7 +90,8 @@ public class PermutationTestSet implements Constants{
 
                 fakeHaplos[j] =  new Haplotype[haplotypes[j].length];
                 for(int k=0;k<haplotypes[j].length;k++) {
-                    fakeHaplos[j][k] = new Haplotype(new int[0],haplotypes[j][k].getPercentage(),null);
+                    fakeHaplos[j][k] = new Haplotype(haplotypes[j][k].getGeno(),haplotypes[j][k].getPercentage(),
+                            haplotypes[j][k].getMarkers());
                 }
             }
         } else {
@@ -168,7 +168,15 @@ public class PermutationTestSet implements Constants{
                 }
             }
             if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
-                AssociationTestSet ats = new AssociationTestSet(fakeHaplos, null);
+                AssociationTestSet ats = null;
+                if (testSet.getFilterAlleles() == null){
+                    ats = new AssociationTestSet(fakeHaplos, null);
+                }else{
+                    try{
+                        ats = new AssociationTestSet(fakeHaplos,null,testSet.getFilterAlleles());
+                    }catch (HaploViewException hve){
+                    }
+                }
                 curResults.addAll(ats.getResults());
             }
 

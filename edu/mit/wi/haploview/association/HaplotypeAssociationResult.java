@@ -2,6 +2,7 @@ package edu.mit.wi.haploview.association;
 
 import edu.mit.wi.haploview.Haplotype;
 import edu.mit.wi.haploview.Options;
+import edu.mit.wi.haploview.HaploViewException;
 
 public class HaplotypeAssociationResult extends AssociationResult{
 
@@ -13,8 +14,20 @@ public class HaplotypeAssociationResult extends AssociationResult{
         for (int i = 0; i < locusHaplos.length; i++){
             alleles.add(locusHaplos[i]);
         }
-        setFrequencyCutoff(((double)freqCutoff)/100);
+        filterByFrequency(((double)freqCutoff)/100);
         name = n;
+
+        haps = locusHaplos;
+    }
+
+    public HaplotypeAssociationResult(Haplotype[] locusHaplos, String allele, String name) throws HaploViewException{
+        nf.setGroupingUsed(false);
+        for (int i = 0; i < locusHaplos.length; i++){
+            alleles.add(locusHaplos[i]);
+        }
+        filterByAllele(allele);
+        this.name = name;
+
         haps = locusHaplos;
     }
 
@@ -33,7 +46,7 @@ public class HaplotypeAssociationResult extends AssociationResult{
         } else if(Options.getAssocTest() == ASSOC_CC) {
             double caseSum = 0, controlSum = 0;
             for (int j = 0; j < alleles.size(); j++){
-                if (i!=j){
+                if (h != alleles.get(j)){
                     caseSum += ((Haplotype)alleles.get(j)).getCaseCount();
                     controlSum += ((Haplotype)alleles.get(j)).getControlCount();
                 }
@@ -64,6 +77,25 @@ public class HaplotypeAssociationResult extends AssociationResult{
         countSB.append(nf.format(h.getControlCount()/controlSum));
 
         return countSB.toString();
+    }
+
+    public void filterByAllele(String allele) throws HaploViewException{
+        if (allele == null){
+            filterByFrequency(Options.getHaplotypeDisplayThreshold()/100);
+        }else{
+            filteredAlleles.removeAllElements();
+            for(int i=0;i<alleles.size();i++) {
+                Haplotype curHap = (Haplotype) alleles.get(i);
+                if(curHap.toNumericString().equals(allele)){
+                    filteredAlleles.add(curHap);
+                }
+            }
+            if (filteredAlleles.size() == 0){
+                throw new HaploViewException(allele + ": no such allele for test:\n" +
+                        getName());
+            }
+            calculateChiSquares();
+        }
     }
 
     public Haplotype[] getHaps() {
