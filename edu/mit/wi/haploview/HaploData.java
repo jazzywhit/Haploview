@@ -233,11 +233,17 @@ public class HaploData implements Constants{
             Vector markerInfo = new Vector();
             double[] numBadGenotypes = new double[Chromosome.getUnfilteredSize()];
             percentBadGenotypes = new double[Chromosome.getUnfilteredSize()];
-            Vector results = pedFile.getResults();
+            Vector results = null;
+            if (pedFile != null){
+                results = pedFile.getResults();
+            }
             long prevPosition = Long.MIN_VALUE;
             SNP prevMarker = null;
             for (int i = 0; i < Chromosome.getUnfilteredSize(); i++){
-                MarkerResult mr = (MarkerResult)results.elementAt(i);
+                MarkerResult mr = null;
+                if (results != null){
+                    mr = (MarkerResult)results.elementAt(i);
+                }
                 //to compute minor/major alleles, browse chrom list and count instances of each allele
                 byte a1 = 0; byte a2 = 0;
                 double numa1 = 0; double numa2 = 0;
@@ -274,36 +280,45 @@ public class HaploData implements Constants{
                     a1 = a2;
                     a2 = temp;
                 }
+
+                double maf;
+                if (mr != null){
+                    maf = Math.rint(mr.getMAF()*100.0)/100.0;
+                }else{
+                    maf = Math.rint(100.0*(numa1/(numa1+numa2)))/100.0;
+                }
+
                 if (infoKnown){
                     long pos = Long.parseLong((String)positions.elementAt(i));
 
                     SNP thisMarker = (new SNP((String)names.elementAt(i),
-                            pos,
-                            Math.rint(mr.getMAF()*100.0)/100.0, a1, a2,
+                            pos, maf, a1, a2,
                             (String)extras.elementAt(i)));
                     markerInfo.add(thisMarker);
 
-                    double genoPC = mr.getGenoPercent();
-                    //check to make sure adjacent SNPs do not have identical positions
-                    if (prevPosition != Long.MIN_VALUE){
-                        //only do this for markers 2..N, since we're comparing to the previous location
-                        if (pos == prevPosition){
-                            dupsToBeFlagged = true;
-                            if (genoPC >= mr.getGenoPercent()){
-                                //use this one because it has more genotypes
-                                thisMarker.setDup(1);
-                                prevMarker.setDup(2);
-                            }else{
-                                //use the other one because it has more genotypes
-                                thisMarker.setDup(2);
-                                prevMarker.setDup(1);
+                    if (mr != null){
+                        double genoPC = mr.getGenoPercent();
+                        //check to make sure adjacent SNPs do not have identical positions
+                        if (prevPosition != Long.MIN_VALUE){
+                            //only do this for markers 2..N, since we're comparing to the previous location
+                            if (pos == prevPosition){
+                                dupsToBeFlagged = true;
+                                if (genoPC >= mr.getGenoPercent()){
+                                    //use this one because it has more genotypes
+                                    thisMarker.setDup(1);
+                                    prevMarker.setDup(2);
+                                }else{
+                                    //use the other one because it has more genotypes
+                                    thisMarker.setDup(2);
+                                    prevMarker.setDup(1);
+                                }
                             }
                         }
+                        prevPosition = pos;
+                        prevMarker = thisMarker;
                     }
-                    prevPosition = pos;
-                    prevMarker = thisMarker;
                 }else{
-                    markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), Math.rint(mr.getMAF()*100.0)/100.0,a1,a2));
+                    markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), maf,a1,a2));
                 }
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
