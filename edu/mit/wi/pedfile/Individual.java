@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 1.3 2003/12/17 21:29:29 jcbarret Exp $
+* $Id: Individual.java,v 1.4 2004/08/13 20:58:50 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -31,7 +31,10 @@ public class Individual {
     private int affectedStatus;
     private int liability; //optional
     private Vector markers;
-    private Vector zeroed;
+    //private Vector zeroed;
+    private boolean[] zeroed;
+    //this is used to keep track of the index of the last marker added
+    private int currMarker;
     private boolean isTyped;
 
 	public final static int FEMALE = 2;
@@ -41,9 +44,16 @@ public class Individual {
 	public final static String DATA_MISSING ="0";
 
 
-    public Individual(){
+/*    public Individual(){
         this.markers = new Vector();
         this.zeroed = new Vector();
+    }*/
+
+    public Individual(int numLines) {
+        this.markers = new Vector(numLines);
+        //this.zeroed = new Vector(numLines);
+        this.zeroed = new boolean[numLines];
+        this.currMarker = 0;
     }
 
     /**
@@ -189,7 +199,9 @@ public class Individual {
      */
     public void addMarker(byte[] marker){
         this.markers.add(marker);
-        this.zeroed.add(new Boolean(false));
+        //this.zeroed.add(new Boolean(false));
+        this.zeroed[currMarker] = false;
+        this.currMarker++;
     }
 
     /**
@@ -198,7 +210,8 @@ public class Individual {
      * @return true if marker is zeroed, false otherwise
      */
     public boolean getZeroed(int location){
-        return ((Boolean)zeroed.get(location)).booleanValue();
+        //return ((Boolean)zeroed.get(location)).booleanValue();
+        return zeroed[location];
     }
 
     /**
@@ -206,7 +219,8 @@ public class Individual {
      * @param i - marker to be zeroed
      */
     public void zeroOutMarker(int i){
-        this.zeroed.set(i, new Boolean(true));
+        //this.zeroed.set(i, new Boolean(true));
+        this.zeroed[i] = true;
     }
     /**
      * returns an iterator for the markers Vector

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 1.18 2004/08/13 20:41:23 jcbarret Exp $
+* $Id: PedFile.java,v 1.19 2004/08/13 20:58:50 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -199,7 +199,7 @@ public class PedFile {
         while (famList.hasMoreElements()) {
             Family fam = (Family) famList.nextElement();
             Enumeration indList = fam.getMemberList();
-            Individual ind = new Individual();
+            Individual ind = null;
             while(indList.hasMoreElements()){
                 try{
                     ind = fam.getMember((String)indList.nextElement());
@@ -245,7 +245,7 @@ public class PedFile {
                 throw new PedFileException("line number mismatch in pedfile. line " + (k+1));
             }
 
-            ind = new Individual();
+            ind = new Individual(tokenizer.countTokens());
 
             if(tokenizer.hasMoreTokens()){
 
@@ -350,7 +350,7 @@ public class PedFile {
 
         StringTokenizer dt;
         while (st.hasMoreTokens()){
-            ind = new Individual();
+            ind = new Individual(numLines);
             String name = st.nextToken();
             String details = (String)hapMapTranslate.get(name);
             if (details == null){
