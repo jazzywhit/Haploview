@@ -19,7 +19,7 @@ interface Taggable {
     /**
      * returns the "best" Tag that captures this site. best is
      * defined by the particular implementation
-     * @return Tag
+     * @return TagSequence
      */
     public TagSequence getBestTag();
 }
