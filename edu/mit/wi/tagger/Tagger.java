@@ -494,8 +494,10 @@ public class Tagger {
             SNP snp = (SNP) snps.elementAt(i);
             line.append(snp.getName()).append("\t");
             TagSequence theTag = snp.getBestTag();
-            line.append(theTag.getName()).append("\t");
-            line.append(getPairwiseCompRsq(snp,theTag.getSequence())).append("\t");
+            if(theTag != null) {
+                line.append(theTag.getName()).append("\t");
+                line.append(getPairwiseCompRsq(snp,theTag.getSequence())).append("\t");
+            }
             bw.write(line.toString());
             bw.newLine();
         }
