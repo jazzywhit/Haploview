@@ -1,6 +1,6 @@
 package edu.mit.wi.haploview;
 
-import java.util.Vector;
+import java.util.*;
 
 public class EM implements Constants {
     //results fields
@@ -10,20 +10,19 @@ public class EM implements Constants {
     private Vector controlCounts, caseCounts;
 
     final int MISSINGLIMIT = 4;
-    final int MAXLOCI = 100;
+    final int MAXLOCI = 500;
     final int MAXLN = 1000;
     final double PSEUDOCOUNT = 0.1;
     OBS[] data;
     SUPER_OBS[] superdata;
     int[] two_n = new int[32];
-    double[] prob;
-    double[] superprob;
     int[][] ambighet;
     private Vector chromosomes;
     private int numTrios;
     private int numFilteredTrios;
     private boolean[][][] kidConsistentCache;
     private Vector realAffectedStatus;
+    private MapWrap fullProbMap;
 
     EM(Vector chromosomes, int numTrios){
 
@@ -37,9 +36,48 @@ public class EM implements Constants {
     }
 
 
+    class MapWrap {
+        private HashMap theMap;
+        private Double defaultVal;
+
+        MapWrap(double d) {
+            theMap = new HashMap();
+            defaultVal = new Double(d);
+        }
+
+        double get(Object key) {
+            if(theMap.containsKey(key)) {
+                return ((Double) theMap.get(key)).doubleValue();
+            } else {
+                return defaultVal.doubleValue();
+            }
+        }
+
+        void put(Object key, double val) {
+            theMap.put(key,new Double(val));
+        }
+
+        void setDefaultVal(double val) {
+            defaultVal = new Double(val);
+        }
+
+        void normalize(double normalizer) {
+            Iterator itr = theMap.keySet().iterator();
+            while(itr.hasNext()) {
+                Object key = itr.next();
+                put(key,(get(key) / normalizer));
+            }
+            defaultVal = new Double(defaultVal.doubleValue() / normalizer);
+        }
+
+        Set getKeySet() {
+            return theMap.keySet();
+        }
+    }
+
     class Recovery {
-        int h1;
-        int h2;
+        long h1;
+        long h2;
         float p;
         public Recovery() {
             h1=0;
@@ -303,7 +341,9 @@ public class EM implements Constants {
         int[][] hlist = new int[num_blocks][num_poss];
         int[] num_hlist = new int[num_blocks];
         int[] hint = new int[num_poss];
-        prob = new double[num_poss];
+        //double[] prob = new double[num_poss];
+
+        MapWrap probMap = new MapWrap(PSEUDOCOUNT);
 
         /* for trio option */
         if (Options.getAssocTest() == ASSOC_TRIO) {
@@ -311,9 +351,7 @@ public class EM implements Constants {
             store_dhet_status(num_haplos,num_loci,input_haplos);
         }
 
-
         end_locus=-1;
-        //System.out.println("made it to 110");
         //now we loop through the blocks
         for (block=0; block<num_blocks; block++) {
             start_locus=end_locus+1;
@@ -323,11 +361,6 @@ public class EM implements Constants {
             //read_observations initializes the values in data[] (array of OBS)
             num_indivs=read_observations(num_haplos,num_loci,input_haplos,start_locus,end_locus);
 
-            // start prob array with probabilities from full observations
-            for (int j=0; j<num_poss; j++)
-            {
-                prob[j]=PSEUDOCOUNT;
-            }
             total=(double)num_poss;
             total *= PSEUDOCOUNT;
 
@@ -337,16 +370,13 @@ public class EM implements Constants {
             for (int i=0; i<num_indivs; i++) {
                 if (data[i].nposs==1) {
                     tempRec = (Recovery)data[i].poss.elementAt(0);
-                    prob[tempRec.h1]+=1.0;
-                    prob[tempRec.h2]+=1.0;
+                    probMap.put(new Long(tempRec.h1), probMap.get(new Long(tempRec.h1)) + 1.0);
+                    probMap.put(new Long(tempRec.h2), probMap.get(new Long(tempRec.h2)) + 1.0);
                     total+=2.0;
                 }
             }
 
-            // normalize
-            for (int j=0; j<num_poss; j++) {
-                prob[j] /= total;
-            }
+            probMap.normalize(total);
 
             // EM LOOP: assign ambiguous data based on p, then re-estimate p
             iter=0;
@@ -356,7 +386,7 @@ public class EM implements Constants {
                     total=0.0;
                     for (int k=0; k<data[i].nposs; k++) {
                         tempRec = (Recovery) data[i].poss.elementAt(k);
-                        tempRec.p = (float)(prob[tempRec.h1]*prob[tempRec.h2]);
+                        tempRec.p = (float)(probMap.get(new Long(tempRec.h1))*probMap.get(new Long(tempRec.h2)));
                         total+=tempRec.p;
                     }
                     // normalize
@@ -367,37 +397,35 @@ public class EM implements Constants {
                 }
 
                 // re-estimate prob
+                probMap = new MapWrap(1e-10);
 
-                for (int j=0; j<num_poss; j++)
-                {
-                    prob[j]=1e-10;
-                }
                 total=num_poss*1e-10;
 
                 for (int i=0; i<num_indivs; i++) {
                     for (int k=0; k<data[i].nposs; k++) {
                         tempRec = (Recovery) data[i].poss.elementAt(k);
-                        prob[tempRec.h1]+=tempRec.p;
-                        prob[tempRec.h2]+=tempRec.p;
+                        probMap.put(new Long(tempRec.h1),probMap.get(new Long(tempRec.h1)) + tempRec.p);
+                        probMap.put(new Long(tempRec.h2),probMap.get(new Long(tempRec.h2)) + tempRec.p);
                         total+=(2.0*(tempRec.p));
                     }
                 }
 
-                // normalize
-                for (int j=0; j<num_poss; j++) {
-                    prob[j] /= total;
-                }
+                probMap.normalize(total);
+
                 iter++;
             }
 
-            // printf("FINAL PROBABILITIES:\n");
+            Iterator pitr = probMap.getKeySet().iterator();
             int m=0;
-            for (int j=0; j<num_poss; j++) {
-                hint[j]=-1;
-                if (prob[j] > .001) {
+            while(pitr.hasNext()) {
+                Long next = (Long) pitr.next();
+
+                hint[next.intValue()]=-1;
+                if (probMap.get(next) > .001) {
                     // printf("haplo %s   p = %.4lf\n",haplo_str(j,block_size[block]),prob[j]);
-                    hlist[block][m]=j; hprob[block][m]=prob[j];
-                    hint[j]=m;
+                    hlist[block][m]=next.intValue();
+                    hprob[block][m]=probMap.get(next);
+                    hint[next.intValue()]=m;
                     m++;
                 }
             }
@@ -422,34 +450,37 @@ to using a smaller number (e.g., > .002, .005)
 //printf("too many possibilities: %d\n",poss_full);
 return(-5);
 }*/
-        superprob = new double[poss_full];
+
+        fullProbMap = new MapWrap(PSEUDOCOUNT);
 
         create_super_haplos(num_indivs,num_blocks,num_hlist);
 
         /* run standard EM on supercombos */
 
         /* start prob array with probabilities from full observations */
-        for (int j=0; j<poss_full; j++)
-        {
-            superprob[j]=PSEUDOCOUNT;
-        }
+
+
+        //todo: wtf is total storing? it gets incremented below for each observed
         total=(double)poss_full;
         total *= PSEUDOCOUNT;
+
         /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
         i.e., flat when nothing is known, close to phase known if a great deal is known */
 
+
         for (int i=0; i<num_indivs; i++) {
             if (superdata[i].nsuper==1) {
-                superprob[superdata[i].superposs[0].h1]+=1.0;
-                superprob[superdata[i].superposs[0].h2]+=1.0;
+                Long h1 = new Long(superdata[i].superposs[0].h1);
+                Long h2 = new Long(superdata[i].superposs[0].h2);
+
+                fullProbMap.put(h1,fullProbMap.get(h1) +1.0);
+                fullProbMap.put(h2,fullProbMap.get(h2) +1.0);
+
                 total+=2.0;
             }
         }
 
-        /* normalize */
-        for (int j=0; j<poss_full; j++) {
-            superprob[j] /= total;
-        }
+        fullProbMap.normalize(total);
 
         /* EM LOOP: assign ambiguous data based on p, then re-estimate p */
         iter=0;
@@ -459,8 +490,8 @@ return(-5);
                 total=0.0;
                 for (int k=0; k<superdata[i].nsuper; k++) {
                     superdata[i].superposs[k].p = (float)
-                            (superprob[superdata[i].superposs[k].h1]*
-                            superprob[superdata[i].superposs[k].h2]);
+                            (fullProbMap.get(new Long(superdata[i].superposs[k].h1))*
+                            fullProbMap.get(new Long(superdata[i].superposs[k].h2)));
                     total+=superdata[i].superposs[k].p;
                 }
                 /* normalize */
@@ -470,25 +501,20 @@ return(-5);
             }
 
             /* re-estimate prob */
+            fullProbMap = new MapWrap(1e-10);
 
-            for (int j=0; j<poss_full; j++)
-            {
-                superprob[j]=1e-10;
-            }
             total=poss_full*1e-10;
 
             for (int i=0; i<num_indivs; i++) {
                 for (int k=0; k<superdata[i].nsuper; k++) {
-                    superprob[superdata[i].superposs[k].h1]+=superdata[i].superposs[k].p;
-                    superprob[superdata[i].superposs[k].h2]+=superdata[i].superposs[k].p;
+                    fullProbMap.put(new Long(superdata[i].superposs[k].h1),fullProbMap.get(new Long(superdata[i].superposs[k].h1)) + superdata[i].superposs[k].p);
+                    fullProbMap.put(new Long(superdata[i].superposs[k].h2),fullProbMap.get(new Long(superdata[i].superposs[k].h2)) + superdata[i].superposs[k].p);
                     total+=(2.0*superdata[i].superposs[k].p);
                 }
             }
 
-            /* normalize */
-            for (int j=0; j<poss_full; j++) {
-                superprob[j] /= total;
-            }
+            fullProbMap.normalize(total);
+
             iter++;
         }
 
@@ -521,11 +547,10 @@ return(-5);
         Vector haplo_freq= new Vector();
 
         for (int j=0; j<poss_full; j++) {
-            if (superprob[j] > .001) {
+            if (fullProbMap.get(new Long(j)) > .001) {
                 haplos_present.addElement(decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
 
-                //sprintf(haplos_present[k],"%s",decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
-                haplo_freq.addElement(new Double(superprob[j]));
+                haplo_freq.addElement(new Double(fullProbMap.get(new Long(j))));
 
             }
         }
@@ -564,7 +589,7 @@ return(-5);
     }
 
     public void doAssociationTests(Vector affStatus, Vector permuteInd) {
-        if(superprob == null || superdata == null || realAffectedStatus == null) {
+        if(fullProbMap == null || superdata == null || realAffectedStatus == null) {
             return;
         }
         if(affStatus == null){
@@ -577,109 +602,115 @@ return(-5);
             }
         }
 
-
         Vector caseCounts = new Vector();
         Vector controlCounts = new Vector();
-        double[] tempCase, tempControl, totalCase, totalControl;
+        //double[] tempCase, tempControl, totalCase, totalControl;
         if (Options.getAssocTest() == ASSOC_CC){
-            tempCase = new double[superprob.length];
-            tempControl = new double[superprob.length];
-            totalCase = new double[superprob.length];
-            totalControl = new double[superprob.length];
-            double tempnorm=0;
+            MapWrap totalCase = new MapWrap(0);
+            MapWrap totalControl = new MapWrap(0);
+
+
             for (int i = numFilteredTrios*2; i < superdata.length; i++){
+                MapWrap tempCase = new MapWrap(0);
+                MapWrap tempControl = new MapWrap(0);
+                double tempnorm=0;
+
                 for (int n=0; n<superdata[i].nsuper; n++) {
+                    Long long1 = new Long(superdata[i].superposs[n].h1);
+                    Long long2 = new Long(superdata[i].superposs[n].h2);
                     if (((Integer)affStatus.elementAt(i)).intValue() == 1){
-                        tempControl[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
-                        tempControl[superdata[i].superposs[n].h2] += superdata[i].superposs[n].p;
+                        tempControl.put(long1,tempControl.get(long1) + superdata[i].superposs[n].p);
+                        tempControl.put(long2,tempControl.get(long2) + superdata[i].superposs[n].p);
                     }else if (((Integer)affStatus.elementAt(i)).intValue() == 2){
-                        tempCase[superdata[i].superposs[n].h1] += superdata[i].superposs[n].p;
-                        tempCase[superdata[i].superposs[n].h2] += superdata[i].superposs[n].p;
+                        tempCase.put(long1,tempCase.get(long1) + superdata[i].superposs[n].p);
+                        tempCase.put(long2,tempCase.get(long2) + superdata[i].superposs[n].p);
                     }
                     tempnorm += superdata[i].superposs[n].p;
                 }
                 if (tempnorm > 0.00) {
-                    for (int j=0; j<superprob.length; j++) {
-                        if (tempCase[j] > 0.0000 || tempControl[j] > 0.0000) {
-                            totalCase[j] += (tempCase[j]/tempnorm);
-                            totalControl[j] += (tempControl[j]/tempnorm);
-                            tempCase[j]=tempControl[j]=0.0000;
+                    Iterator itr = fullProbMap.getKeySet().iterator();
+                    while(itr.hasNext()) {
+                        Long curHap = (Long) itr.next();
+                        if (tempCase.get(curHap) > 0.0000 || tempControl.get(curHap) > 0.0000) {
+                            totalCase.put(curHap,totalCase.get(curHap) + (tempCase.get(curHap)/tempnorm));
+                            totalControl.put(curHap,totalControl.get(curHap) + (tempControl.get(curHap)/tempnorm));
                         }
                     }
-                    tempnorm=0.00;
                 }
             }
-            for (int j = 0; j <superprob.length; j++){
-                if (superprob[j] > .001) {
-                    caseCounts.add(new Double(totalCase[j]));
-                    controlCounts.add(new Double(totalControl[j]));
+            ArrayList sortedKeySet = new ArrayList(fullProbMap.getKeySet());
+            Collections.sort(sortedKeySet);
+            for (int j = 0; j <sortedKeySet.size(); j++){
+                if (fullProbMap.get(sortedKeySet.get(j)) > .001) {
+                    caseCounts.add(new Double(totalCase.get(sortedKeySet.get(j))));
+                    controlCounts.add(new Double(totalControl.get(sortedKeySet.get(j))));
                 }
             }
         }
 
-        double[] tempT,totalT,tempU,totalU;
         Vector obsT = new Vector();
         Vector obsU = new Vector();
         if(Options.getAssocTest() == ASSOC_TRIO)
         {
-            double tempnorm=0,product;
-            tempT = new double[superprob.length];
-            totalT = new double[superprob.length];
-            tempU = new double[superprob.length];
-            totalU = new double[superprob.length];
-
+            double product;
+            MapWrap totalT = new MapWrap(0);
+            MapWrap totalU = new MapWrap(0);
             for (int i=0; i<numFilteredTrios*2; i+=2) {
+                MapWrap tempT = new MapWrap(0);
+                MapWrap tempU = new MapWrap(0);
+                double tempnorm = 0;
                 if (((Integer)affStatus.elementAt(i)).intValue() == 2){
-                    tempnorm=0.00;
                     for (int n=0; n<superdata[i].nsuper; n++) {
                         for (int m=0; m<superdata[i+1].nsuper; m++) {
                             if(kidConsistentCache[i/2][n][m]) {
                                 product=superdata[i].superposs[n].p*superdata[i+1].superposs[m].p;
-
-                                /*if(i<5) {
-                                    System.out.println(superdata[i+1].superposs[m].h1 + "\t" + product);
-                                } */
+                                Long h1 = new Long(superdata[i].superposs[n].h1);
+                                Long h2 = new Long(superdata[i].superposs[n].h2);
+                                Long h3 = new Long(superdata[i+1].superposs[m].h1);
+                                Long h4 = new Long(superdata[i+1].superposs[m].h2);
                                 if(((Boolean)permuteInd.get(i)).booleanValue()) {
                                     if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
-                                        tempU[superdata[i].superposs[n].h1]+=product;
-                                        tempT[superdata[i].superposs[n].h2]+=product;
+                                        tempU.put(h1, tempU.get(h1) + product);
+                                        tempT.put(h2, tempT.get(h2) + product);
                                     }
                                     if (superdata[i+1].superposs[m].h1 != superdata[i+1].superposs[m].h2) {
-                                        tempU[superdata[i+1].superposs[m].h1]+=product;
-                                        tempT[superdata[i+1].superposs[m].h2]+=product;
+                                        tempU.put(h3, tempU.get(h3) + product);
+                                        tempT.put(h4, tempT.get(h4) + product);
                                     }
                                 } else {
                                     if (superdata[i].superposs[n].h1 != superdata[i].superposs[n].h2) {
-                                        tempT[superdata[i].superposs[n].h1]+=product;
-                                        tempU[superdata[i].superposs[n].h2]+=product;
+                                        tempT.put(h1, tempT.get(h1) + product);
+                                        tempU.put(h2, tempU.get(h2) + product);
                                     }
                                     if (superdata[i+1].superposs[m].h1 != superdata[i+1].superposs[m].h2) {
-                                        tempT[superdata[i+1].superposs[m].h1]+=product;
-                                        tempU[superdata[i+1].superposs[m].h2]+=product;
+                                        tempT.put(h3, tempT.get(h3) + product);
+                                        tempU.put(h4, tempU.get(h4) + product);
                                     }
                                 }
-                                /* normalize by all possibilities, even double hom */
+                                // normalize by all possibilities, even double hom
                                 tempnorm+=product;
                             }
                         }
                     }
 
                     if (tempnorm > 0.00) {
-                        for (int j=0; j<superprob.length; j++) {
-                            if (tempT[j] > 0.0000 || tempU[j] > 0.0000) {
-                                totalT[j] += (tempT[j]/tempnorm);
-                                totalU[j] += (tempU[j]/tempnorm);
-                                tempT[j]=tempU[j]=0.0000;
+                        Iterator itr = fullProbMap.getKeySet().iterator();
+                        while(itr.hasNext()) {
+                            Long curHap = (Long) itr.next();
+                            if (tempT.get(curHap) > 0.0000 || tempU.get(curHap) > 0.0000) {
+                                totalT.put(curHap, totalT.get(curHap) + tempT.get(curHap)/tempnorm);
+                                totalU.put(curHap, totalU.get(curHap) + tempU.get(curHap)/tempnorm);
                             }
                         }
-                        tempnorm=0.00;
                     }
                 }
             }
-            for (int j = 0; j <superprob.length; j++){
-                if (superprob[j] > .001) {
-                    obsT.add(new Double(totalT[j]));
-                    obsU.add(new Double(totalU[j]));
+            ArrayList sortedKeySet = new ArrayList(fullProbMap.getKeySet());
+            Collections.sort(sortedKeySet);
+            for (int j = 0; j <sortedKeySet.size(); j++){
+                if (fullProbMap.get(sortedKeySet.get(j)) > .001) {
+                    obsT.add(new Double(totalT.get(sortedKeySet.get(j))));
+                    obsU.add(new Double(totalU.get(sortedKeySet.get(j))));
                 }
             }
         }
@@ -696,7 +727,8 @@ return(-5);
 
     public int read_observations(int num_haplos, int num_loci, byte[][] haplo, int start_locus, int end_locus) throws HaploViewException {
         //TODO: this should return something useful
-        int i, j, a1, a2, h1, h2, two_n, num_poss, loc, ind;
+        int i, j, a1, a2,  two_n, num_poss, loc, ind;
+        long h1, h2;
         byte c1, c2;
         int num_indivs = 0;
         int[] dhet = new int[MAXLOCI];
@@ -849,15 +881,15 @@ return(-5);
 
     public void store_block_haplos(int[][] hlist, double[][] hprob, int[] hint, int block, int num_indivs)
     {
-        int i, j, k, num_poss, h1, h2;
+        int i, j, k, num_poss,h1,h2;
         Recovery tempRec;
 
         for (i=0; i<num_indivs; i++) {
             num_poss=0;
             for (j=0; j<data[i].nposs; j++) {
                 tempRec = (Recovery) data[i].poss.elementAt(j);
-                h1 = tempRec.h1;
-                h2 = tempRec.h2;
+                h1 = (int)tempRec.h1;
+                h2 = (int)tempRec.h2;
                 if (hint[h1] >= 0 && hint[h2] >= 0) {
                     /* valid combination, both haplos passed to 2nd round */
                     num_poss++;
@@ -872,8 +904,8 @@ return(-5);
                 k=0;
                 for (j=0; j<data[i].nposs; j++) {
                     tempRec = (Recovery) data[i].poss.elementAt(j);
-                    h1 = tempRec.h1;
-                    h2 = tempRec.h2;
+                    h1 = (int)tempRec.h1;
+                    h2 = (int)tempRec.h2;
                     if (hint[h1] >= 0 && hint[h2] >= 0) {
                         superdata[i].poss[block][k].h1 = hint[h1];
                         superdata[i].poss[block][k].h2 = hint[h2];
@@ -895,7 +927,7 @@ else { s.append("1"); }
 return(s.toString());
 }
 */
-    public int[] decode_haplo_str(int chap, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist)
+    public int[] decode_haplo_str(long chap, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist)
     {
         int i, val,size=0,counter=0;
         for(i =0;i<num_blocks;i++) {
@@ -905,7 +937,7 @@ return(s.toString());
 
         for (i=0; i<num_blocks; i++) {
 
-            val = chap % num_hlist[i];
+            val = (int) (chap % num_hlist[i]);
             for(int j=0; j<block_size[i];j++) {
                 if((hlist[i][val] & two_n[j]) == two_n[j]) {
                     decoded[counter] = 2;
@@ -939,8 +971,8 @@ return(s.toString());
 
             /* block 0 */
             for (j=0; j<superdata[i].nposs[0]; j++) {
-                h1 = superdata[i].poss[0][j].h1;
-                h2 = superdata[i].poss[0][j].h2;
+                h1 = (int)superdata[i].poss[0][j].h1;
+                h2 = (int)superdata[i].poss[0][j].h2;
                 recursive_superposs(h1,h2,1,num_blocks,num_hlist,i);
             }
 
@@ -950,8 +982,9 @@ return(s.toString());
         }
     }
 
-    public void recursive_superposs(int h1, int h2, int block, int num_blocks, int[] num_hlist, int indiv) {
-        int j, curr_prod, newh1, newh2;
+    public void recursive_superposs(long h1, long h2, int block, int num_blocks, int[] num_hlist, int indiv) {
+        int j, curr_prod;
+        long newh1, newh2;
 
         if (block == num_blocks) {
             superdata[indiv].superposs[superdata[indiv].nsuper].h1 = h1;
@@ -993,7 +1026,7 @@ return(s.toString());
 
 
 
-    boolean kid_consistent(int chap1, int chap2, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist, int this_trio, int num_loci)
+    boolean kid_consistent(long chap1, long chap2, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist, int this_trio, int num_loci)
     {
         int i, val;
         boolean retval;
