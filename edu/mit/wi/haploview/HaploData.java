@@ -1388,7 +1388,7 @@ public class HaploData{
             int[] markerNums = finishedHaplos[i][0].getMarkers();
             boolean[] tags = finishedHaplos[i][0].getTags();
             for (int j = 0; j < markerNums.length; j++){
-                saveHapsWriter.write(" " + (markerNums[j]+1));
+                saveHapsWriter.write(" " + (Chromosome.realIndex[markerNums[j]]+1));
                 if (tags[j]) saveHapsWriter.write("!");
             }
             saveHapsWriter.write("\n");
@@ -1447,7 +1447,7 @@ public class HaploData{
                     //many "slots" in table aren't filled in because it is a 1/2 matrix
                     if (i < j){
                         if(filteredDPrimeTable[i][j] != null) {
-                            saveDprimeWriter.write((i+1) + "\t" + (j+1) + "\t" + filteredDPrimeTable[i][j] + "\n");
+                            saveDprimeWriter.write((Chromosome.realIndex[i]+1) + "\t" + (Chromosome.realIndex[j]+1) + "\t" + filteredDPrimeTable[i][j] + "\n");
                         }
                     }
                 }
