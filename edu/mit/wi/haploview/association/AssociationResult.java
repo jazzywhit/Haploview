@@ -47,11 +47,11 @@ public abstract class AssociationResult implements Constants{
      * @return name of i-th allele
      */
     public String getAlleleName(int i) {
-        return ((Haplotype) alleles.get(i)).toString();
+        return ((Haplotype) filteredAlleles.get(i)).toString();
     }
 
     public String getNumericAlleleName(int i){
-        return ((Haplotype) alleles.get(i)).toNumericString();
+        return ((Haplotype) filteredAlleles.get(i)).toNumericString();
     }
 
     public abstract String getDisplayName(int i);
@@ -148,8 +148,8 @@ public abstract class AssociationResult implements Constants{
         return Util.formatPValue(((Double)pValues.get(i)).doubleValue());
     }
 
-    public String getFreq(int j) {
-        double freq = ((Haplotype)alleles.get(j)).getPercentage();
+    public String getFreq(int i) {
+        double freq = ((Haplotype)alleles.get(i)).getPercentage();
 
         if (freq < 0){
             return ("");

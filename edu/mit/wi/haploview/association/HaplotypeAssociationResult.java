@@ -26,7 +26,7 @@ public class HaplotypeAssociationResult extends AssociationResult{
         nf.setMinimumFractionDigits(1);
         nf.setMaximumFractionDigits(1);
 
-        Haplotype h = (Haplotype) alleles.get(i);
+        Haplotype h = (Haplotype) filteredAlleles.get(i);
         StringBuffer countSB = new StringBuffer();
         if(Options.getAssocTest() == ASSOC_TRIO) {
             countSB.append(nf.format(h.getTransCount())).append(" : ").append(nf.format(h.getUntransCount()));
@@ -54,7 +54,7 @@ public class HaplotypeAssociationResult extends AssociationResult{
         nf.setMaximumFractionDigits(3);
 
         StringBuffer countSB = new StringBuffer();
-        Haplotype h = (Haplotype) alleles.get(i);
+        Haplotype h = (Haplotype) filteredAlleles.get(i);
         double caseSum = 0, controlSum = 0;
         for (int j = 0; j < alleles.size(); j++){
             caseSum += ((Haplotype)alleles.get(j)).getCaseCount();

@@ -383,6 +383,7 @@ public class AssociationTestSet implements Constants{
                 //grab the next block result from above
                 //check to see if a specific allele was given
                 HaplotypeAssociationResult har = (HaplotypeAssociationResult) britr.next();
+                //todo: this is borken. needs count of all other alleles.
                 if (currentTest.getAllele() != null){
                     boolean foundAllele = false;
                     for (int j = 0; j < har.getAlleleCount(); j++){
