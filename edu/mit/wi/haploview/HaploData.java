@@ -381,7 +381,7 @@ public class HaploData implements Constants{
                         }else{
                             thisMarker = currentInd.getMarker(i);
                         }
-                        if (thisMarker[0] == thisMarker[1]){
+                        if (thisMarker[0] == thisMarker[1] || thisMarker[0] == 0 || thisMarker[1] == 0){
                             chrom1[i] = thisMarker[0];
                             chrom2[i] = thisMarker[1];
                         }else{

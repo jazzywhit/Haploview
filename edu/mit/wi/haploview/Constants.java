@@ -1,7 +1,5 @@
 package edu.mit.wi.haploview;
 
-import java.util.Hashtable;
-
 
 public interface Constants {
 
