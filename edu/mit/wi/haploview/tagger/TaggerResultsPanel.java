@@ -8,23 +8,26 @@ import java.util.Vector;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.IOException;
 
 import edu.mit.wi.tagger.*;
 import edu.mit.wi.haploview.Chromosome;
 import edu.mit.wi.haploview.BasicTableModel;
+import edu.mit.wi.haploview.HaploView;
 
 public class TaggerResultsPanel extends JPanel implements ListSelectionListener, ActionListener{
     private JList tagList;
     private JList taggedList;
     private JTable markerTable;
+    private TaggerController tc;
 
     private Vector tags;
     private Vector forceIncluded;
 
-    public TaggerResultsPanel() {
-    }
-
     public void setTags(TaggerController t) {
+        tc = t;
+
         removeAll();
         setLayout(new BoxLayout(this,BoxLayout.X_AXIS));
 
@@ -110,6 +113,12 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
             listsPanel.add(cantTagLabel);
         }
 
+        listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
+        JButton dumpTestsButton = new JButton("Dump Tagger Tests File");
+        dumpTestsButton.setActionCommand("dump");
+        dumpTestsButton.addActionListener(this);
+        listsPanel.add(dumpTestsButton);
+
 
         JPanel bufferPanel = new JPanel();
         bufferPanel.add(listsPanel);
@@ -145,6 +154,19 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         if (e.getActionCommand().equals("taggingdone")){
             TaggerConfigPanel tcp = (TaggerConfigPanel) e.getSource();
             setTags(tcp.getTaggerController());
+        }else if (e.getActionCommand().equals("dump")){
+            try{
+                HaploView.fc.setSelectedFile(new File(""));
+                if (HaploView.fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+                    File outfile = HaploView.fc.getSelectedFile();
+                    tc.dumpTests(outfile);
+                }
+            }catch (IOException ioe){
+                JOptionPane.showMessageDialog(this,
+                        ioe.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
