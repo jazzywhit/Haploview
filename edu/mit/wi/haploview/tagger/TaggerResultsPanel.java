@@ -34,9 +34,9 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         Vector colNames = new Vector();
         Vector tableData = new Vector();
 
-        colNames.add("Marker");
-        colNames.add("Tag");
-        colNames.add("r\u00b2 w/tag");
+        colNames.add("Allele");
+        colNames.add("Test");
+        colNames.add("r\u00b2");
 
 
         for (int i = 0; i < Chromosome.getSize(); i++){
@@ -75,9 +75,9 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         JScrollPane listScrollPane = new JScrollPane(tagList);
         JPanel topListPanel = new JPanel();
         topListPanel.setLayout(new BoxLayout(topListPanel,BoxLayout.Y_AXIS));
-        JLabel tagLabel = new JLabel("Tags");
+        JLabel tagLabel = new JLabel("Tests");
         Font defaultFont = tagLabel.getFont();
-        //make the word 'tags' nice and big.
+        //make the word 'tests' nice and big.
         tagLabel.setFont(new Font(defaultFont.getName(),Font.BOLD,(int)(defaultFont.getSize()*1.5)));
         topListPanel.add(tagLabel);
         topListPanel.add(listScrollPane);
@@ -94,7 +94,7 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         JScrollPane taggedListScrollPane = new JScrollPane(taggedList);
         JPanel bottomListPanel = new JPanel();
         bottomListPanel.setLayout(new BoxLayout(bottomListPanel, BoxLayout.Y_AXIS));
-        bottomListPanel.add(new JLabel("Markers Tagged by Current Selection"));
+        bottomListPanel.add(new JLabel("Alleles captured by Current Selection"));
         bottomListPanel.add(taggedListScrollPane);
 
         JPanel listsPanel = new JPanel();
@@ -103,18 +103,18 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
         listsPanel.add(bottomListPanel);
 
-        String resString = "Tagged " + t.getTaggedSoFar() + " SNPS using " + t.getResults().size() + " tags.";
+        String resString = "Captured " + t.getTaggedSoFar() + " alleles using " + t.getResults().size() + " tests.";
         JLabel resultsLabel = new JLabel(resString);
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
         listsPanel.add(resultsLabel);
         if(t.getUntaggableCount() > 0) {
-            String cantTag = "Unable to tag " + t.getUntaggableCount() + " SNPS (shown in red).";
+            String cantTag = "Unable to capture " + t.getUntaggableCount() + " alleles (shown in red).";
             JLabel cantTagLabel = new JLabel(cantTag);
             listsPanel.add(cantTagLabel);
         }
 
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
-        JButton dumpTestsButton = new JButton("Dump Tagger Tests File");
+        JButton dumpTestsButton = new JButton("Dump Tests File");
         dumpTestsButton.setActionCommand("dump");
         dumpTestsButton.addActionListener(this);
         listsPanel.add(dumpTestsButton);
