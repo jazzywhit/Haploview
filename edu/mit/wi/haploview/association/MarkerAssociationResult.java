@@ -49,7 +49,7 @@ public class MarkerAssociationResult extends AssociationResult{
                             ", " + (int)h1.getControlCount() + ":" + (int)h2.getControlCount();
                 }else{
                     return (int)h1.getCaseCount() + ":" + (int)h2.getCaseCount() +
-                            "," + (int)h2.getControlCount() + ":" + (int)h1.getControlCount();
+                            ", " + (int)h2.getControlCount() + ":" + (int)h1.getControlCount();
                 }
             }else{
                 if (h1.getControlCount() > h2.getControlCount()){
@@ -57,7 +57,7 @@ public class MarkerAssociationResult extends AssociationResult{
                             ", " + (int)h1.getControlCount() + ":" + (int)h2.getControlCount();
                 }else{
                     return (int)h2.getCaseCount() + ":" + (int)h1.getCaseCount() +
-                            "," + (int)h2.getControlCount() + ":" + (int)h1.getControlCount();
+                            ", " + (int)h2.getControlCount() + ":" + (int)h1.getControlCount();
                 }
             }
         }
