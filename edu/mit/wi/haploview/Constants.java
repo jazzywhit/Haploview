@@ -98,45 +98,62 @@ public interface Constants {
 
 
     static final String HELP_OUTPUT = TITLE_STRING + " Command line options\n" +
-                        "-h, -help                       Print this message\n" +
-                        "-nogui                          Command line output only\n" +
-                        "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
-                        "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
-                        "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
-                        "-haps <hapsfile>                Specify an input file in .haps format\n" +
-                        "-info <infofile>                Specify a marker info file\n" +
-                        "-batch <batchfile>              Batch mode. Each line in batch file should contain a genotype file \n"+
-                        "                                followed by an optional info file, separated by a space.\n" +
-                        "-blocks <blockfile>             Blocks file, one block per line, will force output for these blocks\n" +
-                        "-track <trackfile>              Specify an input analysis track file.\n"+
-                        "-excludeMarkers <markers>       Specify markers (in range 1-N where N is total number of markers) to be\n"+
-                        "                                skipped for all analyses. Format: 1,2,5..12\n"+
-                        "-skipcheck                      Skips the various genotype file checks\n" +
-                        "-dprime                         Outputs LD text to <inputfile>.LD\n" +
-                        "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
-                        "-compressedpng                  Outputs compressed LD display to <inputfile>.LD.PNG\n"+
-                        "-ldcolorscheme <argument>       Specify an LD color scheme. <argument> should be one of:\n" +
-                        "                                DEFAULT, RSQ, DPALT, GAB, GAM\n" +
-                        "-check                          Outputs marker checks to <inputfile>.CHECK\n" +
-                        "                                note: -dprime  and -check default to no blocks output. \n" +
-                        "                                Use -blockoutput to also output blocks\n" +
-                        "-blockoutput <GAB,GAM,SPI,ALL>  Output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
-                        "-maxdistance <distance>         Maximum comparison distance in kilobases (integer). Default is 500\n" +
-                        "-hapthresh <frequency>          Only output haps with at least this frequency\n" +
-                        "-spacing <threshold>            Proportional spacing of markers in LD display. <threshold> is a value\n" +
-                        "                                between 0 (no spacing) and 1 (max spacing). Default is 0\n"  +
-                        "-minMAF <threshold>             Minimum minor allele frequency to include a marker. <threshold> is a value\n" +
-                        "                                between 0 and 0.5. Default is .001\n" +
-                        "-maxMendel <integer>            Markers with more than <integer> Mendel errors will be excluded. Default is 1.\n" +
-                        "-minGeno <threshold>            Exclude markers with less than <threshold> valid data. <threshold> is a value\n" +
-                        "                                between 0 and 1. Default is .75\n" +
-                        "-hwcutoff <threshold>           Exclude markers with a HW p-value smaller than <threshold>. <threshold> is a value\n" +
-                        "                                between 0 and 1. Default is .001\n" +
-                        "-missingCutoff <threshold>      Exclude individuals with more than <threshold> fraction missing data.\n" +
-                        "                                <threshold> is a value between 0 and 1. Default is .5 \n" +
-                        "-assocCC                        Outputs case control association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC\n" +
-                        "-assocTDT                       Outputs trio association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC"
-
+            "-h, -help                       Print this message\n" +
+            "-nogui                          Command line output only\n" +
+            "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
+            "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
+            "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
+            "-haps <hapsfile>                Specify an input file in .haps format\n" +
+            "-info <infofile>                Specify a marker info file\n" +
+            "-batch <batchfile>              Batch mode. Each line in batch file should contain a genotype file \n"+
+            "                                followed by an optional info file, separated by a space.\n" +
+            "-blocks <blockfile>             Blocks file, one block per line, will force output for these blocks\n" +
+            "-track <trackfile>              Specify an input analysis track file.\n"+
+            "-excludeMarkers <markers>       Specify markers (in range 1-N where N is total number of markers) to be\n"+
+            "                                skipped for all analyses. Format: 1,2,5..12\n"+
+            "-skipcheck                      Skips the various genotype file checks\n" +
+            "-dprime                         Outputs LD text to <inputfile>.LD\n" +
+            "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
+            "-compressedpng                  Outputs compressed LD display to <inputfile>.LD.PNG\n"+
+            "-ldcolorscheme <argument>       Specify an LD color scheme. <argument> should be one of:\n" +
+            "                                DEFAULT, RSQ, DPALT, GAB, GAM\n" +
+            "-check                          Outputs marker checks to <inputfile>.CHECK\n" +
+            "                                note: -dprime  and -check default to no blocks output. \n" +
+            "                                Use -blockoutput to also output blocks\n" +
+            "-blockoutput <GAB,GAM,SPI,ALL>  Output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
+            "-blockCutHighCI <thresh>        Gabriel 'Strong LD' high confidence interval D' cutoff.\n" +
+            "-blockCutLowCI <thresh>         Gabriel 'Strong LD' low confidence interval D' cutoff.\n" +
+            "-blockMAFThresh <thresh>        Gabriel MAF threshold.\n" +
+            "-blockRecHighCI <thresh>        Gabriel recombination high confidence interval D' cutoff.\n" +
+            "-blockInformFrac <thresh>       Gabriel fraction of markers required to be informative.\n" +
+            "-block4GamCut <thresh>          4 Gamete block cutoff for frequency of 4th pairwise haplotype.\n" +
+            "-blockSpineDP <thresh>          Solid Spine blocks D' cutoff for 'Strong LD\n"+
+            "-maxdistance <distance>         Maximum comparison distance in kilobases (integer). Default is 500\n" +
+            "-hapthresh <frequency>          Only output haps with at least this frequency\n" +
+            "-spacing <threshold>            Proportional spacing of markers in LD display. <threshold> is a value\n" +
+            "                                between 0 (no spacing) and 1 (max spacing). Default is 0\n"  +
+            "-minMAF <threshold>             Minimum minor allele frequency to include a marker. <threshold> is a value\n" +
+            "                                between 0 and 0.5. Default is .001\n" +
+            "-maxMendel <integer>            Markers with more than <integer> Mendel errors will be excluded. Default is 1.\n" +
+            "-minGeno <threshold>            Exclude markers with less than <threshold> valid data. <threshold> is a value\n" +
+            "                                between 0 and 1. Default is .75\n" +
+            "-hwcutoff <threshold>           Exclude markers with a HW p-value smaller than <threshold>. <threshold> is a value\n" +
+            "                                between 0 and 1. Default is .001\n" +
+            "-missingCutoff <threshold>      Exclude individuals with more than <threshold> fraction missing data.\n" +
+            "                                <threshold> is a value between 0 and 1. Default is .5 \n" +
+            "-assocCC                        Outputs case control association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC\n" +
+            "-assocTDT                       Outputs trio association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC\n" +
+            "-customAssoc <file>             Loads a set of custom tests for association.\n" +
+            "-permtests <numtests>           Performs <numtests> permutations on default association tests (or custom tests\n" +
+            "                                if a custom association file is specified) and writes to <inputfile>.PERMUT\n" +
+            "-pairwiseTagging                Generates pairwise tagging information in <inputfile>.TAGS and .TESTS.\n" +
+            "-aggressiveTagging              As above but generates 2- and 3-marker haplotype tags.\n" +
+            "-includeTags <markers>          Forces in a comma separated list of marker names as tags.\n" +
+            "-includeTagsFile <file>         Forces in a file of one marker name per line as tags.\n" +
+            "-excludeTags <markers>          Excludes a comma separated list of marker names from being used as tags.\n" +
+            "-excludeTagsFile <file>         Excludes a file of one marker name per line from being used as tags.\n" +
+            "-taglodcutoff <thresh>          Tagger LOD cutoff for creating multimarker tag haplotypes.\n" +
+            "-tagrsqcutoff <thresh>          Tagger r^2 cutoff.\n"
             ;
 
 }
