@@ -74,15 +74,15 @@ public class HaploText implements Constants{
     private double getDoubleArg(String[] args, int valueIndex, String argName, double min, double max) {
         double argument = 0;
         if(valueIndex>=args.length || ((args[valueIndex].charAt(0)) == '-')) {
-            System.out.println( argName + " requires a value between " + min + " and " + max);
+            die( argName + " requires a value between " + min + " and " + max);
         }
         try {
             argument = Double.parseDouble(args[valueIndex]);
             if(argument<min || argument>max) {
-                System.out.println(argName + " requires a value between " + min + " and " + max);
+                die(argName + " requires a value between " + min + " and " + max);
             }
         }catch(NumberFormatException nfe) {
-            System.out.println(argName + " requires a value between " + min + " and " + max);
+            die(argName + " requires a value between " + min + " and " + max);
         }
         return argument;
     }
