@@ -19,6 +19,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
 	private JTable table;
     private TaggerController tagControl;
 
+    private final static int NUM_COL = 0;
     private final static int NAME_COL = 1;
     private final static int INCLUDE_COL = 3;
     private final static int EXCLUDE_COL = 4;
@@ -71,7 +72,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         columnNames.add("Position");
         columnNames.add("Force Include");
         columnNames.add("Force Exclude");
-        columnNames.add("Tag this SNP?");
+        columnNames.add("Capture this Allele?");
 
         for (int i = 0; i < Chromosome.getSize(); i++){
             SNP tempSNP = Chromosome.getMarker(i);
@@ -90,7 +91,8 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         TagConfigTableModel tableModel = new TagConfigTableModel(columnNames,tableData);
         tableModel.addTableModelListener(this);
         table = new JTable(tableModel);
-        table.getColumnModel().getColumn(0).setPreferredWidth(30);
+        table.getColumnModel().getColumn(NUM_COL).setPreferredWidth(30);
+        table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(100);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setMaximumSize(scrollPane.getPreferredSize());
@@ -212,6 +214,9 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                             public void actionPerformed(ActionEvent e) {
                                 if(tagControl.isTaggingCompleted()) {
                                     runTaggerButton.setEnabled(true);
+                                    //the parent of this is a meta jpanel used to haxor the layout
+                                    //the parent of that jpanel is the jtabbedPane in the tagger tab of HV
+                                    ((JTabbedPane)(tcp.getParent().getParent())).setSelectedIndex(1);
                                     fireTaggerEvent(new ActionEvent(tcp,ActionEvent.ACTION_PERFORMED,"taggingdone"));
                                     timer.stop();
                                 }
