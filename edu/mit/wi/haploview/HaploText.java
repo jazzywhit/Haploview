@@ -128,6 +128,14 @@ public class HaploText implements Constants{
         boolean assocCC = false;
         permutationCount = 0;
 
+        double cutHighCI = -1;
+        double cutLowCI = -1;
+        double mafThresh = -1;
+        double recHighCI = -1;
+        double informFrac = -1;
+        double fourGameteCutoff = -1;
+        double spineDP = -1;
+
 
         for(int i =0; i < args.length; i++) {
             if(args[i].equalsIgnoreCase("-help") || args[i].equalsIgnoreCase("-h")) {
@@ -379,6 +387,34 @@ public class HaploText implements Constants{
                     i--;
                 }
             }
+            else if(args[i].equalsIgnoreCase("-blockCutHighCI")) {
+                i++;
+                cutHighCI = getDoubleArg(args,i,"-blockCutHighCI",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-blockCutLowCI")) {
+                i++;
+                cutLowCI = getDoubleArg(args,i,"-blockCutLowCI",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-blockMafThresh")) {
+                i++;
+                mafThresh = getDoubleArg(args,i,"-blockMafThresh",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-blockRecHighCI")) {
+                i++;
+                recHighCI = getDoubleArg(args,i,"-blockRecHighCI",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-blockInformFrac")) {
+                i++;
+                informFrac = getDoubleArg(args,i,"-blockInformFrac",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-block4GamCut")) {
+                i++;
+                fourGameteCutoff = getDoubleArg(args,i,"-block4GamCut",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-blockSpineDP")) {
+                i++;
+                spineDP = getDoubleArg(args,i,"-blockSpineDP",0,1);
+            }
             else if(args[i].equalsIgnoreCase("-permtests")) {
                 i++;
                 int permCount=0;
@@ -412,6 +448,10 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-tagrSqCutoff")) {
                 i++;
                 tagRSquaredCutOff = getDoubleArg(args,i,"-tagrSqCutoff",0,1);
+            }
+            else if(args[i].equalsIgnoreCase("-tagLODCutoff")) {
+                i++;
+                Options.setTaggerLODCutoff(getDoubleArg(args,i,"-tagLODCutoff",0,100000));
             }
             else if(args[i].equalsIgnoreCase("-includeTags")) {
                 i++; 
@@ -524,6 +564,29 @@ public class HaploText implements Constants{
         if(missingCutoff != -1) {
             Options.setMissingThreshold(missingCutoff);
             if (!quietMode) argHandlerMessages.add("Maximum amount of missing data allowed per individual = "+missingCutoff);
+        }
+
+        if(cutHighCI != -1) {
+            FindBlocks.cutHighCI = cutHighCI;
+        }
+
+        if(cutLowCI != -1) {
+            FindBlocks.cutLowCI = cutLowCI;
+        }
+        if(mafThresh != -1) {
+            FindBlocks.mafThresh = mafThresh;
+        }
+        if(recHighCI != -1) {
+            FindBlocks.recHighCI = recHighCI;
+        }
+        if(informFrac != -1) {
+            FindBlocks.informFrac = informFrac;
+        }
+        if(fourGameteCutoff != -1) {
+            FindBlocks.fourGameteCutoff = fourGameteCutoff;
+        }
+        if(spineDP != -1) {
+            FindBlocks.spineDP = spineDP;
         }
 
         if(assocTDT) {
