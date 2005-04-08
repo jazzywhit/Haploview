@@ -574,7 +574,7 @@ public class Tagger {
         }
     }
 
-    boolean debug = true;
+    boolean debug = false;
 
     void debugPrint(String s) {
         if(debug) {
