@@ -41,6 +41,7 @@ public class HaploText implements Constants{
     private String forceIncludeFileName;
     private Vector forceExcludeTags;
     private String forceExcludeFileName;
+    private Vector argHandlerMessages;
 
 
     public boolean isNogui() {
@@ -75,33 +76,35 @@ public class HaploText implements Constants{
         double argument = 0;
         if(valueIndex>=args.length || ((args[valueIndex].charAt(0)) == '-')) {
             System.out.println( argName + " requires a value between " + min + " and " + max);
-            System.exit(1);
         }
         try {
             argument = Double.parseDouble(args[valueIndex]);
             if(argument<min || argument>max) {
                 System.out.println(argName + " requires a value between " + min + " and " + max);
-                System.exit(1);
             }
         }catch(NumberFormatException nfe) {
             System.out.println(argName + " requires a value between " + min + " and " + max);
-            System.exit(1);
         }
         return argument;
     }
-
 
     public HaploText(String[] args) {
         this.argHandler(args);
 
         if(this.batchFileName != null) {
             System.out.println(TITLE_STRING);
+            for (int i = 0; i < argHandlerMessages.size(); i++){
+                System.out.println(argHandlerMessages.get(i));
+            }
             this.doBatch();
         }
 
         if(!(this.pedFileName== null) || !(this.hapsFileName== null) || !(this.hapmapFileName== null)){
             if(nogui){
                 System.out.println(TITLE_STRING);
+                for (int i = 0; i < argHandlerMessages.size(); i++){
+                    System.out.println(argHandlerMessages.get(i));
+                }
                 processTextOnly();
             }
         }
@@ -110,6 +113,7 @@ public class HaploText implements Constants{
 
     private void argHandler(String[] args){
 
+        argHandlerMessages = new Vector();
         int maxDistance = -1;
         //this means that user didn't specify any output type if it doesn't get changed below
         blockOutputType = -1;
@@ -136,19 +140,17 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-p") || args[i].equalsIgnoreCase("-pedfile")) {
                 i++;
                 if( i>=args.length || (args[i].charAt(0) == '-')){
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
                 else{
                     if(pedFileName != null){
-                        System.out.println("multiple "+args[i-1] + " arguments found. only last pedfile listed will be used");
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last pedfile listed will be used");
                     }
                     pedFileName = args[i];
                 }
             }
             else if (args[i].equalsIgnoreCase("-pcloadletter")){
-                System.err.println("PC LOADLETTER?! What the fuck does that mean?!");
-                System.exit(31337);
+                die("PC LOADLETTER?! What the fuck does that mean?!");
             }
             else if (args[i].equalsIgnoreCase("-skipcheck") || args[i].equalsIgnoreCase("--skipcheck")){
                 skipCheck = true;
@@ -156,13 +158,13 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-excludeMarkers")){
                 i++;
                 if(i>=args.length || (args[i].charAt(0) == '-')){
-                    System.out.println("-excludeMarkers requires a list of markers");
-                    System.exit(1);
+                    die("-excludeMarkers requires a list of markers");
                 }
                 else {
                     StringTokenizer str = new StringTokenizer(args[i],",");
                     try {
-                        if (!quietMode) System.out.print("Excluding markers: ");
+                        StringBuffer sb = new StringBuffer();
+                        if (!quietMode) sb.append("Excluding markers: ");
                         while(str.hasMoreTokens()) {
                             String token = str.nextToken();
                             if(token.indexOf("..") != -1) {
@@ -170,30 +172,28 @@ public class HaploText implements Constants{
                                 int rangeStart = Integer.parseInt(token.substring(0,lastIndex));
                                 int rangeEnd = Integer.parseInt(token.substring(lastIndex+2,token.length()));
                                 for(int j=rangeStart;j<=rangeEnd;j++) {
-                                    if (!quietMode) System.out.print(j+" ");
+                                    if (!quietMode) sb.append(j+" ");
                                     excludedMarkers.add(new Integer(j));
                                 }
                             } else {
-                                if (!quietMode) System.out.println(token+" ");
+                                if (!quietMode) sb.append(token+" ");
                                 excludedMarkers.add(new Integer(token));
                             }
                         }
-                        if (!quietMode) System.out.println();
+                        if (!quietMode) argHandlerMessages.add(sb.toString());
                     } catch(NumberFormatException nfe) {
-                        System.out.println("-excludeMarkers argument should be of the format: 1,3,5..8,12");
-                        System.exit(1);
+                        die("-excludeMarkers argument should be of the format: 1,3,5..8,12");
                     }
                 }
             }
             else if(args[i].equalsIgnoreCase("-ha") || args[i].equalsIgnoreCase("-l") || args[i].equalsIgnoreCase("-haps")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
                 else{
                     if(hapsFileName != null){
-                        System.out.println("multiple "+args[i-1] + " arguments found. only last haps file listed will be used");
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last haps file listed will be used");
                     }
                     hapsFileName = args[i];
                 }
@@ -201,24 +201,22 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-i") || args[i].equalsIgnoreCase("-info")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
                 else{
                     if(infoFileName != null){
-                        System.out.println("multiple "+args[i-1] + " arguments found. only last info file listed will be used");
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last info file listed will be used");
                     }
                     infoFileName = args[i];
                 }
             } else if (args[i].equalsIgnoreCase("-a") || args[i].equalsIgnoreCase("-hapmap")){
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
                 else{
                     if(hapmapFileName != null){
-                        System.out.println("multiple "+args[i-1] + " arguments found. only last hapmap file listed will be used");
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last hapmap file listed will be used");
                     }
                     hapmapFileName = args[i];
                 }
@@ -229,8 +227,7 @@ public class HaploText implements Constants{
                     blockFileName = args[i];
                     blockOutputType = BLOX_CUSTOM;
                 }else{
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
             }
             else if (args[i].equalsIgnoreCase("-png")){
@@ -244,16 +241,14 @@ public class HaploText implements Constants{
                 if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
                    trackFileName = args[i];
                 }else{
-                    System.out.println("-track requires a filename");
-                    System.exit(1);
+                    die("-track requires a filename");
                 }
             }
             else if(args[i].equalsIgnoreCase("-o") || args[i].equalsIgnoreCase("-output") || args[i].equalsIgnoreCase("-blockoutput")) {
                 i++;
                 if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
                     if(blockOutputType != -1){
-                        System.out.println("only one output argument is allowed");
-                        System.exit(1);
+                        die("Only one block output type argument is allowed.");
                     }
                     if(args[i].equalsIgnoreCase("SFS") || args[i].equalsIgnoreCase("GAB")){
                         blockOutputType = BLOX_GABRIEL;
@@ -283,23 +278,19 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-m") || args[i].equalsIgnoreCase("-maxdistance")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println(args[i-1] + " requires an integer argument");
-                    System.exit(1);
+                    die(args[i-1] + " requires an integer argument");
                 }
                 else {
                     if(maxDistance != -1){
-                        System.out.println("only one "+args[i-1] + " argument allowed");
-                        System.exit(1);
+                        die("only one "+args[i-1] + " argument allowed");
                     }
                     try {
                         maxDistance = Integer.parseInt(args[i]);
                         if(maxDistance<0){
-                            System.out.println(args[i-1] + " argument must be a positive integer");
-                            System.exit(1);
+                            die(args[i-1] + " argument must be a positive integer");
                         }
                     } catch(NumberFormatException nfe) {
-                        System.out.println(args[i-1] + " argument must be a positive integer");
-                        System.exit(1);
+                        die(args[i-1] + " argument must be a positive integer");
                     }
                 }
             }
@@ -307,12 +298,11 @@ public class HaploText implements Constants{
                 //batch mode
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
                 else{
                     if(batchFileName != null){
-                        System.out.println("multiple " + args[i-1] +  " arguments found. only last batch file listed will be used");
+                        argHandlerMessages.add("multiple " + args[i-1] +  " arguments found. only last batch file listed will be used");
                     }
                     batchFileName = args[i];
                 }
@@ -340,19 +330,16 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-maxMendel") ) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println("-maxMendel requires an integer argument");
-                    System.exit(1);
+                    die("-maxMendel requires an integer argument");
                 }
                 else {
                     try {
                         maxMendel = Integer.parseInt(args[i]);
                         if(maxMendel<0){
-                            System.out.println("-maxMendel argument must be a positive integer");
-                            System.exit(1);
+                            die("-maxMendel argument must be a positive integer");
                         }
                     } catch(NumberFormatException nfe) {
-                        System.out.println("-maxMendel argument must be a positive integer");
-                        System.exit(1);
+                        die("-maxMendel argument must be a positive integer");
                     }
                 }
             }
@@ -396,19 +383,16 @@ public class HaploText implements Constants{
                 i++;
                 int permCount=0;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    System.out.println("-permtests requires an integer argument");
-                    System.exit(1);
+                    die("-permtests requires an integer argument");
                 }
                 else {
                     try {
                         permCount = Integer.parseInt(args[i]);
                         if(permCount<0){
-                            System.out.println("-permtests argument must be a positive integer");
-                            System.exit(1);
+                            die("-permtests argument must be a positive integer");
                         }
                     } catch(NumberFormatException nfe) {
-                        System.out.println("-permtests argument must be a positive integer");
-                        System.exit(1);
+                        die("-permtests argument must be a positive integer");
                     }
                 }
                 doPermutationTest = true;
@@ -419,8 +403,7 @@ public class HaploText implements Constants{
                 if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
                     customAssocTestsFileName = args[i];
                 }else{
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
             }
             else if(args[i].equalsIgnoreCase("-doTagging")) {
@@ -433,8 +416,7 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-includeTags")) {
                 i++; 
                 if(i>=args.length || args[i].charAt(0) == '-') {
-                    System.out.println(args[i-1] + " requires a list of marker names.");
-                    System.exit(1);
+                    die(args[i-1] + " requires a list of marker names.");
                 }
                 StringTokenizer str = new StringTokenizer(args[i],",");
                 forceIncludeTags = new Vector();
@@ -447,15 +429,13 @@ public class HaploText implements Constants{
                 if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
                     forceIncludeFileName =args[i];
                 }else {
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
             }
             else if(args[i].equalsIgnoreCase("-excludeTags")) {
                 i++;
                 if(i>=args.length || args[i].charAt(0) == '-') {
-                    System.out.println("-excludeTags requires a list of marker names.");
-                    System.exit(1);
+                    die("-excludeTags requires a list of marker names.");
                 }
                 StringTokenizer str = new StringTokenizer(args[i],",");
                 forceExcludeTags = new Vector();
@@ -468,16 +448,14 @@ public class HaploText implements Constants{
                 if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
                     forceExcludeFileName =args[i];
                 }else {
-                    System.out.println(args[i-1] + " requires a filename");
-                    System.exit(1);
+                    die(args[i-1] + " requires a filename");
                 }
             }
             else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
             }
             else {
-                System.out.println("invalid parameter specified: " + args[i]);
-                System.exit(1);
+                die("invalid parameter specified: " + args[i]);
             }
         }
 
@@ -495,59 +473,57 @@ public class HaploText implements Constants{
             countOptions++;
         }
         if(countOptions > 1) {
-            System.out.println("Only one genotype input file may be specified on the command line.");
-            System.exit(1);
+            die("Only one genotype input file may be specified on the command line.");
         }
         else if(countOptions == 0 && nogui) {
-            System.out.println("You must specify a genotype input file.");
-            System.exit(1);
+            die("You must specify a genotype input file.");
         }
 
         //mess with vars, set defaults, etc
         if(skipCheck && !quietMode) {
-            System.out.println("Skipping genotype file check");
+            argHandlerMessages.add("Skipping genotype file check");
         }
         if(maxDistance == -1){
             maxDistance = 500;
         }else{
-            if (!quietMode) System.out.println("Max LD comparison distance = " +maxDistance);
+            if (!quietMode) argHandlerMessages.add("Max LD comparison distance = " +maxDistance);
         }
 
         Options.setMaxDistance(maxDistance);
 
         if(hapThresh != -1) {
             Options.setHaplotypeDisplayThreshold((int)(hapThresh*100));
-            if (!quietMode) System.out.println("Haplotype display threshold = " + hapThresh);
+            if (!quietMode) argHandlerMessages.add("Haplotype display threshold = " + hapThresh);
         }
         
         if(minimumMAF != -1) {
             CheckData.mafCut = minimumMAF;
-            if (!quietMode) System.out.println("Minimum MAF = " + minimumMAF);
+            if (!quietMode) argHandlerMessages.add("Minimum MAF = " + minimumMAF);
         }
 
         if(minimumGenoPercent != -1) {
             CheckData.failedGenoCut = (int)(minimumGenoPercent*100);
-            if (!quietMode) System.out.println("Minimum SNP genotype % = " + minimumGenoPercent);
+            if (!quietMode) argHandlerMessages.add("Minimum SNP genotype % = " + minimumGenoPercent);
         }
 
         if(hwCutoff != -1) {
             CheckData.hwCut = hwCutoff;
-            if (!quietMode) System.out.println("Hardy Weinberg equilibrium p-value cutoff = " + hwCutoff);
+            if (!quietMode) argHandlerMessages.add("Hardy Weinberg equilibrium p-value cutoff = " + hwCutoff);
         }
 
         if(maxMendel != -1) {
             CheckData.numMendErrCut = maxMendel;
-            if (!quietMode) System.out.println("Maximum number of Mendel errors = "+maxMendel);
+            if (!quietMode) argHandlerMessages.add("Maximum number of Mendel errors = "+maxMendel);
         }
 
         if(spacingThresh != -1) {
             Options.setSpacingThreshold(spacingThresh);
-            if (!quietMode) System.out.println("LD display spacing value = "+spacingThresh);
+            if (!quietMode) argHandlerMessages.add("LD display spacing value = "+spacingThresh);
         }
 
         if(missingCutoff != -1) {
             Options.setMissingThreshold(missingCutoff);
-            if (!quietMode) System.out.println("Maximum amount of missing data allowed per individual = "+missingCutoff);
+            if (!quietMode) argHandlerMessages.add("Maximum amount of missing data allowed per individual = "+missingCutoff);
         }
 
         if(assocTDT) {
@@ -559,33 +535,28 @@ public class HaploText implements Constants{
 
         if(doPermutationTest) {
             if(!assocCC && !assocTDT) {
-                System.out.println("An association test type must be specified for permutation tests to be performed.");
-                System.exit(1);
+                die("An association test type must be specified for permutation tests to be performed.");
             }
         }
 
         if(customAssocTestsFileName != null) {
             if(!assocCC && !assocTDT) {
-                System.out.println("An association test type must be specified when using a custom association test file.");
-                System.exit(1);
+                die("An association test type must be specified when using a custom association test file.");
             }
             if(infoFileName == null) {
-                System.out.println("A marker info file must be specified when using a custom association test file.");
-                System.exit(1);
+                die("A marker info file must be specified when using a custom association test file.");
             }
         }
 
         if(doTagging) {
             if(infoFileName == null && hapmapFileName == null) {
-                System.out.println("A marker info file must be specified when using -doTagging");
-                System.exit(1);
+                die("A marker info file must be specified when using -doTagging");
             }
 
             if(forceExcludeTags == null) {
                 forceExcludeTags = new Vector();
             } else if (forceExcludeFileName != null) {
-                System.out.println("-excludeTags and -excludeTagsFile cannot both be used");
-                System.exit(1);
+                die("-excludeTags and -excludeTagsFile cannot both be used");
             }
 
             if(forceExcludeFileName != null) {
@@ -601,16 +572,14 @@ public class HaploText implements Constants{
                         }
                     }
                 }catch(IOException ioe) {
-                    System.out.println("An error occured while reading the file specified by -excludeTagsFile.");
-                    System.exit(1);
+                    die("An error occured while reading the file specified by -excludeTagsFile.");
                 }
             }
 
             if(forceIncludeTags == null ) {
                 forceIncludeTags = new Vector();
             } else if (forceIncludeFileName != null) {
-                System.out.println("-includeTags and -includeTagsFile cannot both be used");
-                System.exit(1);
+                die("-includeTags and -includeTagsFile cannot both be used");
             }
 
             if(forceIncludeFileName != null) {
@@ -626,8 +595,7 @@ public class HaploText implements Constants{
                         }
                     }
                 }catch(IOException ioe) {
-                    System.out.println("An error occured while reading the file specified by -includeTagsFile.");
-                    System.exit(1);
+                    die("An error occured while reading the file specified by -includeTagsFile.");
                 }
             }
 
@@ -640,8 +608,7 @@ public class HaploText implements Constants{
                     String s = (String) tempInclude.elementAt(i);
                     sb.append(s).append(",");
                 }
-                System.out.println("Fatal error: The following markers appear in both the include and exclude lists: " + sb.toString());
-                System.exit(1);
+                die("The following markers appear in both the include and exclude lists: " + sb.toString());
             }
 
             if(tagRSquaredCutOff != -1) {
@@ -649,12 +616,16 @@ public class HaploText implements Constants{
             }
 
         } else if(forceExcludeTags != null || forceIncludeTags != null || tagRSquaredCutOff != -1) {
-            System.out.println("-tagrSqCutoff, -excludeTags, -excludeTagsFile, -includeTags and -includeTagsFile cannot be used without -doTagging");
-            System.exit(1);
+            die("-tagrSqCutoff, -excludeTags, -excludeTagsFile, -includeTags and -includeTagsFile cannot be used without -doTagging");
         }
 
     }
 
+    private void die(String msg){
+        System.err.println(TITLE_STRING + " Fatal Error");
+        System.err.println(msg);
+        System.exit(1);
+    }
 
     private void doBatch() {
         Vector files;
@@ -738,7 +709,6 @@ public class HaploText implements Constants{
         if (!quietMode) System.out.println("Writing output to "+f.getName());
         return f;
     }
-
 
     /**
      * this method finds haplotypes and caclulates dprime without using any graphics
@@ -858,7 +828,7 @@ public class HaploText implements Constants{
             for (int i = 0; i < excludedMarkers.size(); i++){
                 int cur = ((Integer)excludedMarkers.elementAt(i)).intValue();
                 if (cur < 1 || cur > markerResults.length){
-                    System.out.println("Excluded marker out of bounds has been ignored: " + cur +
+                    System.out.println("Excluded marker out of bounds: " + cur +
                             "\nMarkers must be between 1 and N, where N is the total number of markers.");
                     System.exit(1);
                 }else{
