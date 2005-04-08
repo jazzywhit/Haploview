@@ -14,14 +14,13 @@ public class TaggerController {
     private HaploData theData;
     private Tagger tagger;
     private Vector results;
-    private Vector taggerSNPs;
     private boolean taggingCompleted;
     private Hashtable snpHash;
 
     public TaggerController(HaploData hd, Vector included, Vector excluded,
                             Vector sitesToCapture, int aggressionLevel) {
         theData = hd;
-        taggerSNPs = new Vector();
+        Vector taggerSNPs = new Vector();
 
         snpHash = new Hashtable();
 
@@ -77,10 +76,6 @@ public class TaggerController {
         tagThread.start();
     }
 
-    public Vector getTaggerSNPs() {
-        return (Vector) taggerSNPs.clone();
-    }
-
     public int getTaggedSoFar() {
         return tagger.taggedSoFar;
     }
@@ -127,6 +122,10 @@ public class TaggerController {
 
     public Vector getResults() {
         return results;
+    }
+
+    public int getNumTagSNPs(){
+        return tagger.getTagSNPs().size();
     }
 
     public void saveResultsToFile(File outFile) throws IOException {

@@ -185,8 +185,6 @@ public class Tagger {
 
         Vector sitesToCapture = (Vector) snps.clone();
 
-        Iterator potItr = sitesToCapture.iterator();
-
         debugPrint("snps to tag: " + sitesToCapture.size());
 
         Vector potentialTags = new Vector(potentialTagHash.values());
@@ -485,6 +483,19 @@ public class Tagger {
         return tags;
     }
 
+    public Vector getTagSNPs(){
+        Vector res = new Vector();
+        Iterator itr = tags.iterator();
+        while (itr.hasNext()){
+            TagSequence t = (TagSequence) itr.next();
+            if (t.getSequence() instanceof SNP){
+                res.add(t);
+            }
+        }
+
+        return res;
+    }
+
     public Vector getForceInclude() {
         return forceInclude;
     }
@@ -582,5 +593,4 @@ public class Tagger {
             System.out.println(s);
         }
     }
-
 }

@@ -79,11 +79,17 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         Font defaultFont = tagLabel.getFont();
         //make the word 'tests' nice and big.
         tagLabel.setFont(new Font(defaultFont.getName(),Font.BOLD,(int)(defaultFont.getSize()*1.5)));
+        tagLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         topListPanel.add(tagLabel);
+
+        topListPanel.add(Box.createRigidArea(new Dimension(0,10)));
+
         topListPanel.add(listScrollPane);
         if (forceIncluded.size() > 0){
-            //let them know why some are in bold 
-            topListPanel.add(new JLabel("(forced-in markers shown in bold)"));
+            //let them know why some are in bold
+            JLabel forceLabel = new JLabel("(forced-in markers shown in bold)");
+            forceLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            topListPanel.add(forceLabel);
         }
 
         DefaultListModel taggedListModel = new DefaultListModel();
@@ -103,10 +109,14 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
         listsPanel.add(bottomListPanel);
 
-        String resString = "Captured " + t.getTaggedSoFar() + " alleles using " + t.getResults().size() + " tests.";
-        JLabel resultsLabel = new JLabel(resString);
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
-        listsPanel.add(resultsLabel);
+
+        JLabel capLabel = new JLabel("Captured " + t.getTaggedSoFar() + " alleles.");
+        listsPanel.add(capLabel);
+
+        JLabel useLabel = new JLabel("Using " +t.getNumTagSNPs() + " SNPs in " + t.getResults().size() + " tests.");
+        listsPanel.add(useLabel);
+
         if(t.getUntaggableCount() > 0) {
             String cantTag = "Unable to capture " + t.getUntaggableCount() + " alleles (shown in red).";
             JLabel cantTagLabel = new JLabel(cantTag);
