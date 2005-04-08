@@ -15,7 +15,6 @@ import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 
 public class HaploText implements Constants{
-
     private boolean nogui = false;
     private String batchFileName;
     private String hapsFileName;
@@ -35,7 +34,7 @@ public class HaploText implements Constants{
     private boolean outputCompressedPNG;
     private boolean doPermutationTest;
     private int permutationCount;
-    private boolean doTagging;
+    private int tagging;
     private double tagRSquaredCutOff = -1;
     private Vector forceIncludeTags;
     private String forceIncludeFileName;
@@ -127,6 +126,7 @@ public class HaploText implements Constants{
         boolean assocTDT = false;
         boolean assocCC = false;
         permutationCount = 0;
+        tagging = Tagger.NONE;
 
         double cutHighCI = -1;
         double cutLowCI = -1;
@@ -442,8 +442,11 @@ public class HaploText implements Constants{
                     die(args[i-1] + " requires a filename");
                 }
             }
-            else if(args[i].equalsIgnoreCase("-doTagging")) {
-                doTagging = true;
+            else if(args[i].equalsIgnoreCase("-aggressiveTagging")) {
+                tagging = Tagger.AGGRESSIVE_TRIPLE;
+            }
+            else if (args[i].equalsIgnoreCase("-pairwiseTagging")){
+                tagging = Tagger.PAIRWISE_ONLY;
             }
             else if(args[i].equalsIgnoreCase("-tagrSqCutoff")) {
                 i++;
@@ -611,7 +614,7 @@ public class HaploText implements Constants{
             }
         }
 
-        if(doTagging) {
+        if(tagging != Tagger.NONE) {
             if(infoFileName == null && hapmapFileName == null) {
                 die("A marker info file must be specified when using -doTagging");
             }
@@ -1110,7 +1113,7 @@ public class HaploText implements Constants{
             }
 
 
-            if(doTagging) {
+            if(tagging != Tagger.NONE) {
 
                 if(textData.dpTable == null) {
                     textData.generateDPrimeTable();
@@ -1156,7 +1159,7 @@ public class HaploText implements Constants{
                 }
 
                 TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture,
-                        Tagger.AGGRESSIVE_TRIPLE);
+                        tagging);
                 tc.runTagger();
 
                 while(!tc.isTaggingCompleted()) {

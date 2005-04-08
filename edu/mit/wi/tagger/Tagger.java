@@ -9,6 +9,7 @@ public class Tagger {
     public static final int PAIRWISE_ONLY = 0;
     public static final int AGGRESSIVE_DUPLE = 1;
     public static final int AGGRESSIVE_TRIPLE = 2;
+    public static final int NONE = 4;
     private static final long DEFAULT_MAXDIST = 500000;
 
     //vector of SNP objects, which contains every SNP (tags and non-tags)
