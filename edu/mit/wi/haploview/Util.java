@@ -20,4 +20,9 @@ public abstract class Util {
         String formattedNumber =  df.format(pval, new StringBuffer(), new FieldPosition(NumberFormat.INTEGER_FIELD)).toString();
         return formattedNumber;
     }
+
+    public static double roundDouble (double d, int places){
+        double factor = Math.pow(10,places);
+        return Math.rint(d*factor)/factor;
+    }
 }

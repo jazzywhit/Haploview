@@ -15,6 +15,7 @@ import edu.mit.wi.tagger.*;
 import edu.mit.wi.haploview.Chromosome;
 import edu.mit.wi.haploview.BasicTableModel;
 import edu.mit.wi.haploview.HaploView;
+import edu.mit.wi.haploview.Util;
 
 public class TaggerResultsPanel extends JPanel implements ListSelectionListener, ActionListener{
     private JList tagList;
@@ -39,9 +40,18 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         colNames.add("r\u00b2");
 
 
+        double sum = 0;
+        int count = 0;
         for (int i = 0; i < Chromosome.getSize(); i++){
-            tableData.add(t.getMarkerTagDetails(i));
+            Vector v = t.getMarkerTagDetails(i);
+            if (!v.elementAt(2).equals("")){
+                sum += Double.valueOf((String)v.get(2)).doubleValue();
+                count++;
+            }
+            tableData.add(v);
         }
+
+        double meanrsq = sum/count;
 
         BasicTableModel btm = new BasicTableModel(colNames, tableData);
         markerTable = new JTable(btm);
@@ -49,8 +59,6 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         markerTable.setDefaultRenderer(String.class,gor);
 
         JScrollPane tableScroller = new JScrollPane(markerTable);
-        JPanel markerPanel = new JPanel();
-        markerPanel.add(tableScroller);
 
         tags = t.getResults();
         forceIncluded = new Vector();
@@ -111,7 +119,8 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
 
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
 
-        JLabel capLabel = new JLabel("Captured " + t.getTaggedSoFar() + " alleles.");
+        JLabel capLabel = new JLabel("Captured " + t.getTaggedSoFar() +
+                " alleles with mean r\u00b2 of " + Util.roundDouble(meanrsq,3));
         listsPanel.add(capLabel);
 
         JLabel useLabel = new JLabel("Using " +t.getNumTagSNPs() + " SNPs in " + t.getResults().size() + " tests.");
@@ -128,14 +137,13 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         dumpTestsButton.setActionCommand("dump");
         dumpTestsButton.addActionListener(this);
         listsPanel.add(dumpTestsButton);
+        listsPanel.add(Box.createRigidArea(new Dimension(0,5)));
 
-
-        JPanel bufferPanel = new JPanel();
-        bufferPanel.add(listsPanel);
-
-        add(bufferPanel);
+        add(listsPanel);
+        add(Box.createRigidArea(new Dimension(5,0)));
         add(new JSeparator(JSeparator.VERTICAL));
-        add(markerPanel);
+        add(Box.createRigidArea(new Dimension(5,0)));
+        add(tableScroller);
         refresh();
     }
 

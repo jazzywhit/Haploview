@@ -68,7 +68,7 @@ public abstract class AssociationResult implements Constants{
         if (chiSquares == null || i >= chiSquares.size()){
             return 0;
         }
-        double formattedCS = Math.rint(((Double)chiSquares.get(i)).doubleValue()*1000.0)/1000.0;
+        double formattedCS = Util.roundDouble(((Double)chiSquares.get(i)).doubleValue(),3);
         return formattedCS;
     }
 

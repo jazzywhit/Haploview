@@ -109,7 +109,7 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
                 double p = aa+ab;
                 double q = ba+aa;
                 //round to 5 decimal places.
-                double rsq = ((double)Math.round(100000*Math.pow((aa*bb - ab*ba),2)/(p*(1-p)*q*(1-q))))/100000;
+                double rsq = Util.roundDouble(Math.pow((aa*bb - ab*ba),2)/(p*(1-p)*q*(1-q)),3);
                 if (rsq > curBestRsq){
                     curBestAllele = new Allele(theBlock,curHapStr);
                     curBestRsq = rsq;

@@ -325,9 +325,9 @@ public class HaploData implements Constants{
 
                 double maf;
                 if (mr != null){
-                    maf = Math.rint(mr.getMAF()*100.0)/100.0;
+                    maf = Util.roundDouble(mr.getMAF(),3);
                 }else{
-                    maf = Math.rint(100.0*(numa2/(numa1+numa2)))/100.0;
+                    maf = Util.roundDouble((numa2/(numa1+numa2)),3);
                 }
 
                 if (infoKnown){
@@ -1521,7 +1521,8 @@ public class HaploData implements Constants{
 
         double[] freqarray = {probHaps[AA], probHaps[AB], probHaps[BB], probHaps[BA]};
 
-        return new PairwiseLinkage(roundDouble(dprime), roundDouble((loglike1-loglike0)), roundDouble(rsq), ((double)low_i/100.0), ((double)high_i/100.0), freqarray);
+        return new PairwiseLinkage(Util.roundDouble(dprime,3), Util.roundDouble((loglike1-loglike0),2),
+                Util.roundDouble(rsq,3), ((double)low_i/100.0), ((double)high_i/100.0), freqarray);
     }
 
     public void count_haps(int em_round){
@@ -1549,11 +1550,7 @@ public class HaploData implements Constants{
         probHaps[BB]=(numHaps[BB]+const_prob)/total; if (probHaps[BB] < 1e-10) probHaps[BB]=1e-10;
     }
 
-    public double roundDouble (double d){
-        return Math.rint(d*100.0)/100.0;
-    }
-
-    public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,
+public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,
                                File saveHapsFile) throws IOException{
 
         if (finishedHaplos == null) return;
@@ -1770,7 +1767,7 @@ public class HaploData implements Constants{
                                 }
                             }
                         }
-                        tInt = String.valueOf(roundDouble(LODSum));
+                        tInt = String.valueOf(Util.roundDouble(LODSum,2));
                     }
                     if (infoKnown){
                         dist = (Chromosome.getMarker(j)).getPosition() - (Chromosome.getMarker(i)).getPosition();

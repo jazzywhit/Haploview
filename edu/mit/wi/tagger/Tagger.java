@@ -37,8 +37,6 @@ public class Tagger {
 
     public int taggedSoFar;
 
-
-
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac){
         this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST);
     }
@@ -205,6 +203,7 @@ public class Tagger {
 
         ListIterator uitr = untagged.listIterator();
 
+        //try to tag things that weren't taggable in pairwise with haps
         while(uitr.hasNext()) {
             SNP curSnp = (SNP) uitr.next();
             HashSet comprehensiveBlock = new HashSet();
