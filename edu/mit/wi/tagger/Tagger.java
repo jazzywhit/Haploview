@@ -1,5 +1,7 @@
 package edu.mit.wi.tagger;
 
+import edu.mit.wi.haploview.Util;
+
 import java.util.*;
 import java.io.*;
 
@@ -24,6 +26,8 @@ public class Tagger {
     private Vector forceExclude;
 
     private AlleleCorrelator alleleCorrelator;
+    private double meanRSq;
+    private int percentOver8;
     private double minRSquared;
     private int aggression;
     //maximum comparison distance
@@ -185,6 +189,25 @@ public class Tagger {
             Collections.reverse(tags2BPeeled);
             peelBack(tags2BPeeled);
         }
+
+        int count = 0;
+        double numOver8 = 0;
+        meanRSq = 0;
+        Iterator itr = snps.iterator();
+        while (itr.hasNext()){
+            SNP s = (SNP) itr.next();
+            TagSequence ts = s.getBestTag();
+            if (ts != null){
+                double d = getPairwiseComp(s, ts.getSequence()).getRsq();
+                meanRSq += d;
+                count++;
+                if (d >= 0.8){
+                    numOver8++;
+                }
+            }
+        }
+        meanRSq /= count;
+        percentOver8 = (int) Math.rint((100*numOver8) / count);
 
         return new Vector(tags);
     }
@@ -504,6 +527,12 @@ public class Tagger {
 
         bw.write("#tagging with r^2 cutoff: " + minRSquared);
         bw.newLine();
+        bw.write("#tagged " + taggedSoFar + " alleles with mean r^2 of " + Util.roundDouble(meanRSq, 3));
+        bw.newLine();
+        bw.write("#captured " + percentOver8 + " percent of alleles with r^2 > 0.8");
+        bw.newLine();
+        bw.write("#using " + getTagSNPs().size() + " SNPs in " + tags.size() + " tests.");
+        bw.newLine();
 
         bw.write("Marker\tBest Tag\tr^2 w/tag");
         bw.newLine();
@@ -577,4 +606,11 @@ public class Tagger {
         }
     }
 
+    public double getMeanRSq() {
+        return meanRSq;
+    }
+
+    public int getFracOver8() {
+        return percentOver8;
+    }
 }

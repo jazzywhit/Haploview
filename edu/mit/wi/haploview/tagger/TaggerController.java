@@ -99,7 +99,7 @@ public class TaggerController {
             TagSequence bestTag = ts.getBestTag();
             if(bestTag != null) {
                 res.add(bestTag.getName());
-                res.add(String.valueOf(tagger.getPairwiseCompRsq(ts,ts.getBestTag().getSequence())));
+                res.add(String.valueOf(tagger.getPairwiseCompRsq(ts,bestTag.getSequence())));
             } else {
                 res.add("Untaggable");
                 res.add(new String());
@@ -147,5 +147,13 @@ public class TaggerController {
             results = tagger.findTags();
             taggingFinished();
         }
+    }
+
+    public double getMeanRSq(){
+        return tagger.getMeanRSq();
+    }
+
+    public int getFracOver8(){
+        return tagger.getFracOver8();
     }
 }

@@ -40,18 +40,10 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         colNames.add("r\u00b2");
 
 
-        double sum = 0;
-        int count = 0;
         for (int i = 0; i < Chromosome.getSize(); i++){
             Vector v = t.getMarkerTagDetails(i);
-            if (!v.elementAt(2).equals("")){
-                sum += Double.valueOf((String)v.get(2)).doubleValue();
-                count++;
-            }
             tableData.add(v);
         }
-
-        double meanrsq = sum/count;
 
         BasicTableModel btm = new BasicTableModel(colNames, tableData);
         markerTable = new JTable(btm);
@@ -120,8 +112,10 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
 
         JLabel capLabel = new JLabel("Captured " + t.getTaggedSoFar() +
-                " alleles with mean r\u00b2 of " + Util.roundDouble(meanrsq,3));
+                " alleles with mean r\u00b2 of " + Util.roundDouble(t.getMeanRSq(),3));
         listsPanel.add(capLabel);
+
+        listsPanel.add(new JLabel("Captured " + t.getFracOver8() + " percent of alleles with r\u00b2 > 0.8"));
 
         JLabel useLabel = new JLabel("Using " +t.getNumTagSNPs() + " SNPs in " + t.getResults().size() + " tests.");
         listsPanel.add(useLabel);
