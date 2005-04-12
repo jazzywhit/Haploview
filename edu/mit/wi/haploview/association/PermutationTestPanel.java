@@ -101,7 +101,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         bestObsValueLabel = new JLabel("");
         bestObsPanel.add(bestObsTextLabel);
         bestObsPanel.add(bestObsValueLabel);
-        bestObsPanel.setMaximumSize(bestObsPanel.getPreferredSize());
+        bestObsPanel.setMaximumSize(new Dimension(400,bestObsPanel.getPreferredSize().height));
         this.add(bestObsPanel);
 
         bestPermPanel = new JPanel();
@@ -109,7 +109,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         bestPermutationValueLabel = new JLabel("");
         bestPermPanel.add(bestPermTextLabel);
         bestPermPanel.add(bestPermutationValueLabel);
-        bestPermPanel.setMaximumSize(bestPermPanel.getPreferredSize());
+        bestPermPanel.setMaximumSize(new Dimension(400,bestPermPanel.getPreferredSize().height));        
         this.add(bestPermPanel);
 
 
@@ -198,9 +198,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         stopPermutationsButton.setEnabled(false);
         this.remove(permProgressBar);
         bestObsValueLabel.setText(testSet.getBestObsChiSq() + " (" + testSet.getBestObsName() + ")");
-        bestObsPanel.setMaximumSize(bestObsPanel.getPreferredSize());
         bestPermutationValueLabel.setText(String.valueOf(testSet.getBestPermChiSquare()));
-        bestPermPanel.setMaximumSize(bestPermPanel.getPreferredSize());
         makeTable();
         resultsPanel.revalidate();
         finishedPerms = true;
@@ -281,7 +279,6 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
                     scoreBoardNumTotalLabel.setText(String.valueOf(testSet.getPermutationsPerformed()));
                     scoreBoardNumPassLabel.setText(String.valueOf(testSet.getBestExceededCount()));
                     bestPermutationValueLabel.setText(String.valueOf(testSet.getBestPermChiSquare()));
-                    bestPermPanel.setMaximumSize(bestPermPanel.getPreferredSize());                    
                     sleep(200);
                 }
             } catch(InterruptedException ie) {}
