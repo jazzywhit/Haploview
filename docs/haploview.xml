@@ -116,7 +116,7 @@
 	<title>Duplicate Markers </title>
 	<para>
 	  If two markers in an input file have the same chromosomal
-	  position, Haploview will by ignore the less completely
+	  position, Haploview will ignore the less completely
 	  genotyped marker by default and highlight both in yellow on
 	  the check markers panel. When running in nogui mode
 	  Haploview always ignores the less completely genotyped
@@ -124,6 +124,9 @@
 	  to use both from the command line, you'll need to adjust one
 	  of the positions.
 	  </para>
+
+	<para>
+If two markers in an input file have the same name, Haploview renames the second one in the file by appending ".X" to the filename, where "X" is a running integer count starting with 1. So if you have marker1, marker1 and marker2, Haploview would adjust this to: marker1, marker1.1 and marker2. Note that if the markers with the same name have different positions, Haploview won't deselect any of them; if they do have identical positions, it will filter all but one out as described above.</para>
       </section>
       
       <section>
@@ -473,6 +476,146 @@
       </section>
       
     </section>
+
+    <section id="tagger">
+      <title>Tagger</title>
+      <section><title>Introduction</title>
+
+	<para>
+We have developed a tagging strategy that combines the simplicity of
+pairwise methods with the potential efficiency of multimarker
+approaches. We avoid overfitting and unbounded haplotype tests in the
+association phase by (<emphasis>a</emphasis>) using only those multiallelic combinations in
+which the alleles are themselves in strong LD, and (<emphasis>b</emphasis>) explicitly
+recording the allelic hypotheses that are to be tested in the
+subsequent association analysis. Attractive practical features include
+the ability to force in or exclude sets of tags.</para>
+
+<para>
+Haploview is based on Paul de Bakker's <emphasis>Tagger</emphasis>. It and more information are available at the <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger website</ulink>. There are a number of differences between the implementations, although they are constructed around the same concept. Tagger currently searches a much broader space of available multi-marker tests (up to 6-mers) whereas Haploview allows only 2- or 3-marker tests in the interest of computational efficiency.</para>
+      </section>
+
+      <section><title>Features</title> 
+	<para>Haploview's Tagger operates in either pairwise or
+	aggressive mode. In either case it begins by selecting a
+	minimal set of markers such that all alleles to be captured
+	are correlated at an r<superscript>2</superscript> greater
+	than a user-editable threshold with a marker in that
+	set. Certain markers can be forced into the tag list or
+	explicity prohibited from being chosen as tags. You can also
+	specify which markers in the dataset you want to be captured.</para>
+
+	<para>Aggressive tagging introduces two additional steps. The
+	first is to try to capture SNPs which could not be captured in
+	the pairwise step (N.B. these must have been "excluded" since
+	otherwise they would simply be chosen to capture themselves)
+	using multi-marker tests constructed from the set of markers
+	chosen as pairwise tags. After this, it tries to "peel back"
+	the tag list by replacing certain tags with multi-marker
+	tests. Tagger avoids overfitting by only constructing
+	multi-marker tests from SNPs which are in strong LD with each
+	other, as measured by a pairwise LOD score. This LOD cutoff
+	can be adjusted to loosen or tighten this requirement; in
+	general, the default cutoff of 3.0 is appropriate for
+	selecting tags from a HapMap-sized reference panel of 120
+	chromosomes.</para>
+
+	<para>Much more information about the development of this
+	algorithm is available at the <ulink
+	url="http://www.broad.mit.edu/mpg/tagger/">Tagger
+	website</ulink>.</para>
+
+      </section>
+	
+      <section><title>Tagger Configuration Panel</title>
+
+	<para><emphasis role="bold">N.B.</emphasis> Haploview's Tagger requires either an info file or a hapmap style input file, because it references the marker names specified in those files. If you load a pedigree or phased haplotypes input file without an info file, the Tagger panels will not be available.</para>
+
+	<para>This panel shows all SNPs available for tag
+selection. SNPs which are deselected in the Check Markers tab will not
+be in this list. There are three checkboxes for each SNP:</para>
+
+      <glosslist>
+	<glossentry><glossterm>Force Include</glossterm>
+	  <glossdef>
+	      <para>Checking this box will force this SNP to be chosen as a tag SNP.</para>
+	    </glossdef>
+	  </glossentry>
+
+	  <glossentry><glossterm>Force Exclude</glossterm>
+	    <glossdef>
+	      <para>Checking this box will prohibit this SNP from being chosen as a tag SNP.</para>
+	    </glossdef>
+	  </glossentry>
+
+	  <glossentry><glossterm>Capture this Allele?</glossterm>
+	    <glossdef>
+	      <para>If this box is checked, Haploview will include this SNP in the list
+of alleles to be captured by the chosen tag set.</para>
+	    </glossdef>
+	  </glossentry>
+	</glosslist>
+
+<para><emphasis role="bold">N.B.</emphasis> The include and exclude checkboxes are mutually exclusive, and
+"Capture this Allele" must be checked in order to either include or
+exclude a marker.</para>
+
+<para>Below the marker list are several additional tagging options. You can
+choose from among pairwise and two aggressive tagging strategies discussed above. 
+You can also set the r<superscript>2</superscript> and LOD thresholds as previously mentioned. 
+Clicking "Run Tagger" will run the tagging algorithm. 
+When finished it will switch from the Configuration to the Results Panel.</para>
+      </section>
+
+      <section><title>Tagger Results Panel</title>
+<para>This panel is split into a "Tests" section on the left and a
+marker-by-marker report on the right. The marker report lists all
+SNPs, the test which best captures them, and their r<superscript>2</superscript> with that test.
+SNPs which were unchecked from the "Capture this allele?" list on the
+Configuration panel are greyed out. SNPs which could not be
+successfully tagged are shown in red.</para>
+
+<para>The first list in the "Tests" section shows all the tests (both single
+marker and multi-marker alleles) chosen by Haploview. Selecting tests
+in this list will show which alleles are captured by those tests in
+the second list in the panel. Beneath these lists is a summary of the
+tagging results.</para>
+
+	<glosslist>
+	  <glossentry><glossterm>Captured N alleles with mean r<superscript>2</superscript> of X.</glossterm>
+	    <glossdef>
+<para>This shows how many of the SNPs in the dataset have been
+successfully tagged by the set of chosen tests. The mean r<superscript>2</superscript>
+represents the mean for only those SNPs successfully captured.</para>
+	    </glossdef>
+	  </glossentry>
+
+	  <glossentry><glossterm>
+Captured N percent of alleles with r<superscript>2</superscript> >0.8</glossterm>
+	    <glossdef>
+	      <para>This shows what fraction of the alleles captured by the tests have
+an r<superscript>2</superscript> >= 0.8. Of course, if your tagging r<superscript>2</superscript> threshold is >= 0.8 this value will always be 100%.</para>
+	    </glossdef>
+	  </glossentry>
+
+	  <glossentry><glossterm>Using N SNPs in M tests.</glossterm>
+	    <glossdef>
+	      <para>This shows that N unique SNPs have been chosen to create M tests,
+which can either be one of the set of N SNPs or some combination of
+those SNPs.</para>
+	    </glossdef>
+	  </glossentry>
+	</glosslist>
+
+	<para>The "Dump Tests File" button exports a <link linkend="custassocfile">file with the list of tests</link> in the format used by Haploview's custom association test file and Tagger's export.</para>
+
+<para>The "Export Tab to Text" option in the File menu will export a <link linkend="taggerout">summary
+file</link> showing the best tag for each marker and the list of tests along
+with the alleles tagged by each test.</para>
+      </section>
+    </section>
+	
+
     <section id="association">
       <title>Association Tests</title>
       <para>
@@ -507,6 +650,48 @@
 	analyzing your data.
       </para>
 
+      <para>You can load a set of custom association tests in the format exported by Haploview and Tagger. This format is discussed <link linkend="custassocfile">below</link>.</para>
+
+
+    </section>
+
+    <section>
+      <title>Permutation Testing</title>
+      <para>Haploview provides a framework for permuting your association results in order to obtain a measure of significance corrected for multiple testing bias. You can choose to permute one of several test sets:</para>
+
+      <glosslist>
+	<glossentry><glossterm>Single Markers Only</glossterm>
+	  <glossdef>
+	    <para>Permute just association tests to the individual SNPs in your dataset.</para>
+	  </glossdef>
+	</glossentry>
+
+	<glossentry><glossterm>Single Markers and Haplotypes in Blocks</glossterm>
+	  <glossdef>
+	    <para>Permute the individual SNPs as above, along with all the haplotypes shown in the Haplotypes tab.</para>
+	  </glossdef>
+	</glossentry>
+	<glossentry><glossterm>Custom Tests from File</glossterm>
+	  <glossdef>
+	    <para>Permute the set of tests loaded from an external file. Note that this choice is only available if you provided a <link linkend="custassocfile">tests file</link> when you loaded your dataset.</para>
+	  </glossdef>
+	</glossentry>
+      </glosslist>
+      <para>Specify how many permutations to do and press the "Do Permutations" button to start the permutations. While the permutations are running, Haploview shows the following:</para>
+      <itemizedlist>
+	<listitem>A progress bar which tracks the progress of the permutations.</listitem>
+	<listitem>The highest permuted chi square so far.</listitem>
+	<listitem>The fraction of permutations whose strongest association exceeds the best observed chi square.</listitem>
+      </itemizedlist>
+
+<para>You can stop the permutations at any time with the "Stop" button. Once the permutations are complete, Haploview displays:</para>
+
+      <itemizedlist>
+	<listitem>A table listing all tests (single SNP and haplotype) along with their association chi squares and permuted p-values.</listitem>
+	<listitem>A histogram of the highest chi square from each of the permutations.</listitem>
+      </itemizedlist>
+
+      <para>You can save the <link linkend="permout">permutation summary</link> by using the "Export Tab to Text" option in the File menu.</para>
     </section>
 
   </chapter>
@@ -520,7 +705,7 @@
       <para>Haploview currently accepts input data in three formats,
 	standard linkage format, completely or partially phased
 	haplotypes and <ulink url="http://www.hapmap.org/">HapMap Project</ulink> data dumps. It also takes in a
-	separate file with marker position information. The four formats
+	separate file with marker position information, as well as several <link linkend="auxinput">auxiliary input files</link>, described below. The four formats
 	are explained in depth below.</para>
       
       <glosslist>
@@ -633,7 +818,6 @@ marker03 191287</screen>
 	    <screen>marker01 190299 CODING_SNP
 marker02 190950
 marker03 191287</screen>
-	    
 	  </glossdef></glossentry>
 
 	<glossentry id="batch"><glossterm>Batch Load File</glossterm>
@@ -798,7 +982,35 @@ BLOCK 2.  MARKERS: 10! 11! 12
 	      <listitem><literal>Case Control Ratios</literal> are the ratios (shown as either counts or quotients, depending on selected options) for the case and control populations, respectively.</listitem>
 	    </itemizedlist>
 	  </glossdef></glossentry>
-	
+
+	<glossentry id="permout"><glossterm>Permutation Text Output File</glossterm>
+	  <glossdef><para>The output from the permutations tab shwos the number of permutations performed and then a tab-delimited table with one row per permuted test and the following columns:</para>
+	    <itemizedlist>
+	      <listitem><literal>Name</literal> is the test name, which is either a marker name or a comma separated list of marker names then a tab then a comma separated set of alleles for those markers.</listitem>
+	      <listitem><literal>Chi Square</literal> is the observed association chi square for that test.</listitem>
+	      <listitem><literal>Permutation p-value</literal> shows the significance of the test among the permutation tests.</listitem>
+	    </itemizedlist>
+	  </glossdef>
+	</glossentry>
+
+	<glossentry id="taggerout"><glossterm>Tagger Text Output File</glossterm>
+	  <glossdef>
+	    <para>The Tagger text output begins with several pieces of summary information. More details on this can be found in the <link linkend="tagger">Tagger</link> section. The rest of the output is divided into two sections. The first lists each marker, with the following rows:</para>
+	    <itemizedlist>
+	      <listitem><literal>Marker</literal> is the marker name.</listitem>
+	      <listitem><literal>Best Test</literal> is the test with the highest r<superscript>2</superscript> to this marker.</listitem>
+	      <listitem><literal>r^2 w/test</literal> is the r<superscript>2</superscript> between this marker and its test.</listitem>
+	    </itemizedlist>
+	    <para>The second part consists of a list of the tests and the alleles they capture best.</para>
+	  </glossdef>
+	</glossentry>
+
+	<glossentry><glossterm>Tagger Tests Dump</glossterm>
+	  <glossdef>
+	    <para>This file is the same format used by Haploview for custom association tests and exported by <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger</ulink>. It is <link linkend="custassocfile">discussed below</link> in the auxiliary files section.</para>
+	  </glossdef>
+	</glossentry>
+
 	<glossentry><glossterm>Marker Check Text Output File</glossterm>
 	  <glossdef>
 	    <para>The marker check data is a tab-delimited file with the
@@ -841,7 +1053,7 @@ BLOCK 2.  MARKERS: 10! 11! 12
 	with minimal memory usage.</para>
     </section>
 
-    <section>
+    <section id = "auxinput">
       <title>Auxiliary Input Files</title>
       <glosslist>
 	<glossentry id="blocksfile"><glossterm>Blocks File</glossterm>
@@ -876,6 +1088,33 @@ BLOCK 2.  MARKERS: 10! 11! 12
 	      can be of any units or magnitude, as the Haploview scales the
 	      analysis track to the bounds of the values.</para>
 	  </glossdef></glossentry>
+
+	<glossentry id="custassocfile"><glossterm>Custom Association Tests File</glossterm>
+	  <glossdef><para>You can specify a set of custom association tests for Haploview to perform. The format takes both single marker tests and multi-marker tests (which can be either for a specified allele of those markers or for all observed alleles). The format is one test per line with each line containing one of the following: a single marker name, several marker names separated by commas or several comma separated names, then a tab, then comma separated alleles for each marker. This format is exported by Haploview using the "Dump Tests" button in the Tagger Results panel and by Paul deBakker's <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger webpage</ulink>.</para>
+
+
+<para>For instance, the following example would create 5 tests: markers 1, 2 and 3 individually, all the alleles (haplotypes) of the block 4,5,6 and the CAA haplotype of the block 12,13,14:</para>
+<screen>marker1
+marker2
+marker3
+marker4,marker5,marker6
+marker12,marker13,marker14     2,1,1</screen>
+
+<para><emphasis role="bold">N.B.</emphasis> Using a Custom Association Tests File requires a <link linkend="info">marker info file</link>, since the tests file reads the marker names as specified in the info file.</para>
+	  </glossdef>
+	</glossentry>
+
+	<glossentry id="taggerincludeexclude"><glossterm>Tagger Marker Include/Exclude File</glossterm>
+	  <glossdef><para>You can specifiy a list of markers for Tagger to include or exclude from those markers available for selection as tag SNPs. In either case the format is the same: one marker name per line. The following file could be used to either include or exclude markers 1,7 and 9:</para>
+
+<screen>marker1
+marker7
+marker9</screen>
+
+<para><emphasis role="bold">N.B.</emphasis> Using a Tagger Include/Exclude File requires a <link linkend="info">marker info file</link>, since it reads the marker names as specified in the info file.</para>
+
+	  </glossdef>
+	</glossentry>
       </glosslist>
     </section>
   </chapter>
@@ -883,7 +1122,7 @@ BLOCK 2.  MARKERS: 10! 11! 12
 
   <chapter id="commandline">
     <title>Command Line Options</title>
-    <para>Haploview can be run from the command li ne without the display in
+    <para>Haploview can be run from the command line without the display in
       order to do processing of multiple datasets or quick computation on
       very large datasets. In order to run Haploview without the display,
       add the "-nogui" flag. The "-help" flag shows a condensed explanation
@@ -964,7 +1203,22 @@ BLOCK 2.  MARKERS: 10! 11! 12
       <glosslist>
 	<glossentry><glossterm>-blockoutput &lt;type&gt;</glossterm>
 	  <glossdef><para>Generate haplotypes and population frequencies for blocks of &lt;type&gt;, which can be GAB (Gabriel et al), GAM (4 gamete blocks), SPI (solid spine blocks) or ALL (each of the previous 3). The default block type is Gabriel. More information can be found with the <link linkend="blocks">blocks</link> help.</para></glossdef></glossentry>
-	
+
+<glossentry><glossterm>-blockCutHighCI &lt;thresh&gt;</glossterm>
+	  <glossdef><para>Gabriel 'Strong LD' high confidence interval D' cutoff.</para></glossdef></glossentry>
+<glossentry><glossterm>-blockCutLowCI &lt;thresh&gt;</glossterm>
+	  <glossdef><para>Gabriel 'Strong LD' low confidence interval D' cutoff.</para></glossdef></glossentry>
+<glossentry><glossterm>-blockMAFThresh &lt;thresh&gt;</glossterm>
+	  <glossdef><para>Gabriel MAF threshold.</para></glossdef></glossentry>
+<glossentry><glossterm>-blockRecHighCI &lt;thresh&gt;</glossterm>
+	  <glossdef><para>Gabriel recombination high confidence interval D' cutoff.</para></glossdef></glossentry>
+<glossentry><glossterm>-blockInformFrac &lt;thresh&gt;</glossterm>
+	  <glossdef><para>Gabriel fraction of markers required to be informative.</para></glossdef></glossentry>
+<glossentry><glossterm>-block4GamCut &lt;thresh&gt;</glossterm>
+	  <glossdef><para>4 Gamete block cutoff for frequency of 4th pairwise haplotype.</para></glossdef></glossentry>
+<glossentry><glossterm>-blockSpineDP &lt;thresh&gt;</glossterm>
+	  <glossdef><para>Solid Spine blocks D' cutoff for 'Strong LD</para></glossdef></glossentry>
+
 	<glossentry><glossterm>-check</glossterm>
 	  <glossdef><para>Output marker quality checks to &lt;inputfile&gt;.CHECK</para></glossdef></glossentry>
 	
@@ -988,6 +1242,28 @@ BLOCK 2.  MARKERS: 10! 11! 12
 	
 	<glossentry><glossterm>-assocTDT</glossterm>
 	  <glossdef><para>Output TDT association results. Saves single marker results to &lt;inputfile&gt;.ASSOC and haplotype results to &lt;inputfile&gt;.HAPASSOC. Haplotype association results not generated if block type is set to ALL.</para></glossdef></glossentry>
+
+	<glossentry><glossterm>-customAssoc &lt;file&gt;</glossterm>
+	  <glossdef><para>Loads a set of custom tests for association.</para></glossdef></glossentry>
+	<glossentry><glossterm>-permtests &lt;numtests&gt;</glossterm>
+	  <glossdef><para>Performs &lt;numtests&gt; permutations on default association tests (or custom tests if a custom association file is specified) and writes to &lt;inputfile&gt;.PERMUT </para></glossdef></glossentry>
+	<glossentry><glossterm>-pairwiseTagging</glossterm>
+	  <glossdef><para>Generates pairwise tagging information in &lt;inputfile&gt;.TAGS and .TESTS</para></glossdef></glossentry>
+	<glossentry><glossterm>-aggressiveTagging</glossterm>
+	  <glossdef><para>As above but generates 2- and 3-marker haplotype tags.</para></glossdef></glossentry>
+	<glossentry><glossterm>-includeTags &lt;markers&gt;</glossterm>
+	  <glossdef><para>Forces in a comma separated list of marker names as tags.</para></glossdef></glossentry>
+	<glossentry><glossterm>-includeTagsFile &lt;file&gt;</glossterm>
+	  <glossdef><para>Forces in a file of one marker name per line as tags.</para></glossdef></glossentry>
+	<glossentry><glossterm>-excludeTags &lt;markers&gt;</glossterm>
+	  <glossdef><para>Excludes a comma separated list of marker names from being used as tags.</para></glossdef></glossentry>
+	<glossentry><glossterm>-excludeTagsFile &lt;file&gt;</glossterm>
+	  <glossdef><para>Excludes a file of one marker name per line from being used as tags.</para></glossdef></glossentry>
+	<glossentry><glossterm>-taglodcutoff &lt;thresh&gt;</glossterm>
+	  <glossdef><para>Tagger LOD cutoff for creating multimarker tag haplotypes.</para></glossdef></glossentry>
+	<glossentry><glossterm>-tagrsqcutoff &lt;thresh&gt;</glossterm>
+	  <glossdef><para>Tagger r^2 cutoff.</para></glossdef></glossentry>
+
 	
 	<glossentry><glossterm>-hapthresh &lt;threshold&gt;</glossterm>
 	  <glossdef><para>Only output haplotypes with frequency &ge; &lt;threshold&gt;. Note that multiallelic D' and htSNPs are computed using only displayed haplotypes.</para></glossdef></glossentry>
@@ -1005,8 +1281,9 @@ BLOCK 2.  MARKERS: 10! 11! 12
 	Haploview was developed in and is maintained by 
 	<ulink url="http://www.broad.mit.edu/personal/mjdaly/">Mark Daly's lab</ulink>
 	at the <ulink url="http://www.wi.mit.edu">Whitehead Institute</ulink> by 
-	<ulink url="mailto:jcbarret@broad.mit.edu">Jeffrey Barrett</ulink> and 
-	<ulink url="mailto:jules@broad.mit.edu">Julian Maller</ulink>.</para>
+	Jeffrey Barrett and Julian Maller. Questions and comments should be addressed to: 
+<ulink url="mailto:haploview@broad.mit.edu">haploview@broad.mit.edu</ulink>
+</para>
       
       <itemizedlist>
 	<listitem>The design of the interfaces is the work of <emphasis role="bold">Ben Fry</emphasis> at
@@ -1046,7 +1323,7 @@ BLOCK 2.  MARKERS: 10! 11! 12
 	Jan 15 [PubMed ID: 15297300]</para>
       
       <para>Questions, complaints and suggestion should be directed to 
-	<ulink url="mailto:jcbarret@broad.mit.edu">Jeffrey Barrett</ulink>.</para>
+	<ulink url="mailto:haploview@broad.mit.edu">haploview@broad.mit.edu</ulink>.</para>
       
     </section>
     
