@@ -534,7 +534,7 @@ public class Tagger {
         bw.write("#using " + getTagSNPs().size() + " SNPs in " + tags.size() + " tests.");
         bw.newLine();
 
-        bw.write("Marker\tBest Tag\tr^2 w/tag");
+        bw.write("Marker\tBest Test\tr^2 w/test");
         bw.newLine();
         for (int i = 0; i < snps.size(); i++) {
             StringBuffer line = new StringBuffer();
@@ -551,7 +551,7 @@ public class Tagger {
 
         bw.newLine();
 
-        bw.write("Tag\tMarkers Tagged");
+        bw.write("Test\tAlleles Captured");
         bw.newLine();
         for(int i=0;i<tags.size();i++) {
             StringBuffer line = new StringBuffer();
