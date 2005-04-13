@@ -125,7 +125,7 @@ public interface Constants {
             "-blockCutLowCI <thresh>         Gabriel 'Strong LD' low confidence interval D' cutoff.\n" +
             "-blockMAFThresh <thresh>        Gabriel MAF threshold.\n" +
             "-blockRecHighCI <thresh>        Gabriel recombination high confidence interval D' cutoff.\n" +
-            "-blockInformFrac <thresh>       Gabriel fraction of markers required to be informative.\n" +
+            "-blockInformFrac <thresh>       Gabriel fraction of informative markers required to be in LD.\n" +
             "-block4GamCut <thresh>          4 Gamete block cutoff for frequency of 4th pairwise haplotype.\n" +
             "-blockSpineDP <thresh>          Solid Spine blocks D' cutoff for 'Strong LD\n"+
             "-maxdistance <distance>         Maximum comparison distance in kilobases (integer). Default is 500\n" +
