@@ -5,6 +5,7 @@ public interface Constants {
 
     //main jframe setup stuff & labels.
     public static final double VERSION = 3.2;
+    public static final String EMAIL_STRING = "haploview@broad.mit.edu";
     public static final String TITLE_STRING = "Haploview "+VERSION;
     public static final String RELEASE_DATE = "13 April, 2005";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
@@ -14,7 +15,7 @@ public interface Constants {
             "Cambridge, MA 02141, USA\n\n"+
             "Jeffrey Barrett\n" +
             "Julian Maller\n" +
-            "haploview@broad.mit.edu";
+            EMAIL_STRING;
 
     public static final String READ_GENOTYPES = "Open genotype data";
     public static final String READ_MARKERS = "Load marker data";

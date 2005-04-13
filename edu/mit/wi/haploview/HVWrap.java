@@ -161,7 +161,8 @@ public class HVWrap {
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         errorTextArea.append("*************************\n"+
-                "If you are reporting a problem please include the contents of this log.\njcbarret@broad.mit.edu\n"+
+                "If you are reporting a problem please include the contents of this log.\n"+
+                Constants.EMAIL_STRING+"\n"+
                 "*************************\n");
 
         newContentPane.add(scrollPane);
