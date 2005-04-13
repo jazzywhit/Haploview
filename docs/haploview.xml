@@ -1209,15 +1209,15 @@ marker9</screen>
 <glossentry><glossterm>-blockCutLowCI &lt;thresh&gt;</glossterm>
 	  <glossdef><para>Gabriel 'Strong LD' low confidence interval D' cutoff.</para></glossdef></glossentry>
 <glossentry><glossterm>-blockMAFThresh &lt;thresh&gt;</glossterm>
-	  <glossdef><para>Gabriel MAF threshold.</para></glossdef></glossentry>
+	  <glossdef><para>Gabriel MAF threshold. Markers below this allele frequency will be skipped in building Gabriel blocks.</para></glossdef></glossentry>
 <glossentry><glossterm>-blockRecHighCI &lt;thresh&gt;</glossterm>
 	  <glossdef><para>Gabriel recombination high confidence interval D' cutoff.</para></glossdef></glossentry>
 <glossentry><glossterm>-blockInformFrac &lt;thresh&gt;</glossterm>
-	  <glossdef><para>Gabriel fraction of markers required to be informative.</para></glossdef></glossentry>
+	  <glossdef><para>Gabriel fraction of informative markers required to be in strong LD.</para></glossdef></glossentry>
 <glossentry><glossterm>-block4GamCut &lt;thresh&gt;</glossterm>
 	  <glossdef><para>4 Gamete block cutoff for frequency of 4th pairwise haplotype.</para></glossdef></glossentry>
 <glossentry><glossterm>-blockSpineDP &lt;thresh&gt;</glossterm>
-	  <glossdef><para>Solid Spine blocks D' cutoff for 'Strong LD</para></glossdef></glossentry>
+	  <glossdef><para>Solid Spine blocks D' cutoff for 'Strong LD'.</para></glossdef></glossentry>
 
 	<glossentry><glossterm>-check</glossterm>
 	  <glossdef><para>Output marker quality checks to &lt;inputfile&gt;.CHECK</para></glossdef></glossentry>
@@ -1250,7 +1250,7 @@ marker9</screen>
 	<glossentry><glossterm>-pairwiseTagging</glossterm>
 	  <glossdef><para>Generates pairwise tagging information in &lt;inputfile&gt;.TAGS and .TESTS</para></glossdef></glossentry>
 	<glossentry><glossterm>-aggressiveTagging</glossterm>
-	  <glossdef><para>As above but generates 2- and 3-marker haplotype tags.</para></glossdef></glossentry>
+	  <glossdef><para>As above but also allows 2- and 3-marker haplotype tags.</para></glossdef></glossentry>
 	<glossentry><glossterm>-includeTags &lt;markers&gt;</glossterm>
 	  <glossdef><para>Forces in a comma separated list of marker names as tags.</para></glossdef></glossentry>
 	<glossentry><glossterm>-includeTagsFile &lt;file&gt;</glossterm>
@@ -1367,6 +1367,18 @@ marker9</screen>
 
     <section>
       <title>Change Log</title>
+
+      <section>
+	<title>Version 3.2, 13 April 2005</title>
+	<itemizedlist>
+	  <listitem>added Tagger interface</listitem>
+	  <listitem>added custom association test input</listitem>
+	  <listitem>added permutation testing of association results</listitem>
+	  <listitem>improved memory efficiency for EM haplotype reconstruction</listitem>
+	  <listitem>added Perlegen sample IDs</listitem>
+	  <listitem>fixed bug in PNG export cutting off final marker</listitem>
+	</itemizedlist>
+      </section>
 
       <section>
 	<title>Version 3.11, 04 February 2005</title>
