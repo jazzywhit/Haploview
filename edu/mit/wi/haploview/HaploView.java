@@ -1316,18 +1316,21 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
             //parse command line stuff for input files or prompt data dialog
-            String[] inputArray = new String[2];
+            String[] inputArray = new String[3];
             if (argParser.getHapsFileName() != null){
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
+                inputArray[2] = null;
                 window.readGenotypes(inputArray, HAPS_FILE);
             }else if (argParser.getPedFileName() != null){
                 inputArray[0] = argParser.getPedFileName();
                 inputArray[1] = argParser.getInfoFileName();
+                inputArray[2] = null;
                 window.readGenotypes(inputArray, PED_FILE);
             }else if (argParser.getHapmapFileName() != null){
                 inputArray[0] = argParser.getHapmapFileName();
                 inputArray[1] = null;
+                inputArray[2] = null;
                 window.readGenotypes(inputArray, HMP_FILE);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
