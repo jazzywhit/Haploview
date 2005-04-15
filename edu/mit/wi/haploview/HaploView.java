@@ -1015,7 +1015,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         htp.makeTable(new AssociationTestSet(theData.getHaplotypes(), null));
                         permutationPanel.setBlocksChanged();
                         AssociationTestSet custSet = null;
-                        if (custAssocPanel == null){
+                        if (custAssocPanel != null){
                             custSet = custAssocPanel.getTestSet();
                         }
                         AssociationTestSet permSet = new AssociationTestSet();
@@ -1095,7 +1095,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     if(permutationPanel != null) {
                         permutationPanel.setBlocksChanged();
                         AssociationTestSet custSet = null;
-                        if (custAssocPanel == null){
+                        if (custAssocPanel != null){
                             custSet = custAssocPanel.getTestSet();
                         }
                         AssociationTestSet permSet = new AssociationTestSet();
@@ -1117,7 +1117,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                             permutationPanel.setBlocksChanged();
                             AssociationTestSet custSet = null;
-                            if (custAssocPanel == null){
+                            if (custAssocPanel != null){
                                 custSet = custAssocPanel.getTestSet();
                             }
                             AssociationTestSet permSet = new AssociationTestSet();
