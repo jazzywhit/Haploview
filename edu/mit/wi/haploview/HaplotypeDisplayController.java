@@ -32,7 +32,7 @@ public class HaplotypeDisplayController extends JPanel {
         JPanel hapPercentPanel = new JPanel();
         hapPercentPanel.add(new JLabel("Examine haplotypes above "));
             hapPercentPanel.add(minDisplayField =
-                    new NumberTextField(String.valueOf(Options.getHaplotypeDisplayThreshold()), 3, false));
+                    new NumberTextField(String.valueOf(Options.getHaplotypeDisplayThreshold()*100), 5, true));
 
         hapPercentPanel.add(new JLabel("%"));
         leftPanel.add(hapPercentPanel);
@@ -40,19 +40,17 @@ public class HaplotypeDisplayController extends JPanel {
         JPanel thinPanel = new JPanel();
         thinPanel.add(new JLabel("Connect with thin lines if > "));
         thinPanel.add(minThinField =
-                new NumberTextField(String.valueOf((int)parent.thinThresh), 3, false));
+                new NumberTextField(String.valueOf(parent.thinThresh*100), 5, true));
         thinPanel.add(new JLabel("%"));
         leftPanel.add(thinPanel);
 
         JPanel thickPanel = new JPanel();
         thickPanel.add(new JLabel("Connect with thick lines if > "));
         thickPanel.add(minThickField =
-                new NumberTextField(String.valueOf(parent.thickThresh), 3, false));
+                new NumberTextField(String.valueOf(parent.thickThresh*100), 5, true));
         thickPanel.add(new JLabel("%"));
         leftPanel.add(thickPanel);
 
-        //numericAlleles = new JCheckBox("Display alleles as numbers.");
-        //add(numericAlleles);
         JLabel dispLab = new JLabel("Display alleles as:");
         rightPanel.add(dispLab);
 
@@ -79,9 +77,9 @@ public class HaplotypeDisplayController extends JPanel {
         goButton = new JButton("Go");
         goButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e) {
-                setDisplayThresh(Integer.parseInt(minDisplayField.getText()));
-                setThinThresh(Integer.parseInt(minThinField.getText()));
-                setThickThresh(Integer.parseInt(minThickField.getText()));
+                setDisplayThresh(Double.parseDouble(minDisplayField.getText()));
+                setThinThresh(Double.parseDouble(minThinField.getText()));
+                setThickThresh(Double.parseDouble(minThickField.getText()));
                 setNumericAlls(alleleDisplayGroup.getSelection().getActionCommand());
                 paintIt();
             }
@@ -96,19 +94,19 @@ public class HaplotypeDisplayController extends JPanel {
     }
 
 
-    public void setDisplayThresh(int amount){
+    public void setDisplayThresh(double amount){
         if (Options.getHaplotypeDisplayThreshold() != amount){
-            Options.setHaplotypeDisplayThreshold(amount);
+            Options.setHaplotypeDisplayThreshold(amount/100);
             parent.adjustDisplay();
         }
     }
 
-    public void setThinThresh(int amount) {
-        parent.thinThresh = amount;
+    public void setThinThresh(double amount) {
+        parent.thinThresh = amount/100;
     }
 
-    public void setThickThresh(int amount) {
-        parent.thickThresh = amount;
+    public void setThickThresh(double amount) {
+        parent.thickThresh = amount/100;
     }
 
     public void paintIt(){

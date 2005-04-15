@@ -14,9 +14,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 
 public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
-    public int initialHaplotypeDisplayThreshold;
+    public double initialHaplotypeDisplayThreshold;
     private AssociationTestSet testSet;
-    //public Vector results;
     public JTreeTable jtt;
 
 

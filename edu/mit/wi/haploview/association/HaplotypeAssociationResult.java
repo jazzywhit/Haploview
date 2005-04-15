@@ -8,13 +8,13 @@ public class HaplotypeAssociationResult extends AssociationResult{
 
     Haplotype[] haps;
 
-    public HaplotypeAssociationResult(Haplotype[] locusHaplos, int freqCutoff, String n) {
+    public HaplotypeAssociationResult(Haplotype[] locusHaplos, double freqCutoff, String n) {
         nf.setGroupingUsed(false);
 
         for (int i = 0; i < locusHaplos.length; i++){
             alleles.add(locusHaplos[i]);
         }
-        filterByFrequency(((double)freqCutoff)/100);
+        filterByFrequency(freqCutoff);
         name = n;
 
         haps = locusHaplos;
@@ -81,7 +81,7 @@ public class HaplotypeAssociationResult extends AssociationResult{
 
     public void filterByAllele(String allele) throws HaploViewException{
         if (allele == null){
-            filterByFrequency(Options.getHaplotypeDisplayThreshold()/100);
+            filterByFrequency(Options.getHaplotypeDisplayThreshold());
         }else{
             filteredAlleles.removeAllElements();
             for(int i=0;i<alleles.size();i++) {

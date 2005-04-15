@@ -6,7 +6,7 @@ public class Options {
     private static double missingThreshold;
     private static double spacingThreshold;
     private static int assocTest;
-    private static int haplotypeDisplayThreshold;
+    private static double haplotypeDisplayThreshold;
     private static int LDColorScheme;
     private static boolean showGBrowse;
     private static long gBrowseLeft;
@@ -66,11 +66,11 @@ public class Options {
         Options.assocTest = assocTest;
     }
 
-    public static int getHaplotypeDisplayThreshold() {
+    public static double getHaplotypeDisplayThreshold() {
         return haplotypeDisplayThreshold;
     }
 
-    public static void setHaplotypeDisplayThreshold(int haplotypeDisplayThreshold) {
+    public static void setHaplotypeDisplayThreshold(double haplotypeDisplayThreshold) {
         Options.haplotypeDisplayThreshold = haplotypeDisplayThreshold;
     }
 

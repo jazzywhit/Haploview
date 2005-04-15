@@ -1577,7 +1577,7 @@ public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,
             saveHapsWriter.write("\n");
             //write haps and crossover percentages
             for (int j = 0; j < finishedHaplos[i].length; j++){
-                if((finishedHaplos[i][j].getPercentage()*100) >= Options.getHaplotypeDisplayThreshold()) {
+                if((finishedHaplos[i][j].getPercentage()) >= Options.getHaplotypeDisplayThreshold()) {
                     int[] theGeno = finishedHaplos[i][j].getGeno();
                     StringBuffer theHap = new StringBuffer(theGeno.length);
                     for (int k = 0; k < theGeno.length; k++){
@@ -1588,7 +1588,7 @@ public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,
                         saveHapsWriter.write("\t|");
                         boolean writeTab = false;
                         for (int crossCount = 0; crossCount < finishedHaplos[i+1].length; crossCount++){
-                            if((finishedHaplos[i+1][crossCount].getPercentage()*100) >= Options.getHaplotypeDisplayThreshold() ) {
+                            if((finishedHaplos[i+1][crossCount].getPercentage()) >= Options.getHaplotypeDisplayThreshold() ) {
                                 if (crossCount != 0 && writeTab) saveHapsWriter.write("\t");
                                 saveHapsWriter.write(nf.format(finishedHaplos[i][j].getCrossover(crossCount)));
                                 writeTab = true;

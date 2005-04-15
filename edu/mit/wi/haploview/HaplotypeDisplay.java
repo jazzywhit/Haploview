@@ -16,8 +16,8 @@ public class HaplotypeDisplay extends JComponent {
     double multidprimeArray[];
     int missingLimit = 5;
     boolean useThickness = true;
-    double thinThresh = 1;
-    double thickThresh = 10;
+    double thinThresh = 0.01;
+    double thickThresh = 0.1;
     private boolean forExport = false;
     public int alleleDisp;
     private Color dullRed = new Color(204,51,51);
@@ -174,7 +174,7 @@ public class HaplotypeDisplay extends JComponent {
         for (int i = 0; i < orderedHaplos.length; i++){
                         Vector tempVector = new Vector();
             for (int j = 0; j < orderedHaplos[i].length; j++){
-                if (orderedHaplos[i][j].getPercentage()*100 > Options.getHaplotypeDisplayThreshold()){
+                if (orderedHaplos[i][j].getPercentage() > Options.getHaplotypeDisplayThreshold()){
                     tempVector.add(orderedHaplos[i][j]);
                     numhaps++;
                 }
@@ -189,7 +189,7 @@ public class HaplotypeDisplay extends JComponent {
         // if user sets display thresh higher than most common hap in any given block
         if (!(printable == filts.length)){
             JOptionPane.showMessageDialog(this.getParent(),
-                    "Error: At least one block has too few haplotypes of frequency > " + Options.getHaplotypeDisplayThreshold(),
+                    "Error: At least one block has too few haplotypes of frequency > " + Util.roundDouble(Options.getHaplotypeDisplayThreshold(),3),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
@@ -214,7 +214,6 @@ public class HaplotypeDisplay extends JComponent {
         }
         repaint();
     }
-
 
     public Dimension getPreferredSize() {
         int wide = BORDER*2;
@@ -243,7 +242,6 @@ public class HaplotypeDisplay extends JComponent {
 
         return new Dimension(wide, high);
     }
-
 
     public void paintComponent(Graphics graphics) {
 
@@ -421,11 +419,10 @@ public class HaplotypeDisplay extends JComponent {
                     for (int crossCount = 0;
                          crossCount < filteredHaplos[i+1].length;
                          crossCount++) {
-                        double crossVal =
+                        double crossValue =
                                 filteredHaplos[i][curHapNum].getCrossover(crossCount);
 
                         //draw thin and thick lines
-                        double crossValue = (crossVal*100);
                         if (crossValue > thinThresh) {
                             g.setStroke(crossValue > thickThresh ? thickStroke : thinStroke);
                             int connectTo = filteredHaplos[i+1][crossCount].getListOrder();

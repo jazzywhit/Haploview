@@ -535,7 +535,7 @@ public class HaploText implements Constants{
         Options.setMaxDistance(maxDistance);
 
         if(hapThresh != -1) {
-            Options.setHaplotypeDisplayThreshold((int)(hapThresh*100));
+            Options.setHaplotypeDisplayThreshold(hapThresh);
             if (!quietMode) argHandlerMessages.add("Haplotype display threshold = " + hapThresh);
         }
         
@@ -1194,7 +1194,7 @@ public class HaploText implements Constants{
         for (int i = 0; i < haplos.length; i++){
             Vector tempVector = new Vector();
             for (int j = 0; j < haplos[i].length; j++){
-                if (haplos[i][j].getPercentage()*100 > Options.getHaplotypeDisplayThreshold()){
+                if (haplos[i][j].getPercentage() > Options.getHaplotypeDisplayThreshold()){
                     tempVector.add(haplos[i][j]);
                 }
             }
