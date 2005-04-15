@@ -233,7 +233,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         contents.add(filePanel);
 
         JPanel compDistPanel = new JPanel();
-        maxComparisonDistField = new NumberTextField("500",4, false);
+        maxComparisonDistField = new NumberTextField("500",6, false);
         compDistPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
         compDistPanel.add(maxComparisonDistField);
         compDistPanel.add(new JLabel("kb apart."));

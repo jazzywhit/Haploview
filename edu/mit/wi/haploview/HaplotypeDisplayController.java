@@ -93,7 +93,6 @@ public class HaplotypeDisplayController extends JPanel {
         parent.alleleDisp = Integer.parseInt(selection);
     }
 
-
     public void setDisplayThresh(double amount){
         if (Options.getHaplotypeDisplayThreshold() != amount){
             Options.setHaplotypeDisplayThreshold(amount/100);
@@ -112,7 +111,6 @@ public class HaplotypeDisplayController extends JPanel {
     public void paintIt(){
         parent.repaint();
     }
-
 
     public Dimension getMaximumSize() {
         return new Dimension(super.getPreferredSize().width,
