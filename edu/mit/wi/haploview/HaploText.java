@@ -1046,7 +1046,7 @@ public class HaploText implements Constants{
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
                 BufferedImage i = dpd.export(0,Chromosome.getUnfilteredSize(),outputCompressedPNG);
                 try{
-                    Jimi.putImage("image/png", i, OutputFile.getName());
+                    Jimi.putImage("image/png", i, OutputFile.getAbsolutePath());
                 }catch(JimiException je){
                     System.out.println(je.getMessage());
                 }
