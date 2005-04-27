@@ -256,11 +256,15 @@ public class HaploData implements Constants{
                 for (int i = 0; i < o.size(); i++){
                     Individual ind = (Individual) o.get(i);
                     Vector unsortedMarkers = ind.getMarkers();
+                    boolean[] unsortedZeroed = ind.getZeroedArray();
+                    boolean[] sortedZeroed = new boolean[unsortedMarkers.size()];
                     Vector sortedMarkers = new Vector();
                     for (int j = 0; j < unsortedMarkers.size(); j++){
                         sortedMarkers.add(unsortedMarkers.elementAt(realPos[j]));
+                        sortedZeroed[j] = unsortedZeroed[realPos[j]];
                     }
                     ind.setMarkers(sortedMarkers);
+                    ind.setZeroedArray(sortedZeroed);
                 }
             }
 

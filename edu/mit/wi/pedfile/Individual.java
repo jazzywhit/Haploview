@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 3.0 2005/01/27 18:19:03 jcbarret Exp $
+* $Id: Individual.java,v 3.1 2005/04/27 19:05:14 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -231,6 +231,14 @@ public class Individual {
 
     public double getGenoPC(){
         return numGoodMarkers/markers.size();
+    }
+
+    public boolean[] getZeroedArray() {
+        return zeroed;
+    }
+
+    public void setZeroedArray(boolean[] z) {
+        zeroed = z;
     }
 }
 
