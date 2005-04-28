@@ -80,25 +80,15 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
             }
             for (int i = 0; i < genos.length; i++){
                 double aa=0,ab=0,bb=0,ba=0;
-                StringBuffer sb = new StringBuffer();
-                for (int j = 1; j < genos[i].length; j++){
-                    sb.append(genos[i][j]);
-                }
-                String curHapStr = sb.toString();
                 for (int j = 0; j < genos.length; j++){
-                    sb = new StringBuffer();
-                    for (int k = 1; k < genos[j].length; k++){
-                        sb.append(genos[j][k]);
-                    }
-                    String testHapStr = sb.toString();
                     if (genos[j][0] == genos[0][0]){
-                        if (!curHapStr.equals(testHapStr)){
+                        if(!sameHap(genos[i], genos[j])){
                             ab += phasedCache[j].getPercentage();
                         }else{
                             aa += phasedCache[j].getPercentage();
                         }
                     }else{
-                        if (!curHapStr.equals(testHapStr)){
+                        if(!sameHap(genos[i], genos[j])){
                             bb += phasedCache[j].getPercentage();
                         }else{
                             ba += phasedCache[j].getPercentage();
@@ -111,7 +101,11 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
                 //round to 5 decimal places.
                 double rsq = Util.roundDouble(Math.pow((aa*bb - ab*ba),2)/(p*(1-p)*q*(1-q)),3);
                 if (rsq > curBestRsq){
-                    curBestAllele = new Allele(theBlock,curHapStr);
+                    StringBuffer sb = new StringBuffer();
+                    for (int j = 1; j < genos[i].length; j++){
+                        sb.append(genos[i][j]);
+                    }
+                    curBestAllele = new Allele(theBlock,sb.toString());
                     curBestRsq = rsq;
                 }
             }
@@ -119,6 +113,21 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
             lcByComparison.put(new Comparison(theSNP, theBlock),lc);
             return (lc);
         }
+    }
+
+    private boolean sameHap(int[] a, int[] b) {
+        if(a == null || b == null) {
+            throw new NullPointerException("blah");
+        }
+        if(a.length != b.length) {
+            return false;
+        }
+        for(int i=1;i<a.length;i++) {
+            if(a[i] != b[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void phaseAndCache(HashSet snpList){
