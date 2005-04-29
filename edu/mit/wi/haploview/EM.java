@@ -111,7 +111,6 @@ public class EM implements Constants {
     }
 
     public void doEM(int[] theBlock) throws HaploViewException{
-
         //break up large blocks if needed
         int[] block_size;
         if (theBlock.length < 9){
@@ -305,11 +304,10 @@ public class EM implements Constants {
     }
 
     private void full_em_breakup( byte[][] input_haplos, int[] block_size, Vector affStatus) throws HaploViewException{
-        int num_poss, iter;//, maxk, numk;
-        double total;//, maxprob;
+        int num_poss, iter;
+        double total = 0;
         int block, start_locus, end_locus, biggest_block_size;
-        long poss_full;//, best, h1, h2;
-        int num_indivs=0;
+        int num_indivs = 0;
 
         int num_blocks = block_size.length;
         int num_haplos = input_haplos.length;
@@ -318,7 +316,7 @@ public class EM implements Constants {
         Recovery tempRec;
 
         if (num_loci > MAXLOCI){
-            throw new HaploViewException("Too many loci in a single block (> 100)");
+            throw new HaploViewException("Too many loci in a single block (> "+MAXLOCI+" non-redundant)");
         }
 
         //figure out the size of the biggest block
@@ -432,19 +430,12 @@ public class EM implements Constants {
 
         } /* for each block */
 
-        poss_full=1;
+        double poss_full=1;
         for (block=0; block<num_blocks; block++) {
             poss_full *= num_hlist[block];
         }
 
         /* LIGATE and finish this mess :) */
-
-/*        if (poss_full > 1000000) {
-/* what we really need to do is go through and pare back
-to using a smaller number (e.g., > .002, .005)
-//printf("too many possibilities: %d\n",poss_full);
-return(-5);
-}*/
 
         fullProbMap = new MapWrap(PSEUDOCOUNT);
 
@@ -454,8 +445,7 @@ return(-5);
 
         /* start prob array with probabilities from full observations */
 
-        total=(double)poss_full;
-        total *= PSEUDOCOUNT;
+        total = poss_full * PSEUDOCOUNT;
 
         /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
         i.e., flat when nothing is known, close to phase known if a great deal is known */
@@ -539,12 +529,14 @@ return(-5);
         Vector haplos_present = new Vector();
         Vector haplo_freq= new Vector();
 
-        for (long  j=0; j<poss_full; j++) {
-            if (fullProbMap.get(new Long(j)) > .001) {
-                haplos_present.addElement(decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
 
-                haplo_freq.addElement(new Double(fullProbMap.get(new Long(j))));
-
+        Iterator kitr = fullProbMap.theMap.keySet().iterator();
+        while(kitr.hasNext()) {
+            Object key = kitr.next();
+            long keyLong = ((Long)key).longValue();
+            if(fullProbMap.get(key) > .001) {
+                haplos_present.addElement(decode_haplo_str(keyLong,num_blocks,block_size,hlist,num_hlist));
+                haplo_freq.addElement(new Double(fullProbMap.get(key)));
             }
         }
 
@@ -1012,7 +1004,7 @@ return(s.toString());
 
     boolean kid_consistent(long chap1, long chap2, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist, int this_trio, int num_loci)
     {
-        int i, val;
+        int i;
         boolean retval;
 
         int[] temp1 = decode_haplo_str(chap1,num_blocks,block_size,hlist,num_hlist);
@@ -1083,9 +1075,3 @@ return(s.toString());
         return haplotypes.length;
     }
 }
-
-
-
-
-
-
