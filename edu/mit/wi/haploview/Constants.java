@@ -6,7 +6,7 @@ public interface Constants {
     //main jframe setup stuff & labels.
     public static final double VERSION = 3.2;
     public static final String EMAIL_STRING = "haploview@broad.mit.edu";
-    public static final String TITLE_STRING = "Haploview "+VERSION;
+    public static final String TITLE_STRING = "Haploview "+VERSION + "[dev-unstable]";
     public static final String RELEASE_DATE = "13 April, 2005";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
     public static final String ABOUT_STRING = TITLE_STRING + "\n" + RELEASE_DATE + "\n" +
