@@ -892,17 +892,6 @@ public class EM implements Constants {
         }
     }
 
-/*    public String haplo_str(int h, int num_loci)
-{
-int i;//, val;
-StringBuffer s = new StringBuffer(num_loci);
-for (i=0; i<num_loci; i++) {
-if ((h&two_n[i])==two_n[i]) { s.append("2"); }
-else { s.append("1"); }
-}
-return(s.toString());
-}
-*/
     public int[] decode_haplo_str(long chap, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist)
     {
         int i, val,size=0,counter=0;
@@ -959,8 +948,8 @@ return(s.toString());
     }
 
     public void recursive_superposs(long h1, long h2, int block, int num_blocks, int[] num_hlist, int indiv) {
-        int j, curr_prod;
-        long newh1, newh2;
+        int j;
+        long newh1, newh2, curr_prod;
 
         if (block == num_blocks) {
             superdata[indiv].superposs[superdata[indiv].nsuper].h1 = h1;
@@ -999,8 +988,6 @@ return(s.toString());
             }
         }
     }
-
-
 
     boolean kid_consistent(long chap1, long chap2, int num_blocks, int[] block_size, int[][] hlist, int[] num_hlist, int this_trio, int num_loci)
     {
