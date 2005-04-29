@@ -213,11 +213,10 @@ public class Tagger {
     }
 
     private void peelBack(Vector tagsToBePeeled){
-
         Hashtable blockTagsByAllele = new Hashtable();
         HashSet snpsInBlockTags = new HashSet();
 
-        debugPrint("untagged.size() = " + untagged.size());
+        debugPrint("starting peelback. untagged.size() = " + untagged.size());
 
         Vector availTagSNPs = new Vector();
         for (int j = 0; j < tags.size(); j++){
@@ -271,7 +270,7 @@ public class Tagger {
             }
         }
 
-        debugPrint("untagged.size() = " + untagged.size());
+        debugPrint("finished attempt at pairwise untaggables. untagged.size() = " + untagged.size());
 
         for (int i = 0; i < tagsToBePeeled.size(); i++){
             TagSequence curTag = (TagSequence) tagsToBePeeled.get(i);
@@ -309,6 +308,8 @@ public class Tagger {
                 for (int j = 0; j < potentialTests.size(); j++){
                     LocusCorrelation lc = getPairwiseComp((VariantSequence)potentialTests.get(j),
                             thisTaggable);
+                    //todo: this potentially wastes a lot of time looking for a better hap tag after
+                    //todo: it's already found one that works.
                     if (lc.getRsq() >= minRSquared){
                         if (bestPredictor.containsKey(thisTaggable)){
                             if (lc.getRsq() >
