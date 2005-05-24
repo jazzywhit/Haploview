@@ -118,9 +118,18 @@ public class PermutationTestSet implements Constants{
         //need to use the same affected status for marker and haplotype association tests in case control,
         //so affectedStatus stores the shuffled affected status
         Vector affectedStatus = null;
+
+        if(Options.getAssocTest() == ASSOC_CC) {
+            Vector indList = pedFile.getUnrelatedIndividuals();
+            affectedStatus = new Vector();
+            for(int j=0;j<indList.size();j++) {
+                affectedStatus.add(new Integer(((Individual)indList.elementAt(j)).getAffectedStatus()));
+            }
+        }
+
         //need to use the same coin toss for marker and haplotype association tests in trio tdt,
         //so permuteInd stores whether each individual is permuted
-        Vector permuteInd = null;
+        Vector permuteInd = new Vector(pedFile.getAllIndividuals().size());
 
         permutationsPerformed = 0;
         bestExceededCount = 0;
@@ -136,12 +145,11 @@ public class PermutationTestSet implements Constants{
             //begin single marker association test
             if (Options.getAssocTest() == ASSOC_TRIO){
                 try {
-                    permuteInd = new Vector();
                     for(int j =0;j<pedFile.getAllIndividuals().size();j++) {
                         if(Math.random() < .5) {
-                            permuteInd.add(new Boolean(true));
+                            permuteInd.set(j,Boolean.valueOf(true));
                         } else {
-                            permuteInd.add(new Boolean(false));
+                            permuteInd.set(j,Boolean.valueOf(false));
                         }
                     }
 
@@ -149,11 +157,6 @@ public class PermutationTestSet implements Constants{
                 } catch(PedFileException pfe) {
                 }
             }else if (Options.getAssocTest() == ASSOC_CC){
-                Vector indList = pedFile.getUnrelatedIndividuals();
-                affectedStatus = new Vector();
-                for(int j=0;j<indList.size();j++) {
-                    affectedStatus.add(new Integer(((Individual)indList.elementAt(j)).getAffectedStatus()));
-                }
                 Collections.shuffle(affectedStatus);
                 try{
                     curResults = new AssociationTestSet(pedFile,affectedStatus, snpSet).getMarkerAssociationResults();
