@@ -1075,7 +1075,9 @@ public class HaploText implements Constants{
             if(doPermutationTest) {
                 AssociationTestSet permTests = new AssociationTestSet();
                 permTests.cat(markerTestSet);
-                permTests.cat(blockTestSet);
+                if(blockTestSet != null) {
+                    permTests.cat(blockTestSet);
+                }
                 final PermutationTestSet pts = new PermutationTestSet(permutationCount,textData.getPedFile(),customAssocSet,permTests);
                 Thread permThread = new Thread(new Runnable() {
                     public void run() {
