@@ -111,11 +111,11 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
 
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
 
-        JLabel capLabel = new JLabel("Captured " + t.getTaggedSoFar() +
+        JLabel capLabel = new JLabel("Captured " + t.getTaggedSoFar() + " of " + Chromosome.getSize() +
                 " alleles with mean r\u00b2 of " + Util.roundDouble(t.getMeanRSq(),3));
         listsPanel.add(capLabel);
 
-        listsPanel.add(new JLabel("Captured " + t.getFracOver8() + " percent of alleles with r\u00b2 > 0.8"));
+        listsPanel.add(new JLabel(t.getFracOver8() + " percent of captured alleles with r\u00b2 > 0.8"));
 
         JLabel useLabel = new JLabel("Using " +t.getNumTagSNPs() + " SNPs in " + t.getResults().size() + " tests.");
         listsPanel.add(useLabel);
