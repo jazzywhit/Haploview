@@ -9,7 +9,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.*;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.io.File;
@@ -32,6 +31,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
     private Hashtable snpsByName;
     private NumberTextField rsqField, lodField;
     private ButtonGroup aggressiveGroup;
+    private NumberTextField maxNumTagsField;
 
     public TaggerConfigPanel(HaploData hd)  {
         theData = hd;
@@ -115,6 +115,12 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         lodPanel.add(lodField);
         optsRightPanel.add(lodPanel);
 
+        JPanel maxNumPanel = new JPanel();
+        maxNumPanel.add(new JLabel("Maximum number of tags (blank for no limit)"));
+        maxNumTagsField = new NumberTextField("",6,false);
+        maxNumPanel.add(maxNumTagsField);
+        optsRightPanel.add(maxNumPanel);
+
         JPanel optsLeftPanel = new JPanel();
         optsLeftPanel.setLayout(new BoxLayout(optsLeftPanel, BoxLayout.Y_AXIS));
         JRadioButton pairwiseButton = new JRadioButton("pairwise tagging only");
@@ -188,6 +194,13 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                 Options.setTaggerLODCutoff(lodCut);
             }
 
+            int maxNumTags;
+            if (maxNumTagsField.getText().equals("")){
+                maxNumTags = 0;
+            }else{
+                maxNumTags = new Integer(maxNumTagsField.getText()).intValue();
+            }
+
             //build include/exclude lists
             Vector include = new Vector();
             Vector exclude = new Vector();
@@ -204,9 +217,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
             }
 
             tagControl = new TaggerController(theData,include,exclude,capture,
-                    Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue());
-            //tagControl.setIncluded(include);
-            //tagControl.setExcluded(exclude);
+                    Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue(),maxNumTags);
             tagControl.runTagger();
 
             final TaggerConfigPanel tcp = this;

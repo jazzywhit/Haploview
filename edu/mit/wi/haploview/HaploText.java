@@ -35,6 +35,7 @@ public class HaploText implements Constants{
     private boolean doPermutationTest;
     private int permutationCount;
     private int tagging;
+    private int maxNumTags;
     private double tagRSquaredCutOff = -1;
     private Vector forceIncludeTags;
     private String forceIncludeFileName;
@@ -71,8 +72,9 @@ public class HaploText implements Constants{
         return blockOutputType;
     }
 
-    private double getDoubleArg(String[] args, int valueIndex, String argName, double min, double max) {
+    private double getDoubleArg(String[] args, int valueIndex, double min, double max) {
         double argument = 0;
+        String argName = args[valueIndex-1];
         if(valueIndex>=args.length || ((args[valueIndex].charAt(0)) == '-')) {
             die( argName + " requires a value between " + min + " and " + max);
         }
@@ -83,6 +85,25 @@ public class HaploText implements Constants{
             }
         }catch(NumberFormatException nfe) {
             die(argName + " requires a value between " + min + " and " + max);
+        }
+        return argument;
+    }
+
+    private int getIntegerArg(String[] args, int valueIndex){
+        int argument = 0;
+        String argName = args[valueIndex-1];
+        if(valueIndex>=args.length || ((args[valueIndex].charAt(0)) == '-')){
+            die(argName + " requires an integer argument");
+        }
+        else {
+            try {
+                argument = Integer.parseInt(args[valueIndex]);
+                if(argument<0){
+                    die(argName + " argument must be a positive integer");
+                }
+            } catch(NumberFormatException nfe) {
+                die(argName + " argument must be a positive integer");
+            }
         }
         return argument;
     }
@@ -127,6 +148,7 @@ public class HaploText implements Constants{
         boolean assocCC = false;
         permutationCount = 0;
         tagging = Tagger.NONE;
+        maxNumTags = Tagger.DEFAULT_MAXNUMTAGS;
 
         double cutHighCI = -1;
         double cutLowCI = -1;
@@ -285,22 +307,7 @@ public class HaploText implements Constants{
             }
             else if(args[i].equalsIgnoreCase("-m") || args[i].equalsIgnoreCase("-maxdistance")) {
                 i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    die(args[i-1] + " requires an integer argument");
-                }
-                else {
-                    if(maxDistance != -1){
-                        die("only one "+args[i-1] + " argument allowed");
-                    }
-                    try {
-                        maxDistance = Integer.parseInt(args[i]);
-                        if(maxDistance<0){
-                            die(args[i-1] + " argument must be a positive integer");
-                        }
-                    } catch(NumberFormatException nfe) {
-                        die(args[i-1] + " argument must be a positive integer");
-                    }
-                }
+                maxDistance = getIntegerArg(args,i);
             }
             else if(args[i].equalsIgnoreCase("-b") || args[i].equalsIgnoreCase("-batch")) {
                 //batch mode
@@ -317,43 +324,31 @@ public class HaploText implements Constants{
             }
             else if(args[i].equalsIgnoreCase("-hapthresh")) {
                 i++;
-                hapThresh = getDoubleArg(args,i,"-hapthresh",0,1);
+                hapThresh = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-spacing")) {
                 i++;
-                spacingThresh = getDoubleArg(args,i,"-spacing",0,1);
+                spacingThresh = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-minMAF")) {
                 i++;
-                minimumMAF = getDoubleArg(args,i,"-minMAF",0,0.5);
+                minimumMAF = getDoubleArg(args,i,0,0.5);
             }
             else if(args[i].equalsIgnoreCase("-minGeno") || args[i].equalsIgnoreCase("-minGenoPercent")) {
                 i++;
-                minimumGenoPercent = getDoubleArg(args,i,"-minGeno",0,1);
+                minimumGenoPercent = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-hwcutoff")) {
                i++;
-                hwCutoff = getDoubleArg(args,i,"-hwcutoff",0,1);
+                hwCutoff = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-maxMendel") ) {
                 i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    die("-maxMendel requires an integer argument");
-                }
-                else {
-                    try {
-                        maxMendel = Integer.parseInt(args[i]);
-                        if(maxMendel<0){
-                            die("-maxMendel argument must be a positive integer");
-                        }
-                    } catch(NumberFormatException nfe) {
-                        die("-maxMendel argument must be a positive integer");
-                    }
-                }
+                maxMendel = getIntegerArg(args,i);
             }
             else if(args[i].equalsIgnoreCase("-missingcutoff")) {
                 i++;
-                missingCutoff = getDoubleArg(args,i,"-missingCutoff",0,1);
+                missingCutoff = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-assoctdt")) {
                 assocTDT = true;
@@ -389,50 +384,36 @@ public class HaploText implements Constants{
             }
             else if(args[i].equalsIgnoreCase("-blockCutHighCI")) {
                 i++;
-                cutHighCI = getDoubleArg(args,i,"-blockCutHighCI",0,1);
+                cutHighCI = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-blockCutLowCI")) {
                 i++;
-                cutLowCI = getDoubleArg(args,i,"-blockCutLowCI",0,1);
+                cutLowCI = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-blockMafThresh")) {
                 i++;
-                mafThresh = getDoubleArg(args,i,"-blockMafThresh",0,1);
+                mafThresh = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-blockRecHighCI")) {
                 i++;
-                recHighCI = getDoubleArg(args,i,"-blockRecHighCI",0,1);
+                recHighCI = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-blockInformFrac")) {
                 i++;
-                informFrac = getDoubleArg(args,i,"-blockInformFrac",0,1);
+                informFrac = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-block4GamCut")) {
                 i++;
-                fourGameteCutoff = getDoubleArg(args,i,"-block4GamCut",0,1);
+                fourGameteCutoff = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-blockSpineDP")) {
                 i++;
-                spineDP = getDoubleArg(args,i,"-blockSpineDP",0,1);
+                spineDP = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-permtests")) {
                 i++;
-                int permCount=0;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    die("-permtests requires an integer argument");
-                }
-                else {
-                    try {
-                        permCount = Integer.parseInt(args[i]);
-                        if(permCount<0){
-                            die("-permtests argument must be a positive integer");
-                        }
-                    } catch(NumberFormatException nfe) {
-                        die("-permtests argument must be a positive integer");
-                    }
-                }
                 doPermutationTest = true;
-                permutationCount = permCount;
+                permutationCount = getIntegerArg(args,i);
             }
             else if(args[i].equalsIgnoreCase("-customassoc")) {
                 i++;
@@ -448,13 +429,17 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-pairwiseTagging")){
                 tagging = Tagger.PAIRWISE_ONLY;
             }
+            else if(args[i].equalsIgnoreCase("-maxNumTags")){
+                i++;
+                maxNumTags = getIntegerArg(args,i);
+            }
             else if(args[i].equalsIgnoreCase("-tagrSqCutoff")) {
                 i++;
-                tagRSquaredCutOff = getDoubleArg(args,i,"-tagrSqCutoff",0,1);
+                tagRSquaredCutOff = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-tagLODCutoff")) {
                 i++;
-                Options.setTaggerLODCutoff(getDoubleArg(args,i,"-tagLODCutoff",0,100000));
+                Options.setTaggerLODCutoff(getDoubleArg(args,i,0,100000));
             }
             else if(args[i].equalsIgnoreCase("-includeTags")) {
                 i++; 
@@ -1161,7 +1146,7 @@ public class HaploText implements Constants{
                 }
 
                 TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture,
-                        tagging);
+                        tagging,maxNumTags);
                 tc.runTagger();
 
                 while(!tc.isTaggingCompleted()) {

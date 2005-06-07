@@ -13,6 +13,7 @@ public class Tagger {
     public static final int AGGRESSIVE_TRIPLE = 2;
     public static final int NONE = 4;
     private static final long DEFAULT_MAXDIST = 500000;
+    public static final int DEFAULT_MAXNUMTAGS = 0;
 
     //vector of SNP objects, which contains every SNP (tags and non-tags)
     private Vector snps;
@@ -30,7 +31,7 @@ public class Tagger {
     private int percentOver8;
     private double minRSquared;
     private int aggression;
-    //maximum comparison distance
+    private int maxNumTags;
     private long maxComparisonDistance;
 
     //Vector of Tag objects determined by the most recent call to findTags()
@@ -42,12 +43,15 @@ public class Tagger {
     public int taggedSoFar;
 
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac){
-        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST);
+        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS);
     }
 
-    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut, int aggressionLevel, long maxCompDist) {
+    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut,
+                  int aggressionLevel, long maxCompDist, int maxNumTags) {
+        //todo: throw illegal argument exception if maxNumTags < include.size()
         minRSquared = rsqCut;
         aggression = aggressionLevel;
+        this.maxNumTags = maxNumTags;
 
         if(maxCompDist < 0 ) {
             maxComparisonDistance = DEFAULT_MAXDIST;
@@ -102,7 +106,7 @@ public class Tagger {
         taggedSoFar = 0;
 
         //potentialTagsHash stores the PotentialTag objects keyed on the corresponding sequences
-        Hashtable potentialTagHash = new Hashtable();
+        Hashtable potentialTagByVarSeq = new Hashtable();
         PotentialTagComparator ptcomp = new PotentialTagComparator();
         VariantSequence currentVarSeq;
 
@@ -120,7 +124,7 @@ public class Tagger {
                         }
                     }
                 }
-                potentialTagHash.put(currentVarSeq,tempPT);
+                potentialTagByVarSeq.put(currentVarSeq,tempPT);
             }
         }
 
@@ -129,7 +133,7 @@ public class Tagger {
 
         debugPrint("snps to tag: " + sitesToCapture.size());
 
-        Vector potentialTags = new Vector(potentialTagHash.values());
+        Vector potentialTags = new Vector(potentialTagByVarSeq.values());
 
         int countTagged = 0;
         //add Tags for the ones which are forced in.
@@ -137,15 +141,15 @@ public class Tagger {
         //construct a list of PotentialTag objects for forced in sequences
         for (int i = 0; i < forceInclude.size(); i++) {
             VariantSequence variantSequence = (VariantSequence) forceInclude.elementAt(i);
-            if(variantSequence != null && potentialTagHash.containsKey(variantSequence)) {
-                includedPotentialTags.add((PotentialTag) potentialTagHash.get(variantSequence));
+            if(variantSequence != null && potentialTagByVarSeq.containsKey(variantSequence)) {
+                includedPotentialTags.add((PotentialTag) potentialTagByVarSeq.get(variantSequence));
             }
         }
 
         //add each forced in sequence to the list of tags
         for(int i=0;i<includedPotentialTags.size();i++) {
             PotentialTag curPT = (PotentialTag) includedPotentialTags.get(i);
-            Vector newlyTagged = addTag(curPT,potentialTagHash,sitesToCapture);
+            HashSet newlyTagged = addTag(curPT,potentialTagByVarSeq,sitesToCapture);
             countTagged += newlyTagged.size();
             sitesToCapture.removeAll(newlyTagged);
             sitesToCapture.remove(curPT.sequence);
@@ -154,7 +158,7 @@ public class Tagger {
 
         //loop until all snps are tagged
         while(sitesToCapture.size() > 0) {
-            potentialTags = new Vector(potentialTagHash.values());
+            potentialTags = new Vector(potentialTagByVarSeq.values());
             if(potentialTags.size() == 0) {
                 //we still have sites left to capture, but we have no more available tags.
                 //this should only happen if the sites remaining in sitesToCapture were specifically
@@ -167,7 +171,7 @@ public class Tagger {
             Collections.sort(potentialTags,ptcomp);
             PotentialTag currentBestTag = (PotentialTag) potentialTags.lastElement();
 
-            Vector newlyTagged = addTag(currentBestTag,potentialTagHash,sitesToCapture);
+            HashSet newlyTagged = addTag(currentBestTag,potentialTagByVarSeq,sitesToCapture);
             countTagged += newlyTagged.size();
 
             sitesToCapture.removeAll(newlyTagged);
@@ -189,6 +193,72 @@ public class Tagger {
             Collections.reverse(tags2BPeeled);
             peelBack(tags2BPeeled);
         }
+
+        //we've done the best we can. now we check to see if there's a limit to the
+        //num of tags we're allowed to choose.
+        if (maxNumTags > 0){
+            //if so we need to chuck out the extras. figure out the utility of each tagSNP
+            //i.e. how many SNPs for which they and their combos are the only tags
+
+            while (getTagSNPs().size() > maxNumTags){
+                Vector tagSNPs = getTagSNPs();
+                potentialTagByVarSeq = new Hashtable();
+                Hashtable tagSeqByPotentialTag = new Hashtable();
+                //account for stuff tagged by snps themselves
+                for (int i = 0; i < tagSNPs.size(); i++){
+                    TagSequence ts = (TagSequence) tagSNPs.get(i);
+                    PotentialTag pt = new PotentialTag(ts.getSequence());
+                    pt.addTagged(ts.getTagged());
+                    potentialTagByVarSeq.put(ts.getSequence(),pt);
+                    tagSeqByPotentialTag.put(pt,ts);
+                }
+                //go through all pt's and add their utilities as members of combos
+                Vector tagHaps = getTagHaplotypes();
+                for (int i = 0; i < tagHaps.size(); i++){
+                    TagSequence ts = (TagSequence) tagHaps.get(i);
+                    Block b = (Block) ts.getSequence();
+                    for (int j = 0; j < b.getSnps().size(); j++){
+                        ((PotentialTag)potentialTagByVarSeq.get(b.getSNP(j))).addTagged(ts.getTagged());
+                    }
+                }
+
+                //now perform the steps of sorting and peeling
+                Vector potTagVec = new Vector(potentialTagByVarSeq.values());
+                Collections.sort(potTagVec,ptcomp);
+
+                PotentialTag dumpedPT = (PotentialTag)potTagVec.firstElement();
+                TagSequence dumpedTS = (TagSequence) tagSeqByPotentialTag.get(dumpedPT);
+                Vector taggedByCurTag = dumpedTS.getTagged();
+                for (int j = 0; j < taggedByCurTag.size(); j++){
+                    //note for everything tagged by this guy that they're no longer tagged by him
+                    VariantSequence vs =  (VariantSequence)taggedByCurTag.get(j);
+                    vs.removeTag(dumpedTS);
+                    if (vs.getTags().size() == 0){
+                        taggedSoFar--;
+                    }
+                }
+                tagHaps = getTagHaplotypes();
+                for (int i = 0; i < tagHaps.size(); i++){
+                    TagSequence ts = (TagSequence) tagHaps.get(i);
+                    Block b = (Block) ts.getSequence();
+                    if (b.getSnps().contains(dumpedTS.getSequence())){
+                        //this hap tag is now defunct because it was comprised in part by dumpedTS
+                        Vector taggedByHap = ts.getTagged();
+                        for (int j = 0; j < taggedByHap.size(); j++){
+                            VariantSequence vs =  (VariantSequence)taggedByCurTag.get(j);
+                            vs.removeTag(dumpedTS);
+                            if (vs.getTags().size() == 0){
+                                taggedSoFar--;
+                            }
+                        }
+                        tags.remove(ts);
+                    }
+                }
+
+                tags.remove(dumpedTS);
+            }
+        }
+
 
         int count = 0;
         double numOver8 = 0;
@@ -308,8 +378,6 @@ public class Tagger {
                 for (int j = 0; j < potentialTests.size(); j++){
                     LocusCorrelation lc = getPairwiseComp((VariantSequence)potentialTests.get(j),
                             thisTaggable);
-                    //todo: this potentially wastes a lot of time looking for a better hap tag after
-                    //todo: it's already found one that works.
                     if (lc.getRsq() >= minRSquared){
                         if (bestPredictor.containsKey(thisTaggable)){
                             if (lc.getRsq() >
@@ -347,7 +415,6 @@ public class Tagger {
                 }
                 tags.remove(curTag);
             }
-
         }
     }
 
@@ -392,14 +459,14 @@ public class Tagger {
         return new Vector(tests);
     }
 
-    private Vector addTag(PotentialTag theTag,Hashtable potentialTagHash, Vector sitesToCapture) {
+    private HashSet addTag(PotentialTag theTag,Hashtable potentialTagHash, Vector sitesToCapture) {
         Vector potentialTags = new Vector(potentialTagHash.values());
 
         potentialTags.remove(theTag);
         potentialTagHash.remove(theTag.sequence);
         //newlyTagged contains alleles which were not tagged by anything in the set of tags before,
         //and are now tagged by theTag.
-        Vector newlyTagged = ((PotentialTag)theTag).tagged;
+        HashSet newlyTagged = ((PotentialTag)theTag).tagged;
 
         TagSequence tagSeq = new TagSequence(theTag.sequence);
         tags.add(tagSeq);
@@ -448,19 +515,24 @@ public class Tagger {
         VariantSequence sequence;
         // tagged contains the sequences which this sequence can tag, which are not yet tagged
         //(this is used in the while loop in findTags() )
-        Vector tagged;
+        HashSet tagged;
         //allTagged contains all sequences that this sequence can tag, regardless of what tags have already been chosen
-        Vector allTagged;
+        HashSet allTagged;
 
         public PotentialTag(VariantSequence s) {
             sequence = s;
-            tagged = new Vector();
-            allTagged = new Vector();
+            tagged = new HashSet();
+            allTagged = new HashSet();
         }
 
         public void addTagged(VariantSequence vs) {
             tagged.add(vs);
             allTagged.add(vs);
+        }
+
+        public void addTagged(Collection c){
+            tagged.addAll(c);
+            allTagged.addAll(c);
         }
 
         public void removeTagged(VariantSequence vs) {
@@ -515,6 +587,19 @@ public class Tagger {
         return res;
     }
 
+    public Vector getTagHaplotypes(){
+        Vector res = new Vector();
+        Iterator itr = tags.iterator();
+        while (itr.hasNext()){
+            TagSequence t = (TagSequence) itr.next();
+            if (t.getSequence() instanceof Block){
+                res.add(t);
+            }
+        }
+
+        return res;
+    }
+
     public Vector getForceInclude() {
         return forceInclude;
     }
@@ -528,7 +613,7 @@ public class Tagger {
 
         bw.write("#tagging with r^2 cutoff: " + minRSquared);
         bw.newLine();
-        bw.write("#tagged " + taggedSoFar + " alleles with mean r^2 of " + Util.roundDouble(meanRSq, 3));
+        bw.write("#captured " + taggedSoFar + " of " + snps.size() +" alleles with mean r^2 of " + Util.roundDouble(meanRSq, 3));
         bw.newLine();
         bw.write("#captured " + percentOver8 + " percent of alleles with r^2 > 0.8");
         bw.newLine();

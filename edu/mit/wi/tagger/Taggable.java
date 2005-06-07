@@ -1,6 +1,7 @@
 package edu.mit.wi.tagger;
 
 import java.util.List;
+import java.util.Comparator;
 
 interface Taggable {
 
@@ -9,6 +10,12 @@ interface Taggable {
      * @param t Tag object which tags this Taggable object 
      */
     public void addTag(Tag t);
+
+    public void removeTag(Tag t);
+
+    public void setTagComparator(Comparator tc);
+
+    public Comparator getTagComparator();
 
     /**
      * returns a list of the Tags which capture this site

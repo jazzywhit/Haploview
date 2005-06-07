@@ -18,7 +18,7 @@ public class TaggerController {
     private Hashtable snpHash;
 
     public TaggerController(HaploData hd, Vector included, Vector excluded,
-                            Vector sitesToCapture, int aggressionLevel) {
+                            Vector sitesToCapture, int aggressionLevel, int maxNumTags) {
         theData = hd;
         Vector taggerSNPs = new Vector();
 
@@ -66,8 +66,7 @@ public class TaggerController {
         }
 
         HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq,theData);
-
-        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff(), aggressionLevel, Options.getMaxDistance());
+        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff(), aggressionLevel, Options.getMaxDistance(), maxNumTags);
     }
 
     public void runTagger() {
