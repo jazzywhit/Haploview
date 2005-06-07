@@ -49,6 +49,19 @@
 	    case/controls. More details are available under
 	    <link linkend="association">association</link>. [pedfile only]
 	  </listitem>
+
+	  <listitem>
+	  Haploview will maximize the information available from a
+	  pedigree for both LD analyses and association tests. For the
+	  former it creates a maximal set of unrelated individuals,
+	  using trio data only for obligate parent/offspring
+	  phasing. For TDT association testing, all available
+	  transmissions from parent-offspring will be used. More
+	  detailed information about specific situations is available
+	  in the <ulink
+	  url="http://www.broad.mit.edu/mpg/haploview/faq.php">FAQ</ulink>.
+	  </listitem>
+	  
 	</itemizedlist>
       </para>
       
