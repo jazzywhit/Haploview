@@ -529,8 +529,9 @@ public class EM implements Constants {
         Vector haplos_present = new Vector();
         Vector haplo_freq= new Vector();
 
-
-        Iterator kitr = fullProbMap.theMap.keySet().iterator();
+        ArrayList keys =  new ArrayList(fullProbMap.theMap.keySet());
+        Collections.sort(keys);
+        Iterator kitr = keys.iterator();
         while(kitr.hasNext()) {
             Object key = kitr.next();
             long keyLong = ((Long)key).longValue();
