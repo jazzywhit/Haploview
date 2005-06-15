@@ -1125,21 +1125,21 @@ public class HaploText implements Constants{
 
                 for (int i = 0; i < forceIncludeTags.size(); i++) {
                     String s = (String) forceIncludeTags.elementAt(i);
-                    if(!names.contains(s)) {
-                        System.out.println("Marker " + s + " in the list of forced included tags does not appear in the marker info file.");
-                        System.exit(1);
+                    if(!names.contains(s) && !quietMode) {
+                        System.out.println("Warning: skipping marker " + s + " in the list of forced included tags since I don't know about it.");
                     }
                 }
 
                 for (int i = 0; i < forceExcludeTags.size(); i++) {
                     String s = (String) forceExcludeTags.elementAt(i);
-                    if(!names.contains(s)) {
-                        System.out.println("Marker " + s + " in the list of forced excluded tags does not appear in the marker info file.");
-                        System.exit(1);
+                    if(!names.contains(s) && !quietMode) {
+                        System.out.println("Warning: skipping marker " + s + " in the list of forced excluded tags since I don't know about it.");
                     }
                 }
 
+                //chuck out filtered jazz from excludes, and nonexistent markers from both
                 forceExcludeTags.retainAll(filteredNames);
+                forceIncludeTags.retainAll(names);
 
                 if(!quietMode) {
                     System.out.println("Starting tagging.");
