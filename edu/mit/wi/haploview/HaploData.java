@@ -66,6 +66,7 @@ public class HaploData implements Constants{
         //and the detailed data can be viewed with a mouse press.
 
         Vector names = new Vector();
+        HashSet nameSearch = new HashSet();
         HashSet dupCheck = new HashSet();
         Vector positions = new Vector();
         Vector extras = new Vector();
@@ -119,10 +120,11 @@ public class HaploData implements Constants{
                     }
                     prevloc = loc;
 
-                    if (names.contains(name)){
+                    if (nameSearch.contains(name)){
                         dupCheck.add(name);
                     }
                     names.add(name);
+                    nameSearch.add(name);
                     positions.add(l);
                     extras.add(extra);
                 }
@@ -139,34 +141,40 @@ public class HaploData implements Constants{
             if (hapmapGoodies != null){
                 //we know some stuff from the hapmap so we'll add it here
                 for (int x=0; x < hapmapGoodies.length; x++){
-                    names.add(hapmapGoodies[x][0]);
-                    positions.add(hapmapGoodies[x][1]);
-                    extras.add(null);
-                    if (names.contains(hapmapGoodies[x][0])){
+                    if (nameSearch.contains(hapmapGoodies[x][0])){
                         dupCheck.add(hapmapGoodies[x][0]);
                     }
+                    names.add(hapmapGoodies[x][0]);
+                    nameSearch.add(hapmapGoodies[x][0]);
+                    positions.add(hapmapGoodies[x][1]);
+                    extras.add(null);
+
                 }
                 infoKnown = true;
             }
 
-            //check for duplicate names
-            Iterator ditr = dupCheck.iterator();
-            while (ditr.hasNext()){
-                String n = (String) ditr.next();
-                int numdups = 1;
-                for (int i = 0; i < names.size(); i++){
-                    if (names.get(i).equals(n)){
-                        //leave the first instance of the duplicate name the same
-                        if (numdups > 1){
-                            String newName = n + "." + numdups;
-                            while (names.contains(newName)){
-                                numdups++;
-                                newName = n + "." + numdups;
+
+            if(dupCheck.size() > 0) {
+                int nameCount = names.size();
+                Hashtable dupCounts = new Hashtable();
+                for(int i=0;i<nameCount;i++) {
+                    if(dupCheck.contains(names.get(i))){
+                        String n = (String) names.get(i);
+                        if(dupCounts.containsKey(n)){
+                            int numDups = ((Integer) dupCounts.get(n)).intValue();
+                            String newName = n + "."  + numDups;
+                            while (nameSearch.contains(newName)){
+                                numDups++;
+                                newName = n + "." + numDups;
                             }
                             names.setElementAt(newName,i);
-                            dupNames = true;
+                            nameSearch.add(newName);
+                            dupCounts.put(n,new Integer(numDups)) ;
+                        }else {
+                            //we leave the first instance with its original name
+                            dupCounts.put(n,new Integer(1));
                         }
-                        numdups++;
+                        dupNames = true;
                     }
                 }
             }
