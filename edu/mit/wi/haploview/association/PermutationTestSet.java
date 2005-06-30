@@ -129,7 +129,12 @@ public class PermutationTestSet implements Constants{
 
         //need to use the same coin toss for marker and haplotype association tests in trio tdt,
         //so permuteInd stores whether each individual is permuted
-        Vector permuteInd = new Vector(pedFile.getAllIndividuals().size());
+        //we start by creating a vector of the right size, but with a bunch of nulls
+        //since ea. permutation (below) will set the values in the vector
+        Vector permuteInd = new Vector();
+        for (int i = 0; i < pedFile.getAllIndividuals().size(); i++){
+            permuteInd.add(null);
+        }
 
         permutationsPerformed = 0;
         bestExceededCount = 0;
