@@ -684,7 +684,7 @@ public class HaploText implements Constants{
         File dataFile;
         String line;
         StringTokenizer tok;
-        String infoMaybe ="";
+        String infoMaybe =null;
 
         files = new Vector();
         if(batchFileName == null) {
@@ -709,7 +709,7 @@ public class HaploText implements Constants{
             for(int i = 0;i<files.size();i++){
                 line = (String)files.get(i);
                 tok = new StringTokenizer(line);
-                infoMaybe = "";
+                infoMaybe = null;
                 if(tok.hasMoreTokens()){
                     dataFile = new File(tok.nextToken());
                     if(tok.hasMoreTokens()){
