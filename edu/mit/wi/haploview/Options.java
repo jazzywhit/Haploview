@@ -6,6 +6,7 @@ public class Options {
     private static double missingThreshold;
     private static double spacingThreshold;
     private static int assocTest;
+    private static int tdtType;
     private static double haplotypeDisplayThreshold;
     private static int LDColorScheme;
     private static boolean showGBrowse;
@@ -136,5 +137,13 @@ public class Options {
 
     public static void setTaggerLODCutoff(double taggerLODCutoff) {
         Options.taggerLODCutoff = taggerLODCutoff;
+    }
+
+    public static int getTdtType() {
+        return tdtType;
+    }
+
+    public static void setTdtType(int tdtType) {
+        Options.tdtType = tdtType;
     }
 }

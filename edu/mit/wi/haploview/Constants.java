@@ -83,6 +83,10 @@ public interface Constants {
     static final int ASSOC_TRIO = 1;
     static final int ASSOC_CC = 2;
 
+    //tdt types
+    static final int TDT_STD = 0;
+    static final int TDT_PAREN = 1;
+
     //single marker association display stuff
     static final int SHOW_SINGLE_COUNTS = 0;
     static final int SHOW_SINGLE_FREQS = 1;

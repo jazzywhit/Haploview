@@ -15,6 +15,7 @@ public class AssociationTestSet implements Constants{
     private Vector results;
     private HashSet whitelist;
     private Vector filterAlleles;
+    private boolean permTests = false;
 
     public AssociationTestSet(){
         results = new Vector();
@@ -25,22 +26,28 @@ public class AssociationTestSet implements Constants{
         whitelist = new HashSet();
 
         if (Options.getAssocTest() == ASSOC_TRIO){
-            buildTrioSet(pf, permute, snpsToBeTested);
+            if(Options.getTdtType() == TDT_STD) {
+                buildTrioSet(pf, permute, new TreeSet(snpsToBeTested));
+            }else if(Options.getTdtType() == TDT_PAREN) {
+                buildParenTDTTrioSet(pf,permute,new TreeSet(snpsToBeTested));
+            }
         }else if (Options.getAssocTest() == ASSOC_CC){
-            buildCCSet(pf, permute, snpsToBeTested);
+            buildCCSet(pf, permute, new TreeSet(snpsToBeTested));
         }
     }
 
-    private void buildCCSet(PedFile pf, Vector affectedStatus, Vector snpsToBeTested){
-        Vector results = new Vector();
+    private void buildCCSet(PedFile pf, Vector affectedStatus, TreeSet snpsToBeTested){
+        ArrayList results = new ArrayList();
+
         int numMarkers = Chromosome.getUnfilteredSize();
 
         Vector indList = pf.getUnrelatedIndividuals();
+        int numInds = indList.size();
 
         if(affectedStatus == null || affectedStatus.size() != indList.size()) {
-            affectedStatus = new Vector();
+            affectedStatus = new Vector(indList.size());
             for(int i=0;i<indList.size();i++) {
-                Individual tempInd = ((Individual)indList.elementAt(i));
+                Individual tempInd = ((Individual)indList.get(i));
                 affectedStatus.add(new Integer(tempInd.getAffectedStatus()));
             }
         }
@@ -52,7 +59,7 @@ public class AssociationTestSet implements Constants{
         //this loop determines who is eligible to be used for the case/control association test
         for(int i=0;i<useable.length;i++) {
 
-            Individual tempInd = ((Individual)indList.elementAt(i));
+            Individual tempInd = ((Individual)indList.get(i));
             Family tempFam = pf.getFamily(tempInd.getFamilyID());
 
             //need to check to make sure we don't include both parents and kids of trios
@@ -77,12 +84,12 @@ public class AssociationTestSet implements Constants{
                 byte allele1 = 0, allele2 = 0;
                 int[][] counts = new int[2][2];
                 Individual currentInd;
-                for (int j = 0; j < indList.size(); j++){
-                    //need to check below to make sure we don't include parents and kids of trios
-                    currentInd = (Individual)indList.elementAt(j);
-                    int cc = ((Integer)affectedStatus.get(j)).intValue();
-                    byte[] a = currentInd.getMarker(i);
+                for (int j = 0; j < numInds; j++){
                     if(useable[j]) {
+                        currentInd = (Individual)indList.get(j);
+                        int cc = ((Integer)affectedStatus.get(j)).intValue();
+                        byte[] a = currentInd.getMarker(i);
+
                         if (cc == 0) continue;
                         if (cc == 2) cc = 0;
                         byte a1 = a[0];
@@ -144,10 +151,10 @@ public class AssociationTestSet implements Constants{
             }
         }
 
-        this.results = results;
+        this.results = new Vector(results);
     }
 
-    private void buildTrioSet(PedFile pf, Vector permuteInd, Vector snpsToBeTested) throws PedFileException{
+    private void buildTrioSet(PedFile pf, Vector permuteInd, TreeSet snpsToBeTested) throws PedFileException{
         Vector results = new Vector();
 
         Vector indList = pf.getAllIndividuals();
@@ -268,6 +275,156 @@ public class AssociationTestSet implements Constants{
         this.results = results;
     }
 
+    private void buildParenTDTTrioSet(PedFile pf, Vector permuteInd, TreeSet snpsToBeTested) throws PedFileException{
+        Vector results = new Vector();
+
+        Vector indList = pf.getAllIndividuals();
+
+        if(permuteInd == null || permuteInd.size() != indList.size()) {
+            permuteInd = new Vector();
+            for (int i = 0; i < indList.size(); i++){
+                permuteInd.add(new Boolean(false));
+            }
+        }
+
+        //todo: need to make sure each set of parents only used once
+        int numMarkers = Chromosome.getUnfilteredSize();
+        for (int i = 0; i < numMarkers; i++){
+            SNP currentMarker = Chromosome.getUnfilteredMarker(i);
+            if (snpsToBeTested.contains(currentMarker)){
+                int discordantNotTallied=0;
+                int discordantTallied = 0;
+                Individual currentInd;
+                Family currentFam;
+                HashSet usedParents = new HashSet();
+
+                AssociationResult.TallyTrio tt = new AssociationResult.TallyTrio();
+                for (int j = 0; j < indList.size(); j++){
+                    currentInd = (Individual)indList.elementAt(j);
+                    currentFam = pf.getFamily(currentInd.getFamilyID());
+                    if (currentFam.containsMember(currentInd.getMomID()) &&
+                            currentFam.containsMember(currentInd.getDadID()) &&
+                            currentInd.getAffectedStatus() == 2){
+                        //if he has both parents, and is affected, we can get a transmission
+                        Individual mom = currentFam.getMember(currentInd.getMomID());
+                        Individual dad = currentFam.getMember(currentInd.getDadID());
+                        if(usedParents.contains(mom) || usedParents.contains(dad)) {
+                            continue;
+                        }
+                        byte[] thisMarker = currentInd.getMarker(i);
+                        byte kid1 = thisMarker[0];
+                        byte kid2 = thisMarker[1];
+                        thisMarker = dad.getMarker(i);
+                        byte dad1 = thisMarker[0];
+                        byte dad2 = thisMarker[1];
+                        thisMarker = mom.getMarker(i);
+                        byte mom1 = thisMarker[0];
+                        byte mom2 = thisMarker[1];
+                        byte momT=0, momU=0, dadT=0, dadU=0;
+                        if (kid1 == 0 || kid2 == 0 || dad1 == 0 || dad2 == 0 || mom1 == 0 || mom2 == 0) {
+                            continue;
+                        } else if (kid1 == kid2) {
+                            //kid homozygous
+                            if (dad1 == kid1) {
+                                dadT = dad1;
+                                dadU = dad2;
+                            } else {
+                                dadT = dad2;
+                                dadU = dad1;
+                            }
+
+                            if (mom1 == kid1) {
+                                momT = mom1;
+                                momU = mom2;
+                            } else {
+                                momT = mom2;
+                                momU = mom1;
+                            }
+                        } else {
+                            if (dad1 == dad2 && mom1 != mom2) {
+                                //dad hom mom het
+                                dadT = dad1;
+                                dadU = dad2;
+                                if (kid1 == dad1) {
+                                    momT = kid2;
+                                    momU = kid1;
+                                } else {
+                                    momT = kid1;
+                                    momU = kid2;
+                                }
+                            } else if (mom1 == mom2 && dad1 != dad2) {
+                                //dad het mom hom
+                                momT = mom1;
+                                momU = mom2;
+                                if (kid1 == mom1) {
+                                    dadT = kid2;
+                                    dadU = kid1;
+                                } else {
+                                    dadT = kid1;
+                                    dadU = kid2;
+                                }
+                            } else if (dad1 == dad2 && mom1 == mom2) {
+                                //mom & dad hom
+                                dadT = dad1;
+                                dadU = dad1;
+                                momT = mom1;
+                                momU = mom1;
+                            } else {
+                                //everybody het
+                                dadT = (byte)(4+dad1);
+                                dadU = (byte)(4+dad2);
+                                momT = (byte)(4+mom1);
+                                momU = (byte)(4+mom2);
+                            }
+                        }
+
+                        if(((Boolean)permuteInd.get(j)).booleanValue()) {
+                            tt.tallyTrioInd(dadU, dadT);
+                            tt.tallyTrioInd(momU, momT);
+                        } else {
+                            tt.tallyTrioInd(dadT, dadU);
+                            tt.tallyTrioInd(momT, momU);
+                        }
+                        if(mom.getAffectedStatus() != dad.getAffectedStatus()) {
+                            //discordant parental phenotypes
+                            if(!(dad1 == mom1 && dad2 == mom2) && !(dad1 == mom2 && dad2 == mom1)) {
+                                if(mom.getAffectedStatus() == 2) {
+                                    tt.tallyDiscordantParents(momT,momU,dadT,dadU);
+
+                                } else if(dad.getAffectedStatus() == 2) {
+                                    tt.tallyDiscordantParents(dadT,dadU,momT,momU);
+                                }
+                                discordantTallied++;
+                            }else {
+                                discordantNotTallied++;
+                            }
+                        }
+                        usedParents.add(mom);
+                        usedParents.add(dad);
+                        
+                    }
+                }
+                int[] g1 = {tt.allele1};
+                int[] g2 = {tt.allele2};
+                int[] m  = {i};
+
+                Haplotype thisSNP1 = new Haplotype(g1, 0, m, null);
+                thisSNP1.setTransCount(tt.counts[0][0]);
+                thisSNP1.setUntransCount(tt.counts[1][0]);
+                thisSNP1.setDiscordantAlleleCounts(tt.discordantAlleleCounts);
+                Haplotype thisSNP2 = new Haplotype(g2, 0, m, null);
+                thisSNP2.setTransCount(tt.counts[0][1]);
+                thisSNP2.setUntransCount(tt.counts[1][1]);
+                thisSNP2.setDiscordantAlleleCounts(tt.getDiscordantCountsAllele2());
+
+                Haplotype[] daBlock = {thisSNP1, thisSNP2};
+                results.add(new MarkerAssociationResult(daBlock, currentMarker.getName(), currentMarker));
+
+            }
+        }
+        this.results = results;
+    }
+
     public AssociationTestSet(Haplotype[][] haplos, Vector names){
         //use this constructor for default hap tests so you can filter by display freq
         whitelist = new HashSet();
@@ -292,14 +449,30 @@ public class AssociationTestSet implements Constants{
         this.filterAlleles = alleles;
         Vector results = new Vector();
         if (haplos != null){
+            boolean missing = false;
+            Vector missingAlleles =new Vector();
             for (int i = 0; i < haplos.length; i++){
-                String blockname;
-                if (names == null){
-                    blockname = "Block " + (i+1);
-                }else{
-                    blockname = (String) names.get(i);
+                try {
+
+                    String blockname;
+                    if (names == null){
+                        blockname = "Block " + (i+1);
+                    }else{
+                        blockname = (String) names.get(i);
+                    }
+                    results.add(new HaplotypeAssociationResult(haplos[i], (String)alleles.get(i),blockname));
+                }catch(HaploViewException hve) {
+                    missing = true;
+                    missingAlleles.add((String)names.get(i) + "\t " + (String)alleles.get(i));
+
                 }
-                results.add(new HaplotypeAssociationResult(haplos[i], (String)alleles.get(i),blockname));
+            }
+
+            if(missing) {
+                for(int i=0;i<missingAlleles.size();i++) {
+                    System.out.println(missingAlleles.get(i));
+                }
+                throw new HaploViewException("alleles missing");
             }
         }
         this.results = results;
@@ -387,18 +560,42 @@ public class AssociationTestSet implements Constants{
         Vector blocks = new Vector();
         Vector names = new Vector();
         Vector alleles = new Vector();
+        Hashtable blockHash = new Hashtable();
+        int multiMarkerTestcount =0;
+
         for(int i=0;i<tests.size();i++) {
             //first go through and get all the multimarker tests to package up to hand to theData.generateHaplotypes()
             AssociationTest currentTest = (AssociationTest) tests.get(i);
             if(currentTest.getNumMarkers() > 1) {
-                blocks.add(currentTest.getFilteredMarkerArray());
                 names.add(currentTest.getName());
                 alleles.add(currentTest.getAllele());
+                if(!blockHash.containsKey(currentTest)){
+                    blocks.add(currentTest.getFilteredMarkerArray());
+
+                    blockHash.put(currentTest,new Integer(blocks.size()-1));
+                }
+                multiMarkerTestcount++;
+
             }
         }
+
         this.filterAlleles = alleles;
-        Haplotype[][] blockHaps = theData.generateHaplotypes(blocks);
-        Vector blockResults = new AssociationTestSet(blockHaps, names, alleles).getResults();
+        System.out.println("blocks.size() = " + blocks.size());
+        Haplotype[][] blockHaps = theData.generateHaplotypes(blocks, permTests);
+
+        System.out.println("blockHaps.length = " + blockHaps.length);
+        Haplotype[][] realBlockHaps = new Haplotype[multiMarkerTestcount][];
+        int multiMarkerCountTemp=0;
+        for(int i=0;i<tests.size();i++) {
+            AssociationTest currentTest = (AssociationTest) tests.get(i);
+            if(currentTest.getNumMarkers() > 1) {
+                realBlockHaps[multiMarkerCountTemp] = blockHaps[((Integer)blockHash.get(currentTest)).intValue()];
+                multiMarkerCountTemp++;                
+            }
+        }
+
+        
+        Vector blockResults = new AssociationTestSet(realBlockHaps, names, alleles).getResults();
         Iterator britr = blockResults.iterator();
 
         for (int i = 0; i < tests.size(); i++){
@@ -424,9 +621,9 @@ public class AssociationTestSet implements Constants{
         //return the results but without any single snps which are filtered out.
         Vector filt = new Vector();
 
-        Vector unFilteredMarkers = new Vector();
+        TreeMap unFilteredMarkers = new TreeMap();
         for (int i = 0; i < Chromosome.getSize(); i++){
-            unFilteredMarkers.add(Chromosome.getMarker(i));
+            unFilteredMarkers.put(Chromosome.getMarker(i), null);
         }
 
         Iterator itr = results.iterator();
@@ -435,7 +632,7 @@ public class AssociationTestSet implements Constants{
             if (o instanceof HaplotypeAssociationResult){
                 filt.add(o);
             }else{
-                if (unFilteredMarkers.contains(((MarkerAssociationResult)o).getSnp())){
+                if (unFilteredMarkers.containsKey(((MarkerAssociationResult)o).getSnp())){
                     //only add it if it's not filtered.
                     filt.add(o);
                 }
@@ -544,6 +741,20 @@ public class AssociationTestSet implements Constants{
 
         public String getAllele() {
             return allele;
+        }
+
+        public boolean equals(Object o) {
+            if(o instanceof AssociationTest) {
+                AssociationTest at = (AssociationTest) o;
+                if(markers.equals(at.markers) && allele.equals(at.allele)){
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            return markers.hashCode() + allele.hashCode();
         }
     }
 
@@ -663,5 +874,9 @@ public class AssociationTestSet implements Constants{
 
         fw.write(result.toString().toCharArray());
         fw.close();
+    }
+
+    public void setPermTests(boolean permTests) {
+        this.permTests = permTests;
     }
 }

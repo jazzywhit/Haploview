@@ -1,6 +1,8 @@
 package edu.mit.wi.haploview;
 
-public class SNP{
+import java.math.BigInteger;
+
+public class SNP implements Comparable{
 
     private String name;
     private long position;
@@ -59,5 +61,34 @@ public class SNP{
 
     public int getDupStatus(){
         return dup;
+    }
+
+    public int compareTo(Object o) {
+        SNP s = (SNP)o;
+        if(this.equals(s)) {
+            return 0;
+        } else if(this.position == s.position) {
+            return name.compareTo(s.name);
+        } else {
+            return this.position > s.position ? 1 : -1;
+        }
+    }
+
+    public boolean equals(Object o) {
+        if(this == o) {
+            return true;
+        }
+        if(o instanceof SNP) {
+            SNP s = (SNP)o;
+            if(this.name == s.name && this.position == s.position) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int hashCode() {
+        //uses idea from Long hashcode to hash position
+        return (name.hashCode() + (int)(position ^ (position >>> 32)));
     }
 }

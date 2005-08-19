@@ -12,6 +12,7 @@ public class Haplotype{
     private double[] crossovers;
     private double transCount;
     private double untransCount;
+    private double[] discordantAlleleCounts;
     private double caseCount;
     private double controlCount;
     private EM blockEM;
@@ -107,6 +108,29 @@ public class Haplotype{
         this.controlCount = controlCount;
     }
 
+    public double[] getDiscordantAlleleCounts() {
+        return discordantAlleleCounts;
+    }
+
+    public void setDiscordantAlleleCounts(int[] discordantAlleleCounts) {
+        if(discordantAlleleCounts.length != 9 ) {
+            throw new IllegalArgumentException();
+        }
+
+        this.discordantAlleleCounts = new double[9];
+        for(int i=0;i<9;i++) {
+            this.discordantAlleleCounts[i] = discordantAlleleCounts[i];
+        }
+    }
+
+    public void setDiscordantAlleleCounts(double[] d) {
+        if(d.length != 9) {
+            throw new IllegalArgumentException();
+        }
+
+        this.discordantAlleleCounts = d;
+    }
+
     public String toString(){
         StringBuffer curHap = new StringBuffer(genotypes.length);
         for(int k=0;k<genotypes.length;k++) {
@@ -127,5 +151,9 @@ public class Haplotype{
 
     public EM getEM() {
         return blockEM;
+    }
+
+    public void setEM(EM em) {
+        blockEM = em;
     }
 }

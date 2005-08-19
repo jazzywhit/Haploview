@@ -1,3 +1,4 @@
+
 package edu.mit.wi.haploview.association;
 
 import edu.mit.wi.pedfile.PedFile;
@@ -66,8 +67,9 @@ public class PermutationTestSet implements Constants{
 
         double curBest = 0;
         String curName = "";
-        for(int i=0;i<activeAssocTestSet.getFilteredResults().size();i++) {
-            AssociationResult tmpRes = (AssociationResult) activeAssocTestSet.getFilteredResults().get(i);
+        Vector filteredResults = activeAssocTestSet.getFilteredResults();
+        for(int i=0;i<filteredResults.size();i++) {
+            AssociationResult tmpRes = (AssociationResult) filteredResults.get(i);
             for (int j = 0; j < tmpRes.getAlleleCount(); j++){
                 if (tmpRes.getChiSquare(j) > curBest){
                     curName = tmpRes.getDisplayName(j);
@@ -88,7 +90,7 @@ public class PermutationTestSet implements Constants{
         }
 
         Vector snpSet = new Vector();
-        Iterator sitr = activeAssocTestSet.getFilteredResults().iterator();
+        Iterator sitr = filteredResults.iterator();
         while (sitr.hasNext()){
             Object o = sitr.next();
             if (o instanceof MarkerAssociationResult){
@@ -121,20 +123,15 @@ public class PermutationTestSet implements Constants{
 
         if(Options.getAssocTest() == ASSOC_CC) {
             Vector indList = pedFile.getUnrelatedIndividuals();
-            affectedStatus = new Vector();
+            affectedStatus = new Vector(indList.size());
             for(int j=0;j<indList.size();j++) {
-                affectedStatus.add(new Integer(((Individual)indList.elementAt(j)).getAffectedStatus()));
+                affectedStatus.add(new Integer(((Individual)indList.get(j)).getAffectedStatus()));
             }
         }
 
         //need to use the same coin toss for marker and haplotype association tests in trio tdt,
         //so permuteInd stores whether each individual is permuted
-        //we start by creating a vector of the right size, but with a bunch of nulls
-        //since ea. permutation (below) will set the values in the vector
-        Vector permuteInd = new Vector();
-        for (int i = 0; i < pedFile.getAllIndividuals().size(); i++){
-            permuteInd.add(null);
-        }
+        Vector permuteInd = new Vector(pedFile.getAllIndividuals().size());
 
         permutationsPerformed = 0;
         bestExceededCount = 0;
@@ -176,7 +173,7 @@ public class PermutationTestSet implements Constants{
                 if(Options.getAssocTest() == ASSOC_TRIO) {
                     for(int j=0;j<fakeHaplos.length;j++) {
                         EM curEM = fakeHaplos[j][0].getEM();
-                        curEM.doAssociationTests(null,permuteInd);
+                        curEM.doAssociationTests(null,permuteInd, null);
                         for(int k=0;k<fakeHaplos[j].length;k++) {
                             fakeHaplos[j][k].setTransCount(curEM.getTransCount(k));
                             fakeHaplos[j][k].setUntransCount(curEM.getUntransCount(k));
@@ -185,7 +182,7 @@ public class PermutationTestSet implements Constants{
                 } else if(Options.getAssocTest() == ASSOC_CC) {
                     for(int j=0;j<fakeHaplos.length;j++) {
                         EM curEM = fakeHaplos[j][0].getEM();
-                        curEM.doAssociationTests(affectedStatus,null);
+                        curEM.doAssociationTests(affectedStatus,null, null);
                         for(int k=0;k<fakeHaplos[j].length;k++) {
                             fakeHaplos[j][k].setCaseCount(curEM.getCaseCount(k));
                             fakeHaplos[j][k].setControlCount(curEM.getControlCount(k));
@@ -283,8 +280,9 @@ public class PermutationTestSet implements Constants{
         Vector results = new Vector();
         //dont loop through if we haven't done any permutations yet
         if(permutationsPerformed > 0) {
-            for(int i=0;i<activeAssocTestSet.getFilteredResults().size();i++) {
-                AssociationResult tmpRes = (AssociationResult) activeAssocTestSet.getFilteredResults().get(i);
+            Vector filteredResults = activeAssocTestSet.getFilteredResults();
+            for(int i=0;i<filteredResults.size();i++) {
+                AssociationResult tmpRes = (AssociationResult) filteredResults.get(i);
                 if (selectionType == SINGLE_ONLY && tmpRes instanceof HaplotypeAssociationResult){
                     //if we're not permuting the haps in blocks, don't add them to the results vector.
                     continue;

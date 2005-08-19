@@ -8,6 +8,7 @@ public class EM implements Constants {
     private double[] frequencies;
     private Vector obsT, obsU;
     private Vector controlCounts, caseCounts;
+    private Vector discordantCounts;
 
     final int MISSINGLIMIT = 4;
     final int MAXLOCI = 500;
@@ -72,6 +73,60 @@ public class EM implements Constants {
 
         Set getKeySet() {
             return theMap.keySet();
+        }
+    }
+
+    class DiscordantTally {
+        private double[] counts = new double[9];
+        private long theAllele;
+
+        public DiscordantTally(long a){
+            theAllele = a;
+        }
+
+        public void tally(long affectedHap1,long affectedHap2,long unaffectedHap1, long unaffectedHap2, double freq){
+            int offset = 0;
+            if(affectedHap1 == affectedHap2 && affectedHap1 == theAllele) {
+                //aff is DD
+                offset  = 0;
+            }else if(affectedHap1 == theAllele || affectedHap2 == theAllele) {
+                //aff is Dd
+                offset = 1;
+            }else {
+                offset = 2;
+            }
+
+            if(unaffectedHap1 == theAllele) {
+                if(unaffectedHap1 == unaffectedHap2) {
+                    //unaff is DD
+                    counts[0+offset]+= freq;
+                }else {
+                    //unaff is Dd
+                    counts[3+ offset]+= freq;
+                }
+            } else if(unaffectedHap2 == theAllele) {
+                //unaff is Dd
+                counts[3 + offset]+= freq;
+            }else {
+                //unaff is dd
+                counts[6+offset]+= freq;
+            }
+        }
+
+        public void combine(DiscordantTally dt) {
+            for(int i=0;i<9;i++) {
+                counts[i] += dt.counts[i];
+            }
+        }
+
+        public void normalize(double d){
+            for(int i=0;i<9;i++) {
+                counts[i] /= d;
+            }
+        }
+
+        public double[] getCounts() {
+            return counts;
         }
     }
 
@@ -140,6 +195,7 @@ public class EM implements Constants {
         Vector inputHaploTrios = new Vector();
         Vector affSingletons = new Vector();
         Vector affTrios = new Vector();
+        Vector affKids = new Vector();
         //whichVector[i] stores a value which indicates which vector chromosome i's genotype should go in
         //1 indicates inputHaploSingletons (singletons), 2 indicates inputHaploTrios,
         //3 indicates a person from a broken trio who is treated as a singleton
@@ -277,6 +333,7 @@ public class EM implements Constants {
                     inputHaploTrios.add(thisHap);
                     if(addAff) {
                         affTrios.add(new Integer(thisChrom.getAffected()));
+                        affKids.add(thisChrom.getKidAffected());
                     }
                 }else if (whichVector[i] == 3){
                     inputHaploSingletons.add(thisHap);
@@ -298,12 +355,12 @@ public class EM implements Constants {
 
         byte[][] input_haplos = (byte[][])inputHaploTrios.toArray(new byte[0][0]);
 
-        full_em_breakup(input_haplos, block_size, affTrios);
+        full_em_breakup(input_haplos, block_size, affTrios, affKids);
 
 
     }
 
-    private void full_em_breakup( byte[][] input_haplos, int[] block_size, Vector affStatus) throws HaploViewException{
+    private void full_em_breakup( byte[][] input_haplos, int[] block_size, Vector affStatus, Vector kidAffStatus) throws HaploViewException{
         int num_poss, iter;
         double total = 0;
         int block, start_locus, end_locus, biggest_block_size;
@@ -507,7 +564,7 @@ public class EM implements Constants {
         if(Options.getAssocTest() == ASSOC_TRIO) {
             kidConsistentCache = new boolean[numFilteredTrios][][];
             for(int i=0;i<numFilteredTrios*2;i+=2) {
-                if (((Integer)affStatus.elementAt(i)).intValue() == 2){
+                if (((Integer)kidAffStatus.elementAt(i)).intValue() == 2){
                     kidConsistentCache[i/2] = new boolean[superdata[i].nsuper][];
                     for (int n=0; n<superdata[i].nsuper; n++) {
                         kidConsistentCache[i/2][n] = new boolean[superdata[i+1].nsuper];
@@ -523,7 +580,7 @@ public class EM implements Constants {
 
         realAffectedStatus = affStatus;
 
-        doAssociationTests(affStatus, null);
+        doAssociationTests(affStatus, null, kidAffStatus);
 
 
         Vector haplos_present = new Vector();
@@ -573,7 +630,7 @@ public class EM implements Constants {
         //return 0;
     }
 
-    public void doAssociationTests(Vector affStatus, Vector permuteInd) {
+    public void doAssociationTests(Vector affStatus, Vector permuteInd, Vector kidAffStatus) {
         if(fullProbMap == null || superdata == null || realAffectedStatus == null) {
             return;
         }
@@ -639,11 +696,19 @@ public class EM implements Constants {
             double product;
             MapWrap totalT = new MapWrap(0);
             MapWrap totalU = new MapWrap(0);
+            discordantCounts = new Vector();
+
+            HashMap totalDiscordantCounts = new HashMap();
             for (int i=0; i<numFilteredTrios*2; i+=2) {
                 MapWrap tempT = new MapWrap(0);
                 MapWrap tempU = new MapWrap(0);
+                HashMap tempDiscordantCounts = new HashMap();
                 double tempnorm = 0;
-                if (((Integer)affStatus.elementAt(i)).intValue() == 2){
+                if (((Integer)kidAffStatus.elementAt(i)).intValue() == 2){
+                    boolean discordantParentPhenos = false;
+                    if(((Integer)affStatus.elementAt(i)).intValue() != ((Integer)affStatus.elementAt(i+1)).intValue()) {
+                        discordantParentPhenos = true;
+                    }
                     for (int n=0; n<superdata[i].nsuper; n++) {
                         for (int m=0; m<superdata[i+1].nsuper; m++) {
                             if(kidConsistentCache[i/2][n][m]) {
@@ -673,6 +738,36 @@ public class EM implements Constants {
                                 }
                                 // normalize by all possibilities, even double hom
                                 tempnorm+=product;
+
+                                if(discordantParentPhenos) {
+                                    Long aff1,aff2,unaff1,unaff2;
+                                    if(((Integer)affStatus.elementAt(i)).intValue() == 2) {
+                                        aff1 = h1;
+                                        aff2 = h2;
+                                        unaff1 = h3;
+                                        unaff2 = h4;
+                                    }else {
+                                        unaff1 = h1;
+                                        unaff2 = h2;
+                                        aff1 = h3;
+                                        aff2 = h4;
+                                    }
+                                    DiscordantTally dt = getTally(aff1,tempDiscordantCounts);
+                                    dt.tally(aff1.longValue(),aff2.longValue(),unaff1.longValue(),unaff2.longValue(),product);
+
+                                    if(!aff2.equals(aff1)) {
+                                        dt = getTally(aff2,tempDiscordantCounts);
+                                        dt.tally(aff1.longValue(),aff2.longValue(),unaff1.longValue(),unaff2.longValue(),product);
+                                    }
+                                    if(!unaff1.equals(aff1) && !unaff1.equals(aff2)) {
+                                        dt = getTally(unaff1,tempDiscordantCounts);
+                                        dt.tally(aff1.longValue(),aff2.longValue(),unaff1.longValue(),unaff2.longValue(),product);
+                                    }
+                                    if(!unaff2.equals(aff1) && !unaff2.equals(aff2) && !unaff2.equals(unaff1)) {
+                                        dt = getTally(unaff2,tempDiscordantCounts);
+                                        dt.tally(aff1.longValue(),aff2.longValue(),unaff1.longValue(),unaff2.longValue(),product);
+                                    }
+                                }
                             }
                         }
                     }
@@ -686,6 +781,16 @@ public class EM implements Constants {
                                 totalU.put(curHap, totalU.get(curHap) + tempU.get(curHap)/tempnorm);
                             }
                         }
+
+                        itr = tempDiscordantCounts.keySet().iterator();
+                        while(itr.hasNext()) {
+                            Long key = (Long)itr.next();
+                            DiscordantTally dt = (DiscordantTally) tempDiscordantCounts.get(key);
+                            dt.normalize(tempnorm);
+                            DiscordantTally totalDT = getTally(key,totalDiscordantCounts);
+                            totalDT.combine(dt);
+                        }
+
                     }
                 }
             }
@@ -695,6 +800,13 @@ public class EM implements Constants {
                 if (fullProbMap.get(sortedKeySet.get(j)) > .001) {
                     obsT.add(new Double(totalT.get(sortedKeySet.get(j))));
                     obsU.add(new Double(totalU.get(sortedKeySet.get(j))));
+                    if(Options.getTdtType() == TDT_PAREN) {
+                        if(totalDiscordantCounts.containsKey(sortedKeySet.get(j))) {
+                            discordantCounts.add(((DiscordantTally)totalDiscordantCounts.get(sortedKeySet.get(j))).getCounts());
+                        }else {
+                            discordantCounts.add(new double[9]);
+                        }
+                    }
                 }
             }
         }
@@ -706,6 +818,20 @@ public class EM implements Constants {
             this.caseCounts = caseCounts;
             this.controlCounts = controlCounts;
         }
+    }
+
+
+
+    private DiscordantTally getTally(Long key,HashMap tallyMap){
+        DiscordantTally dt;
+        if(tallyMap.containsKey(key)) {
+            dt = (DiscordantTally) tallyMap.get(key);
+        }else {
+            dt = new DiscordantTally(key.longValue());
+            tallyMap.put(key,dt);
+        }
+        return dt;
+
     }
 
 
@@ -1061,5 +1187,9 @@ public class EM implements Constants {
 
     public int numHaplos(){
         return haplotypes.length;
+    }
+
+    public double[] getDiscordantCounts(int i){
+        return (double[]) discordantCounts.get(i);
     }
 }

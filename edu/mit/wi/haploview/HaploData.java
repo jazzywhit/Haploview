@@ -154,6 +154,7 @@ public class HaploData implements Constants{
             }
 
 
+
             if(dupCheck.size() > 0) {
                 int nameCount = names.size();
                 Hashtable dupCounts = new Hashtable();
@@ -268,10 +269,10 @@ public class HaploData implements Constants{
                     boolean[] sortedZeroed = new boolean[unsortedMarkers.size()];
                     Vector sortedMarkers = new Vector();
                     for (int j = 0; j < unsortedMarkers.size(); j++){
-                        sortedMarkers.add(unsortedMarkers.elementAt(realPos[j]));
+                        sortedMarkers.add(unsortedMarkers.get(realPos[j]));
                         sortedZeroed[j] = unsortedZeroed[realPos[j]];
                     }
-                    ind.setMarkers(sortedMarkers);
+                    ind.setMarkers(new Vector(sortedMarkers));
                     ind.setZeroedArray(sortedZeroed);
                 }
             }
@@ -464,28 +465,13 @@ public class HaploData implements Constants{
 
     public Vector linkageToChrom(File infile, int type)
             throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
-
-        //okay, for now we're going to assume the ped file has no header
-        Vector pedFileStrings = new Vector();
-        BufferedReader reader = new BufferedReader(new FileReader(infile));
-        String line;
-        while((line = reader.readLine())!=null){
-            if (line.length() == 0){
-                //skip blank lines
-                continue;
-            }
-            if (line.startsWith("#")){
-                //skip comments
-                continue;
-            }
-            pedFileStrings.add(line);
-        }
+            
         pedFile = new PedFile();
 
         if (type == PED_FILE){
-            pedFile.parseLinkage(pedFileStrings);
+            pedFile.parseLinkage(infile);
         }else{
-            pedFile.parseHapMap(pedFileStrings);
+            pedFile.parseHapMap(infile);
         }
 
         Vector result = pedFile.check();
@@ -503,7 +489,7 @@ public class HaploData implements Constants{
         //first time through we deal with trios.
         for(int x=0; x < indList.size(); x++){
 
-            currentInd = (Individual)indList.elementAt(x);
+            currentInd = (Individual)indList.get(x);
             currentFamily = pedFile.getFamily(currentInd.getFamilyID());
             if (currentFamily.containsMember(currentInd.getMomID()) &&
                     currentFamily.containsMember(currentInd.getDadID())){
@@ -660,10 +646,10 @@ public class HaploData implements Constants{
                         }
 
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb, currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb, currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb, currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb, currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb, mom.getAffectedStatus(),currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb, mom.getAffectedStatus(),currentInd.getAffectedStatus()));
                     numTrios++;
                     indsInTrio.add(mom);
                     indsInTrio.add(dad);
@@ -672,7 +658,7 @@ public class HaploData implements Constants{
             }
         }
         for (int x=0; x<indList.size(); x++){
-            currentInd = (Individual)indList.elementAt(x);
+            currentInd = (Individual)indList.get(x);
             if (!indsInTrio.contains(currentInd)){
                //ind has no parents or kids -- he's a singleton
                     numMarkers = currentInd.getNumMarkers();
@@ -693,8 +679,8 @@ public class HaploData implements Constants{
                             chrom2[i] = (byte)(4+thisMarker[1]);
                         }
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus(), -1));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(), -1));
                     numSingletons++;
             }
         }
@@ -732,7 +718,7 @@ public class HaploData implements Constants{
     }
 
     public Haplotype[][] generateBlockHaplotypes(Vector blocks) throws HaploViewException{
-        Haplotype[][] rawHaplotypes = generateHaplotypes(blocks);
+        Haplotype[][] rawHaplotypes = generateHaplotypes(blocks, true);
         Haplotype[][] tempHaplotypes = new Haplotype[rawHaplotypes.length][];
 
         for (int i = 0; i < rawHaplotypes.length; i++) {
@@ -764,7 +750,7 @@ public class HaploData implements Constants{
         return tempHaplotypes;
     }
 
-    public Haplotype[][] generateHaplotypes(Vector blocks) throws HaploViewException{
+    public Haplotype[][] generateHaplotypes(Vector blocks, boolean storeEM) throws HaploViewException{
         //TODO: output indiv hap estimates
         Haplotype[][] rawHaplotypes = new Haplotype[blocks.size()][];
 
@@ -901,11 +887,18 @@ public class HaploData implements Constants{
                 }
 
                 //if (tempPerc*100 > hapthresh){
-                tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock, theEM);
+                if(storeEM) {
+                    tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock, theEM);
+                }else {
+                    tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock, null);
+                }
                 //if we are performing association tests, then store the rawHaplotypes
                 if (Options.getAssocTest() == ASSOC_TRIO){
                     tempArray[i].setTransCount(theEM.getTransCount(i));
                     tempArray[i].setUntransCount(theEM.getUntransCount(i));
+                    if(Options.getTdtType() == TDT_PAREN) {
+                        //tempArray[i].setDiscordantAlleleCounts(theEM.getDiscordantCounts(i));
+                    }
                 }else if (Options.getAssocTest() == ASSOC_CC){
                     tempArray[i].setCaseCount(theEM.getCaseCount(i));
                     tempArray[i].setControlCount(theEM.getControlCount(i));
@@ -1081,7 +1074,7 @@ public class HaploData implements Constants{
             }
             inputVector.add(intArray);
 
-            Haplotype[] crossHaplos = generateHaplotypes(inputVector)[0];  //get haplos of gap
+            Haplotype[] crossHaplos = generateHaplotypes(inputVector, true)[0];  //get haplos of gap
 
 
             for (int i = 0; i < haplos[gap].length; i++){

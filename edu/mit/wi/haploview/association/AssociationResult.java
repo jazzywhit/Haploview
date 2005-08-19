@@ -96,9 +96,21 @@ public abstract class AssociationResult implements Constants{
         if (Options.getAssocTest() == ASSOC_TRIO) {
             Iterator faitr = filteredAlleles.iterator();
             while(faitr.hasNext()) {
-                Haplotype curHap = (Haplotype) faitr.next();
-                double chiSq = Math.pow(curHap.getTransCount() - curHap.getUntransCount(),2) / (curHap.getTransCount() + curHap.getUntransCount());
-                chiSquares.add(new Double(chiSq));
+                if(Options.getTdtType() == TDT_STD) {
+                    Haplotype curHap = (Haplotype) faitr.next();
+                    double chiSq = Math.pow(curHap.getTransCount() - curHap.getUntransCount(),2) / (curHap.getTransCount() + curHap.getUntransCount());
+                    chiSquares.add(new Double(chiSq));
+                }else if (Options.getTdtType() == TDT_PAREN) {
+                    Haplotype curHap = (Haplotype) faitr.next();
+                    double[] counts = curHap.getDiscordantAlleleCounts();
+                    //statistic is [T+d+h+2g - (U+b+f+2c)]^2  /  [T+U+d+h+b+f+4(c+g)] distributed as a chi-square
+                    double numr =  Math.pow(curHap.getTransCount() + counts[3] + counts[7] + 2*counts[6]
+                            - (curHap.getUntransCount() + counts[1] + counts[5] + 2*counts[2]),2);
+                    double denom = (curHap.getTransCount() + curHap.getUntransCount() + counts[3] + counts[7] + counts[1] + counts[5] + 4*(counts[2] + counts[6])); 
+
+                    double chiSq = numr / denom;
+                    chiSquares.add(new Double(chiSq));
+                }
             }
         } else if(Options.getAssocTest() == ASSOC_CC) {
             double caseSum =0;
@@ -165,6 +177,11 @@ public abstract class AssociationResult implements Constants{
         int[][] counts = new int[2][2];
         boolean tallyHet = true;
 
+        //for parenTDT
+        // values are {a b c d e f g h i} from matrix of values
+        int[] discordantAlleleCounts = new int[9];
+        int discordantTallied=0;
+
         public void tallyTrioInd(byte alleleT, byte alleleU){
             if(alleleT >= 5 && alleleU >= 5) {
                 if(tallyHet){
@@ -198,6 +215,64 @@ public abstract class AssociationResult implements Constants{
                 }
 
             }
+        }
+
+        public void tallyDiscordantParents(byte affected1, byte affected2, byte unaffected1, byte unaffected2) {
+            if(affected1 >= 5 && affected2 >= 5 && unaffected1 >= 5 && unaffected2 >=5) {
+                return;
+            }
+            if(affected1 == affected2 && unaffected1 == unaffected2 && affected1 == unaffected1){
+                return;
+            }
+            if(affected1 == 0 || affected2 == 0 || unaffected1 == 0 || unaffected2 == 0) {
+                return;
+            }
+            discordantTallied++;
+           /* if(allele1 == 0 && allele2 == 0) {
+                if(affected1 != affected2) {
+                    allele1 = affected1;
+                    allele2 = affected2;
+                }else if(unaffected1 != unaffected2 ) {
+                    allele1 = unaffected1;
+                    allele2 = unaffected2;
+                } else if(affected1 != unaffected1) {
+                    //both are homozygous, so if they are different alleles we can use them to set allele1/allele2
+                    allele1 = affected1;
+                    allele2 = unaffected1;
+                }
+            }*/
+            if(allele1 == 0 && allele2 == 0) {
+                System.out.println("ah crap");
+            }
+
+
+            if(affected1 != affected2 ) {
+                if(unaffected1 == allele1 && unaffected2 == allele1) {
+                    discordantAlleleCounts[1]++;
+                }else if (unaffected1 == allele2 && unaffected2 == allele2) {
+                    discordantAlleleCounts[7]++;
+                }
+            }else if(affected1 == allele1 && affected2 == allele1) {
+                if(unaffected1 != unaffected2 ) {
+                    discordantAlleleCounts[3]++;
+                }else if(unaffected1 == allele2 && unaffected2 == allele2) {
+                    discordantAlleleCounts[6]++;
+                }
+            }else if(affected1 == allele2 && affected2 == allele2) {
+                if(unaffected1 != unaffected2) {
+                    discordantAlleleCounts[5]++;
+                }else if(unaffected1 == allele1 && unaffected2 == allele1) {
+                    discordantAlleleCounts[2]++;
+                }
+            }
+        }
+
+        public int[] getDiscordantCountsAllele2() {
+            int[] counts = new int[9];
+            for(int i=0;i<9;i++) {
+                counts[i] = discordantAlleleCounts[8-i];
+            }
+            return counts;
         }
     }
 }

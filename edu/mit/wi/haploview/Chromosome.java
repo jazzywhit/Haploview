@@ -9,6 +9,8 @@ public class Chromosome{
     private String individual;
 
     private int affected;
+    //kidAffected stores the status of the child of this chromosome if it is from a trio
+    private Integer kidAffected;
     //genotypes[] used to be private but the accessor was wasting a lot of time when it would
     //get called literally millions of times. so we allow other classes to touch this array
     //in the interest of speed
@@ -33,7 +35,7 @@ public class Chromosome{
         trueSize = genotypes.length;
     }
 
-    Chromosome(String p, String i, byte[] g, int a) throws HaploViewException{
+    Chromosome(String p, String i, byte[] g, int a, int kidA) throws HaploViewException{
         ped = p;
         individual = i;
         genotypes = g;
@@ -41,6 +43,7 @@ public class Chromosome{
             throw new HaploViewException("invalid affected status");
         }
         affected = a;
+        kidAffected = new Integer(kidA);
         origin = "unknown";
         trueSize = genotypes.length;
     }
@@ -147,6 +150,14 @@ public class Chromosome{
 
     public static String getDataChrom(){
         return dataChrom;
+    }
+
+    public Integer getKidAffected() {
+        return kidAffected;
+    }
+
+    public void setKidAffected(int kidAffected) {
+        this.kidAffected = new Integer(kidAffected);
     }
 }
 

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.8 2005/05/10 11:47:01 jcbarret Exp $
+* $Id: PedFile.java,v 3.9 2005/08/19 16:07:51 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -18,6 +18,10 @@ import edu.mit.wi.pedparser.PedParser;
 import edu.mit.wi.pedparser.PedigreeException;
 
 import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 import org._3pq.jgrapht.graph.SimpleGraph;
 
@@ -477,38 +481,47 @@ public class PedFile {
     /**
      * takes in a pedigree file in the form of a vector of strings and parses it.
      * data is stored in families in the member hashtable families
-     * @param pedigrees a Vector of strings containing one pedigree line per string
      */
-    public void parseLinkage(Vector pedigrees) throws PedFileException {
+    public void parseLinkage(File inputFile) throws PedFileException, IOException {
         int colNum = -1;
         boolean withOptionalColumn = false;
-        int numLines = pedigrees.size();
-        if (numLines == 0){
-            throw new PedFileException("Data format error: empty file");
-        }
+        int numLines = 0;
         Individual ind;
-
         this.allIndividuals = new Vector();
 
-        for(int k=0; k<numLines; k++){
-            StringTokenizer tokenizer = new StringTokenizer((String)pedigrees.get(k), "\n\t\" \"");
+        BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+        String line;
+
+        while((line = reader.readLine())!=null){
+            if (line.length() == 0){
+                //skip blank lines
+                continue;
+            }
+            if (line.startsWith("#")){
+                //skip comments
+                continue;
+            }
+
+            StringTokenizer tokenizer = new StringTokenizer(line, "\n\t\" \"");
+            int numTokens = tokenizer.countTokens();
+
             //reading the first line
             if(colNum < 1){
                 //only check column number count for the first nonblank line
-                colNum = tokenizer.countTokens();
+                colNum = numTokens;
                 if(colNum%2==1) {
                     withOptionalColumn = true;
                 }
             }
-            if(colNum != tokenizer.countTokens()) {
+            if(colNum != numTokens) {
                 //this line has a different number of columns
                 //should send some sort of error message
-                throw new PedFileException("Line number mismatch in pedfile. line " + (k+1));
+                throw new PedFileException("Column number mismatch in pedfile. line " + (numLines+1));
             }
 
-            ind = new Individual(tokenizer.countTokens());
-            if(tokenizer.countTokens() < 6) {
-                throw new PedFileException("Incorrect number of fields on line " + (k+1));
+            ind = new Individual(numTokens);
+            if(numTokens < 6) {
+                throw new PedFileException("Incorrect number of fields on line " + (numLines+1));
             }
 
             if(tokenizer.hasMoreTokens()){
@@ -524,23 +537,22 @@ public class PedFile {
                         ind.setLiability(Integer.parseInt(tokenizer.nextToken().trim()));
                     }
                 }catch(NumberFormatException nfe) {
-                    throw new PedFileException("Pedfile error: invalid gender or affected status on line " + (k+1));
+                    throw new PedFileException("Pedfile error: invalid gender or affected status on line " + (numLines+1));
                 }
 
                 while(tokenizer.hasMoreTokens()){
                     try {
-                        int allele1 = Integer.parseInt(tokenizer.nextToken().trim());
-                        int allele2 = Integer.parseInt(tokenizer.nextToken().trim());
-                        if(allele1 <0 || allele1 > 4 || allele2 <0 || allele2 >4) {
-                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + (k+1)
+                        byte[] markers = new byte[2];
+                        markers[0] = Byte.parseByte((tokenizer.nextToken().trim()));
+                        markers[1]= Byte.parseByte((tokenizer.nextToken().trim()));
+                        if(markers[0] <0 || markers[0] > 4 || markers[1] <0 || markers[1] >4) {
+                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1)
                                     + ".\n all genotypes must be 0-4.");
                         }
-                        byte[] markers = new byte[2];
-                        markers[0] = (byte)allele1;
-                        markers[1]= (byte)allele2;
+
                         ind.addMarker(markers);
                     }catch(NumberFormatException nfe) {
-                        throw new PedFileException("Pedigree file input error: invalid genotype on line " + (k+1) );
+                        throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1) );
                     }
                 }
 
@@ -560,6 +572,8 @@ public class PedFile {
                 this.allIndividuals.add(ind);
 
             }
+
+            numLines++;
         }
 
         //now we check if anyone has a reference to a parent who isnt in the file, and if so, we remove the reference
@@ -577,10 +591,32 @@ public class PedFile {
         }
 
 
+
+         if (numLines == 0){
+            throw new PedFileException("Data format error: empty file");
+        }
+
     }
 
-    public void parseHapMap(Vector lines) throws PedFileException {
+    public void parseHapMap(File inFile) throws PedFileException, IOException {
         int colNum = -1;
+
+        Vector lines = new Vector();
+        BufferedReader reader = new BufferedReader(new FileReader(inFile));
+        String line;
+        while((line = reader.readLine())!=null){
+            if (line.length() == 0){
+                //skip blank lines
+                continue;
+            }
+            if (line.startsWith("#")){
+                //skip comments
+                continue;
+            }
+            lines.add(line);
+        }
+
+
         int numLines = lines.size();
         if (numLines < 2){
             throw new PedFileException("Hapmap data format error: empty file");
@@ -764,7 +800,7 @@ public class PedFile {
             }
         }
 
-        unrelatedIndividuals = useable;
+        unrelatedIndividuals = new Vector();
 
         Vector indList = (Vector)allIndividuals.clone();
         Individual currentInd;

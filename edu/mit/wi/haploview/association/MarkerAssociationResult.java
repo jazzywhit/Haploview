@@ -37,10 +37,30 @@ public class MarkerAssociationResult extends AssociationResult{
         Haplotype h2 = (Haplotype) alleles.get(1);
 
         if (Options.getAssocTest() == ASSOC_TRIO){
-            if (h1.getTransCount() > h2.getTransCount()){
-                return (int)h1.getTransCount() + ":" + (int)h2.getTransCount();
-            }else{
-                return (int)h2.getTransCount() + ":" + (int)h1.getTransCount();
+            if(Options.getTdtType() == TDT_STD) {
+                if (h1.getTransCount() > h2.getTransCount()){
+                    return (int)h1.getTransCount() + ":" + (int)h2.getTransCount();
+                }else{
+                    return (int)h2.getTransCount() + ":" + (int)h1.getTransCount();
+                }
+            }else{ // if(Options.getTdtType() == TDT_PAREN) {
+                StringBuffer sb = new StringBuffer();
+                double[] counts;
+                if (h1.getTransCount() > h2.getTransCount()){
+                    counts = h1.getDiscordantAlleleCounts();
+                    sb.append((int)h1.getTransCount());
+                    sb.append(":");
+                    sb.append((int)h2.getTransCount());
+                }else{
+                    counts = h2.getDiscordantAlleleCounts();
+                    sb.append((int)h2.getTransCount());
+                    sb.append(":");
+                    sb.append((int)h1.getTransCount());
+                }
+                sb.append(",");
+                sb.append(counts[1] + 2*counts[2] + counts[5]).append(":");
+                sb.append(counts[3] + 2*counts[6] + counts[7]);
+                return sb.toString();
             }
         }else{
             if (h1.getCaseCount() > h2.getCaseCount()){

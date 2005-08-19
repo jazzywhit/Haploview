@@ -1231,6 +1231,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         Options.setShowGBrowse(false);
         Options.setgBrowseOpts(GB_DEFAULT_OPTS);
         Options.setgBrowseTypes(GB_DEFAULT_TYPES);
+        Options.setTdtType(TDT_STD);
 
         //this parses the command line arguments. if nogui mode is specified,
         //then haploText will execute whatever the user specified

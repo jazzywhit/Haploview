@@ -44,7 +44,12 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         colNames.add("Haplotype");
         colNames.add("Freq.");
         if (Options.getAssocTest() == ASSOC_TRIO){
-            colNames.add("T:U");
+            if(Options.getTdtType() == TDT_STD) {
+                colNames.add("T:U");
+            } else if(Options.getTdtType() == TDT_PAREN) {
+                colNames.add("T:U, PA:PU");
+            }
+
         }else{
             colNames.add("Case, Control Ratios");
         }

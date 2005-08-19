@@ -1048,6 +1048,7 @@ public class HaploText implements Constants{
                     System.out.println("Using custom association test file " + customAssocTestsFileName);
                 }
                 try {
+                    customAssocSet.setPermTests(doPermutationTest);
                     customAssocSet.runFileTests(textData,markerTestSet.getMarkerAssociationResults());
                     customAssocSet.saveResultsToText(validateOutputFile(fileName + ".CUSTASSOC"));
 
@@ -1105,7 +1106,6 @@ public class HaploText implements Constants{
                 if(textData.dpTable == null) {
                     textData.generateDPrimeTable();
                 }
-
                 Vector snps = Chromosome.getAllMarkers();
                 HashSet names = new HashSet();
                 for (int i = 0; i < snps.size(); i++) {

@@ -28,7 +28,11 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
         tableColumnNames.add("Name");
         if (Options.getAssocTest() == ASSOC_TRIO){
             tableColumnNames.add("Overtransmitted");
-            tableColumnNames.add("T:U");
+            if(Options.getTdtType() == TDT_STD) {
+                tableColumnNames.add("T:U");
+            }else if(Options.getTdtType() == TDT_PAREN) {
+                tableColumnNames.add("T:U,PA:PU");
+            }
         }else{
             tableColumnNames.add("Major Alleles");
             tableColumnNames.add("Case, Control Ratios");

@@ -20,7 +20,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
     int fileType;
     JTextField genoFileField, infoFileField, testFileField;
     JCheckBox doTDT, doGB;
-    JRadioButton trioButton, ccButton;
+    JRadioButton trioButton, ccButton, standardTDT, parenTDT;
     JButton browseAssocButton;
     NumberTextField maxComparisonDistField;
     NumberTextField missingCutoffField;
@@ -85,6 +85,11 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             if (doTDT.isSelected()){
                 if (trioButton.isSelected()){
                     Options.setAssocTest(ASSOC_TRIO);
+                    if(standardTDT.isSelected()){
+                        Options.setTdtType(TDT_STD);
+                    }else if(parenTDT.isSelected()) {
+                        Options.setTdtType(TDT_PAREN);
+                    }
                 } else {
                     Options.setAssocTest(ASSOC_CC);
                 }
@@ -118,7 +123,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             caller.readGenotypes(returnStrings, fileType);
         }else if (command.equals("Cancel")){
             this.dispose();
-        }else if (command.equals("tdt")){
+        }else if (command.equals("association")){
             if(this.doTDT.isSelected()){
                 trioButton.setEnabled(true);
                 ccButton.setEnabled(true);
@@ -126,6 +131,8 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 testFileField.setEnabled(true);
                 testFileField.setBackground(Color.white);
                 testFileLabel.setEnabled(true);
+                standardTDT.setEnabled(true);
+                parenTDT.setEnabled(true);
             }else{
                 trioButton.setEnabled(false);
                 ccButton.setEnabled(false);
@@ -133,7 +140,15 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 testFileField.setEnabled(false);
                 testFileField.setBackground(this.getBackground());
                 testFileLabel.setEnabled(false);
+                standardTDT.setEnabled(false);
+                parenTDT.setEnabled(false);
             }
+        }else if(command.equals("tdt")){
+            standardTDT.setEnabled(true);
+            parenTDT.setEnabled(true);
+        }else if(command.equals("ccButton")){
+            standardTDT.setEnabled(false);
+            parenTDT.setEnabled(false);
         }
     }
 
@@ -183,7 +198,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
     void load(int ft){
         fileType = ft;
         JPanel contents = new JPanel();
-        contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
+        contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));                                             
 
         JPanel filePanel = new JPanel();
         filePanel.setLayout(new BoxLayout(filePanel, BoxLayout.Y_AXIS));
@@ -257,15 +272,27 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
         doTDT = new JCheckBox();//"Do association test?");
         doTDT.setSelected(false);
-        doTDT.setActionCommand("tdt");
+        doTDT.setActionCommand("association");
         doTDT.addActionListener(this);
         trioButton = new JRadioButton("Family trio data", true);
         trioButton.setEnabled(false);
+        trioButton.setActionCommand("tdt");
+        trioButton.addActionListener(this);
         ccButton = new JRadioButton("Case/Control data");
         ccButton.setEnabled(false);
+        ccButton.setActionCommand("ccButton");
+        ccButton.addActionListener(this);
         ButtonGroup group = new ButtonGroup();
         group.add(trioButton);
         group.add(ccButton);
+
+        standardTDT = new JRadioButton("Standard TDT", true);
+        standardTDT.setEnabled(false);
+        parenTDT = new JRadioButton("ParenTDT", true);
+        parenTDT.setEnabled(false);
+        ButtonGroup tdtGroup = new ButtonGroup();
+        tdtGroup.add(standardTDT);
+        tdtGroup.add(parenTDT);
 
         testFileField = new JTextField("",20);
         testFileField.setEnabled(false);
@@ -277,13 +304,17 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
         if (ft == PED_FILE){
             JPanel tdtOptsPanel = new JPanel();
+            JPanel tdtTypePanel = new JPanel();
             JPanel tdtCheckBoxPanel = new JPanel();
             tdtCheckBoxPanel.add(doTDT);
             tdtCheckBoxPanel.add(new JLabel("Do association test?"));
             tdtOptsPanel.add(trioButton);
             tdtOptsPanel.add(ccButton);
+            tdtTypePanel.add(standardTDT);
+            tdtTypePanel.add(parenTDT);
             contents.add(tdtCheckBoxPanel);
             contents.add(tdtOptsPanel);
+            contents.add(tdtTypePanel);
 
             JPanel assocFilePanel = new JPanel();
             testFileLabel = new JLabel("Test list file (optional)");
