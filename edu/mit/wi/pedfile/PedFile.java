@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.9 2005/08/19 16:07:51 jmaller Exp $
+* $Id: PedFile.java,v 3.10 2005/09/02 13:57:51 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -800,7 +800,7 @@ public class PedFile {
             }
         }
 
-        unrelatedIndividuals = new Vector();
+        unrelatedIndividuals = useable;
 
         Vector indList = (Vector)allIndividuals.clone();
         Individual currentInd;
