@@ -1134,12 +1134,18 @@ marker9</screen>
 
 
   <chapter id="commandline">
-    <title>Command Line Options</title>
-    <para>Haploview can be run from the command line without the display in
-      order to do processing of multiple datasets or quick computation on
-      very large datasets. In order to run Haploview without the display,
-      add the "-nogui" flag. The "-help" flag shows a condensed explanation
-      of all the command line options explained below.</para>
+    <title>Command Line Options</title> 
+
+    <para>Haploview can be run from the command line without the display
+    in order to do processing of multiple datasets or quick
+    computation on very large datasets. The Haploview .jar file can be
+    run from the command line using:</para>
+
+    <screen>java -jar Haploview.jar</screen>
+
+      <para>In order to run Haploview without the display,
+        add the "-nogui" flag. The "-help" flag shows a condensed explanation
+	of all the command line options explained below.</para>
 
     <section>    
       <title>General Options</title>
@@ -1212,7 +1218,7 @@ marker9</screen>
     </section>
 
     <section>
-      <title>Output Options</title>
+      <title>Block Output Options</title>
       <glosslist>
 	<glossentry><glossterm>-blockoutput &lt;type&gt;</glossterm>
 	  <glossdef><para>Generate haplotypes and population frequencies for blocks of &lt;type&gt;, which can be GAB (Gabriel et al), GAM (4 gamete blocks), SPI (solid spine blocks) or ALL (each of the previous 3). The default block type is Gabriel. More information can be found with the <link linkend="blocks">blocks</link> help.</para></glossdef></glossentry>
@@ -1231,7 +1237,10 @@ marker9</screen>
 	  <glossdef><para>4 Gamete block cutoff for frequency of 4th pairwise haplotype.</para></glossdef></glossentry>
 <glossentry><glossterm>-blockSpineDP &lt;thresh&gt;</glossterm>
 	  <glossdef><para>Solid Spine blocks D' cutoff for 'Strong LD'.</para></glossdef></glossentry>
-
+</glosslist>
+</section>
+<section><title>Other Output Options</title>
+<glosslist>
 	<glossentry><glossterm>-check</glossterm>
 	  <glossdef><para>Output marker quality checks to &lt;inputfile&gt;.CHECK</para></glossdef></glossentry>
 	
@@ -1249,7 +1258,15 @@ marker9</screen>
 	
 	<glossentry><glossterm>-ldcolorscheme &lt;type&gt;</glossterm>
 	  <glossdef><para>Use a particular color scheme for dumped LD pngs. &lt;type&gt; can be DEFAULT, RSQ, DPALT, GAB or GAM. More information can be found with the <link linkend="lddisplay">LD</link> display help</para></glossdef></glossentry>
-
+	<glossentry><glossterm>-hapthresh &lt;threshold&gt;</glossterm>
+	  <glossdef><para>Only output haplotypes with frequency &ge; &lt;threshold&gt;. Note that multiallelic D' and htSNPs are computed using only displayed haplotypes.</para></glossdef></glossentry>
+	
+	<glossentry><glossterm>-excludeMarkers &lt;markers&gt;</glossterm>
+	  <glossdef><para>Exclude markers in a comma separated list with ranges specified as start..end. So, to exclude markers 3, 5 and 10 through 15 you'd use "-excludeMarkers 3,5,10..15"</para></glossdef></glossentry>
+</glosslist>
+</section>
+<section><title>Association Output Options</title>
+<glosslist>
 	<glossentry><glossterm>-assocCC</glossterm>
 	  <glossdef><para>Output case/control association results. Saves single marker results to &lt;inputfile&gt;.ASSOC and haplotype results to &lt;inputfile&gt;.HAPASSOC. Haplotype association results are not generated if block type is set to ALL.</para></glossdef></glossentry>
 	
@@ -1260,10 +1277,16 @@ marker9</screen>
 	  <glossdef><para>Loads a set of custom tests for association.</para></glossdef></glossentry>
 	<glossentry><glossterm>-permtests &lt;numtests&gt;</glossterm>
 	  <glossdef><para>Performs &lt;numtests&gt; permutations on default association tests (or custom tests if a custom association file is specified) and writes to &lt;inputfile&gt;.PERMUT </para></glossdef></glossentry>
+</glosslist>
+</section>
+<section><title>Tagging Output Options</title>
+<glosslist>
 	<glossentry><glossterm>-pairwiseTagging</glossterm>
 	  <glossdef><para>Generates pairwise tagging information in &lt;inputfile&gt;.TAGS and .TESTS</para></glossdef></glossentry>
 	<glossentry><glossterm>-aggressiveTagging</glossterm>
 	  <glossdef><para>As above but also allows 2- and 3-marker haplotype tags.</para></glossdef></glossentry>
+	<glossentry><glossterm>-maxNumTags &lt;n&gt;</glossterm>
+	  <glossdef><para>Only selects &lt;n&gt; best tags.</para></glossdef></glossentry>
 	<glossentry><glossterm>-includeTags &lt;markers&gt;</glossterm>
 	  <glossdef><para>Forces in a comma separated list of marker names as tags.</para></glossdef></glossentry>
 	<glossentry><glossterm>-includeTagsFile &lt;file&gt;</glossterm>
@@ -1278,11 +1301,6 @@ marker9</screen>
 	  <glossdef><para>Tagger r^2 cutoff.</para></glossdef></glossentry>
 
 	
-	<glossentry><glossterm>-hapthresh &lt;threshold&gt;</glossterm>
-	  <glossdef><para>Only output haplotypes with frequency &ge; &lt;threshold&gt;. Note that multiallelic D' and htSNPs are computed using only displayed haplotypes.</para></glossdef></glossentry>
-	
-	<glossentry><glossterm>-excludeMarkers &lt;markers&gt;</glossterm>
-	  <glossdef><para>Exclude markers in a comma separated list with ranges specified as start..end. So, to exclude markers 3, 5 and 10 through 15 you'd use "-excludeMarkers 3,5,10..15"</para></glossdef></glossentry>
       </glosslist>
     </section>
   </chapter>
