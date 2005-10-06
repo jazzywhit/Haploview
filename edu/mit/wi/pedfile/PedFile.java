@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.10 2005/09/02 13:57:51 jmaller Exp $
+* $Id: PedFile.java,v 3.11 2005/10/06 23:13:06 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -246,6 +246,7 @@ public class PedFile {
         hapMapTranslate.put("NA18999", "jap43 NA18999 0 0 2 0");
         hapMapTranslate.put("NA19007", "jap44 NA19007 0 0 1 0");
         hapMapTranslate.put("NA19003", "jap45 NA19003 0 0 2 0");
+        hapMapTranslate.put("NA19012", "jap46 NA19012 0 0 1 0");
         hapMapTranslate.put("NA18500", "Yoruba004 NA18500 NA18501 NA18502 1 0");
         hapMapTranslate.put("NA18501", "Yoruba004 NA18501 0 0 1 0");
         hapMapTranslate.put("NA18502", "Yoruba004 NA18502 0 0 2 0");
