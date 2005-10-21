@@ -176,8 +176,8 @@ public class Tagger {
 
             sitesToCapture.removeAll(newlyTagged);
             sitesToCapture.remove(currentBestTag.sequence);
-            taggedSoFar = countTagged;
         }
+        taggedSoFar = countTagged;
 
         if(sitesToCapture.size() > 0) {
             //any sites left in sitesToCapture could not be tagged, so we add them all to the untagged Vector
@@ -336,7 +336,9 @@ public class Tagger {
                     tags.add(ts);
                     blockTagsByAllele.put(bpAllele,ts);
                 }
-               uitr.remove();
+                uitr.remove();
+                //note that we've caught another SNP
+                taggedSoFar++;
             }
         }
 
