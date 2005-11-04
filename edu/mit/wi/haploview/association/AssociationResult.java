@@ -13,7 +13,7 @@ import java.util.Iterator;
 
 
 public abstract class AssociationResult implements Constants{
-    NumberFormat nf = NumberFormat.getInstance(Locale.US);
+    static NumberFormat nf = NumberFormat.getInstance(Locale.US);
 
     //alleles contains Haplotype objects for the alleles of the current site
     protected Vector alleles = new Vector();
