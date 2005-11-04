@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.2 2005/11/02 21:47:17 jmaller Exp $
+ * $Id: MarkerResult.java,v 3.3 2005/11/04 16:14:18 jmaller Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -35,18 +35,18 @@ public class MarkerResult {
 	private int _famTrioNum;
 	private int _mendErrNum;
 	private int _rating;
-    static NumberFormat nf = NumberFormat.getInstance(Locale.US);
-    static NumberFormat pctNF = NumberFormat.getInstance(Locale.US);
 
-    public MarkerResult() {
-		nf.setMinimumFractionDigits(3);
-		nf.setMaximumFractionDigits(3);
+    private static NumberFormat nf = NumberFormat.getInstance(Locale.US);
+    private static NumberFormat pctNF = NumberFormat.getInstance(Locale.US);
+
+    static {
+        nf.setMinimumFractionDigits(3);
+        nf.setMaximumFractionDigits(3);
         nf.setGroupingUsed(false);
 
         pctNF.setMinimumFractionDigits(0);
         pctNF.setMaximumFractionDigits(1);
     }
-
 
 	/**
 	 * Sets observed heterozygosity
