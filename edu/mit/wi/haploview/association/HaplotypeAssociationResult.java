@@ -42,9 +42,11 @@ public class HaplotypeAssociationResult extends AssociationResult{
         Haplotype h = (Haplotype) filteredAlleles.get(i);
         StringBuffer countSB = new StringBuffer();
         if(Options.getAssocTest() == ASSOC_TRIO) {
-            double[] d = h.getDiscordantAlleleCounts();
             countSB.append(nf.format(h.getTransCount())).append(" : ").append(nf.format(h.getUntransCount()));
-            countSB.append(",").append(nf.format( d[3] + d[7] + 2*d[6])).append(":").append(nf.format(d[1] + d[5] + 2*d[2]));
+            if(Options.getTdtType()==TDT_PAREN) {
+                double[] d = h.getDiscordantAlleleCounts();
+                countSB.append(",").append(nf.format( d[3] + d[7] + 2*d[6])).append(":").append(nf.format(d[1] + d[5] + 2*d[2]));
+            }
         } else if(Options.getAssocTest() == ASSOC_CC) {
             double caseSum = 0, controlSum = 0;
             for (int j = 0; j < alleles.size(); j++){
