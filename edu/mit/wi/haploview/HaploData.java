@@ -255,6 +255,7 @@ public class HaploData implements Constants{
                 //todo: this should really be done before pedfile is subjected to any processing.
                 //todo: that would require altering some order of operations in dealing with inputs
 
+                //todo: this will fry an out-of-order haps file...grr
                 Vector unsortedRes = pedFile.getResults();
                 Vector sortedRes = new Vector();
                 for (int i = 0; i < realPos.length; i++){
