@@ -182,6 +182,10 @@ public class AssociationTestSet implements Constants{
                         //if he has both parents, and is affected, we can get a transmission
                         Individual mom = currentFam.getMember(currentInd.getMomID());
                         Individual dad = currentFam.getMember(currentInd.getDadID());
+
+			if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
+			    continue;
+			}
                         byte[] thisMarker = currentInd.getMarker(i);
                         byte kid1 = thisMarker[0];
                         byte kid2 = thisMarker[1];
@@ -308,7 +312,9 @@ public class AssociationTestSet implements Constants{
                         //if he has both parents, and is affected, we can get a transmission
                         Individual mom = currentFam.getMember(currentInd.getMomID());
                         Individual dad = currentFam.getMember(currentInd.getDadID());
-                        if(usedParents.contains(mom) || usedParents.contains(dad)) {
+                       
+			
+			if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
                             continue;
                         }
                         byte[] thisMarker = currentInd.getMarker(i);
@@ -387,6 +393,9 @@ public class AssociationTestSet implements Constants{
                         }
                         if(mom.getAffectedStatus() != dad.getAffectedStatus()) {
                             //discordant parental phenotypes
+			    if(usedParents.contains(mom) || usedParents.contains(dad)) {
+				continue;
+			    }
                             if(!(dad1 == mom1 && dad2 == mom2) && !(dad1 == mom2 && dad2 == mom1)) {
                                 if(mom.getAffectedStatus() == 2) {
                                     tt.tallyDiscordantParents(momT,momU,dadT,dadU);
@@ -398,10 +407,9 @@ public class AssociationTestSet implements Constants{
                             }else {
                                 discordantNotTallied++;
                             }
+			    usedParents.add(mom);
+			    usedParents.add(dad);
                         }
-                        usedParents.add(mom);
-                        usedParents.add(dad);
-                        
                     }
                 }
                 int[] g1 = {tt.allele1};
