@@ -24,6 +24,7 @@ public class Haplotype{
         tags = new boolean[genotypes.length];
         listorder = 0;
         blockEM = em;
+        discordantAlleleCounts = new double[9];
     }
 
     public int[] getGeno(){

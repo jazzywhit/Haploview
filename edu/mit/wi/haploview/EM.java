@@ -396,8 +396,9 @@ public class EM implements Constants {
         int[][] hlist = new int[num_blocks][num_poss];
         int[] num_hlist = new int[num_blocks];
         int[] hint = new int[num_poss];
+        double[] prob = new double[num_poss];
 
-        MapWrap probMap = new MapWrap(PSEUDOCOUNT);
+        /*MapWrap probMap = new MapWrap(PSEUDOCOUNT);*/
 
         /* for trio option */
         if (Options.getAssocTest() == ASSOC_TRIO) {
@@ -415,70 +416,21 @@ public class EM implements Constants {
             //read_observations initializes the values in data[] (array of OBS)
             num_indivs=read_observations(num_haplos,num_loci,input_haplos,start_locus,end_locus);
 
-            total=(double)num_poss;
-            total *= PSEUDOCOUNT;
-
-            /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
-            i.e., flat when nothing is known, close to phase known if a great deal is known */
-
-            for (int i=0; i<num_indivs; i++) {
-                if (data[i].nposs==1) {
-                    tempRec = (Recovery)data[i].poss.elementAt(0);
-                    probMap.put(new Long(tempRec.h1), probMap.get(new Long(tempRec.h1)) + 1.0);
-                    probMap.put(new Long(tempRec.h2), probMap.get(new Long(tempRec.h2)) + 1.0);
-                    total+=2.0;
-                }
-            }
-
-            probMap.normalize(total);
-
-            // EM LOOP: assign ambiguous data based on p, then re-estimate p
-            iter=0;
-            while (iter<20) {
-                // compute probabilities of each possible observation
-                for (int i=0; i<num_indivs; i++) {
-                    total=0.0;
-                    for (int k=0; k<data[i].nposs; k++) {
-                        tempRec = (Recovery) data[i].poss.elementAt(k);
-                        tempRec.p = (float)(probMap.get(new Long(tempRec.h1))*probMap.get(new Long(tempRec.h2)));
-                        total+=tempRec.p;
-                    }
-                    // normalize
-                    for (int k=0; k<data[i].nposs; k++) {
-                        tempRec = (Recovery) data[i].poss.elementAt(k);
-                        tempRec.p /= total;
-                    }
-                }
-
-                // re-estimate prob
-                probMap = new MapWrap(1e-10);
-
-                total=num_poss*1e-10;
-
-                for (int i=0; i<num_indivs; i++) {
-                    for (int k=0; k<data[i].nposs; k++) {
-                        tempRec = (Recovery) data[i].poss.elementAt(k);
-                        probMap.put(new Long(tempRec.h1),probMap.get(new Long(tempRec.h1)) + tempRec.p);
-                        probMap.put(new Long(tempRec.h2),probMap.get(new Long(tempRec.h2)) + tempRec.p);
-                        total+=(2.0*(tempRec.p));
-                    }
-                }
-
-                probMap.normalize(total);
-
-                iter++;
-            }
+            prob = estimateProbsSmall(num_indivs,num_poss);
 
             int m=0;
             for(long j=0;j<num_poss; j++){
                 hint[(int)j]=-1;
-                if (probMap.get(new Long(j)) > .001) {
+                //if (probMap.get(new Long(j)) > .001) {
+                if(prob[((int) j)] > .001) {
                     // printf("haplo %s   p = %.4lf\n",haplo_str(j,block_size[block]),prob[j]);
                     hlist[block][m]=(int)j;
-                    hprob[block][m]=probMap.get(new Long(j));
+                    /*hprob[block][m]=probMap.get(new Long(j));*/
+                    hprob[block][m] = prob[((int) j)];
                     hint[(int)j]=m;
                     m++;
                 }
+
             }
             num_hlist[block]=m;
 
@@ -494,15 +446,214 @@ public class EM implements Constants {
 
         /* LIGATE and finish this mess :) */
 
-        fullProbMap = new MapWrap(PSEUDOCOUNT);
 
         create_super_haplos(num_indivs,num_blocks,num_hlist);
 
+        if(poss_full < Integer.MAX_VALUE) {
+            finishLarge(num_indivs, poss_full,kidAffStatus, num_blocks,block_size,num_hlist,hlist, num_loci);
+        }else {
+            finishSmall(num_indivs,(int) poss_full,kidAffStatus, num_blocks,block_size,num_hlist,hlist, num_loci);
+        }
+
+        if(Options.getAssocTest() == ASSOC_TRIO) {
+            kidConsistentCache = new boolean[numFilteredTrios][][];
+            for(int i=0;i<numFilteredTrios*2;i+=2) {
+                if (((Integer)kidAffStatus.elementAt(i)).intValue() == 2){
+                    kidConsistentCache[i/2] = new boolean[superdata[i].nsuper][];
+                    for (int n=0; n<superdata[i].nsuper; n++) {
+                        kidConsistentCache[i/2][n] = new boolean[superdata[i+1].nsuper];
+                        for (int m=0; m<superdata[i+1].nsuper; m++) {
+                            kidConsistentCache[i/2][n][m] = kid_consistent(superdata[i].superposs[n].h1,
+                                    superdata[i+1].superposs[m].h1,num_blocks,
+                                    block_size,hlist,num_hlist,i/2,num_loci);
+                        }
+                    }
+                }
+            }
+        }
+
+        realAffectedStatus = affStatus;
+
+        doAssociationTests(affStatus, null, kidAffStatus);
+
+        /*
+        if (dump_phased_haplos) {
+
+        if ((fpdump=fopen("emphased.haps","w"))!=NULL) {
+        for (i=0; i<num_indivs; i++) {
+        best=0;
+        for (k=0; k<superdata[i].nsuper; k++) {
+        if (superdata[i].superposs[k].p > superdata[i].superposs[best].p) {
+        best=k;
+        }
+        }
+        h1 = superdata[i].superposs[best].h1;
+        h2 = superdata[i].superposs[best].h2;
+        fprintf(fpdump,"%s\n",decode_haplo_str(h1,num_blocks,block_size,hlist,num_hlist));
+        fprintf(fpdump,"%s\n",decode_haplo_str(h2,num_blocks,block_size,hlist,num_hlist));
+        }
+        fclose(fpdump);
+        }
+        }
+        */
+        //return 0;
+    }
+
+    public double[] estimateProbsSmall(int num_indivs,int num_poss) {
+        double total;
+        Recovery tempRec;
+
+        double[] prob = new double[num_poss];
+        // start prob array with probabilities from full observations
+        for (int j=0; j<num_poss; j++){
+            prob[j]=PSEUDOCOUNT;
+        }
+
+        total=(double)num_poss;
+        total *= PSEUDOCOUNT;
+
+        /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
+        i.e., flat when nothing is known, close to phase known if a great deal is known */
+
+        for (int i=0; i<num_indivs; i++) {
+            if (data[i].nposs==1) {
+                tempRec = (Recovery)data[i].poss.elementAt(0);
+                /* probMap.put(new Long(tempRec.h1), probMap.get(new Long(tempRec.h1)) + 1.0);
+           probMap.put(new Long(tempRec.h2), probMap.get(new Long(tempRec.h2)) + 1.0);*/
+                prob[((int) tempRec.h1)]+=1.0;
+                prob[((int) tempRec.h2)]+=1.0;
+                total+=2.0;
+            }
+        }
+
+        /*probMap.normalize(total);*/
+        for (int j=0; j<num_poss; j++) {
+            prob[j] /= total;
+        }
+
+
+        int iter=0;
+        while (iter<20) {
+            // compute probabilities of each possible observation
+            for (int i=0; i<num_indivs; i++) {
+                total=0.0;
+                for (int k=0; k<data[i].nposs; k++) {
+                    tempRec = (Recovery) data[i].poss.elementAt(k);
+                    /*tempRec.p = (float)(probMap.get(new Long(tempRec.h1))*probMap.get(new Long(tempRec.h2)));*/
+                     tempRec.p = (float)(prob[((int) tempRec.h1)]*prob[((int) tempRec.h2)]);
+                    total+=tempRec.p;
+                }
+                // normalize
+                for (int k=0; k<data[i].nposs; k++) {
+                    tempRec = (Recovery) data[i].poss.elementAt(k);
+                    tempRec.p /= total;
+                }
+            }
+
+            // re-estimate prob
+            /*probMap = new MapWrap(1e-10);*/
+
+            for (int j=0; j<num_poss; j++) {
+                prob[j]=1e-10;
+            }
+
+            total=num_poss*1e-10;
+
+            for (int i=0; i<num_indivs; i++) {
+                for (int k=0; k<data[i].nposs; k++) {
+                    tempRec = (Recovery) data[i].poss.elementAt(k);
+                   /* probMap.put(new Long(tempRec.h1),probMap.get(new Long(tempRec.h1)) + tempRec.p);
+                    probMap.put(new Long(tempRec.h2),probMap.get(new Long(tempRec.h2)) + tempRec.p);*/
+                    prob[((int) tempRec.h1)]+=tempRec.p;
+                    prob[((int) tempRec.h1)]+=tempRec.p;
+                    total+=(2.0*(tempRec.p));
+                }
+            }
+
+            /*probMap.normalize(total);*/
+             for (int j=0; j<num_poss; j++) {
+                 prob[j] /= total;
+             }
+
+            iter++;
+        }
+
+        return prob;
+
+    }
+
+    public MapWrap  estimateProbsLarge(int num_indivs,int num_poss) {
+        double total;
+        Recovery tempRec;
+
+        MapWrap probMap = new MapWrap(PSEUDOCOUNT);
+
+        total=(double)num_poss;
+        total *= PSEUDOCOUNT;
+
+        /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
+        i.e., flat when nothing is known, close to phase known if a great deal is known */
+
+        for (int i=0; i<num_indivs; i++) {
+            if (data[i].nposs==1) {
+                tempRec = (Recovery)data[i].poss.elementAt(0);
+                 probMap.put(new Long(tempRec.h1), probMap.get(new Long(tempRec.h1)) + 1.0);
+                probMap.put(new Long(tempRec.h2), probMap.get(new Long(tempRec.h2)) + 1.0);
+                total+=2.0;
+            }
+        }
+
+        probMap.normalize(total);
+
+        int iter=0;
+        while (iter<20) {
+            // compute probabilities of each possible observation
+            for (int i=0; i<num_indivs; i++) {
+                total=0.0;
+                for (int k=0; k<data[i].nposs; k++) {
+                    tempRec = (Recovery) data[i].poss.elementAt(k);
+                    tempRec.p = (float)(probMap.get(new Long(tempRec.h1))*probMap.get(new Long(tempRec.h2)));
+                    total+=tempRec.p;
+                }
+                // normalize
+                for (int k=0; k<data[i].nposs; k++) {
+                    tempRec = (Recovery) data[i].poss.elementAt(k);
+                    tempRec.p /= total;
+                }
+            }
+
+            // re-estimate prob
+            probMap = new MapWrap(1e-10);
+
+            total=num_poss*1e-10;
+
+            for (int i=0; i<num_indivs; i++) {
+                for (int k=0; k<data[i].nposs; k++) {
+                    tempRec = (Recovery) data[i].poss.elementAt(k);
+                    probMap.put(new Long(tempRec.h1),probMap.get(new Long(tempRec.h1)) + tempRec.p);
+                    probMap.put(new Long(tempRec.h2),probMap.get(new Long(tempRec.h2)) + tempRec.p);
+                    total+=(2.0*(tempRec.p));
+                }
+            }
+
+            probMap.normalize(total);
+
+            iter++;
+        }
+
+        return probMap;
+
+    }
+
+
+    public void finishLarge(int num_indivs, double poss_full, Vector kidAffStatus, int num_blocks, int[] block_size, int[] num_hlist, int[][] hlist, int num_loci) {
         /* run standard EM on supercombos */
 
         /* start prob array with probabilities from full observations */
 
-        total = poss_full * PSEUDOCOUNT;
+        fullProbMap = new MapWrap(PSEUDOCOUNT);
+
+        double total = poss_full * PSEUDOCOUNT;
 
         /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
         i.e., flat when nothing is known, close to phase known if a great deal is known */
@@ -523,8 +674,12 @@ public class EM implements Constants {
         fullProbMap.normalize(total);
 
         /* EM LOOP: assign ambiguous data based on p, then re-estimate p */
-        iter=0;
+        int iter=0;
         while (iter<20) {
+
+            //todo: can't we skip this is theres only a single block?
+            //todo: or at least use arrays if its small block...maybe have it compute poss_full and if it's too big then use hash
+            //otherwise use arrays
             /* compute probabilities of each possible observation */
             for (int i=0; i<num_indivs; i++) {
                 total=0.0;
@@ -561,28 +716,6 @@ public class EM implements Constants {
         /* we're done - the indices of superprob now have to be
         decoded to reveal the actual haplotypes they represent */
 
-        if(Options.getAssocTest() == ASSOC_TRIO) {
-            kidConsistentCache = new boolean[numFilteredTrios][][];
-            for(int i=0;i<numFilteredTrios*2;i+=2) {
-                if (((Integer)kidAffStatus.elementAt(i)).intValue() == 2){
-                    kidConsistentCache[i/2] = new boolean[superdata[i].nsuper][];
-                    for (int n=0; n<superdata[i].nsuper; n++) {
-                        kidConsistentCache[i/2][n] = new boolean[superdata[i+1].nsuper];
-                        for (int m=0; m<superdata[i+1].nsuper; m++) {
-                            kidConsistentCache[i/2][n][m] = kid_consistent(superdata[i].superposs[n].h1,
-                                    superdata[i+1].superposs[m].h1,num_blocks,
-                                    block_size,hlist,num_hlist,i/2,num_loci);
-                        }
-                    }
-                }
-            }
-        }
-
-        realAffectedStatus = affStatus;
-
-        doAssociationTests(affStatus, null, kidAffStatus);
-
-
         Vector haplos_present = new Vector();
         Vector haplo_freq= new Vector();
 
@@ -607,28 +740,105 @@ public class EM implements Constants {
         this.haplotypes = (int[][])haplos_present.toArray(new int[0][0]);
         this.frequencies = freqs;
 
-        /*
-        if (dump_phased_haplos) {
-
-        if ((fpdump=fopen("emphased.haps","w"))!=NULL) {
-        for (i=0; i<num_indivs; i++) {
-        best=0;
-        for (k=0; k<superdata[i].nsuper; k++) {
-        if (superdata[i].superposs[k].p > superdata[i].superposs[best].p) {
-        best=k;
-        }
-        }
-        h1 = superdata[i].superposs[best].h1;
-        h2 = superdata[i].superposs[best].h2;
-        fprintf(fpdump,"%s\n",decode_haplo_str(h1,num_blocks,block_size,hlist,num_hlist));
-        fprintf(fpdump,"%s\n",decode_haplo_str(h2,num_blocks,block_size,hlist,num_hlist));
-        }
-        fclose(fpdump);
-        }
-        }
-        */
-        //return 0;
     }
+
+    public void finishSmall(int num_indivs, int poss_full, Vector kidAffStatus, int num_blocks, int[] block_size, int[] num_hlist, int[][] hlist, int num_loci) {
+        double[] superprob = new double[poss_full];
+
+        create_super_haplos(num_indivs,num_blocks,num_hlist);
+
+        /* run standard EM on supercombos */
+
+        /* start prob array with probabilities from full observations */
+        for (int j=0; j<poss_full; j++)
+        {
+            superprob[j]=PSEUDOCOUNT;
+        }
+        double total=(double)poss_full;
+        total *= PSEUDOCOUNT;
+        /* starting prob is phase known haps + 0.1 (PSEUDOCOUNT) count of every haplotype -
+        i.e., flat when nothing is known, close to phase known if a great deal is known */
+
+        for (int i=0; i<num_indivs; i++) {
+            if (superdata[i].nsuper==1) {
+                superprob[(int)superdata[i].superposs[0].h1]+=1.0;
+                superprob[(int)superdata[i].superposs[0].h2]+=1.0;
+                total+=2.0;
+            }
+        }
+
+        /* normalize */
+        for (int j=0; j<poss_full; j++) {
+            superprob[j] /= total;
+        }
+
+        /* EM LOOP: assign ambiguous data based on p, then re-estimate p */
+        int iter=0;
+        while (iter<20) {
+            /* compute probabilities of each possible observation */
+            for (int i=0; i<num_indivs; i++) {
+                total=0.0;
+                for (int k=0; k<superdata[i].nsuper; k++) {
+                    superdata[i].superposs[k].p = (float)
+                            (superprob[(int)superdata[i].superposs[k].h1]*
+                            superprob[(int)superdata[i].superposs[k].h2]);
+                    total+=superdata[i].superposs[k].p;
+                }
+                /* normalize */
+                for (int k=0; k<superdata[i].nsuper; k++) {
+                    superdata[i].superposs[k].p /= total;
+                }
+            }
+
+            /* re-estimate prob */
+
+            for (int j=0; j<poss_full; j++)
+            {
+                superprob[j]=1e-10;
+            }
+            total=poss_full*1e-10;
+
+            for (int i=0; i<num_indivs; i++) {
+                for (int k=0; k<superdata[i].nsuper; k++) {
+                    superprob[((int) superdata[i].superposs[k].h1)]+=superdata[i].superposs[k].p;
+                    superprob[((int) superdata[i].superposs[k].h2)]+=superdata[i].superposs[k].p;
+                    total+=(2.0*superdata[i].superposs[k].p);
+                }
+            }
+
+            /* normalize */
+            for (int j=0; j<poss_full; j++) {
+                superprob[j] /= total;
+            }
+            iter++;
+        }
+
+        /* we're done - the indices of superprob now have to be
+        decoded to reveal the actual haplotypes they represent */
+
+        Vector haplos_present = new Vector();
+        Vector haplo_freq= new Vector();
+
+        for (int j=0; j<poss_full; j++) {
+            if (superprob[j] > .001) {
+                haplos_present.addElement(decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
+
+                //sprintf(haplos_present[k],"%s",decode_haplo_str(j,num_blocks,block_size,hlist,num_hlist));
+                haplo_freq.addElement(new Double(superprob[j]));
+
+            }
+        }
+
+        double[] freqs = new double[haplo_freq.size()];
+        for(int j=0;j<haplo_freq.size();j++) {
+            freqs[j] = ((Double)haplo_freq.elementAt(j)).doubleValue();
+        }
+
+
+        this.haplotypes = (int[][])haplos_present.toArray(new int[0][0]);
+        this.frequencies = freqs;
+    }
+
 
     public void doAssociationTests(Vector affStatus, Vector permuteInd, Vector kidAffStatus) {
         if(fullProbMap == null || superdata == null || realAffectedStatus == null) {
