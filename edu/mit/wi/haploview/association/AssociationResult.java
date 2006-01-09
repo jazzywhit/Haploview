@@ -104,16 +104,10 @@ public abstract class AssociationResult implements Constants{
                     Haplotype curHap = (Haplotype) faitr.next();
                     double[] counts = curHap.getDiscordantAlleleCounts();
                     //statistic is [T+d+h+2g - (U+b+f+2c)]^2  /  [T+U+d+h+b+f+4(c+g)] distributed as a chi-square
-                    double numr, denom;
-                    if(counts == null) {
-                         numr = Math.pow(curHap.getTransCount() -curHap.getUntransCount() ,2) ;
-                        denom =  curHap.getTransCount() + curHap.getUntransCount();
+                    double numr =  Math.pow(curHap.getTransCount() + counts[3] + counts[7] + 2*counts[6]
+                            - (curHap.getUntransCount() + counts[1] + counts[5] + 2*counts[2]),2);
+                    double denom = (curHap.getTransCount() + curHap.getUntransCount() + counts[3] + counts[7] + counts[1] + counts[5] + 4*(counts[2] + counts[6])); 
 
-                    }else{
-                        numr =  Math.pow(curHap.getTransCount() + counts[3] + counts[7] + 2*counts[6]
-                                - (curHap.getUntransCount() + counts[1] + counts[5] + 2*counts[2]),2);
-                        denom = (curHap.getTransCount() + curHap.getUntransCount() + counts[3] + counts[7] + counts[1] + counts[5] + 4*(counts[2] + counts[6]));
-                    }
                     double chiSq = numr / denom;
                     chiSquares.add(new Double(chiSq));
                 }
