@@ -220,6 +220,7 @@ public class HaploData implements Constants{
             }
             //if any were out of order, then we need to put them in order
             if(needSort){
+                //throw new HaploViewException("unsorted files not supported at present");
                 //sort the positions
                 Collections.sort(sortHelpers);
                 Vector newNames = new Vector();
@@ -265,15 +266,16 @@ public class HaploData implements Constants{
                 Vector o = pedFile.getAllIndividuals();
                 for (int i = 0; i < o.size(); i++){
                     Individual ind = (Individual) o.get(i);
-                    Vector unsortedMarkers = ind.getMarkers();
+                    byte[] sortedMarkersa = new byte[ind.getNumMarkers()];
+                    byte[] sortedMarkersb = new byte[ind.getNumMarkers()];
                     boolean[] unsortedZeroed = ind.getZeroedArray();
-                    boolean[] sortedZeroed = new boolean[unsortedMarkers.size()];
-                    Vector sortedMarkers = new Vector();
-                    for (int j = 0; j < unsortedMarkers.size(); j++){
-                        sortedMarkers.add(unsortedMarkers.get(realPos[j]));
+                    boolean[] sortedZeroed = new boolean[unsortedZeroed.length];
+                    for (int j = 0; j < ind.getNumMarkers(); j++){
+                        sortedMarkersa[j] = ind.getMarkerA(realPos[j]);
+                        sortedMarkersb[j] = ind.getMarkerB(realPos[j]);
                         sortedZeroed[j] = unsortedZeroed[realPos[j]];
                     }
-                    ind.setMarkers(new Vector(sortedMarkers));
+                    ind.setMarkers(sortedMarkersa, sortedMarkersb);
                     ind.setZeroedArray(sortedZeroed);
                 }
             }
@@ -485,7 +487,6 @@ public class HaploData implements Constants{
         Individual currentInd;
         Family currentFamily;
         Vector chrom = new Vector();
-        byte[] zeroArray = {0,0};
 
         //first time through we deal with trios.
         for(int x=0; x < indList.size(); x++){
@@ -505,30 +506,32 @@ public class HaploData implements Constants{
                     byte[] momUb = new byte[numMarkers];
 
                     for (int i = 0; i < numMarkers; i++){
-                        byte[] thisMarker;
+                        byte kid1, kid2;
                         if (currentInd.getZeroed(i)){
-                            thisMarker = zeroArray;
+                            kid1 = 0;
+                            kid2 = 0;
                         }else{
-                            thisMarker = currentInd.getMarker(i);
+                            kid1 = currentInd.getMarkerA(i);
+                            kid2 = currentInd.getMarkerB(i);
                         }
-                        byte kid1 = thisMarker[0];
-                        byte kid2 = thisMarker[1];
 
+                        byte mom1,mom2;
                         if (currentFamily.getMember(currentInd.getMomID()).getZeroed(i)){
-                            thisMarker = zeroArray;
+                            mom1 = 0;
+                            mom2 = 0;
                         }else{
-                            thisMarker = (currentFamily.getMember(currentInd.getMomID())).getMarker(i);
+                            mom1 = (currentFamily.getMember(currentInd.getMomID())).getMarkerA(i);
+                            mom2 = (currentFamily.getMember(currentInd.getMomID())).getMarkerB(i);
                         }
-                        byte mom1 = thisMarker[0];
-                        byte mom2 = thisMarker[1];
 
+                        byte dad1,dad2;
                         if (currentFamily.getMember(currentInd.getDadID()).getZeroed(i)){
-                            thisMarker = zeroArray;
+                            dad1 = 0;
+                            dad2 = 0;
                         }else{
-                            thisMarker = (currentFamily.getMember(currentInd.getDadID())).getMarker(i);
+                            dad1 = (currentFamily.getMember(currentInd.getDadID())).getMarkerA(i);
+                            dad2 = (currentFamily.getMember(currentInd.getDadID())).getMarkerB(i);
                         }
-                        byte dad1 = thisMarker[0];
-                        byte dad2 = thisMarker[1];
 
                         if (kid1 == 0 || kid2 == 0) {
                             //kid missing
@@ -666,18 +669,20 @@ public class HaploData implements Constants{
                     byte[] chrom1 = new byte[numMarkers];
                     byte[] chrom2 = new byte[numMarkers];
                     for (int i = 0; i < numMarkers; i++){
-                        byte[] thisMarker;
+                        byte thisMarkerA, thisMarkerB;
                         if (currentInd.getZeroed(i)){
-                            thisMarker = zeroArray;
+                            thisMarkerA = 0;
+                            thisMarkerB = 0;
                         }else{
-                            thisMarker = currentInd.getMarker(i);
+                            thisMarkerA = currentInd.getMarkerA(i);
+                            thisMarkerB = currentInd.getMarkerB(i);
                         }
-                        if (thisMarker[0] == thisMarker[1] || thisMarker[0] == 0 || thisMarker[1] == 0){
-                            chrom1[i] = thisMarker[0];
-                            chrom2[i] = thisMarker[1];
+                        if (thisMarkerA == thisMarkerB || thisMarkerA == 0 || thisMarkerB == 0){
+                            chrom1[i] = thisMarkerA;
+                            chrom2[i] = thisMarkerB;
                         }else{
-                            chrom1[i] = (byte)(4+thisMarker[0]);
-                            chrom2[i] = (byte)(4+thisMarker[1]);
+                            chrom1[i] = (byte)(4+thisMarkerA);
+                            chrom2[i] = (byte)(4+thisMarkerB);
                         }
                     }
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus(), -1));
