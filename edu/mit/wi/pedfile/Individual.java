@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 3.1 2005/04/27 19:05:14 jmaller Exp $
+* $Id: Individual.java,v 3.2 2006/01/11 20:44:22 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -32,7 +32,9 @@ public class Individual {
 
     private String reasonImAxed;
     private int liability; //optional
-    private Vector markers;
+    //private Vector markers;
+    private byte[] markersa;
+    private byte[] markersb;
     private double numGoodMarkers;
     private boolean[] zeroed;
     //this is used to keep track of the index of the last marker added
@@ -46,10 +48,12 @@ public class Individual {
 
 
 
-    public Individual(int numLines) {
-        this.markers = new Vector(numLines);
-        //this.zeroed = new Vector(numLines);
-        this.zeroed = new boolean[numLines];
+    public Individual(int numMarkers) {
+        //this.markers = new Vector(numMarkers);
+        markersa = new byte[numMarkers];
+        markersb = new byte[numMarkers];
+        //this.zeroed = new Vector(numMarkers);
+        this.zeroed = new boolean[numMarkers];
         this.currMarker = 0;
     }
 
@@ -157,11 +161,12 @@ public class Individual {
      * @return Vector markers
      */
     public Vector getMarkers() {
-        return markers;
+        return null;
     }
 
-    public void setMarkers(Vector m){
-        markers = m;
+    public void setMarkers(byte[] ma, byte[] mb){
+        markersa = ma;
+        markersb = mb;
     }
 
     /**
@@ -169,28 +174,34 @@ public class Individual {
      * @return integer count of markers
      */
     public int getNumMarkers(){
-        return this.markers.size();
+        return this.markersa.length;
     }
 
-    /**
-     * returns a two byte array of the marker at the index specified by location
-     * @param location the index in the markers vector
-     * @return two byte array with the marker values
-     */
-    public byte[] getMarker(int location){
-        return (byte[])this.markers.get(location);
+
+    public byte getMarkerA(int location) {
+        return markersa[location];
     }
 
-    /**
-     * adds a marker to the markers vector
-     * @param marker - two byte array with first marker in index 0 and second in index 1
-     */
-    public void addMarker(byte[] marker){
+    public byte getMarkerB(int location) {
+        return markersb[location];
+    }
+
+ /*   public void addMarker(byte[] marker){
         this.markers.add(marker);
         //this.zeroed.add(new Boolean(false));
         this.zeroed[currMarker] = false;
         this.currMarker++;
         if (!(marker[0] == 0 || marker[1] == 0)){
+            numGoodMarkers++;
+        }
+    }*/
+
+    public void addMarker(byte markera, byte markerb) {
+        markersa[currMarker] = markera;
+        markersb[currMarker] = markerb;
+        zeroed[currMarker] = false;
+        currMarker++;
+         if (!(markera == 0 || markerb == 0)){
             numGoodMarkers++;
         }
     }
@@ -213,13 +224,6 @@ public class Individual {
         //this.zeroed.set(i, new Boolean(true));
         this.zeroed[i] = true;
     }
-    /**
-     * returns an iterator for the markers Vector
-     * @return iterator for the markers Vector
-     */
-    public Iterator markerIterator(){
-        return this.markers.iterator();
-    }
 
     public String getReasonImAxed() {
         return reasonImAxed;
@@ -230,7 +234,7 @@ public class Individual {
     }
 
     public double getGenoPC(){
-        return numGoodMarkers/markers.size();
+        return numGoodMarkers/markersa.length;
     }
 
     public boolean[] getZeroedArray() {

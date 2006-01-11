@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.11 2005/10/06 23:13:06 jmaller Exp $
+* $Id: PedFile.java,v 3.12 2006/01/11 20:44:22 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -486,6 +486,7 @@ public class PedFile {
     public void parseLinkage(File inputFile) throws PedFileException, IOException {
         int colNum = -1;
         boolean withOptionalColumn = false;
+        int numMarkers=0;
         int numLines = 0;
         Individual ind;
         this.allIndividuals = new Vector();
@@ -512,6 +513,9 @@ public class PedFile {
                 colNum = numTokens;
                 if(colNum%2==1) {
                     withOptionalColumn = true;
+                    numMarkers= (numTokens - 7)/2;
+                }else {
+                    numMarkers = (numTokens -6)/2;
                 }
             }
             if(colNum != numTokens) {
@@ -520,17 +524,17 @@ public class PedFile {
                 throw new PedFileException("Column number mismatch in pedfile. line " + (numLines+1));
             }
 
-            ind = new Individual(numTokens);
+            ind = new Individual(numMarkers);
             if(numTokens < 6) {
                 throw new PedFileException("Incorrect number of fields on line " + (numLines+1));
             }
 
             if(tokenizer.hasMoreTokens()){
 
-                ind.setFamilyID(tokenizer.nextToken().trim());
-                ind.setIndividualID(tokenizer.nextToken().trim());
-                ind.setDadID(tokenizer.nextToken().trim());
-                ind.setMomID(tokenizer.nextToken().trim());
+                ind.setFamilyID(new String(tokenizer.nextToken().trim()));
+                ind.setIndividualID(new String(tokenizer.nextToken().trim()));
+                ind.setDadID(new String(tokenizer.nextToken().trim()));
+                ind.setMomID(new String(tokenizer.nextToken().trim()));
                 try {
                     ind.setGender(Integer.parseInt(tokenizer.nextToken().trim()));
                     ind.setAffectedStatus(Integer.parseInt(tokenizer.nextToken().trim()));
@@ -541,17 +545,23 @@ public class PedFile {
                     throw new PedFileException("Pedfile error: invalid gender or affected status on line " + (numLines+1));
                 }
 
+                byte genotype1;
+                byte genotype2;
                 while(tokenizer.hasMoreTokens()){
                     try {
-                        byte[] markers = new byte[2];
-                        markers[0] = Byte.parseByte((tokenizer.nextToken().trim()));
-                        markers[1]= Byte.parseByte((tokenizer.nextToken().trim()));
-                        if(markers[0] <0 || markers[0] > 4 || markers[1] <0 || markers[1] >4) {
+                        genotype1 = Byte.parseByte((tokenizer.nextToken().trim()));
+
+                        genotype2 = Byte.parseByte((tokenizer.nextToken().trim()));
+                      /*  if(markers[0] <0 || markers[0] > 4 || markers[1] <0 || markers[1] >4) {
+                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1)
+                                    + ".\n all genotypes must be 0-4.");
+                        }*/
+                        if(genotype1 <0 || genotype1 > 4 || genotype2 <0 || genotype2 >4) {
                             throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1)
                                     + ".\n all genotypes must be 0-4.");
                         }
 
-                        ind.addMarker(markers);
+                        ind.addMarker(genotype1,genotype2);
                     }catch(NumberFormatException nfe) {
                         throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1) );
                     }
@@ -647,7 +657,9 @@ public class PedFile {
         Vector namesIncludingDups = new Vector();
         StringTokenizer dt;
         while (st.hasMoreTokens()){
-            ind = new Individual(numLines);
+            //todo: sort out how this used to work. now it's counting the header line so we subtract 1
+            ind = new Individual(numLines-1);
+
             String name = st.nextToken();
             namesIncludingDups.add(name);
             if (name.endsWith("dup")){
@@ -754,10 +766,8 @@ public class PedFile {
                     }else if (alleles.substring(1,2).equals("T")){
                         allele2 = 4;
                     }
-                    byte[] markers = new byte[2];
-                    markers[0] = (byte)allele1;
-                    markers[1]= (byte)allele2;
-                    ind.addMarker(markers);
+                    ind.addMarker((byte)allele1,(byte)allele2);
+                    //ind.addMarker(markers);
                     index++;
                 }
             }

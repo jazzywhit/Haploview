@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 3.2 2005/03/31 20:39:14 jcbarret Exp $
+* $Id: CheckData.java,v 3.3 2006/01/11 20:44:22 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -84,9 +84,8 @@ public class CheckData {
             //loop through each individual in the current Family
             while(indList.hasMoreElements()){
                 currentInd = currentFamily.getMember((String)indList.nextElement());
-                byte[] markers = currentInd.getMarker(loc);
-                allele1 = markers[0];
-                allele2 = markers[1];
+                allele1 = currentInd.getMarkerA(loc);
+                allele2 = currentInd.getMarkerB(loc);
 
                 //no allele data missing
                 if(allele1 > 0 && allele2 >0){
@@ -94,12 +93,10 @@ public class CheckData {
                     if (currentFamily.containsMember(currentInd.getMomID()) &&
                             currentFamily.containsMember(currentInd.getDadID())){
                         //do mendel check
-                        byte[] marker = (currentFamily.getMember(currentInd.getMomID())).getMarker(loc);
-                        int momAllele1 = marker[0];
-                        int momAllele2 = marker[1];
-                        marker = (currentFamily.getMember(currentInd.getDadID())).getMarker(loc);
-                        int dadAllele1 = marker[0];
-                        int dadAllele2 = marker[1];
+                        int momAllele1 = (currentFamily.getMember(currentInd.getMomID())).getMarkerA(loc);
+                        int momAllele2 = (currentFamily.getMember(currentInd.getMomID())).getMarkerB(loc);
+                        int dadAllele1 = (currentFamily.getMember(currentInd.getDadID())).getMarkerA(loc);
+                        int dadAllele2 = (currentFamily.getMember(currentInd.getDadID())).getMarkerB(loc);
 
                         //don't check if parents are missing any data
                         if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0 || dadAllele2 ==0)){
@@ -160,15 +157,13 @@ public class CheckData {
             //loop through each individual in the current Family
             while(indList.hasMoreElements()){
                 currentInd = currentFamily.getMember((String)indList.nextElement());
-                byte[] markers;
-                byte[] zeroArray = {0,0};
                 if (currentInd.getZeroed(loc)){
-                    markers = zeroArray;
+                    allele1 = 0;
+                    allele2 = 0;
                 }else{
-                    markers = currentInd.getMarker(loc);
+                    allele1 = currentInd.getMarkerA(loc);
+                    allele2 = currentInd.getMarkerB(loc);
                 }
-                allele1 = markers[0];
-                allele2 = markers[1];
 
                 String familyID = currentInd.getFamilyID();
 
