@@ -88,12 +88,11 @@ public class AssociationTestSet implements Constants{
                     if(useable[j]) {
                         currentInd = (Individual)indList.get(j);
                         int cc = ((Integer)affectedStatus.get(j)).intValue();
-                        byte[] a = currentInd.getMarker(i);
 
                         if (cc == 0) continue;
                         if (cc == 2) cc = 0;
-                        byte a1 = a[0];
-                        byte a2 = a[1];
+                        byte a1 = currentInd.getMarkerA(i);
+                        byte a2 = currentInd.getMarkerB(i);
 
                         if (a1 >= 5 && a2 >= 5){
                             counts[cc][0]++;
@@ -182,19 +181,15 @@ public class AssociationTestSet implements Constants{
                         //if he has both parents, and is affected, we can get a transmission
                         Individual mom = currentFam.getMember(currentInd.getMomID());
                         Individual dad = currentFam.getMember(currentInd.getDadID());
-
-			if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
-			    continue;
-			}
-                        byte[] thisMarker = currentInd.getMarker(i);
-                        byte kid1 = thisMarker[0];
-                        byte kid2 = thisMarker[1];
-                        thisMarker = dad.getMarker(i);
-                        byte dad1 = thisMarker[0];
-                        byte dad2 = thisMarker[1];
-                        thisMarker = mom.getMarker(i);
-                        byte mom1 = thisMarker[0];
-                        byte mom2 = thisMarker[1];
+                         if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
+                            continue;
+                        }
+                        byte kid1 = currentInd.getMarkerA(i);
+                        byte kid2 = currentInd.getMarkerB(i);
+                        byte dad1 = dad.getMarkerA(i);
+                        byte dad2 = dad.getMarkerB(i);
+                        byte mom1 = mom.getMarkerA(i);
+                        byte mom2 = mom.getMarkerB(i);
                         byte momT=0, momU=0, dadT=0, dadU=0;
                         if (kid1 == 0 || kid2 == 0 || dad1 == 0 || dad2 == 0 || mom1 == 0 || mom2 == 0) {
                             continue;
@@ -312,20 +307,18 @@ public class AssociationTestSet implements Constants{
                         //if he has both parents, and is affected, we can get a transmission
                         Individual mom = currentFam.getMember(currentInd.getMomID());
                         Individual dad = currentFam.getMember(currentInd.getDadID());
-                       
-			
-			if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
+                        if(usedParents.contains(mom) || usedParents.contains(dad)) {
                             continue;
                         }
-                        byte[] thisMarker = currentInd.getMarker(i);
-                        byte kid1 = thisMarker[0];
-                        byte kid2 = thisMarker[1];
-                        thisMarker = dad.getMarker(i);
-                        byte dad1 = thisMarker[0];
-                        byte dad2 = thisMarker[1];
-                        thisMarker = mom.getMarker(i);
-                        byte mom1 = thisMarker[0];
-                        byte mom2 = thisMarker[1];
+                         if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
+                            continue;
+                        }
+                        byte kid1 = currentInd.getMarkerA(i);
+                        byte kid2 = currentInd.getMarkerB(i);
+                        byte dad1 = dad.getMarkerA(i);
+                        byte dad2 = dad.getMarkerB(i);
+                        byte mom1 = mom.getMarkerA(i);
+                        byte mom2 = mom.getMarkerB(i);
                         byte momT=0, momU=0, dadT=0, dadU=0;
                         if (kid1 == 0 || kid2 == 0 || dad1 == 0 || dad2 == 0 || mom1 == 0 || mom2 == 0) {
                             continue;
@@ -393,9 +386,6 @@ public class AssociationTestSet implements Constants{
                         }
                         if(mom.getAffectedStatus() != dad.getAffectedStatus()) {
                             //discordant parental phenotypes
-			    if(usedParents.contains(mom) || usedParents.contains(dad)) {
-				continue;
-			    }
                             if(!(dad1 == mom1 && dad2 == mom2) && !(dad1 == mom2 && dad2 == mom1)) {
                                 if(mom.getAffectedStatus() == 2) {
                                     tt.tallyDiscordantParents(momT,momU,dadT,dadU);
@@ -407,9 +397,10 @@ public class AssociationTestSet implements Constants{
                             }else {
                                 discordantNotTallied++;
                             }
-			    usedParents.add(mom);
-			    usedParents.add(dad);
                         }
+                        usedParents.add(mom);
+                        usedParents.add(dad);
+
                     }
                 }
                 int[] g1 = {tt.allele1};
@@ -598,11 +589,11 @@ public class AssociationTestSet implements Constants{
             AssociationTest currentTest = (AssociationTest) tests.get(i);
             if(currentTest.getNumMarkers() > 1) {
                 realBlockHaps[multiMarkerCountTemp] = blockHaps[((Integer)blockHash.get(currentTest)).intValue()];
-                multiMarkerCountTemp++;                
+                multiMarkerCountTemp++;
             }
         }
 
-        
+
         Vector blockResults = new AssociationTestSet(realBlockHaps, names, alleles).getResults();
         Iterator britr = blockResults.iterator();
 
