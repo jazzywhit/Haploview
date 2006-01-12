@@ -42,6 +42,7 @@ public class HaploText implements Constants{
     private Vector forceExcludeTags;
     private String forceExcludeFileName;
     private Vector argHandlerMessages;
+    private String chromosomeArg;
 
 
     public boolean isNogui() {
@@ -479,6 +480,15 @@ public class HaploText implements Constants{
                     die(args[i-1] + " requires a filename");
                 }
             }
+            else if(args[i].equalsIgnoreCase("-chromosome") || args[i].equalsIgnoreCase("-chr")) {
+                i++;
+                if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
+                    chromosomeArg =args[i];
+                }else {
+                    die(args[i-1] + " requires a chromosome name");
+                }
+
+            }
             else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
             }
@@ -670,6 +680,14 @@ public class HaploText implements Constants{
             die("-tagrSqCutoff, -excludeTags, -excludeTagsFile, -includeTags and -includeTagsFile cannot be used without -doTagging");
         }
 
+
+        if(chromosomeArg != null && hapmapFileName != null) {
+            argHandlerMessages.add("-chromosome flag ignored when loading hapmap file");
+            chromosomeArg = null;
+        }
+        if(chromosomeArg != null) {
+            Chromosome.setDataChrom("chr" + chromosomeArg);
+        }
     }
 
     private void die(String msg){

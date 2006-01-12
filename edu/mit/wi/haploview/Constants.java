@@ -118,6 +118,7 @@ public interface Constants {
             "-excludeMarkers <markers>       Specify markers (in range 1-N where N is total number of markers) to be\n"+
             "                                skipped for all analyses. Format: 1,2,5..12\n"+
             "-skipcheck                      Skips the various genotype file checks\n" +
+            "-chromosome <1-22,x>            Specifies the chromosome for this file\n" +
             "-dprime                         Outputs LD text to <inputfile>.LD\n" +
             "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
             "-compressedpng                  Outputs compressed LD display to <inputfile>.LD.PNG\n"+
