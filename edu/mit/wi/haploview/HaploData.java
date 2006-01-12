@@ -468,7 +468,7 @@ public class HaploData implements Constants{
 
     public Vector linkageToChrom(File infile, int type)
             throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
-            
+
         pedFile = new PedFile();
 
         if (type == PED_FILE){
@@ -492,6 +492,7 @@ public class HaploData implements Constants{
         for(int x=0; x < indList.size(); x++){
 
             currentInd = (Individual)indList.get(x);
+            boolean haploid = ((currentInd.getGender() == 1) && Chromosome.getDataChrom().equalsIgnoreCase("chrx"));
             currentFamily = pedFile.getFamily(currentInd.getFamilyID());
             if (currentFamily.containsMember(currentInd.getMomID()) &&
                     currentFamily.containsMember(currentInd.getDadID())){
@@ -500,10 +501,10 @@ public class HaploData implements Constants{
                 Individual dad = currentFamily.getMember(currentInd.getDadID());
                 if (indList.contains(mom) && indList.contains(dad)){
                     numMarkers = currentInd.getNumMarkers();
-                    byte[] dadTb = new byte[numMarkers];
-                    byte[] dadUb = new byte[numMarkers];
-                    byte[] momTb = new byte[numMarkers];
-                    byte[] momUb = new byte[numMarkers];
+                    byte[] dadT = new byte[numMarkers];
+                    byte[] dadU = new byte[numMarkers];
+                    byte[] momT = new byte[numMarkers];
+                    byte[] momU = new byte[numMarkers];
 
                     for (int i = 0; i < numMarkers; i++){
                         byte kid1, kid2;
@@ -533,127 +534,166 @@ public class HaploData implements Constants{
                             dad2 = (currentFamily.getMember(currentInd.getDadID())).getMarkerB(i);
                         }
 
-                        if (kid1 == 0 || kid2 == 0) {
-                            //kid missing
-                            if (dad1 == dad2) {
-                                dadTb[i] = dad1;
-                                dadUb[i] = dad1;
-                            } else if (dad1 != 0 && dad2 != 0) {
-                                dadTb[i] = (byte)(4+dad1);
-                                dadUb[i] = (byte)(4+dad2);
-                            }
-                            if (mom1 == mom2) {
-                                momTb[i] = mom1;
-                                momUb[i] = mom1;
-                            } else if (mom1 != 0 && mom2 != 0){
-                                momTb[i] = (byte)(4+mom1);
-                                momUb[i] = (byte)(4+mom2);
-                            }
-                        } else if (kid1 == kid2) {
-                            //kid homozygous
-                            if (dad1 == 0) {
-                                dadTb[i] = kid1;
-                                dadUb[i] = 0;
-                            } else if (dad1 == kid1) {
-                                dadTb[i] = dad1;
-                                dadUb[i] = dad2;
-                            } else {
-                                dadTb[i] = dad2;
-                                dadUb[i] = dad1;
-                            }
 
-                            if (mom1 == 0) {
-                                momTb[i] = kid1;
-                                momUb[i] = 0;
-                            } else if (mom1 == kid1) {
-                                momTb[i] = mom1;
-                                momUb[i] = mom2;
+                        if(haploid) {
+                           if(kid1 == 0) {
+                               //kid missing
+                               dadU[i] = dad1;
+                               if (mom1 == mom2) {
+                                   momT[i] = mom1;
+                                   momU[i] = mom1;
+                               } else if (mom1 != 0 && mom2 != 0){
+                                   momT[i] = (byte)(4+mom1);
+                                   momU[i] = (byte)(4+mom2);
+                               }
+                           } else {
+                               dadU[i] = dad1;
+                               if (mom1 == 0) {
+                                    momT[i] = kid1;
+                                    momU[i] = 0;
+                                } else if (mom1 == kid1) {
+                                    momT[i] = mom1;
+                                    momU[i] = mom2;
+                                } else {
+                                    momT[i] = mom2;
+                                    momU[i] = mom1;
+                                }
+                           }
+
+
+                        }else {
+
+                            if (kid1 == 0 || kid2 == 0) {
+                                //kid missing
+                                if (dad1 == dad2) {
+                                    dadT[i] = dad1;
+                                    dadU[i] = dad1;
+                                } else if (dad1 != 0 && dad2 != 0) {
+                                    dadT[i] = (byte)(4+dad1);
+                                    dadU[i] = (byte)(4+dad2);
+                                }
+                                if (mom1 == mom2) {
+                                    momT[i] = mom1;
+                                    momU[i] = mom1;
+                                } else if (mom1 != 0 && mom2 != 0){
+                                    momT[i] = (byte)(4+mom1);
+                                    momU[i] = (byte)(4+mom2);
+                                }
+                            } else if (kid1 == kid2) {
+                                //kid homozygous
+                                if (dad1 == 0) {
+                                    dadT[i] = kid1;
+                                    dadU[i] = 0;
+                                } else if (dad1 == kid1) {
+                                    dadT[i] = dad1;
+                                    dadU[i] = dad2;
+                                } else {
+                                    dadT[i] = dad2;
+                                    dadU[i] = dad1;
+                                }
+
+                                if (mom1 == 0) {
+                                    momT[i] = kid1;
+                                    momU[i] = 0;
+                                } else if (mom1 == kid1) {
+                                    momT[i] = mom1;
+                                    momU[i] = mom2;
+                                } else {
+                                    momT[i] = mom2;
+                                    momU[i] = mom1;
+                                }
                             } else {
-                                momTb[i] = mom2;
-                                momUb[i] = mom1;
-                            }
-                        } else {
-                            //kid heterozygous and this if tree's a bitch
-                            if (dad1 == 0 && mom1 == 0) {
-                                //both missing
-                                dadTb[i] = 0;
-                                dadUb[i] = 0;
-                                momTb[i] = 0;
-                                momUb[i] = 0;
-                            } else if (dad1 == 0 && mom1 != mom2) {
-                                //dad missing mom het
-                                dadTb[i] = 0;
-                                dadUb[i] = 0;
-                                momTb[i] = (byte)(4+mom1);
-                                momUb[i] = (byte)(4+mom2);
-                            } else if (mom1 == 0 && dad1 != dad2) {
-                                //dad het mom missing
-                                dadTb[i] = (byte)(4+dad1);
-                                dadUb[i] = (byte)(4+dad2);
-                                momTb[i] = 0;
-                                momUb[i] = 0;
-                            } else if (dad1 == 0 && mom1 == mom2) {
-                                //dad missing mom hom
-                                momTb[i] = mom1;
-                                momUb[i] = mom1;
-                                dadUb[i] = 0;
-                                if (kid1 == mom1) {
-                                    dadTb[i] = kid2;
+                                //kid heterozygous and this if tree's a bitch
+                                if (dad1 == 0 && mom1 == 0) {
+                                    //both missing
+                                    dadT[i] = 0;
+                                    dadU[i] = 0;
+                                    momT[i] = 0;
+                                    momU[i] = 0;
+                                } else if (dad1 == 0 && mom1 != mom2) {
+                                    //dad missing mom het
+                                    dadT[i] = 0;
+                                    dadU[i] = 0;
+                                    momT[i] = (byte)(4+mom1);
+                                    momU[i] = (byte)(4+mom2);
+                                } else if (mom1 == 0 && dad1 != dad2) {
+                                    //dad het mom missing
+                                    dadT[i] = (byte)(4+dad1);
+                                    dadU[i] = (byte)(4+dad2);
+                                    momT[i] = 0;
+                                    momU[i] = 0;
+                                } else if (dad1 == 0 && mom1 == mom2) {
+                                    //dad missing mom hom
+                                    momT[i] = mom1;
+                                    momU[i] = mom1;
+                                    dadU[i] = 0;
+                                    if (kid1 == mom1) {
+                                        dadT[i] = kid2;
+                                    } else {
+                                        dadT[i] = kid1;
+                                    }
+                                } else if (mom1 == 0 && dad1 == dad2) {
+                                    //mom missing dad hom
+                                    dadT[i] = dad1;
+                                    dadU[i] = dad1;
+                                    momU[i] = 0;
+                                    if (kid1 == dad1) {
+                                        momT[i] = kid2;
+                                    } else {
+                                        momT[i] = kid1;
+                                    }
+                                } else if (dad1 == dad2 && mom1 != mom2) {
+                                    //dad hom mom het
+                                    dadT[i] = dad1;
+                                    dadU[i] = dad2;
+                                    if (kid1 == dad1) {
+                                        momT[i] = kid2;
+                                        momU[i] = kid1;
+                                    } else {
+                                        momT[i] = kid1;
+                                        momU[i] = kid2;
+                                    }
+                                } else if (mom1 == mom2 && dad1 != dad2) {
+                                    //dad het mom hom
+                                    momT[i] = mom1;
+                                    momU[i] = mom2;
+                                    if (kid1 == mom1) {
+                                        dadT[i] = kid2;
+                                        dadU[i] = kid1;
+                                    } else {
+                                        dadT[i] = kid1;
+                                        dadU[i] = kid2;
+                                    }
+                                } else if (dad1 == dad2 && mom1 == mom2) {
+                                    //mom & dad hom
+                                    dadT[i] = dad1;
+                                    dadU[i] = dad1;
+                                    momT[i] = mom1;
+                                    momU[i] = mom1;
                                 } else {
-                                    dadTb[i] = kid1;
+                                    //everybody het
+                                    dadT[i] = (byte)(4+dad1);
+                                    dadU[i] = (byte)(4+dad2);
+                                    momT[i] = (byte)(4+mom1);
+                                    momU[i] = (byte)(4+mom2);
                                 }
-                            } else if (mom1 == 0 && dad1 == dad2) {
-                                //mom missing dad hom
-                                dadTb[i] = dad1;
-                                dadUb[i] = dad1;
-                                momUb[i] = 0;
-                                if (kid1 == dad1) {
-                                    momTb[i] = kid2;
-                                } else {
-                                    momTb[i] = kid1;
-                                }
-                            } else if (dad1 == dad2 && mom1 != mom2) {
-                                //dad hom mom het
-                                dadTb[i] = dad1;
-                                dadUb[i] = dad2;
-                                if (kid1 == dad1) {
-                                    momTb[i] = kid2;
-                                    momUb[i] = kid1;
-                                } else {
-                                    momTb[i] = kid1;
-                                    momUb[i] = kid2;
-                                }
-                            } else if (mom1 == mom2 && dad1 != dad2) {
-                                //dad het mom hom
-                                momTb[i] = mom1;
-                                momUb[i] = mom2;
-                                if (kid1 == mom1) {
-                                    dadTb[i] = kid2;
-                                    dadUb[i] = kid1;
-                                } else {
-                                    dadTb[i] = kid1;
-                                    dadUb[i] = kid2;
-                                }
-                            } else if (dad1 == dad2 && mom1 == mom2) {
-                                //mom & dad hom
-                                dadTb[i] = dad1;
-                                dadUb[i] = dad1;
-                                momTb[i] = mom1;
-                                momUb[i] = mom1;
-                            } else {
-                                //everybody het
-                                dadTb[i] = (byte)(4+dad1);
-                                dadUb[i] = (byte)(4+dad2);
-                                momTb[i] = (byte)(4+mom1);
-                                momUb[i] = (byte)(4+mom2);
                             }
                         }
-
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadTb, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadUb, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momTb, mom.getAffectedStatus(),currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momUb, mom.getAffectedStatus(),currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momT, mom.getAffectedStatus(),currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momU, mom.getAffectedStatus(),currentInd.getAffectedStatus()));
+
+                    if(haploid) {
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
+
+                    }else if(Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
+                    }else {
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
+                    }
+
+
                     numTrios++;
                     indsInTrio.add(mom);
                     indsInTrio.add(dad);
@@ -663,31 +703,34 @@ public class HaploData implements Constants{
         }
         for (int x=0; x<indList.size(); x++){
             currentInd = (Individual)indList.get(x);
+            boolean haploid = ((currentInd.getGender() == 1) && Chromosome.getDataChrom().equalsIgnoreCase("chrx"));
             if (!indsInTrio.contains(currentInd)){
-               //ind has no parents or kids -- he's a singleton
-                    numMarkers = currentInd.getNumMarkers();
-                    byte[] chrom1 = new byte[numMarkers];
-                    byte[] chrom2 = new byte[numMarkers];
-                    for (int i = 0; i < numMarkers; i++){
-                        byte thisMarkerA, thisMarkerB;
-                        if (currentInd.getZeroed(i)){
-                            thisMarkerA = 0;
-                            thisMarkerB = 0;
-                        }else{
-                            thisMarkerA = currentInd.getMarkerA(i);
-                            thisMarkerB = currentInd.getMarkerB(i);
-                        }
-                        if (thisMarkerA == thisMarkerB || thisMarkerA == 0 || thisMarkerB == 0){
-                            chrom1[i] = thisMarkerA;
-                            chrom2[i] = thisMarkerB;
-                        }else{
-                            chrom1[i] = (byte)(4+thisMarkerA);
-                            chrom2[i] = (byte)(4+thisMarkerB);
-                        }
+                //ind has no parents or kids -- he's a singleton
+                numMarkers = currentInd.getNumMarkers();
+                byte[] chrom1 = new byte[numMarkers];
+                byte[] chrom2 = new byte[numMarkers];
+                for (int i = 0; i < numMarkers; i++){
+                    byte thisMarkerA, thisMarkerB;
+                    if (currentInd.getZeroed(i)){
+                        thisMarkerA = 0;
+                        thisMarkerB = 0;
+                    }else{
+                        thisMarkerA = currentInd.getMarkerA(i);
+                        thisMarkerB = currentInd.getMarkerB(i);
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus(), -1));
+                    if (thisMarkerA == thisMarkerB || thisMarkerA == 0 || thisMarkerB == 0){
+                        chrom1[i] = thisMarkerA;
+                        chrom2[i] = thisMarkerB;
+                    }else{
+                        chrom1[i] = (byte)(4+thisMarkerA);
+                        chrom2[i] = (byte)(4+thisMarkerB);
+                    }
+                }
+                chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus(), -1));
+                if(!haploid){
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(), -1));
-                    numSingletons++;
+                }
+                numSingletons++;
             }
         }
         chromosomes = chrom;
@@ -990,7 +1033,7 @@ public class HaploData implements Constants{
             //next pick the tagSNPs
             Vector theBestSubset = getBestSubset(haplos[i]);
             for (int j = 0; j < theBestSubset.size(); j++){
-                    haplos[i][0].addTag(((Integer)theBestSubset.elementAt(j)).intValue());
+                haplos[i][0].addTag(((Integer)theBestSubset.elementAt(j)).intValue());
             }
 
             for (int k = 1; k < haplos[i].length; k++){
@@ -1002,7 +1045,7 @@ public class HaploData implements Constants{
     }
 
     public Haplotype[][] orderByCrossing(Haplotype[][] haplos){
-         //seed first block with ordering numbers
+        //seed first block with ordering numbers
         for (int u = 0; u < haplos[0].length; u++){
             haplos[0][u].setListOrder(u);
         }
@@ -1561,7 +1604,7 @@ public class HaploData implements Constants{
         probHaps[BB]=(numHaps[BB]+const_prob)/total; if (probHaps[BB] < 1e-10) probHaps[BB]=1e-10;
     }
 
-public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,
+    public void saveHapsToText(Haplotype[][] finishedHaplos, double[] multidprime,
                                File saveHapsFile) throws IOException{
 
         if (finishedHaplos == null) return;

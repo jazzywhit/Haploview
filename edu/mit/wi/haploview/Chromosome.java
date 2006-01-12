@@ -17,7 +17,7 @@ public class Chromosome{
     byte[] genotypes;
     private String origin;
 
-    private static String dataChrom = null;
+    private static String dataChrom = "none";
     public static int[] realIndex;
     public static int[] filterIndex;
     static Vector markers;

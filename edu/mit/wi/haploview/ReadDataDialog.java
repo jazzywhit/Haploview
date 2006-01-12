@@ -19,7 +19,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
     int fileType;
     JTextField genoFileField, infoFileField, testFileField;
-    JCheckBox doTDT, doGB;
+    JCheckBox doTDT, doGB, xChrom;
     JRadioButton trioButton, ccButton, standardTDT, parenTDT;
     JButton browseAssocButton;
     NumberTextField maxComparisonDistField;
@@ -97,6 +97,13 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 Options.setAssocTest(ASSOC_NONE);
             }
 
+            if (xChrom.isSelected()){
+                Chromosome.setDataChrom("chrx");
+            }else {
+                Chromosome.setDataChrom("none");
+            }
+
+
             if (doGB.isSelected()){
                 Options.setShowGBrowse(true);
             }else{
@@ -104,7 +111,6 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             }
             Options.setgBrowseLeft(0);
             Options.setgBrowseRight(0);
-            Chromosome.setDataChrom(null);
 
             if (maxComparisonDistField.getText().equals("")){
                 Options.setMaxDistance(0);
@@ -274,6 +280,10 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         doTDT.setSelected(false);
         doTDT.setActionCommand("association");
         doTDT.addActionListener(this);
+        xChrom = new JCheckBox();
+        xChrom.setSelected(false);
+        xChrom.setActionCommand("xChrom");
+        xChrom.addActionListener(this);
         trioButton = new JRadioButton("Family trio data", true);
         trioButton.setEnabled(false);
         trioButton.setActionCommand("tdt");
@@ -306,6 +316,8 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             JPanel tdtOptsPanel = new JPanel();
             JPanel tdtTypePanel = new JPanel();
             JPanel tdtCheckBoxPanel = new JPanel();
+            tdtCheckBoxPanel.add(xChrom);
+            tdtCheckBoxPanel.add(new JLabel("X Chromosome"));
             tdtCheckBoxPanel.add(doTDT);
             tdtCheckBoxPanel.add(new JLabel("Do association test?"));
             tdtOptsPanel.add(trioButton);
