@@ -27,7 +27,15 @@ public class EM implements Constants {
 
     EM(Vector chromosomes, int numTrios){
 
-        this.chromosomes = chromosomes;
+        //we need to add extra copies of haploid chromosomes so we add a second copy
+        this.chromosomes = new Vector();
+        for(int i=0;i<chromosomes.size();i++) {
+            this.chromosomes.add(chromosomes.elementAt(i));
+            if(((Chromosome)this.chromosomes.lastElement()).isHaploid()){
+                this.chromosomes.add(chromosomes.elementAt(i));
+            }
+        }
+
         this.numTrios = numTrios;
         //an old-school speedup courtesy of mjdaly
         two_n[0]=1;
@@ -190,12 +198,17 @@ public class EM implements Constants {
             }
         }
 
+
+
+
         byte[] thisHap;
         Vector inputHaploSingletons = new Vector();
         Vector inputHaploTrios = new Vector();
         Vector affSingletons = new Vector();
         Vector affTrios = new Vector();
         Vector affKids = new Vector();
+        Vector haploidTrios = new Vector();
+        Vector haploidSingletons = new Vector();
         //whichVector[i] stores a value which indicates which vector chromosome i's genotype should go in
         //1 indicates inputHaploSingletons (singletons), 2 indicates inputHaploTrios,
         //3 indicates a person from a broken trio who is treated as a singleton
@@ -327,6 +340,7 @@ public class EM implements Constants {
                     inputHaploSingletons.add(thisHap);
                     if(addAff) {
                         affSingletons.add(new Integer(thisChrom.getAffected()));
+                        haploidSingletons.add(new Boolean(thisChrom.isHaploid()));
                     }
                 }
                 else if(whichVector[i] ==2) {
@@ -334,11 +348,13 @@ public class EM implements Constants {
                     if(addAff) {
                         affTrios.add(new Integer(thisChrom.getAffected()));
                         affKids.add(thisChrom.getKidAffected());
+                        haploidTrios.add(new Boolean(thisChrom.isHaploid()));
                     }
                 }else if (whichVector[i] == 3){
                     inputHaploSingletons.add(thisHap);
                     if(addAff) {
                         affSingletons.add(new Integer(0));
+                        haploidSingletons.add(new Boolean(thisChrom.isHaploid()));
                     }
                 }
                 if(addAff) {
@@ -355,12 +371,19 @@ public class EM implements Constants {
 
         byte[][] input_haplos = (byte[][])inputHaploTrios.toArray(new byte[0][0]);
 
-        full_em_breakup(input_haplos, block_size, affTrios, affKids);
+        haploidTrios.addAll(haploidSingletons);
+
+        boolean[] haploid = new boolean[haploidTrios.size()];
+        for(int i=0;i<haploidTrios.size();i++){
+            haploid[i] = ((Boolean)haploidTrios.elementAt(i)).booleanValue();
+        }
+
+        full_em_breakup(input_haplos, block_size, affTrios, affKids,haploid);
 
 
     }
 
-    private void full_em_breakup( byte[][] input_haplos, int[] block_size, Vector affStatus, Vector kidAffStatus) throws HaploViewException{
+    private void full_em_breakup( byte[][] input_haplos, int[] block_size, Vector affStatus, Vector kidAffStatus, boolean[] haploid) throws HaploViewException{
         int num_poss, iter;
         double total = 0;
         int block, start_locus, end_locus, biggest_block_size;
@@ -425,8 +448,12 @@ public class EM implements Constants {
                 if (data[i].nposs==1) {
                     tempRec = (Recovery)data[i].poss.elementAt(0);
                     probMap.put(new Long(tempRec.h1), probMap.get(new Long(tempRec.h1)) + 1.0);
-                    probMap.put(new Long(tempRec.h2), probMap.get(new Long(tempRec.h2)) + 1.0);
-                    total+=2.0;
+                    if (!haploid[i]){
+                        probMap.put(new Long(tempRec.h2), probMap.get(new Long(tempRec.h2)) + 1.0);
+                        total+=2.0;
+                    }else{
+                        total+=1.0;
+                    }
                 }
             }
 
@@ -440,7 +467,11 @@ public class EM implements Constants {
                     total=0.0;
                     for (int k=0; k<data[i].nposs; k++) {
                         tempRec = (Recovery) data[i].poss.elementAt(k);
-                        tempRec.p = (float)(probMap.get(new Long(tempRec.h1))*probMap.get(new Long(tempRec.h2)));
+                        if(haploid[i]){
+                            tempRec.p = (float)(probMap.get(new Long(tempRec.h1)));
+                        }else {
+                            tempRec.p = (float)(probMap.get(new Long(tempRec.h1))*probMap.get(new Long(tempRec.h2)));
+                        }
                         total+=tempRec.p;
                     }
                     // normalize
@@ -459,8 +490,12 @@ public class EM implements Constants {
                     for (int k=0; k<data[i].nposs; k++) {
                         tempRec = (Recovery) data[i].poss.elementAt(k);
                         probMap.put(new Long(tempRec.h1),probMap.get(new Long(tempRec.h1)) + tempRec.p);
-                        probMap.put(new Long(tempRec.h2),probMap.get(new Long(tempRec.h2)) + tempRec.p);
-                        total+=(2.0*(tempRec.p));
+                        if (!haploid[i]){
+                            probMap.put(new Long(tempRec.h2),probMap.get(new Long(tempRec.h2)) + tempRec.p);
+                            total+=(2.0*(tempRec.p));
+                        }else{
+                            total += tempRec.p;
+                        }
                     }
                 }
 
@@ -514,9 +549,12 @@ public class EM implements Constants {
                 Long h2 = new Long(superdata[i].superposs[0].h2);
 
                 fullProbMap.put(h1,fullProbMap.get(h1) +1.0);
-                fullProbMap.put(h2,fullProbMap.get(h2) +1.0);
-
-                total+=2.0;
+                if (!haploid[i]){
+                    fullProbMap.put(h2,fullProbMap.get(h2) +1.0);
+                    total+=2.0;
+                }else{
+                    total+=1.0;
+                }
             }
         }
 
@@ -529,9 +567,15 @@ public class EM implements Constants {
             for (int i=0; i<num_indivs; i++) {
                 total=0.0;
                 for (int k=0; k<superdata[i].nsuper; k++) {
+                    if(haploid[i]){
                     superdata[i].superposs[k].p = (float)
+                            (fullProbMap.get(new Long(superdata[i].superposs[k].h1)));
+
+                    }else{
+                        superdata[i].superposs[k].p = (float)
                             (fullProbMap.get(new Long(superdata[i].superposs[k].h1))*
                             fullProbMap.get(new Long(superdata[i].superposs[k].h2)));
+                    }
                     total+=superdata[i].superposs[k].p;
                 }
                 /* normalize */
@@ -548,8 +592,12 @@ public class EM implements Constants {
             for (int i=0; i<num_indivs; i++) {
                 for (int k=0; k<superdata[i].nsuper; k++) {
                     fullProbMap.put(new Long(superdata[i].superposs[k].h1),fullProbMap.get(new Long(superdata[i].superposs[k].h1)) + superdata[i].superposs[k].p);
-                    fullProbMap.put(new Long(superdata[i].superposs[k].h2),fullProbMap.get(new Long(superdata[i].superposs[k].h2)) + superdata[i].superposs[k].p);
-                    total+=(2.0*superdata[i].superposs[k].p);
+                    if(!haploid[i]){
+                        fullProbMap.put(new Long(superdata[i].superposs[k].h2),fullProbMap.get(new Long(superdata[i].superposs[k].h2)) + superdata[i].superposs[k].p);
+                        total+=(2.0*superdata[i].superposs[k].p);
+                    }else{
+                        total += superdata[i].superposs[k].p;
+                    }
                 }
             }
 
