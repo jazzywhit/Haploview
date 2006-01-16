@@ -286,7 +286,6 @@ public class AssociationTestSet implements Constants{
             }
         }
 
-        //todo: need to make sure each set of parents only used once
         int numMarkers = Chromosome.getUnfilteredSize();
         for (int i = 0; i < numMarkers; i++){
             SNP currentMarker = Chromosome.getUnfilteredMarker(i);
