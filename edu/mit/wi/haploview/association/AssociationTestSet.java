@@ -307,9 +307,7 @@ public class AssociationTestSet implements Constants{
                         //if he has both parents, and is affected, we can get a transmission
                         Individual mom = currentFam.getMember(currentInd.getMomID());
                         Individual dad = currentFam.getMember(currentInd.getDadID());
-                        if(usedParents.contains(mom) || usedParents.contains(dad)) {
-                            continue;
-                        }
+
                          if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
                             continue;
                         }
@@ -386,6 +384,9 @@ public class AssociationTestSet implements Constants{
                         }
                         if(mom.getAffectedStatus() != dad.getAffectedStatus()) {
                             //discordant parental phenotypes
+                            if(usedParents.contains(mom) || usedParents.contains(dad)) {
+                                continue;
+                            }
                             if(!(dad1 == mom1 && dad2 == mom2) && !(dad1 == mom2 && dad2 == mom1)) {
                                 if(mom.getAffectedStatus() == 2) {
                                     tt.tallyDiscordantParents(momT,momU,dadT,dadU);
@@ -470,6 +471,7 @@ public class AssociationTestSet implements Constants{
             if(missing) {
                 for(int i=0;i<missingAlleles.size();i++) {
                     System.out.println(missingAlleles.get(i));
+
                 }
                 throw new HaploViewException("alleles missing");
             }
