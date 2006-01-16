@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 3.3 2006/01/11 20:44:22 jmaller Exp $
+* $Id: CheckData.java,v 3.4 2006/01/16 18:14:23 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -98,54 +98,101 @@ public class CheckData {
                         int dadAllele1 = (currentFamily.getMember(currentInd.getDadID())).getMarkerA(loc);
                         int dadAllele2 = (currentFamily.getMember(currentInd.getDadID())).getMarkerB(loc);
 
-                        //don't check if parents are missing any data
-                        if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0 || dadAllele2 ==0)){
-                            //mom hom
-                            if(momAllele1 == momAllele2){
-                                //both parents hom
-                                if (dadAllele1 == dadAllele2){
-                                    //both parents hom same allele
-                                    if (momAllele1 == dadAllele1){
+
+                        if(Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+                            if(currentInd.getGender() == 1) {
+                                if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0)){
+                                    //this is an x chrom for a male, so the only thing we need to check is if
+                                    //allele1 matches either momallele1 or momallele2
+                                    if(allele1 != momAllele1 && allele1 != momAllele2) {
+                                        mendErrNum ++;
+                                        currentInd.zeroOutMarker(loc);
+                                        currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                        currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                    }
+                                }
+                            }else {
+                                //if gender is anything except 1 we assume female
+                                if(momAllele1 == momAllele2) {
+                                    //mom hom and dad matches mom
+                                    if(dadAllele1 == momAllele1) {
                                         //kid must be hom same allele
-                                        if (allele1 != momAllele1 || allele2 != momAllele1) {
+                                        if(allele1 != momAllele1 || allele2 != momAllele2){
                                             mendErrNum ++;
                                             currentInd.zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
                                         }
-                                        //parents hom diff allele
-                                    }else{
+                                    }else {
                                         //kid must be het
-                                        if (allele1 == allele2) {
+                                        if(allele1 == allele2 ){
+                                            mendErrNum ++;
+                                            currentInd.zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                        }
+                                    }
+                                }else{
+                                    //mom het,so only need to check that at least one allele matches dad
+                                    if(allele1 != dadAllele1 && allele2 != dadAllele2){
+                                        mendErrNum ++;
+                                        currentInd.zeroOutMarker(loc);
+                                        currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                        currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                    }
+                                }
+                            }
+                        }else{
+
+                            //don't check if parents are missing any data
+                            if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0 || dadAllele2 ==0)){
+                                //mom hom
+                                if(momAllele1 == momAllele2){
+                                    //both parents hom
+                                    if (dadAllele1 == dadAllele2){
+                                        //both parents hom same allele
+                                        if (momAllele1 == dadAllele1){
+                                            //kid must be hom same allele
+                                            if (allele1 != momAllele1 || allele2 != momAllele1) {
+                                                mendErrNum ++;
+                                                currentInd.zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                            }
+                                            //parents hom diff allele
+                                        }else{
+                                            //kid must be het
+                                            if (allele1 == allele2) {
+                                                mendErrNum++;
+                                                currentInd.zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                            }
+                                        }
+                                        //mom hom dad het
+                                    }else{
+                                        //kid can't be hom for non-momallele
+                                        if (allele1 != momAllele1 && allele2 != momAllele1){
                                             mendErrNum++;
                                             currentInd.zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
                                         }
                                     }
-                                    //mom hom dad het
+                                    //mom het
                                 }else{
-                                    //kid can't be hom for non-momallele
-                                    if (allele1 != momAllele1 && allele2 != momAllele1){
-                                        mendErrNum++;
-                                        currentInd.zeroOutMarker(loc);
-                                        currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
-                                        currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                    //dad hom
+                                    if (dadAllele1 == dadAllele2){
+                                        //kid can't be hom for non-dadallele
+                                        if(allele1 != dadAllele1 && allele2 != dadAllele1){
+                                            mendErrNum++;
+                                            currentInd.zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                            currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                        }
                                     }
+                                    //both parents het no mend err poss
                                 }
-                                //mom het
-                            }else{
-                                //dad hom
-                                if (dadAllele1 == dadAllele2){
-                                    //kid can't be hom for non-dadallele
-                                    if(allele1 != dadAllele1 && allele2 != dadAllele1){
-                                        mendErrNum++;
-                                        currentInd.zeroOutMarker(loc);
-                                        currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
-                                        currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
-                                    }
-                                }
-                                //both parents het no mend err poss
                             }
                         }
                     }
