@@ -22,6 +22,7 @@ public class Chromosome{
     public static int[] filterIndex;
     static Vector markers;
     static int trueSize;
+    private boolean haploid = false;
 
     Chromosome(String p, String i, byte[] g, String o, int a) throws HaploViewException{
         ped = p;
@@ -158,6 +159,15 @@ public class Chromosome{
 
     public void setKidAffected(int kidAffected) {
         this.kidAffected = new Integer(kidAffected);
+    }
+
+
+    public boolean isHaploid() {
+        return haploid;
+    }
+
+    public void setHaploid(boolean haploid) {
+        this.haploid = haploid;
     }
 }
 

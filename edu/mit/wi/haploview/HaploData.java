@@ -685,9 +685,10 @@ public class HaploData implements Constants{
 
                     if(haploid) {
                         chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
-
+                        ((Chromosome)chrom.lastElement()).setHaploid(true);
                     }else if(Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
                         chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
+                        ((Chromosome)chrom.lastElement()).setHaploid(true);
                     }else {
                         chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
                         chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
@@ -729,6 +730,8 @@ public class HaploData implements Constants{
                 chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus(), -1));
                 if(!haploid){
                     chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(), -1));
+                }else{
+                    ((Chromosome)chrom.lastElement()).setHaploid(true);
                 }
                 numSingletons++;
             }
@@ -1384,27 +1387,39 @@ public class HaploData implements Constants{
             //System.out.println(i + " " + pos1 + " " + pos2);
             //assign alleles for each of a pair of chromosomes at a marker to four variables
 
-            a1 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos1];
-            a2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
-            b1 = ((Chromosome) chromosomes.elementAt(++i)).genotypes[pos1];
-            b2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
+            if(!((Chromosome)chromosomes.elementAt(i)).isHaploid()){
 
-            if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
-                //skip missing data
-            } else if (((a1 >= 5 || b1 >= 5) && (a2 >= 5 || b2 >= 5)) || (a1 >= 5 && !(a2 == b2)) || (a2 >= 5 && !(a1 == b1))){
-                doublehet++;
-                //find doublehets and resolved haplotypes
-            } else if (a1 >= 5 || b1 >= 5){
-                twoMarkerHaplos[1][marker2num[a2]]++;
-                twoMarkerHaplos[2][marker2num[a2]]++;
-            } else if (a2 >= 5 || b2 >= 5){
-                twoMarkerHaplos[marker1num[a1]][1]++;
-                twoMarkerHaplos[marker1num[a1]][2]++;
-            } else {
-                twoMarkerHaplos[marker1num[a1]][marker2num[a2]]++;
-                twoMarkerHaplos[marker1num[b1]][marker2num[b2]]++;
+                a1 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos1];
+                a2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
+                b1 = ((Chromosome) chromosomes.elementAt(++i)).genotypes[pos1];
+                b2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
+
+                if (a1 == 0 || a2 == 0 || b1 == 0 || b2 == 0){
+                    //skip missing data
+                } else if (((a1 >= 5 || b1 >= 5) && (a2 >= 5 || b2 >= 5)) || (a1 >= 5 && !(a2 == b2)) || (a2 >= 5 && !(a1 == b1))){
+                    doublehet++;
+                    //find doublehets and resolved haplotypes
+                } else if (a1 >= 5 || b1 >= 5){
+                    twoMarkerHaplos[1][marker2num[a2]]++;
+                    twoMarkerHaplos[2][marker2num[a2]]++;
+                } else if (a2 >= 5 || b2 >= 5){
+                    twoMarkerHaplos[marker1num[a1]][1]++;
+                    twoMarkerHaplos[marker1num[a1]][2]++;
+                } else {
+                    twoMarkerHaplos[marker1num[a1]][marker2num[a2]]++;
+                    twoMarkerHaplos[marker1num[b1]][marker2num[b2]]++;
+                }
+            }else {
+                //haploid (x chrom)
+                a1 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos1];
+                a2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
+
+                if(a1 == 0 || a2 == 0) {
+                }else{
+                    twoMarkerHaplos[marker1num[a1]][marker2num[a2]]++;
+                }
+
             }
-
         }
         //another monomorphic marker check
         int r1, r2, c1, c2;
