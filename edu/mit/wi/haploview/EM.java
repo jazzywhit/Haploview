@@ -468,7 +468,14 @@ public class EM implements Constants {
                     for (int k=0; k<data[i].nposs; k++) {
                         tempRec = (Recovery) data[i].poss.elementAt(k);
                         if(haploid[i]){
-                            tempRec.p = (float)(probMap.get(new Long(tempRec.h1)));
+                            if (tempRec.h1 == tempRec.h2){
+                                //for haploids we only consider reconstructions where both chroms are equal,
+                                //since those are the only truly possible ones (i.e. heterozygous reconstructions
+                                //are mistakes)
+                                tempRec.p = (float)(probMap.get(new Long(tempRec.h1)));
+                            }else{
+                                tempRec.p = 0;
+                            }
                         }else {
                             tempRec.p = (float)(probMap.get(new Long(tempRec.h1))*probMap.get(new Long(tempRec.h2)));
                         }
@@ -568,9 +575,14 @@ public class EM implements Constants {
                 total=0.0;
                 for (int k=0; k<superdata[i].nsuper; k++) {
                     if(haploid[i]){
-                    superdata[i].superposs[k].p = (float)
-                            (fullProbMap.get(new Long(superdata[i].superposs[k].h1)));
-
+                        if (superdata[i].superposs[k].h1 == superdata[i].superposs[k].h2){
+                            //only consider reconstructions of haploid chromosomes where h1 == h2
+                            //since heterozygous reconstructions aren't possible for haploids
+                            superdata[i].superposs[k].p = (float)
+                                    (fullProbMap.get(new Long(superdata[i].superposs[k].h1)));
+                        }else{
+                            superdata[i].superposs[k].p = 0;
+                        }
                     }else{
                         superdata[i].superposs[k].p = (float)
                             (fullProbMap.get(new Long(superdata[i].superposs[k].h1))*
