@@ -142,7 +142,7 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
     }
 
     public void valueChanged(ListSelectionEvent e) {
-        if(e.getValueIsAdjusting() == false) {
+        if(!e.getValueIsAdjusting()) {
             refresh();
         }
     }
@@ -153,7 +153,7 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
             int[] selected = tagList.getSelectedIndices();
             for(int i=0;i<selected.length;i++) {
                 TagSequence ts = (TagSequence) tags.get(selected[i]);
-                Vector tagged = ts.getTagged();
+                Vector tagged = ts.getBestTagged();
                 for(int j=0;j<tagged.size();j++) {
                     ((DefaultListModel)taggedList.getModel()).addElement(((edu.mit.wi.tagger.SNP)tagged.get(j)).getName());
                 }
