@@ -33,6 +33,8 @@ public class HaploText implements Constants{
     private boolean outputPNG;
     private boolean outputCompressedPNG;
     private boolean doPermutationTest;
+    private boolean findTags;
+    private boolean randomizeAffection = false;
     private int permutationCount;
     private int tagging;
     private int maxNumTags;
@@ -150,6 +152,7 @@ public class HaploText implements Constants{
         permutationCount = 0;
         tagging = Tagger.NONE;
         maxNumTags = Tagger.DEFAULT_MAXNUMTAGS;
+        findTags = true;
 
         double cutHighCI = -1;
         double cutLowCI = -1;
@@ -357,7 +360,10 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-assoccc")) {
                 assocCC = true;
             }
-                     
+            else if(args[i].equalsIgnoreCase("-randomcc")){
+                assocCC = true;
+                randomizeAffection = true;
+            }
             else if(args[i].equalsIgnoreCase("-ldcolorscheme")) {
                 i++;
                 if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
@@ -437,6 +443,9 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-tagrSqCutoff")) {
                 i++;
                 tagRSquaredCutOff = getDoubleArg(args,i,0,1);
+            }
+            else if (args[i].equalsIgnoreCase("-dontaddtags")){
+                findTags = false;
             }
             else if(args[i].equalsIgnoreCase("-tagLODCutoff")) {
                 i++;
@@ -1057,7 +1066,23 @@ public class HaploText implements Constants{
 
             AssociationTestSet markerTestSet =null;
             if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC){
-                markerTestSet = new AssociationTestSet(textData.getPedFile(),null,Chromosome.getAllMarkers());
+                if (randomizeAffection){
+                    Vector aff = new Vector();
+                    int j=0, k=0;
+                    for (int i = 0; i < textData.getPedFile().getNumIndividuals(); i++){
+                        if (i%2 == 0){
+                            aff.add(new Integer(1));
+                            j++;
+                        }else{
+                            aff.add(new Integer(2));
+                            k++;
+                        }
+                    }
+                    Collections.shuffle(aff);
+                    markerTestSet = new AssociationTestSet(textData.getPedFile(),aff,Chromosome.getAllMarkers());
+                }else{
+                    markerTestSet = new AssociationTestSet(textData.getPedFile(),null,Chromosome.getAllMarkers());
+                }
                 markerTestSet.saveSNPsToText(validateOutputFile(fileName + ".ASSOC"));
             }
 
@@ -1164,7 +1189,7 @@ public class HaploText implements Constants{
                 }
 
                 TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture,
-                        tagging,maxNumTags);
+                        tagging,maxNumTags,findTags);
                 tc.runTagger();
 
                 while(!tc.isTaggingCompleted()) {
