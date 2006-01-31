@@ -217,7 +217,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
             }
 
             tagControl = new TaggerController(theData,include,exclude,capture,
-                    Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue(),maxNumTags);
+                    Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue(),maxNumTags,true);
             tagControl.runTagger();
 
             final TaggerConfigPanel tcp = this;
