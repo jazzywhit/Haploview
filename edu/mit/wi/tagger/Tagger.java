@@ -33,6 +33,7 @@ public class Tagger {
     private int aggression;
     private int maxNumTags;
     private long maxComparisonDistance;
+    private boolean findTags;
 
     //Vector of Tag objects determined by the most recent call to findTags()
     private Vector tags;
@@ -43,15 +44,16 @@ public class Tagger {
     public int taggedSoFar;
 
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac){
-        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS);
+        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS,true);
     }
 
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut,
-                  int aggressionLevel, long maxCompDist, int maxNumTags) {
+                  int aggressionLevel, long maxCompDist, int maxNumTags, boolean findTags) {
         //todo: throw illegal argument exception if maxNumTags < include.size()
         minRSquared = rsqCut;
         aggression = aggressionLevel;
         this.maxNumTags = maxNumTags;
+        this.findTags = findTags;
 
         if(maxCompDist < 0 ) {
             maxComparisonDistance = DEFAULT_MAXDIST;
@@ -156,26 +158,28 @@ public class Tagger {
 
         }
 
-        //loop until all snps are tagged
-        while(sitesToCapture.size() > 0) {
-            potentialTags = new Vector(potentialTagByVarSeq.values());
-            if(potentialTags.size() == 0) {
-                //we still have sites left to capture, but we have no more available tags.
-                //this should only happen if the sites remaining in sitesToCapture were specifically
-                //excluded from being tags. Since we can't add any more tags, break out of the loop.
-                break;
+        if (findTags){
+            //loop until all snps are tagged
+            while(sitesToCapture.size() > 0) {
+                potentialTags = new Vector(potentialTagByVarSeq.values());
+                if(potentialTags.size() == 0) {
+                    //we still have sites left to capture, but we have no more available tags.
+                    //this should only happen if the sites remaining in sitesToCapture were specifically
+                    //excluded from being tags. Since we can't add any more tags, break out of the loop.
+                    break;
+                }
+
+                //sorts the array of potential tags according to the number of untagged sites they can tag.
+                //the last element is the one which tags the most untagged sites, so we choose that as our next tag.
+                Collections.sort(potentialTags,ptcomp);
+                PotentialTag currentBestTag = (PotentialTag) potentialTags.lastElement();
+
+                HashSet newlyTagged = addTag(currentBestTag,potentialTagByVarSeq,sitesToCapture);
+                countTagged += newlyTagged.size();
+
+                sitesToCapture.removeAll(newlyTagged);
+                sitesToCapture.remove(currentBestTag.sequence);
             }
-
-            //sorts the array of potential tags according to the number of untagged sites they can tag.
-            //the last element is the one which tags the most untagged sites, so we choose that as our next tag.
-            Collections.sort(potentialTags,ptcomp);
-            PotentialTag currentBestTag = (PotentialTag) potentialTags.lastElement();
-
-            HashSet newlyTagged = addTag(currentBestTag,potentialTagByVarSeq,sitesToCapture);
-            countTagged += newlyTagged.size();
-
-            sitesToCapture.removeAll(newlyTagged);
-            sitesToCapture.remove(currentBestTag.sequence);
         }
         taggedSoFar = countTagged;
 
@@ -197,6 +201,7 @@ public class Tagger {
         //we've done the best we can. now we check to see if there's a limit to the
         //num of tags we're allowed to choose.
         if (maxNumTags > 0){
+            //todo: shouldn't let it kick out forced include stuff
             //if so we need to chuck out the extras. figure out the utility of each tagSNP
             //i.e. how many SNPs for which they and their combos are the only tags
 
@@ -481,10 +486,9 @@ public class Tagger {
         while(itr.hasNext()) {
             PotentialTag pt = (PotentialTag) potentialTagHash.get(itr.next());
             pt.removeTagged(newlyTagged);
-            pt.removeTagged(theTag.sequence);
             //if a PotentialTag cannot tag any other uncaptured sites, then we want to remove it from contention,
             //unless its sequence still needs to be captured.
-            if(pt.taggedCount() == 0 && !sitesToCapture.contains(pt.sequence)) {
+            if(pt.taggedCount() == 0){
                 toRemove.add(pt.sequence);
             }
         }
@@ -674,6 +678,15 @@ public class Tagger {
         }
 
         public int compare(Object o1, Object o2) {
+            //if one of the compared tags actually is this sequence, always promote
+            //it to the front (i.e. a SNP should always pick itself as its own best tag
+            //if possible).
+            if (seq.equals(((TagSequence)o1).getSequence())){
+                return 1;
+            }else if (seq.equals(((TagSequence)o2).getSequence())){
+                return -1;
+            }
+
             if(getPairwiseCompRsq(seq,((TagSequence)o1).getSequence()) ==
                     getPairwiseCompRsq(seq,((TagSequence)o2).getSequence())) {
                 return 0;
