@@ -16,7 +16,14 @@ public class EM implements Constants {
     final double PSEUDOCOUNT = 0.1;
     OBS[] data;
     SUPER_OBS[] superdata;
-    int[] two_n = new int[32];
+    static int[] two_n = new int[32];
+    static {
+        //an old-school speedup courtesy of mjdaly
+        two_n[0]=1;
+        for (int i=1; i<31; i++){
+            two_n[i]=2*two_n[i-1];
+        }
+    }
     int[][] ambighet;
     private Vector chromosomes;
     private int numTrios;
@@ -37,11 +44,7 @@ public class EM implements Constants {
         }
 
         this.numTrios = numTrios;
-        //an old-school speedup courtesy of mjdaly
-        two_n[0]=1;
-        for (int i=1; i<31; i++){
-            two_n[i]=2*two_n[i-1];
-        }
+
     }
 
 
@@ -900,7 +903,7 @@ public class EM implements Constants {
         int i, j, a1, a2,  two_n, num_poss, loc, ind;
         long h1, h2;
         byte c1, c2;
-        int num_indivs = 0;
+        int currentInd = 0;
         int[] dhet = new int[MAXLOCI];
         int[] missing1 = new int[MAXLOCI];
         int[] missing2 = new int[MAXLOCI];
@@ -949,18 +952,18 @@ public class EM implements Constants {
 
             Recovery tempRec;
 
-            if(data[num_indivs].poss.size() < num_poss)
+            if(data[currentInd].poss.size() < num_poss)
             {
-                for(int k=data[num_indivs].poss.size();k<num_poss;k++)
+                for(int k=data[currentInd].poss.size();k<num_poss;k++)
                 {
                     tempRec = new Recovery();
-                    data[num_indivs].poss.add(tempRec);
+                    data[currentInd].poss.add(tempRec);
 
                 }
             }
 
-            data[num_indivs].nposs = num_poss;
-            tempRec = (Recovery) data[num_indivs].poss.elementAt(0);
+            data[currentInd].nposs = num_poss;
+            tempRec = (Recovery) data[currentInd].poss.elementAt(0);
             tempRec.h1=h1;
             tempRec.h2=h2;
             tempRec.p=0.0f;
@@ -973,7 +976,7 @@ public class EM implements Constants {
                 if (dhet[i]!=0) {
                     for (j=0; j<num_poss; j++) {
                         /* flip bits at this position and call this num_poss+j */
-                        tempRec = (Recovery) data[num_indivs].poss.elementAt(j);
+                        tempRec = (Recovery) data[currentInd].poss.elementAt(j);
                         h1 = tempRec.h1;
                         h2 = tempRec.h2;
                         /* printf("FLIP: position %d, two_n=%d, h1=%d, h2=%d, andh1=%d, andh2=%d\n",i,two_n,h1,h2,h1&two_n,h2&two_n);  */
@@ -984,7 +987,7 @@ public class EM implements Constants {
                         } else {
                             //printf("error - attepmting to flip homozygous position\n");
                         }
-                        tempRec = (Recovery) data[num_indivs].poss.elementAt(num_poss+j);
+                        tempRec = (Recovery) data[currentInd].poss.elementAt(num_poss+j);
                         tempRec.h1=h1;
                         tempRec.h2=h2;
                         tempRec.p=0.0f;
@@ -995,7 +998,7 @@ public class EM implements Constants {
                 if (missing1[i]!=0) {
                     for (j=0; j<num_poss; j++) {
                         /* flip bits at this position and call this num_poss+j */
-                        tempRec = (Recovery) data[num_indivs].poss.elementAt(j);
+                        tempRec = (Recovery) data[currentInd].poss.elementAt(j);
                         h1 = tempRec.h1;
                         h2 = tempRec.h2;
                         /* printf("MISS1: position %d, two_n=%d, h1=%d, h2=%d, newh1=%d, newh2=%d\n",i,two_n,h1,h2,h1+two_n,h2); */
@@ -1004,7 +1007,7 @@ public class EM implements Constants {
                         } else {
                             //printf("error - attempting to flip missing !=0\n");
                         }
-                        tempRec = (Recovery) data[num_indivs].poss.elementAt(num_poss+j);
+                        tempRec = (Recovery) data[currentInd].poss.elementAt(num_poss+j);
                         tempRec.h1=h1;
                         tempRec.h2=h2;
                         tempRec.p=0.0f;
@@ -1015,7 +1018,7 @@ public class EM implements Constants {
                 if (missing2[i]!=0) {
                     for (j=0; j<num_poss; j++) {
                         /* flip bits at this position and call this num_poss+j */
-                        tempRec = (Recovery) data[num_indivs].poss.elementAt(j);
+                        tempRec = (Recovery) data[currentInd].poss.elementAt(j);
                         h1 = tempRec.h1;
                         h2 = tempRec.h2;
                         /* printf("MISS2: position %d, two_n=%d, h1=%d, h2=%d, newh1=%d, newh2=%d\n",i,two_n,h1,h2,h1,h2+two_n);  */
@@ -1024,7 +1027,7 @@ public class EM implements Constants {
                         } else {
                             //printf("error - attempting to flip missing !=0\n");
                         }
-                        tempRec = (Recovery) data[num_indivs].poss.elementAt(num_poss+j);
+                        tempRec = (Recovery) data[currentInd].poss.elementAt(num_poss+j);
                         tempRec.h1=h1;
                         tempRec.h2=h2;
                         tempRec.p=0.0f;
@@ -1034,11 +1037,11 @@ public class EM implements Constants {
 
                 two_n *= 2;
             }
-            /* printf("num_poss = %d  also %d\n",num_poss, data[num_indivs].nposs); */
-            num_indivs++;
+            /* printf("num_poss = %d  also %d\n",num_poss, data[currentInd].nposs); */
+            currentInd++;
         }
 
-        return(num_indivs);
+        return(currentInd);
     }
 
 
