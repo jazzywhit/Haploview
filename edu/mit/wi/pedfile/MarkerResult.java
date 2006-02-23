@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.3 2005/11/04 16:14:18 jmaller Exp $
+ * $Id: MarkerResult.java,v 3.4 2006/02/23 14:47:03 jcbarret Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -12,6 +12,7 @@
 
 package edu.mit.wi.pedfile;
 
+import edu.mit.wi.haploview.Util;
 import java.text.*;
 import java.util.Locale;
 
@@ -109,7 +110,7 @@ public class MarkerResult {
 	 * Gets observed heterozygosity
 	 */
 	public double getObsHet(){
-		return new Double(nf.format(this._obsHET)).doubleValue();
+		return Double.parseDouble(nf.format(this._obsHET));
 	}
 
     /**
@@ -117,28 +118,29 @@ public class MarkerResult {
      * @return  minor allele frequency
      */
     public double getMAF(){
-        return new Double(nf.format(this._maf)).doubleValue();
+        return Double.parseDouble(nf.format(this._maf));
     }
 
 	/**
 	 * Gets predicted heterozygosity
 	 */
 	public double getPredHet(){
-		return new Double(nf.format(this._predHET)).doubleValue();
+		return Double.parseDouble(nf.format(this._predHET));
 	}
 
 	/**
 	 * Gets Hardy-Weinberg test p-value
 	 */
-	public double getHWpvalue(){
-		return new Double(nf.format(this._HWpval)).doubleValue();
+	public String getHWpvalue(){
+        //the old formatting was cutting off anything less than 0.001
+        return  Util.formatPValue(this._HWpval);
 	}
 
 	/**
 	 * Gets percent of individuals genotyped
 	 */
 	public double getGenoPercent(){
-        return new Double(pctNF.format(this._genoPercent)).doubleValue();
+        return Double.parseDouble(pctNF.format(this._genoPercent));
 	}
 
 	/**
