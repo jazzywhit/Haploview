@@ -17,6 +17,7 @@ public class PermutationTestSet implements Constants{
     public static final int SINGLE_ONLY = 0;
     public static final int SINGLE_PLUS_BLOCKS = 1;
     public static final int CUSTOM = 2;
+    public static final int BLOCKS_ONLY = 3;
 
     private int permutationCount;
     private int bestExceededCount;
@@ -70,6 +71,12 @@ public class PermutationTestSet implements Constants{
         Vector filteredResults = activeAssocTestSet.getFilteredResults();
         for(int i=0;i<filteredResults.size();i++) {
             AssociationResult tmpRes = (AssociationResult) filteredResults.get(i);
+            if (selectionType == SINGLE_ONLY && tmpRes instanceof HaplotypeAssociationResult ||
+                    selectionType == BLOCKS_ONLY && tmpRes instanceof MarkerAssociationResult){
+                //if we're not permuting the haps or not permtuing the single SNPs,
+                // don't count them as best observed association
+                continue;
+            }
             for (int j = 0; j < tmpRes.getAlleleCount(); j++){
                 if (tmpRes.getChiSquare(j) > curBest){
                     curName = tmpRes.getDisplayName(j);
@@ -131,7 +138,12 @@ public class PermutationTestSet implements Constants{
 
         //need to use the same coin toss for marker and haplotype association tests in trio tdt,
         //so permuteInd stores whether each individual is permuted
-        Vector permuteInd = new Vector(pedFile.getAllIndividuals().size());
+        //we start by creating a vector of the right size, but with a bunch of nulls
+        //since ea. permutation (below) will set the values in the vector
+        Vector permuteInd = new Vector();
+        for (int i = 0; i < pedFile.getAllIndividuals().size(); i++){
+            permuteInd.add(null);
+        }
 
         permutationsPerformed = 0;
         bestExceededCount = 0;
@@ -144,29 +156,35 @@ public class PermutationTestSet implements Constants{
                 break;
             }
 
-            //begin single marker association test
+            //shuffle up and deal.
             if (Options.getAssocTest() == ASSOC_TRIO){
-                try {
-                    for(int j =0;j<pedFile.getAllIndividuals().size();j++) {
-                        if(Math.random() < .5) {
-                            permuteInd.set(j,Boolean.valueOf(true));
-                        } else {
-                            permuteInd.set(j,Boolean.valueOf(false));
-                        }
+                for(int j =0;j<pedFile.getAllIndividuals().size();j++) {
+                    if(Math.random() < .5) {
+                        permuteInd.set(j,Boolean.valueOf(true));
+                    } else {
+                        permuteInd.set(j,Boolean.valueOf(false));
                     }
-
-                    curResults = new AssociationTestSet(pedFile, permuteInd, snpSet).getMarkerAssociationResults();
-                } catch(PedFileException pfe) {
                 }
             }else if (Options.getAssocTest() == ASSOC_CC){
                 Collections.shuffle(affectedStatus);
-                try{
-                    curResults = new AssociationTestSet(pedFile,affectedStatus, snpSet).getMarkerAssociationResults();
-                }catch (PedFileException pfe){
-                }
             }
 
-            //end of marker association test
+            if (selectionType != BLOCKS_ONLY){
+                //begin single marker association test
+                try{
+                    if (Options.getAssocTest() == ASSOC_TRIO){
+                        curResults = new AssociationTestSet(pedFile, permuteInd, snpSet).getMarkerAssociationResults();
+                    }else if (Options.getAssocTest() == ASSOC_CC){
+                        curResults = new AssociationTestSet(pedFile,affectedStatus, snpSet).getMarkerAssociationResults();
+                    }
+                } catch(PedFileException pfe) {
+                }
+                //end of marker association test
+            }else{
+                //reset it so we can add this round's hap assoc results
+                curResults = new Vector();
+            }
+
 
             if (selectionType != SINGLE_ONLY){
                 //begin haplotype association test
@@ -283,8 +301,9 @@ public class PermutationTestSet implements Constants{
             Vector filteredResults = activeAssocTestSet.getFilteredResults();
             for(int i=0;i<filteredResults.size();i++) {
                 AssociationResult tmpRes = (AssociationResult) filteredResults.get(i);
-                if (selectionType == SINGLE_ONLY && tmpRes instanceof HaplotypeAssociationResult){
-                    //if we're not permuting the haps in blocks, don't add them to the results vector.
+                if (selectionType == SINGLE_ONLY && tmpRes instanceof HaplotypeAssociationResult ||
+                        selectionType == BLOCKS_ONLY && tmpRes instanceof MarkerAssociationResult){
+                    //if we're not permuting the haps or not permtuing the single SNPs, don't add them to results
                     continue;
                 }
                 for (int j = 0; j < tmpRes.getAlleleCount(); j++){

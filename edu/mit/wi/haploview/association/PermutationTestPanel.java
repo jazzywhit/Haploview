@@ -67,6 +67,10 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         selectionPanel.add(singlesPlusBlocksButton);
         selectionGroup.add(singlesPlusBlocksButton);
         singlesPlusBlocksButton.setSelected(true);
+        JRadioButton blocksOnlyButton = new JRadioButton("Haplotypes in Blocks Only");
+        blocksOnlyButton.setActionCommand(String.valueOf(PermutationTestSet.BLOCKS_ONLY));
+        selectionPanel.add(blocksOnlyButton);
+        selectionGroup.add(blocksOnlyButton);
         if (testSet.isCustom()){
             JRadioButton customFileButton = new JRadioButton("Custom Tests from File");
             customFileButton.setActionCommand(String.valueOf(PermutationTestSet.CUSTOM));
