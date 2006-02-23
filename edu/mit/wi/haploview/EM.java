@@ -29,7 +29,7 @@ public class EM implements Constants {
     private int numTrios;
     private int numFilteredTrios;
     private boolean[][][] kidConsistentCache;
-    private Vector realAffectedStatus;
+    private Vector realAffectedStatus, realKidAffectedStatus;
     private MapWrap fullProbMap;
 
     EM(Vector chromosomes, int numTrios){
@@ -642,6 +642,7 @@ public class EM implements Constants {
         }
 
         realAffectedStatus = affStatus;
+        realKidAffectedStatus = kidAffStatus;
 
         doAssociationTests(affStatus, null, kidAffStatus);
 
@@ -694,12 +695,17 @@ public class EM implements Constants {
     }
 
     public void doAssociationTests(Vector affStatus, Vector permuteInd, Vector kidAffStatus) {
-        if(fullProbMap == null || superdata == null || realAffectedStatus == null) {
+        if(fullProbMap == null || superdata == null || realAffectedStatus == null || realKidAffectedStatus == null) {
             return;
         }
         if(affStatus == null){
             affStatus = realAffectedStatus;
         }
+
+        if (kidAffStatus == null){
+            kidAffStatus = realKidAffectedStatus;
+        }
+
         if(permuteInd == null) {
             permuteInd = new Vector();
             for (int i = 0; i < superdata.length; i++){
