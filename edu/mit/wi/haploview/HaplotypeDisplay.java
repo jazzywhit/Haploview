@@ -189,7 +189,7 @@ public class HaplotypeDisplay extends JComponent {
         // if user sets display thresh higher than most common hap in any given block
         if (!(printable == filts.length)){
             JOptionPane.showMessageDialog(this.getParent(),
-                    "Error: At least one block has too few haplotypes of frequency > " + Util.roundDouble(Options.getHaplotypeDisplayThreshold(),3),
+                    "Error: At least one block has no haplotypes of frequency > " + Util.roundDouble(Options.getHaplotypeDisplayThreshold(),3),
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
