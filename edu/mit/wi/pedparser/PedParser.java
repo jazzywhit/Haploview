@@ -25,6 +25,9 @@ public class
             String id = ind.getIndividualID();
             String dad = ind.getDadID();
             String mom = ind.getMomID();
+            if (id.equals(dad) || id.equals(mom)){
+                throw new PedigreeException(id + " is his own parent");
+            }
             int gender = ind.getGender();
             double genopc = ind.getGenoPC();
             boolean missing = false;
