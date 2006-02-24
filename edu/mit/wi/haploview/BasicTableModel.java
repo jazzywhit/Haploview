@@ -33,4 +33,9 @@ public class BasicTableModel extends AbstractTableModel{
         return ((Vector)data.elementAt(row)).elementAt(column);
     }
 
+    public void setValueAt(Object o, int row, int column){
+        ((Vector)data.elementAt(row)).set(column,o);
+        fireTableCellUpdated(row, column);
+    }
+
 }
