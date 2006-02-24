@@ -74,7 +74,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             tabPanel.add(permAssocButton);
 
             if (currTab == VIEW_ASSOC_NUM){
-                Component c = ((JTabbedPane)hv.tabs.getComponent(currTab)).getSelectedComponent();
+                Component c = ((JTabbedPane)((HaploviewTab)hv.tabs.getComponent(currTab)).getComponent()).getSelectedComponent();
                 if(c == hv.tdtPanel){
                     singleAssocButton.setSelected(true);
                 }else if (c == hv.hapAssocPanel){

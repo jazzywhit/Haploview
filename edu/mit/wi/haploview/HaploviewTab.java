@@ -12,4 +12,10 @@ public class HaploviewTab extends JPanel{
         this.add(c);
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
     }
+
+
+    public Component getComponent(){
+        return getComponent(0);
+    }
+
 }
