@@ -179,7 +179,7 @@ public class HaplotypeDisplay extends JComponent {
                     numhaps++;
                 }
             }
-            if (numhaps > 1){
+            if (numhaps > 0){
                 printable++; numhaps=0;
             }
             filts[i] = new Haplotype[tempVector.size()];
