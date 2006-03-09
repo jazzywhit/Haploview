@@ -752,7 +752,7 @@ public class HaploText implements Constants{
                             processFile(name,HAPS_FILE,infoMaybe);
                         }
                         else if(name.substring(name.length()-4,name.length()).equalsIgnoreCase(".hmp")){
-                            processFile(name,HMP_FILE,"");
+                            processFile(name,HMP_FILE,null);
                         }
                         else{
                             if (!quietMode){
