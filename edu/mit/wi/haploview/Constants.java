@@ -78,6 +78,11 @@ public interface Constants {
     static final int GAB_SCHEME = 3;
     static final int GAM_SCHEME = 4;
 
+    //what LD stat to print
+    static final int D_PRIME = 0;
+    static final int R_SQ = 1;
+    static final int LD_NONE = 2;
+
     //association test modes
     static final int ASSOC_NONE = 0;
     static final int ASSOC_TRIO = 1;

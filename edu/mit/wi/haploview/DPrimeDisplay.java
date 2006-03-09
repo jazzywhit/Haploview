@@ -62,7 +62,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
     private Font boldMarkerNameFont = new Font("Default", Font.BOLD, 12);
     private Font popupFont = new Font("Monospaced", Font.PLAIN, 12);
 
-    private boolean printDPrimeValues = true;
+    private int printWhat = D_PRIME;
     private boolean printMarkerNames = true;
     private boolean forExport = false;
     private int exportStart, exportStop;
@@ -329,13 +329,13 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
 
         int startBS = boxSize;
         int startBR = boxRadius;
-        boolean startPD = printDPrimeValues;
+        int startPW = printWhat;
         boolean startMN = printMarkerNames;
         int startZL = zoomLevel;
 
         if (compress){
             zoomLevel = 2;
-            printDPrimeValues = false;
+            printWhat = LD_NONE;
             printMarkerNames = false;
 
             if (boxSize > (1200/(stop - start))){
@@ -367,7 +367,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
         boxRadius = startBR;
         zoomLevel = startZL;
         printMarkerNames = startMN;
-        printDPrimeValues = startPD;
+        printWhat = startPW;
         forExport = false;
         this.computePreferredSize();
         return i;
@@ -442,13 +442,11 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
             showWM = false;
         }
 
-        if (zoomLevel != 0 || Options.getLDColorScheme() == WMF_SCHEME || Options.getLDColorScheme() == RSQ_SCHEME){
-            printDPrimeValues = false;
-        } else{
-            printDPrimeValues = true;
+        boolean printValues = true;
+        if (zoomLevel != 0 || Options.getPrintWhat() == LD_NONE){
+            printValues = false;
         }
-
-
+        printWhat = Options.getPrintWhat();
 
         Graphics2D g2 = (Graphics2D) g;
         Dimension size = getSize();
@@ -692,6 +690,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                     continue;
                 }
                 double d = dPrimeTable.getLDStats(x,y).getDPrime();
+                double r = dPrimeTable.getLDStats(x,y).getRSquared();
                 //double l = dPrimeTable.getLDStats(x,y).getLOD();
                 Color boxColor = dPrimeTable.getLDStats(x,y).getColor();
 
@@ -708,12 +707,19 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                 g2.setColor(boxColor);
                 g2.fillPolygon(diamond);
 
-                if(printDPrimeValues){
+                if(printValues){
                     g2.setFont(boxFont);
                     ascent = boxFontMetrics.getAscent();
-                    int val = (int) (d * 100);
+                    int val;
+                    if (printWhat == D_PRIME){
+                        val = (int) (d * 100);
+                    }else if (printWhat == R_SQ){
+                        val = (int) (r * 100);
+                    }else{
+                        val = 100;
+                    }
                     g2.setColor((val < 50) ? Color.gray : Color.black);
-                    if (boxColor == Color.darkGray){
+                    if (boxColor.getGreen() < 100 && boxColor.getBlue() < 100 && boxColor.getRed() < 100){
                         g2.setColor(Color.white);
                     }
                     if (val != 100) {

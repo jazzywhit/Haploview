@@ -16,6 +16,7 @@ public class Options {
     private static String gBrowseTypes;
     private static double taggerRsqCutoff;
     private static double taggerLODCutoff;
+    private static int printWhat;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -145,5 +146,13 @@ public class Options {
 
     public static void setTdtType(int tdtType) {
         Options.tdtType = tdtType;
+    }
+
+    public static int getPrintWhat() {
+        return printWhat;
+    }
+
+    public static void setPrintWhat(int printWhat) {
+        Options.printWhat = printWhat;
     }
 }

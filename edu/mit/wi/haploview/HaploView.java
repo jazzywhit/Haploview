@@ -51,6 +51,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                            "Four Gamete Rule",
                            "Solid spine of LD",
                            "Custom"};
+    String printValueItems[] = {
+            "D'","R-squared","None"
+    };
+    JRadioButtonMenuItem printValueMenuItems[];
+
 
     HaploData theData;
 
@@ -207,6 +212,20 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
         colorMenuItems[Options.getLDColorScheme()].setSelected(true);
         displayMenu.add(colorMenu);
+
+        ButtonGroup pg = new ButtonGroup();
+        JMenu printValueMenu = new JMenu("Show LD values");
+        printValueMenu.setMnemonic(KeyEvent.VK_V);
+        printValueMenuItems = new JRadioButtonMenuItem[printValueItems.length];
+        for (int i = 0; i< printValueItems.length; i++){
+            printValueMenuItems[i] = new JRadioButtonMenuItem(printValueItems[i],i==0);
+            printValueMenuItems[i].addActionListener(this);
+            printValueMenuItems[i].setActionCommand("printvalue" + i);
+            printValueMenu.add(printValueMenuItems[i]);
+            pg.add(printValueMenuItems[i]);
+        }
+        printValueMenuItems[Options.getPrintWhat()].setSelected(true);
+        displayMenu.add(printValueMenu);
 
         spacingItem = new JMenuItem("LD Display Spacing");
         spacingItem.setMnemonic(KeyEvent.VK_S);
@@ -384,6 +403,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             Options.setLDColorScheme(Integer.valueOf(command.substring(5)).intValue());
             dPrimeDisplay.colorDPrime();
             changeKey();
+
+            //which LD value to print.
+        }else if (command.startsWith("printvalue")){
+            Options.setPrintWhat(Integer.valueOf(command.substring(10)).intValue());
+            dPrimeDisplay.colorDPrime();
+
             //exporting clauses
         }else if (command.equals(EXPORT_PNG)){
             export((HaploviewTab)tabs.getSelectedComponent(), PNG_MODE, 0, Chromosome.getUnfilteredSize());
@@ -1232,6 +1257,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         Options.setgBrowseOpts(GB_DEFAULT_OPTS);
         Options.setgBrowseTypes(GB_DEFAULT_TYPES);
         Options.setTdtType(TDT_STD);
+        Options.setPrintWhat(D_PRIME);
 
         //this parses the command line arguments. if nogui mode is specified,
         //then haploText will execute whatever the user specified
