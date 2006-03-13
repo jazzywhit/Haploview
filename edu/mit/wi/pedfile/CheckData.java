@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 3.4 2006/01/16 18:14:23 jmaller Exp $
+* $Id: CheckData.java,v 3.5 2006/03/13 13:48:43 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -32,9 +32,7 @@ public class CheckData {
     static public int failedGenoCut = 75;
     static public int numMendErrCut = 1;
     static public double mafCut = 0.001;
-    //private int _size;
-    //private Vector _pedFileEntries;
-    //private Hashtable pedFileHash;
+
 
     public CheckData(PedFile pedFile) {
         this._pedFile = pedFile;
@@ -60,16 +58,12 @@ public class CheckData {
     private MarkerResult checkMarker(int loc)throws PedFileException{
         MarkerResult result = new MarkerResult();
         Individual currentInd;
-        //int indivgeno=0,
         int missing=0, founderHetCount=0, mendErrNum=0;
-        int allele1=0, allele2=0, hom=0, het=0;
-        //Hashtable allgenos = new Hashtable();
+        int allele1=0, allele2=0, hom=0, het=0, haploid = 0;
         Hashtable founderGenoCount = new Hashtable();
         Hashtable kidgeno = new Hashtable();
-        //Hashtable parenthom = new Hashtable();
         int[] founderHomCount = new int[5];
 
-        //Hashtable count = new Hashtable();
         int[] count = new int[5];
         for(int i=0;i<5;i++) {
             founderHomCount[i] =0;
@@ -99,7 +93,7 @@ public class CheckData {
                         int dadAllele2 = (currentFamily.getMember(currentInd.getDadID())).getMarkerB(loc);
 
 
-                        if(Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+                        if(Chromosome.getDataChrom().equals("chrx")){
                             if(currentInd.getGender() == 1) {
                                 if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0)){
                                     //this is an x chrom for a male, so the only thing we need to check is if
@@ -219,24 +213,22 @@ public class CheckData {
                     //indiv has no parents -- i.e. is a founder
                     if(!currentFamily.hasAncestor(currentInd.getIndividualID())){
                         //set founderGenoCount
-
                         if(founderGenoCount.containsKey(familyID)){
                             int value = ((Integer)founderGenoCount.get(familyID)).intValue() +1;
                             founderGenoCount.put(familyID, new Integer(value));
-                        }
-                        else{
+                        }else{
                             founderGenoCount.put(familyID, new Integer(1));
                         }
 
-                        if(allele1 != allele2) {
-                            founderHetCount++;
-                        }
-                        else{
-                            founderHomCount[allele1]++;
-                        }
-
                         count[allele1]++;
-                        count[allele2]++;
+                        if (!Chromosome.getDataChrom().equals("chrx") || currentInd.getGender() != 1) {
+                            if(allele1 != allele2) {
+                                founderHetCount++;
+                            }else{
+                                founderHomCount[allele1]++;
+                            }
+                            count[allele2]++;
+                        }
                     }else{
                         if(kidgeno.containsKey(familyID)){
                             int value = ((Integer)kidgeno.get(familyID)).intValue() +1;
@@ -246,11 +238,15 @@ public class CheckData {
                             kidgeno.put(familyID, new Integer(1));
                         }
                     }
-                    if(allele1 == allele2) {
-                        hom++;
-                    }
-                    else {
-                        het++;
+
+                    if (!Chromosome.getDataChrom().equals("chrx") || currentInd.getGender() != 1) {
+                        if(allele1 == allele2) {
+                            hom++;
+                        }else {
+                            het++;
+                        }
+                    }else{
+                        haploid++;
                     }
                 }
                 //missing data
@@ -272,7 +268,7 @@ public class CheckData {
         double pvalue = getPValue(founderHomCount, founderHetCount);
 
         //geno percent
-        double genopct = getGenoPercent(het, hom, missing);
+        double genopct = getGenoPercent(het, hom, haploid, missing);
 
         // num of families with a fully genotyped trio
         //int famTrio =0;
@@ -344,20 +340,13 @@ public class CheckData {
         //ie: 11 13 31 33 -> homA =1 homB = 1 parentHet=2
         int homA=0, homB=0;
         double pvalue=0;
-        //Enumeration enu = parentHom.elements();
-        //while(enu.hasMoreElements()){
         for(int i=0;i<parentHom.length;i++){
-            //num = Integer.parseInt((String)enu.nextElement());
             if(parentHom[i] !=0){
                 if(homA>0) homB = parentHom[i];
                 else homA = parentHom[i];
             }
         }
         //caculate p value from homA, parentHet and homB
-        // using hw
-        //System.out.println("homA="+homA+" homB="+homB+" parentHet="+parentHet);
-        //HW hw = new HW((double)homA, (double)parentHet, (double)homB);
-        //hw.caculate();
         if (homA + parentHet + homB <= 0){
             pvalue=0;
         }else{
@@ -450,11 +439,11 @@ public class CheckData {
         }
     }
 
-    private double getGenoPercent(int het, int hom, int missing){
-        if (het+hom+missing == 0){
+    private double getGenoPercent(int het, int hom, int haploid, int missing){
+        if (het+hom+haploid+missing == 0){
             return 0;
         }else{
-            return 100.0*(het+hom)/(het+hom+missing);
+            return 100.0*(het+hom+haploid)/(het+hom+haploid+missing);
         }
     }
 
