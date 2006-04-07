@@ -580,10 +580,8 @@ public class AssociationTestSet implements Constants{
         }
 
         this.filterAlleles = alleles;
-        System.out.println("blocks.size() = " + blocks.size());
         Haplotype[][] blockHaps = theData.generateHaplotypes(blocks, permTests);
 
-        System.out.println("blockHaps.length = " + blockHaps.length);
         Haplotype[][] realBlockHaps = new Haplotype[multiMarkerTestcount][];
         int multiMarkerCountTemp=0;
         for(int i=0;i<tests.size();i++) {
@@ -856,7 +854,7 @@ public class AssociationTestSet implements Constants{
         if(Options.getAssocTest() == ASSOC_TRIO) {
             result.append("#\tName\tOvertransmitted\tT:U\tChi square\tP value\n");
         } else if(Options.getAssocTest() == ASSOC_CC) {
-            result.append("#\tName\tMajor Alleles\tCase,Control Ratios\tChi square\tP value\n");
+            result.append("#\tName\tAlleles\tCase,Control Ratios\tChi square\tP value\n");
         }
 
         //only output assoc results for markers which werent filtered

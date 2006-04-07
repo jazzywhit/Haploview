@@ -63,22 +63,12 @@ public class MarkerAssociationResult extends AssociationResult{
                 return sb.toString();
             }
         }else{
-            if (h1.getCaseCount() > h2.getCaseCount()){
-                if (h1.getControlCount() > h2.getControlCount()){
+            if (h1.getCaseCount() + h1.getControlCount() > h2.getCaseCount() + h2.getControlCount()){
                     return (int)h1.getCaseCount() + ":" + (int)h2.getCaseCount() +
                             ", " + (int)h1.getControlCount() + ":" + (int)h2.getControlCount();
-                }else{
-                    return (int)h1.getCaseCount() + ":" + (int)h2.getCaseCount() +
-                            ", " + (int)h2.getControlCount() + ":" + (int)h1.getControlCount();
-                }
             }else{
-                if (h1.getControlCount() > h2.getControlCount()){
-                    return (int)h2.getCaseCount() + ":" + (int)h1.getCaseCount() +
-                            ", " + (int)h1.getControlCount() + ":" + (int)h2.getControlCount();
-                }else{
                     return (int)h2.getCaseCount() + ":" + (int)h1.getCaseCount() +
                             ", " + (int)h2.getControlCount() + ":" + (int)h1.getControlCount();
-                }
             }
         }
     }
@@ -93,22 +83,12 @@ public class MarkerAssociationResult extends AssociationResult{
 
         nf.setMinimumFractionDigits(3);
         nf.setMaximumFractionDigits(3);
-        if (h1.getCaseCount() > h2.getCaseCount()){
-            if (h1.getControlCount() > h2.getControlCount()){
+        if (h1.getCaseCount() + h1.getControlCount() > h2.getCaseCount() + h2.getControlCount()){
                 return nf.format(h1.getCaseCount()/ (h1.getCaseCount() + h2.getCaseCount())) +
                         ", " + nf.format(h1.getControlCount() / ( h1.getControlCount() + h2.getControlCount()));
-            }else{
-                return nf.format(h1.getCaseCount()/ (h1.getCaseCount() + h2.getCaseCount())) +
-                        ", " + nf.format(h2.getControlCount() / ( h2.getControlCount() + h1.getControlCount()));
-            }
         }else{
-            if (h1.getControlCount() > h2.getControlCount()){
-                return nf.format(h2.getCaseCount()/ (h2.getCaseCount() + h1.getCaseCount())) +
-                        ", " + nf.format(h1.getControlCount() / ( h1.getControlCount() + h2.getControlCount()));
-            }else{
                 return nf.format(h2.getCaseCount()/ (h2.getCaseCount() + h1.getCaseCount())) +
                         ", " + nf.format(h2.getControlCount() / ( h2.getControlCount() + h1.getControlCount()));
-            }
         }
     }
 
@@ -127,20 +107,10 @@ public class MarkerAssociationResult extends AssociationResult{
                 retStr = getAlleleName(1);
             }
         }else{
-            if (h1.getCaseCount() > h2.getCaseCount()){
-                retStr = getAlleleName(0);
-            }else if (h1.getCaseCount() == h2.getCaseCount()){
-                retStr = "-";
+            if (h1.getCaseCount() + h1.getControlCount() > h2.getCaseCount() + h2.getControlCount()){
+                retStr = getAlleleName(0)+","+getAlleleName(1);
             }else{
-                retStr = getAlleleName(1);
-            }
-
-            if (h1.getControlCount() > h2.getControlCount()){
-                retStr += (", " + getAlleleName(0));
-            }else if (h1.getControlCount() == h2.getControlCount()){
-                retStr += ", -";
-            }else{
-                retStr += (", " + getAlleleName(1));
+                retStr = getAlleleName(1)+","+getAlleleName(0);
             }
         }
         return retStr;
