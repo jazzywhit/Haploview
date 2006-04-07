@@ -854,7 +854,7 @@ public class AssociationTestSet implements Constants{
         if(Options.getAssocTest() == ASSOC_TRIO) {
             result.append("#\tName\tOvertransmitted\tT:U\tChi square\tP value\n");
         } else if(Options.getAssocTest() == ASSOC_CC) {
-            result.append("#\tName\tAlleles\tCase,Control Ratios\tChi square\tP value\n");
+            result.append("#\tName\tAssoc Allele\tCase,Control Ratios\tChi square\tP value\n");
         }
 
         //only output assoc results for markers which werent filtered
