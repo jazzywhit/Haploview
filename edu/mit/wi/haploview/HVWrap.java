@@ -57,18 +57,26 @@ public class HVWrap {
         }
 
 
+        String xmxArg = "512";
+
         String argsToBePassed = new String();
         boolean headless = false;
         for (int a = 0; a < args.length; a++){
-            argsToBePassed = argsToBePassed.concat(" " + args[a]);
-            if (args[a].equals("-n") || args[a].equalsIgnoreCase("-nogui")){
+            if (args[a].equalsIgnoreCase("-memory")){
+                a++;
+                xmxArg = args[a];
+            }else{
+                argsToBePassed = argsToBePassed.concat(" " + args[a]);
+            }
+            if (args[a].equalsIgnoreCase("-n") || args[a].equalsIgnoreCase("-nogui")){
                 headless=true;
             }
+
         }
 
         try {
             //if the nogui flag is present we force it into headless mode
-            String runString = javaHome + sep + "bin" + sep + "java -Xmx1024m -classpath " + jarfile;
+            String runString = javaHome + sep + "bin" + sep + "java -Xmx" + xmxArg + "m -classpath " + jarfile;
             if (headless){
                 runString += " -Djava.awt.headless=true";
             }
