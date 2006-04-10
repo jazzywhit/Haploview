@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.4 2006/02/23 14:47:03 jcbarret Exp $
+ * $Id: MarkerResult.java,v 3.5 2006/04/10 18:29:51 djbender Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -31,6 +31,7 @@ public class MarkerResult {
 	private double _obsHET;
 	private double _predHET;
     private double _maf;
+    private String _minorAllele;
 	private double _HWpval;
 	private double _genoPercent;
 	private int _famTrioNum;
@@ -99,10 +100,17 @@ public class MarkerResult {
         this._maf = maf;
     }
 
-	/**
-	 * Sets the data rating
-	 */
-	public void setRating(int rating){
+    /**
+     * Sets minor allele
+     */
+    public void setMinorAllele(String mallele) {
+        this._minorAllele = mallele;
+    }
+
+    /**
+     * Sets the data rating
+     */
+    public void setRating(int rating){
 		this._rating = rating;
 	}
 
@@ -121,8 +129,15 @@ public class MarkerResult {
         return Double.parseDouble(nf.format(this._maf));
     }
 
-	/**
-	 * Gets predicted heterozygosity
+    /**
+     * returns minor allele            //TODO DB: MINORALLELE
+     */
+    public String getMinorAllele(){
+        return this._minorAllele;
+    }
+
+    /**
+     * Gets predicted heterozygosity
 	 */
 	public double getPredHet(){
 		return Double.parseDouble(nf.format(this._predHET));

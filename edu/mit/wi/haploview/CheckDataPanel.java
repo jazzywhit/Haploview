@@ -111,6 +111,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         tableColumnNames.add("FamTrio");
         tableColumnNames.add("MendErr");
         tableColumnNames.add("MAF");
+        tableColumnNames.add("MinorAllele");
         tableColumnNames.add("Rating");
 
         Vector tableData = new Vector();
@@ -131,6 +132,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             tempVect.add(new Integer(currentResult.getFamTrioNum()));
             tempVect.add(new Integer(currentResult.getMendErrNum()));
             tempVect.add(new Double(currentResult.getMAF()));
+            tempVect.add(currentResult.getMinorAllele());
 
             int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
             if ((currentResult.getRating() > 0 && dupStatus != 2) ||

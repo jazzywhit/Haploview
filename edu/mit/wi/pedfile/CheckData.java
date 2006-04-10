@@ -1,5 +1,5 @@
 /*
-* $Id: CheckData.java,v 3.5 2006/03/13 13:48:43 jcbarret Exp $
+* $Id: CheckData.java,v 3.6 2006/04/10 18:29:51 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -253,6 +253,7 @@ public class CheckData {
                 else missing++;
 
             }
+            currentFamily.setMendErrs(mendErrNum);
         }
         double obsHET = getObsHET(het, hom);
         double freqStuff[] = null;
@@ -263,6 +264,16 @@ public class CheckData {
         }
         double preHET = freqStuff[0];
         double maf = freqStuff[1];
+        String minorAllele;
+        if (freqStuff[2] == 1){
+            minorAllele = "A";
+        }else if (freqStuff[2] == 2){
+            minorAllele = "C";
+        }else if (freqStuff[2] == 3){
+            minorAllele = "G";
+        }else{
+            minorAllele = "T";
+        }
 
         //HW p value
         double pvalue = getPValue(founderHomCount, founderHetCount);
@@ -280,6 +291,7 @@ public class CheckData {
         result.setObsHet(obsHET);
         result.setPredHet(preHET);
         result.setMAF(maf);
+        result.setMinorAllele(minorAllele);
         result.setHWpvalue(pvalue);
         result.setGenoPercent(genopct);
         result.setFamTrioNum(famTrio);
@@ -302,7 +314,7 @@ public class CheckData {
     }
 
     private double[] getFreqStuff(int[] count) throws PedFileException{
-        double[] freqStuff = new double[2];
+        double[] freqStuff = new double[3];
         int sumsq=0, sum=0, num=0, mincount = -1;
         int numberOfAlleles = 0;
         for(int i=0;i<count.length;i++){
@@ -313,6 +325,7 @@ public class CheckData {
                 sum += num;
                 if (mincount < 0 || mincount > num){
                     mincount = num;
+                    freqStuff[2] = i;
                 }
             }
         }
