@@ -9,13 +9,15 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Dimension;
+import java.awt.Color;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.io.File;
 import java.io.IOException;
 
 public class TaggerConfigPanel extends JPanel implements TableModelListener, ActionListener{
-	private JTable table;
+    private JTable table;
     private TaggerController tagControl;
 
     private final static int NUM_COL = 0;
@@ -32,6 +34,10 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
     private NumberTextField rsqField, lodField;
     private ButtonGroup aggressiveGroup;
     private NumberTextField maxNumTagsField;
+    private JPanel buttonPanel = new JPanel();
+    private JPanel taggerProgressPanel = new JPanel();
+    JProgressBar taggerProgress = new JProgressBar();
+    private JLabel taggerProgressLabel = new JLabel("Tagging...");
 
     public TaggerConfigPanel(HaploData hd)  {
         theData = hd;
@@ -95,6 +101,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(100);
 
         JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setPreferredSize(new Dimension(600, 700));
         scrollPane.setMaximumSize(scrollPane.getPreferredSize());
         add(scrollPane);
 
@@ -175,6 +182,19 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         if (command.equals("Run Tagger")) {
             runTaggerButton.setEnabled(false);
 
+            taggerProgress.setIndeterminate(true);
+            taggerProgress.setForeground(Color.BLUE);
+            taggerProgress.setMaximumSize(new Dimension(250,20));
+            taggerProgressPanel.setLayout(new BoxLayout(taggerProgressPanel,BoxLayout.Y_AXIS));
+            taggerProgressPanel.add(taggerProgressLabel);
+            taggerProgressLabel.setAlignmentX(CENTER_ALIGNMENT);
+            taggerProgressPanel.add(new JLabel("         "));
+            taggerProgressPanel.add(taggerProgress);
+            remove(buttonPanel);
+            add(taggerProgressPanel);
+            add(buttonPanel);
+            revalidate();
+
             double rsqCut = new Double(rsqField.getText()).doubleValue();
             if (rsqCut > 1){
                 Options.setTaggerRsqCutoff(1.0);
@@ -222,16 +242,17 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
 
             final TaggerConfigPanel tcp = this;
             timer = new Timer(100, new ActionListener(){
-                            public void actionPerformed(ActionEvent e) {
-                                if(tagControl.isTaggingCompleted()) {
-                                    runTaggerButton.setEnabled(true);
-                                    //the parent of this is a meta jpanel used to haxor the layout
-                                    //the parent of that jpanel is the jtabbedPane in the tagger tab of HV
-                                    ((JTabbedPane)(tcp.getParent().getParent())).setSelectedIndex(1);
-                                    fireTaggerEvent(new ActionEvent(tcp,ActionEvent.ACTION_PERFORMED,"taggingdone"));
-                                    timer.stop();
-                                }
-                            }
+                public void actionPerformed(ActionEvent e) {
+                    if(tagControl.isTaggingCompleted()) {
+                        remove(taggerProgressPanel);
+                        runTaggerButton.setEnabled(true);
+                        //the parent of this is a meta jpanel used to haxor the layout
+                        //the parent of that jpanel is the jtabbedPane in the tagger tab of HV
+                        ((JTabbedPane)(tcp.getParent().getParent())).setSelectedIndex(1);
+                        fireTaggerEvent(new ActionEvent(tcp,ActionEvent.ACTION_PERFORMED,"taggingdone"));
+                        timer.stop();
+                    }
+                }
             });
 
             timer.start();
@@ -258,47 +279,47 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
     }
 
     class TagConfigTableModel extends AbstractTableModel {
-		Vector columnNames; Vector data;
+        Vector columnNames; Vector data;
 
-		public TagConfigTableModel(Vector c, Vector d){
-			columnNames=c;
-			data=d;
-		}
+        public TagConfigTableModel(Vector c, Vector d){
+            columnNames=c;
+            data=d;
+        }
 
-		public int getColumnCount(){
-			return columnNames.size();
-		}
+        public int getColumnCount(){
+            return columnNames.size();
+        }
 
-		public int getRowCount(){
-			return data.size();
-		}
+        public int getRowCount(){
+            return data.size();
+        }
 
-		public Object getValueAt(int row, int column){
-			return ((Vector)data.elementAt(row)).elementAt(column);
-		}
+        public Object getValueAt(int row, int column){
+            return ((Vector)data.elementAt(row)).elementAt(column);
+        }
 
-		public Class getColumnClass(int c){
-			return getValueAt(0, c).getClass();
-		}
+        public Class getColumnClass(int c){
+            return getValueAt(0, c).getClass();
+        }
 
-		public String getColumnName(int n){
-			return (String)columnNames.elementAt(n);
-		}
+        public String getColumnName(int n){
+            return (String)columnNames.elementAt(n);
+        }
 
-		public boolean isCellEditable(int row, int col){
-			if (col == CAPTURE_COL) {
-				return true;
-			}else if(col == INCLUDE_COL || col == EXCLUDE_COL){
+        public boolean isCellEditable(int row, int col){
+            if (col == CAPTURE_COL) {
+                return true;
+            }else if(col == INCLUDE_COL || col == EXCLUDE_COL){
                 if(((Boolean)((Vector)data.get(row)).get(CAPTURE_COL)).booleanValue()) {
                     return true;
                 }
             }
             return false;
-		}
+        }
 
-		public void setValueAt(Object value, int row, int col){
-			((Vector)data.elementAt(row)).set(col, value);
-			fireTableCellUpdated(row, col);
-		}
-	}
+        public void setValueAt(Object value, int row, int col){
+            ((Vector)data.elementAt(row)).set(col, value);
+            fireTableCellUpdated(row, col);
+        }
+    }
 }
