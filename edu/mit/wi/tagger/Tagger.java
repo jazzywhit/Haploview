@@ -517,6 +517,16 @@ public class Tagger {
         bw.close();
     }
 
+    public void dumpTags(File outFile) throws IOException{
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
+        Vector tagSNPS = getTagSNPs();
+        for (int i = 0; i < getTagSNPs().size(); i++){
+            bw.write(((TagSequence)tagSNPS.get(i)).getName());
+            bw.newLine();
+        }
+        bw.close();
+    }
+
     class PotentialTag {
         VariantSequence sequence;
         // tagged contains the sequences which this sequence can tag, which are not yet tagged
@@ -623,10 +633,10 @@ public class Tagger {
         bw.newLine();
         bw.write("#captured " + percentOver8 + " percent of alleles with r^2 > 0.8");
         bw.newLine();
-        bw.write("#using " + getTagSNPs().size() + " SNPs in " + tags.size() + " tests.");
+        bw.write("#using " + getTagSNPs().size() + " Tag SNPs in " + tags.size() + " tests.");
         bw.newLine();
 
-        bw.write("Marker\tBest Test\tr^2 w/test");
+        bw.write("Allele\tBest Test\tr^2 w/test");
         bw.newLine();
         for (int i = 0; i < snps.size(); i++) {
             StringBuffer line = new StringBuffer();

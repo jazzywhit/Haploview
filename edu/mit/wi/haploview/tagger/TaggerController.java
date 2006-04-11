@@ -137,6 +137,10 @@ public class TaggerController {
         tagger.dumpTests(outFile);
     }
 
+    public void dumpTags(File outFile) throws IOException {
+        tagger.dumpTags(outFile);
+    }
+
     private class TagThread extends Thread{
         Tagger tagger;
         public TagThread(Tagger t) {

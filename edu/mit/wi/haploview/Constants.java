@@ -159,7 +159,7 @@ public interface Constants {
             "-customAssoc <file>             Loads a set of custom tests for association.\n" +
             "-permtests <numtests>           Performs <numtests> permutations on default association tests (or custom tests\n" +
             "                                if a custom association file is specified) and writes to <inputfile>.PERMUT\n" +
-            "-pairwiseTagging                Generates pairwise tagging information in <inputfile>.TAGS and .TESTS.\n" +
+            "-pairwiseTagging                Generates pairwise tagging information in <inputfile>.TAGS, .TESTS and .TAGSNPS.\n" +
             "-aggressiveTagging              As above but generates 2- and 3-marker haplotype tags.\n" +
             "-maxNumTags <n>                 only selects <n> best tags.\n" +
             "-includeTags <markers>          Forces in a comma separated list of marker names as tags.\n" +
