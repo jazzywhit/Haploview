@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.5 2006/04/10 18:29:51 djbender Exp $
+ * $Id: MarkerResult.java,v 3.6 2006/04/11 15:08:33 djbender Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -130,7 +130,7 @@ public class MarkerResult {
     }
 
     /**
-     * returns minor allele            //TODO DB: MINORALLELE
+     * returns minor allele
      */
     public String getMinorAllele(){
         return this._minorAllele;
