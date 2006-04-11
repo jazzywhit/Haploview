@@ -360,6 +360,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             cell.setForeground(Color.black);
             cell.setBackground(Color.white);
 
+            if (thisColumnName.equals("HWpval") && Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+                cell.setBackground(Color.gray);
+            }
+
             if (myDupStatus > 0){
                 //I'm a dup so color the background in bright, ugly yellow
                 cell.setBackground(Color.yellow);
