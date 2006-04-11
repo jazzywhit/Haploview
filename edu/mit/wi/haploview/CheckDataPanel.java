@@ -90,7 +90,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
     }
 
     public CheckDataPanel(HaploData hd){
-        STATUS_COL = 8;
+        STATUS_COL = 9;
 
         pedfile = hd.getPedFile();
         theData = hd;
