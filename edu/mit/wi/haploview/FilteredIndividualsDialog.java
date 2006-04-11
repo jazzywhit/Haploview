@@ -52,7 +52,7 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
 
         contents.add(tableScroller);
 
-        JButton okButton = new JButton("OK");
+        JButton okButton = new JButton("Close");
         okButton.addActionListener(this);
         okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         contents.add(okButton);
@@ -65,7 +65,7 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
 
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        if(command.equals("OK")) {
+        if(command.equals("Close")) {
             this.dispose();
         }
     }

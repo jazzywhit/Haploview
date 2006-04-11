@@ -29,6 +29,7 @@ public class HaploText implements Constants{
     private boolean quietMode = false;
     private int blockOutputType;
     private boolean outputCheck;
+    private boolean individualCheck;
     private boolean outputDprime;
     private boolean outputPNG;
     private boolean outputCompressedPNG;
@@ -308,6 +309,9 @@ public class HaploText implements Constants{
             }
             else if (args[i].equalsIgnoreCase("-c") || args[i].equalsIgnoreCase("-check")){
                 outputCheck = true;
+            }
+            else if (args[i].equalsIgnoreCase("-indcheck")){
+                 individualCheck = true;
             }
             else if(args[i].equalsIgnoreCase("-m") || args[i].equalsIgnoreCase("-maxdistance")) {
                 i++;
@@ -929,6 +933,10 @@ public class HaploText implements Constants{
             if(outputCheck && result != null){
                 CheckDataPanel cp = new CheckDataPanel(textData);
                 cp.printTable(validateOutputFile(fileName + ".CHECK"));
+            }
+            if(individualCheck && result != null){
+                IndividualDialog id = new IndividualDialog(textData);
+                id.printTable(validateOutputFile(fileName +".INDCHECK"));
             }
             Vector cust = new Vector();
             AssociationTestSet blockTestSet = null;

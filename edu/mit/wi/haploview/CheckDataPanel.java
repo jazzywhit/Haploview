@@ -40,12 +40,16 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         missingPanel.add(countsLabel);
         JButton missingButton = new JButton("Show Excluded Individuals");
+        JButton individualButton = new JButton("Individual Dialog");
+        individualButton.setEnabled(true);
         if (hv.theData.getPedFile().getAxedPeople().size() == 0){
             missingButton.setEnabled(false);
         }
 
         missingButton.addActionListener(this);
         missingPanel.add(missingButton);
+        individualButton.addActionListener(this);
+        missingPanel.add(individualButton);
         missingPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         JPanel extraPanel = new JPanel();
         extraPanel.add(missingPanel);
@@ -255,6 +259,11 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             FilteredIndividualsDialog fid = new FilteredIndividualsDialog(hv,"Filtered Individuals");
             fid.pack();
             fid.setVisible(true);
+        }
+        if (command.equals("Individual Dialog")) {
+            IndividualDialog fd = new IndividualDialog(hv,"Individual Dialog");
+            fd.pack();
+            fd.setVisible(true);
         }
     }
 
