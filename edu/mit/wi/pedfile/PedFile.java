@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.14 2006/04/11 15:54:32 djbender Exp $
+* $Id: PedFile.java,v 3.15 2006/04/11 16:09:01 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -482,6 +482,7 @@ public class PedFile {
         int colNum = -1;
         boolean withOptionalColumn = false;
         int numMarkers = 0;
+        boolean genoError = false;
         int numLines = pedigrees.size();
         if (numLines == 0){
             throw new PedFileException("Data format error: empty file");
@@ -535,18 +536,26 @@ public class PedFile {
                 byte genotype2;
                 while(tokenizer.hasMoreTokens()){
                     try {
-                        genotype1 = Byte.parseByte((tokenizer.nextToken().trim()));
-
-                        genotype2 = Byte.parseByte((tokenizer.nextToken().trim()));
-                      /*  if(markers[0] <0 || markers[0] > 4 || markers[1] <0 || markers[1] >4) {
-                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1)
-                                    + ".\n all genotypes must be 0-4.");
-                        }*/
-                        if(genotype1 <0 || genotype1 > 4 || genotype2 <0 || genotype2 >4) {
-                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1)
-                                    + ".\n all genotypes must be 0-4.");
+                        String alleleA = tokenizer.nextToken();
+                        String alleleB = tokenizer.nextToken();
+                        int[] checker1, checker2;
+                        checker1 = checkGenotype(alleleA);
+                        checker2 = checkGenotype(alleleB);
+                        if (checker1[1] != checker2[1]){
+                            genoError = !genoError;
                         }
 
+                        if (genoError){
+                            throw new PedFileException("File input error on line " + (k+1) + ", marker " + (ind.getNumMarkers()+1)  +
+                                    ".\nFor any marker, an individual's genotype must be only letters or only numbers.");
+                        }
+
+                        if(checker1[0] < 0 || checker1[0] > 4 || checker2[0] < 0 || checker2[0] > 4) {
+                            throw new PedFileException("Pedigree file input error: invalid genotype on line " + (k+1)
+                                    + ".\n all genotypes must be 0-4 or A/C/G/T.");
+                        }
+                        genotype1 = (byte)checker1[0];
+                        genotype2 = (byte)checker2[0];
                         ind.addMarker(genotype1,genotype2);
                     }catch(NumberFormatException nfe) {
                         throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1) );
@@ -617,6 +626,7 @@ public class PedFile {
         StringTokenizer st = new StringTokenizer((String)lines.get(0), "\n\t\" \"");
         int numMetaColumns = 0;
         boolean doneMeta = false;
+        boolean genoErrorB = false;
         while(!doneMeta && st.hasMoreTokens()){
             String thisfield = st.nextToken();
             numMetaColumns++;
@@ -724,31 +734,49 @@ public class PedFile {
                     }
 
                     ind = (Individual)allIndividuals.elementAt(index);
-                    int allele1=0, allele2=0;
-                    if (alleles.substring(0,1).equals("A")){
-                        allele1 = 1;
-                    }else if (alleles.substring(0,1).equals("C")){
-                        allele1 = 2;
-                    }else if (alleles.substring(0,1).equals("G")){
-                        allele1 = 3;
-                    }else if (alleles.substring(0,1).equals("T")){
-                        allele1 = 4;
+                    int[] checker1, checker2;
+                    try{
+                    checker1 = checkGenotype(alleles.substring(0,1));
+                    checker2 = checkGenotype(alleles.substring(1,2));
+                    }catch(NumberFormatException nfe){
+                        throw new PedFileException("Invalid genotype on individual " + ind.getIndividualID() + ".");
                     }
-                    if (alleles.substring(1,2).equals("A")){
-                        allele2 = 1;
-                    }else if (alleles.substring(1,2).equals("C")){
-                        allele2 = 2;
-                    }else if (alleles.substring(1,2).equals("G")){
-                        allele2 = 3;
-                    }else if (alleles.substring(1,2).equals("T")){
-                        allele2 = 4;
+                    if (checker1[1] != checker2[1]){
+                        genoErrorB = !genoErrorB;
                     }
-                    ind.addMarker((byte)allele1,(byte)allele2);
-                    //ind.addMarker(markers);
+                    byte allele1 = (byte)checker1[0];
+                    byte allele2 = (byte)checker2[0];
+                    ind.addMarker(allele1, allele2);
+                    if (genoErrorB){
+                        throw new PedFileException("File input error: individual " + ind.getIndividualID() + ", marker "
+                                + this.hminfo[ind.getNumMarkers()-1][0] + ".\nFor any marker, an individual's genotype must be only letters or only numbers.");
+                    }
                     index++;
                 }
             }
         }
+    }
+
+    public int[] checkGenotype(String allele) throws PedFileException{
+        //This method cleans up the genotype checking process for hap map and ped files & allows for both numerical and alphabetical input.
+        int[] genotype = new int[2];
+
+        if (allele.equalsIgnoreCase("N")){
+            genotype[0] = 0;
+        }else if (allele.equalsIgnoreCase("A")){
+            genotype[0] = 1;
+        }else if (allele.equalsIgnoreCase("C")){
+            genotype[0] = 2;
+        }else if (allele.equalsIgnoreCase("G")){
+            genotype[0] = 3;
+        }else if (allele.equalsIgnoreCase("T")){
+            genotype[0] = 4;
+        }else{
+            genotype[0] = Integer.parseInt(allele.trim());
+            genotype[1] = 1;
+        }
+
+        return genotype;
     }
 
     public Vector check() throws PedFileException{
