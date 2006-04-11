@@ -1,5 +1,6 @@
+
 /*
-* $Id: CheckData.java,v 3.6 2006/04/10 18:29:51 djbender Exp $
+* $Id: CheckData.java,v 3.7 2006/04/11 16:03:25 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -17,12 +18,11 @@ import edu.mit.wi.haploview.Chromosome;
 import java.util.*;
 
 /**
- * <p>Title: CheckData.java </p>
- * <p>Description: Used to check pedigree file and return information about observed heterozyosity,
- * predicted heterozygosity, Hardy-Weinberg test p-value, genotyped percent,
- * number of families with a fully genotyped trio and number of Mendelian inheritance errors.</p>
- * @author Hui Gong
- * @version $Revision 1.2 $
+ * <p>Title: CheckData.java </p> <p>Description: Used to check
+ * pedigree file and return information about observed heterozyosity,
+ * predicted heterozygosity, Hardy-Weinberg test p-value, genotyped
+ * percent, number of families with a fully genotyped trio and number
+ * of Mendelian inheritance errors.</p>
  */
 
 public class CheckData {
@@ -461,17 +461,25 @@ public class CheckData {
     }
 
     private int getNumOfFamTrio(Enumeration famList, Hashtable parentgeno, Hashtable kidgeno){
-        //int totalfams = 0;
+        //this is buggy. it doesn't do what we want with larger families.
+        //it's hard to even define what we want this to represent. oh well.
         int tdtfams =0;
         while(famList.hasMoreElements()){
-            //totalfams++;
             int parentGeno=0, kidsGeno =0;
             String key = (String)famList.nextElement();
             Integer pGeno = (Integer)parentgeno.get(key);
             Integer kGeno = (Integer)kidgeno.get(key);
             if(pGeno != null) parentGeno = pGeno.intValue();
             if(kGeno != null) kidsGeno = kGeno.intValue();
-            if(parentGeno>=2 && kidsGeno>=1) tdtfams += parentGeno/2;
+            //basically we want the smaller of either (a) half the number of genotyped parents
+            //or (b) the number of genotyped offspring.
+            if(parentGeno>=2 && kidsGeno>=1){
+                if (parentGeno/2 > kidsGeno){
+                    tdtfams += kidsGeno;
+                }else{
+                    tdtfams += parentGeno/2;
+                }
+            }
         }
         return tdtfams;
     }
@@ -496,3 +504,4 @@ public class CheckData {
         return rating;
     }
 }
+
