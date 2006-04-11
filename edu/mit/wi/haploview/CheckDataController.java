@@ -34,15 +34,24 @@ public class CheckDataController extends JPanel{
         mafcut = new NumberTextField(String.valueOf(CheckData.mafCut),8,true);
         holdPanel.add(mafcut);
         failPanel.add(holdPanel);
-        JButton rescore = new JButton("Rescore Markers");
-        rescore.addActionListener(parent);
-        failPanel.add(rescore);
+        JPanel newPanel = new JPanel();
+        newPanel.setLayout(new BoxLayout(newPanel,BoxLayout.X_AXIS));
 
         JButton selAll = new JButton("Select All");
         selAll.addActionListener(parent);
+        JButton deSelAll = new JButton("Deselect All");
+        deSelAll.addActionListener(parent);
+        JButton setDefault = new JButton("Reset Values");
+        setDefault.addActionListener(parent);
+        newPanel.add(setDefault);
+        JButton rescore = new JButton("Rescore Markers");
+        rescore.addActionListener(parent);
+        newPanel.add(rescore);
 
         this.add(failPanel);
         this.add(selAll);
+        this.add(deSelAll);
+        failPanel.add(newPanel);
     }
 
 }

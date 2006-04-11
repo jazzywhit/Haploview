@@ -233,6 +233,13 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         changed = true;
     }
 
+    public void deSelectAll(){
+        for (int i = 0; i < table.getRowCount(); i++){
+            table.setValueAt(new Boolean(false), i, STATUS_COL);
+        }
+        changed = true;
+    }
+
     public void redoRatings(){
         try{
             Vector result = new CheckData(pedfile).check();

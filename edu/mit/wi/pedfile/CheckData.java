@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.9 2006/04/11 20:31:09 djbender Exp $
+* $Id: CheckData.java,v 3.10 2006/04/11 20:32:02 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the

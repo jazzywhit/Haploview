@@ -426,6 +426,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             exDialog.setVisible(true);
         }else if (command.equals("Select All")){
             checkPanel.selectAll();
+        }else if (command.equals("Deselect All")){
+            checkPanel.deSelectAll();
         }else if (command.equals("Rescore Markers")){
             String cut = cdc.hwcut.getText();
             if (cut.equals("")){
@@ -454,6 +456,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             checkPanel.redoRatings();
             JTable jt = checkPanel.getTable();
             jt.repaint();
+        }else if (command.equals("Reset Values")){
+            cdc.hwcut.setText(String.valueOf(CheckData.defaultHwCut));
+            cdc.genocut.setText(String.valueOf(CheckData.defaultFailedGenoCut));
+            if (!theData.isHaps){
+                cdc.mendcut.setText(String.valueOf(CheckData.defaultNumMendErrCut));
+            }
+            cdc.mafcut.setText(String.valueOf(CheckData.defaultMafCut));
         }else if (command.equals("LD Display Spacing")){
             ProportionalSpacingDialog spaceDialog = new ProportionalSpacingDialog(this, "Adjust LD Spacing");
             spaceDialog.pack();
