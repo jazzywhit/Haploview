@@ -472,12 +472,31 @@ public class HaploData implements Constants{
     public Vector linkageToChrom(File infile, int type)
             throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
 
+        Vector pedFileStrings = new Vector();
+        Vector hapsDataStrings = new Vector();
+        BufferedReader reader = new BufferedReader(new FileReader(infile));
+        String line;
+        while((line = reader.readLine())!=null){
+            if (line.length() == 0){
+                //skip blank lines
+                continue;
+            }
+            if (line.startsWith("#@")){
+                hapsDataStrings.add(line.substring(2));
+                continue;
+            }
+            if (line.startsWith("#")){
+                //skip comments
+                continue;
+            }
+            pedFileStrings.add(line);
+        }
         pedFile = new PedFile();
 
         if (type == PED_FILE){
-            pedFile.parseLinkage(infile);
+            pedFile.parseLinkage(pedFileStrings);
         }else{
-            pedFile.parseHapMap(infile);
+            pedFile.parseHapMap(pedFileStrings, hapsDataStrings);
         }
 
         Vector result = pedFile.check();

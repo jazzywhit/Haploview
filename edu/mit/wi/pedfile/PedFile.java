@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.13 2006/03/13 13:50:53 jcbarret Exp $
+* $Id: PedFile.java,v 3.14 2006/04/11 15:54:32 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -18,10 +18,6 @@ import edu.mit.wi.pedparser.PedParser;
 import edu.mit.wi.pedparser.PedigreeException;
 
 import java.util.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
 
 import org._3pq.jgrapht.graph.SimpleGraph;
 
@@ -482,28 +478,19 @@ public class PedFile {
      * takes in a pedigree file in the form of a vector of strings and parses it.
      * data is stored in families in the member hashtable families
      */
-    public void parseLinkage(File inputFile) throws PedFileException, IOException {
+    public void parseLinkage(Vector pedigrees) throws PedFileException {
         int colNum = -1;
         boolean withOptionalColumn = false;
-        int numMarkers=0;
-        int numLines = 0;
+        int numMarkers = 0;
+        int numLines = pedigrees.size();
+        if (numLines == 0){
+            throw new PedFileException("Data format error: empty file");
+        }
         Individual ind;
         this.allIndividuals = new Vector();
 
-        BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-        String line;
-
-        while((line = reader.readLine())!=null){
-            if (line.length() == 0){
-                //skip blank lines
-                continue;
-            }
-            if (line.startsWith("#")){
-                //skip comments
-                continue;
-            }
-
-            StringTokenizer tokenizer = new StringTokenizer(line, "\n\t\" \"");
+        for(int k=0; k<numLines; k++){
+            StringTokenizer tokenizer = new StringTokenizer((String)pedigrees.get(k), "\n\t\" \"");
             int numTokens = tokenizer.countTokens();
 
             //reading the first line
@@ -582,8 +569,6 @@ public class PedFile {
                 this.allIndividuals.add(ind);
 
             }
-
-            numLines++;
         }
 
         //now we check if anyone has a reference to a parent who isnt in the file, and if so, we remove the reference
@@ -601,35 +586,28 @@ public class PedFile {
         }
 
 
-
-         if (numLines == 0){
-            throw new PedFileException("Data format error: empty file");
-        }
-
     }
 
-    public void parseHapMap(File inFile) throws PedFileException, IOException {
+    public void parseHapMap(Vector lines, Vector hapsData) throws PedFileException {
         int colNum = -1;
-
-        Vector lines = new Vector();
-        BufferedReader reader = new BufferedReader(new FileReader(inFile));
-        String line;
-        while((line = reader.readLine())!=null){
-            if (line.length() == 0){
-                //skip blank lines
-                continue;
-            }
-            if (line.startsWith("#")){
-                //skip comments
-                continue;
-            }
-            lines.add(line);
-        }
-
-
         int numLines = lines.size();
         if (numLines < 2){
             throw new PedFileException("Hapmap data format error: empty file");
+        }
+        if (hapsData != null){
+            String indName;
+            for (int i=0; i < hapsData.size(); i++){
+                StringTokenizer db = new StringTokenizer((String)hapsData.get(i));
+                if (db.countTokens() < 6){
+                    throw new PedFileException("Hapmap data format error: pedigree data on line " + (i+1) + ".");
+                }
+                if (db.countTokens() > 7){
+                    throw new PedFileException("Hapmap data format error: pedigree data on line " + (i+1) + ".");
+                }
+                db.nextToken();
+                indName = db.nextToken();
+                hapMapTranslate.put(indName, (String)hapsData.get(i));
+            }
         }
         Individual ind;
 
