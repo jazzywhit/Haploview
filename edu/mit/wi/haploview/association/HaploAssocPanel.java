@@ -105,7 +105,8 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         r.setClosedIcon(null);
         theTree.setCellRenderer(r);
 
-        jtt.setPreferredScrollableViewportSize(new Dimension(600,jtt.getPreferredScrollableViewportSize().height));
+        //jtt.setPreferredScrollableViewportSize(new Dimension(600,jtt.getPreferredScrollableViewportSize().height));
+        jtt.setPreferredScrollableViewportSize(new Dimension(600, 1000));
 
         JScrollPane treeScroller = new JScrollPane(jtt);
         treeScroller.setMaximumSize(treeScroller.getPreferredSize());

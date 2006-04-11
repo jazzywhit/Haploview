@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Hashtable;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Dimension;
 
 public class TDTPanel extends JPanel implements Constants, ActionListener {
 
@@ -97,7 +98,8 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
 
 
         JScrollPane tableScroller = new JScrollPane(table);
-        tableScroller.setMaximumSize(tableScroller.getPreferredSize());
+        //tableScroller.setMaximumSize(tableScroller.getPreferredSize());
+        tableScroller.setMaximumSize(new Dimension(600, Integer.MAX_VALUE));
         add(tableScroller);
 
          if(Options.getAssocTest() == ASSOC_CC) {
