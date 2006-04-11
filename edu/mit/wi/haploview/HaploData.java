@@ -45,6 +45,9 @@ public class HaploData implements Constants{
     double[] numHaps = new double[4];
     double[] probHaps = new double[4];
 
+    //These are iterators for the progress bar.
+    int dPrimeTotalCount = -1;
+    int dPrimeCount;
 
     public int numTrios, numSingletons,numPeds;
     private HashSet whitelist;
@@ -749,7 +752,8 @@ public class HaploData implements Constants{
         dpTable = new DPrimeTable(Chromosome.getUnfilteredSize());
 
         int maxdist = Options.getMaxDistance();
-
+        dPrimeTotalCount = ((Chromosome.getUnfilteredSize()-1)*(Chromosome.getUnfilteredSize()-1))/2;
+        dPrimeCount = 0;
         //loop through all marker pairs
         for (int pos1 = 0; pos1 < Chromosome.getUnfilteredSize()-1; pos1++){
             Vector dpTemp= new Vector();
@@ -764,6 +768,7 @@ public class HaploData implements Constants{
                     //maxdist==0 is the convention used to force us to compare all the markers
                     dpTemp.add(computeDPrime(pos1,pos2));
                 }
+                dPrimeCount++;
             }
             dpTable.addMarker(dpTemp,pos1);
         }

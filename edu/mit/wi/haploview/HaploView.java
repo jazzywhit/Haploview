@@ -76,6 +76,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     HaploAssocPanel hapAssocPanel;
     private TaggerConfigPanel taggerConfigPanel;
     HaploviewTab ldTab, hapsTab, checkTab, taggerTab, associationTab;
+    //Progress Bar.
+    JProgressBar haploProgress;
+    boolean isMaxSet = false;
+    JPanel progressPanel = new JPanel();
+    JLabel progressLabel = new JLabel("Analyzing...");
+    LayoutManager defaultLayout = new GridBagLayout();
 
     public HaploView(){
         try{
@@ -715,6 +721,24 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             //let's start the math
             final SwingWorker worker = new SwingWorker(){
                 public Object construct(){
+                    Container contents = getContentPane();
+                    contents.removeAll();
+                    contents.repaint();
+                    defaultLayout = contents.getLayout();
+                    contents.setLayout(new GridBagLayout());
+                    haploProgress = new JProgressBar(0,2);
+                    haploProgress.setValue(0);
+                    haploProgress.setStringPainted(true);
+                    haploProgress.setForeground(Color.BLUE);
+                    haploProgress.setPreferredSize(new Dimension(250,20));
+                    progressPanel.setLayout(new BoxLayout(progressPanel,BoxLayout.Y_AXIS));
+                    progressPanel.add(progressLabel);
+                    progressLabel.setAlignmentX(CENTER_ALIGNMENT);
+                    progressPanel.add(new JLabel("         "));
+                    progressPanel.add(haploProgress);
+                    contents.add(progressPanel);
+                    progressPanel.revalidate();
+
                     for (int i = 0; i < viewMenuItems.length; i++){
                         viewMenuItems[i].setEnabled(false);
                     }
@@ -728,7 +752,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     blockMenuItems[0].setSelected(true);
                     zoomMenuItems[0].setSelected(true);
                     theData.blocksChanged = false;
-                    Container contents = getContentPane();
+                    contents = getContentPane();
                     contents.removeAll();
 
                     tabs = new JTabbedPane();
@@ -858,7 +882,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }
 
 
-
+                    contents.remove(progressPanel);
+                    contents.setLayout(defaultLayout);
                     tabs.setSelectedComponent(currentTab);
                     contents.add(tabs);
 
@@ -873,6 +898,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             timer = new javax.swing.Timer(50, new ActionListener(){
                 public void actionPerformed(ActionEvent evt){
+                    if (isMaxSet == true){
+                    haploProgress.setValue(theData.dPrimeCount);
+                    }
                     if (theData.finished){
                         timer.stop();
                         for (int i = 0; i < blockMenuItems.length; i++){
@@ -882,8 +910,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         readMarkerItem.setEnabled(true);
                         blocksItem.setEnabled(true);
                         exportMenuItems[2].setEnabled(true);
+                        progressPanel.remove(progressLabel);
+                        progressPanel.remove(haploProgress);
+                        isMaxSet = false;
+                        theData.dPrimeCount = 0;
+                        theData.dPrimeTotalCount = -1;
 
                         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                    }
+                    if (theData.dPrimeTotalCount != -1 && isMaxSet == false){
+                        haploProgress.setMaximum(theData.dPrimeTotalCount);
+                        isMaxSet = true;
                     }
                 }
             });
