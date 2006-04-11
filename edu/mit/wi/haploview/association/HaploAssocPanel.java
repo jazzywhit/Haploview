@@ -17,6 +17,7 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
     public double initialHaplotypeDisplayThreshold;
     private AssociationTestSet testSet;
     public JTreeTable jtt;
+    private boolean expand = true;
 
 
     public HaploAssocPanel(AssociationTestSet ats){
@@ -113,6 +114,7 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
         if(Options.getAssocTest() == ASSOC_CC) {
             JRadioButton countsButton = new JRadioButton("Show CC counts");
             JRadioButton ratiosButton = new JRadioButton("Show CC frequencies");
+            JButton expandCollapseAll = new JButton("Expand/Collapse All");
 
             ButtonGroup bg = new ButtonGroup();
 
@@ -120,15 +122,23 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
             bg.add(ratiosButton);
             countsButton.addActionListener(this);
             ratiosButton.addActionListener(this);
+            expandCollapseAll.addActionListener(this);
             JPanel butPan = new JPanel();
             butPan.add(countsButton);
             butPan.add(ratiosButton);
+            butPan.add(expandCollapseAll);
             add(butPan);
             if(countsOrRatios == SHOW_HAP_RATIOS) {
                 ratiosButton.setSelected(true);
             }else{
                 countsButton.setSelected(true);
             }
+        }else{
+            JPanel butPanB = new JPanel();
+            JButton expandCollaseAllB = new JButton("Expand/Collapse All");
+            expandCollaseAllB.addActionListener(this);
+            butPanB.add(expandCollaseAllB);
+            add(butPanB);
         }
     }
 
@@ -143,6 +153,21 @@ public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
             HaplotypeAssociationModel ham = (HaplotypeAssociationModel)jtt.getTree().getModel();
             ham.setCountsOrRatios(SHOW_HAP_RATIOS);
             jtt.repaint();
+        }
+        else if (command.equals("Expand/Collapse All")){
+            if (expand){
+                for (int i = 0; i < jtt.getTree().getHeight(); i++){
+                    jtt.getTree().expandRow(i);
+                }
+                expand = !expand;
+                jtt.repaint();
+            }else {
+                for (int i = 1; i < jtt.getTree().getHeight(); i++){
+                    jtt.getTree().collapsePath(jtt.getTree().getPathForRow(i));
+                }
+                expand = !expand;
+                jtt.repaint();
+            }
         }
 
 
