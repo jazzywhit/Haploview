@@ -438,13 +438,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 cut="0";
             }
             CheckData.failedGenoCut = Integer.parseInt(cut);
-
-            cut = cdc.mendcut.getText();
-            if (cut.equals("")){
-                cut="0";
+            if (!theData.isHaps){
+                cut = cdc.mendcut.getText();
+                if (cut.equals("")){
+                    cut="0";
+                }
+                CheckData.numMendErrCut = Integer.parseInt(cut);
             }
-            CheckData.numMendErrCut = Integer.parseInt(cut);
-
             cut = cdc.mafcut.getText();
             if (cut.equals("")){
                 cut="0";
@@ -694,10 +694,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             checkPanel = null;
             if (type == HAPS_FILE){
                 readMarkers(markerFile, null);
+                HashSet emptyHashSet = new HashSet();
 
                 //initialize realIndex
                 Chromosome.doFilter(Chromosome.getUnfilteredSize());
                 customAssocSet = null;
+                theData.setWhiteList(emptyHashSet);
+                checkPanel = new CheckDataPanel(this);
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
                 //we read the file in first, so we can whitelist all the markers in the custom test set
@@ -794,7 +797,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     //check data panel
                     if (checkPanel != null){
                         checkTab = new HaploviewTab(checkPanel);
-                        cdc = new CheckDataController(window);
+                        cdc = new CheckDataController(window, theData.isHaps);
                         checkTab.add(cdc);
 
                         tabs.addTab(VIEW_CHECK_PANEL, checkTab);
@@ -987,7 +990,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 JPanel metaCheckPanel = new JPanel();
                 metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
                 metaCheckPanel.add(checkPanel);
-                cdc = new CheckDataController(window);
+                cdc = new CheckDataController(window, theData.isHaps);
                 metaCheckPanel.add(cdc);
 
                 checkTab.add(metaCheckPanel);

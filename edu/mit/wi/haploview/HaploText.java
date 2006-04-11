@@ -859,11 +859,8 @@ public class HaploText implements Constants{
             if (infoFileName != null){
                 infoFile = new File(infoFileName);
             }
-            if (fileType != HAPS_FILE){
-                textData.prepareMarkerInput(infoFile,textData.getPedFile().getHMInfo());
-            }else{
-                textData.prepareMarkerInput(infoFile,null);
-            }
+
+            textData.prepareMarkerInput(infoFile,textData.getPedFile().getHMInfo());
 
             HashSet whiteListedCustomMarkers = new HashSet();
             if (customAssocTestsFileName != null){
@@ -891,20 +888,15 @@ public class HaploText implements Constants{
 
             boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
             Vector result = null;
-            if (fileType != HAPS_FILE){
-                result = textData.getPedFile().getResults();
-                //once check has been run we can filter the markers
-                for (int i = 0; i < result.size(); i++){
-                    if (((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&
-                            Chromosome.getUnfilteredMarker(i).getDupStatus() != 2)){
-                        markerResults[i] = true;
-                    }else{
-                        markerResults[i] = false;
-                    }
+            result = textData.getPedFile().getResults();
+            //once check has been run we can filter the markers
+            for (int i = 0; i < result.size(); i++){
+                if (((((MarkerResult)result.get(i)).getRating() > 0 || skipCheck) &&
+                        Chromosome.getUnfilteredMarker(i).getDupStatus() != 2)){
+                    markerResults[i] = true;
+                }else{
+                    markerResults[i] = false;
                 }
-            }else{
-                //we haven't done the check (HAPS files)
-                Arrays.fill(markerResults, true);
             }
 
             for (int i = 0; i < excludedMarkers.size(); i++){
@@ -995,7 +987,7 @@ public class HaploText implements Constants{
                     if (haplos != null){
                         filtHaplos = filterHaplos(haplos);
                         textData.pickTags(filtHaplos);
-                        textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), outputFile);;
+                        textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), outputFile);
                     }else if (!quietMode){
                         System.out.println("Skipping block output: no valid 4 Gamete blocks.");
                     }

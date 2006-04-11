@@ -23,7 +23,9 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
         Vector axedPeople = h.theData.getPedFile().getAxedPeople();
 
         Vector colNames = new Vector();
-        colNames.add("FamilyID");
+        if (!h.theData.isHaps){
+            colNames.add("FamilyID");
+        }
         colNames.add("IndividualID");
         colNames.add("Reason");
         Vector data = new Vector();
@@ -31,7 +33,9 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
         for(int i=0;i<axedPeople.size();i++) {
             Vector tmpVec = new Vector();
             Individual currentInd = (Individual) axedPeople.get(i);
-            tmpVec.add(currentInd.getFamilyID());
+            if (!h.theData.isHaps){
+                tmpVec.add(currentInd.getFamilyID());
+            }
             tmpVec.add(currentInd.getIndividualID());
             tmpVec.add(currentInd.getReasonImAxed());
             data.add(tmpVec);
@@ -39,7 +43,11 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
 
         tableModel = new BasicTableModel(colNames, data);
         table = new JTable(tableModel);
-        table.getColumnModel().getColumn(2).setPreferredWidth(300);
+        if (!h.theData.isHaps){
+            table.getColumnModel().getColumn(2).setPreferredWidth(300);
+        }else{
+            table.getColumnModel().getColumn(1).setPreferredWidth(300);
+        }
 
         JScrollPane tableScroller = new JScrollPane(table);
         int tableHeight = (table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+2);

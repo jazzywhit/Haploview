@@ -31,9 +31,15 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
         JPanel missingPanel = new JPanel();
-        JLabel countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
-                + theData.numTrios + " trios from "
-                + theData.numPeds + " families.");
+        JLabel countsLabel = new JLabel();
+        //This has been adjusted for haps files.
+        if (theData.isHaps){
+            countsLabel = new JLabel("Using " + theData.numSingletons + " singletons.");
+        }else{
+            countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
+                    + theData.numTrios + " trios from "
+                    + theData.numPeds + " families.");
+        }
         if (theData.numTrios + theData.numSingletons == 0){
             countsLabel.setForeground(Color.red);
         }
@@ -94,7 +100,11 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
     }
 
     public CheckDataPanel(HaploData hd){
-        STATUS_COL = 9;
+        if (hd.isHaps){
+            STATUS_COL = 7;
+        }else{
+            STATUS_COL = 9;
+        }
 
         pedfile = hd.getPedFile();
         theData = hd;
@@ -112,8 +122,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         tableColumnNames.add("PredHET");
         tableColumnNames.add("HWpval");
         tableColumnNames.add("%Geno");
-        tableColumnNames.add("FamTrio");
-        tableColumnNames.add("MendErr");
+        if (!hd.isHaps){
+            tableColumnNames.add("FamTrio");
+            tableColumnNames.add("MendErr");
+        }
         tableColumnNames.add("MAF");
         tableColumnNames.add("MinorAllele");
         tableColumnNames.add("Rating");
@@ -133,8 +145,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             tempVect.add(new Double(currentResult.getPredHet()));
             tempVect.add(new Double(currentResult.getHWpvalue()));
             tempVect.add(new Double(currentResult.getGenoPercent()));
-            tempVect.add(new Integer(currentResult.getFamTrioNum()));
-            tempVect.add(new Integer(currentResult.getMendErrNum()));
+            if (!hd.isHaps){
+                tempVect.add(new Integer(currentResult.getFamTrioNum()));
+                tempVect.add(new Integer(currentResult.getMendErrNum()));
+            }
             tempVect.add(new Double(currentResult.getMAF()));
             tempVect.add(currentResult.getMinorAllele());
 

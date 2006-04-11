@@ -9,7 +9,7 @@ public class CheckDataController extends JPanel{
 
     NumberTextField hwcut, genocut, mendcut, mafcut;
 
-    public CheckDataController(HaploView parent){
+    public CheckDataController(HaploView parent, boolean isHap){
         JPanel failPanel = new JPanel();
         failPanel.setLayout(new BoxLayout(failPanel,BoxLayout.Y_AXIS));
         JPanel holdPanel = new JPanel();
@@ -22,11 +22,13 @@ public class CheckDataController extends JPanel{
         genocut = new NumberTextField(String.valueOf(CheckData.failedGenoCut),3, false);
         holdPanel.add(genocut);
         failPanel.add(holdPanel);
-        holdPanel = new JPanel();
-        holdPanel.add(new JLabel("Max # mendel errors: "));
-        mendcut = new NumberTextField(String.valueOf(CheckData.numMendErrCut),4,false);
-        holdPanel.add(mendcut);
-        failPanel.add(holdPanel);
+        if (!isHap){
+            holdPanel = new JPanel();
+            holdPanel.add(new JLabel("Max # mendel errors: "));
+            mendcut = new NumberTextField(String.valueOf(CheckData.numMendErrCut),4,false);
+            holdPanel.add(mendcut);
+            failPanel.add(holdPanel);
+        }
         holdPanel = new JPanel();
         holdPanel.add(new JLabel("Minimum minor allele freq."));
         mafcut = new NumberTextField(String.valueOf(CheckData.mafCut),8,true);

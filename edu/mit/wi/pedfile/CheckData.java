@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.7 2006/04/11 16:03:25 jcbarret Exp $
+* $Id: CheckData.java,v 3.8 2006/04/11 17:02:46 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -220,14 +220,18 @@ public class CheckData {
                             founderGenoCount.put(familyID, new Integer(1));
                         }
 
-                        count[allele1]++;
+                        if (allele1 != 9){  //value of 9 means an 'h' allele for haps files...
+                            count[allele1]++;
+                        }
                         if (!Chromosome.getDataChrom().equals("chrx") || currentInd.getGender() != 1) {
-                            if(allele1 != allele2) {
+                            if(allele1 != allele2 || allele1 == 9 || allele2 == 9) {
                                 founderHetCount++;
                             }else{
                                 founderHomCount[allele1]++;
                             }
-                            count[allele2]++;
+                            if(allele2 != 9){
+                                count[allele2]++;
+                            }
                         }
                     }else{
                         if(kidgeno.containsKey(familyID)){
