@@ -82,8 +82,11 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
             tableData.add(tempVect.clone());
         }
 
-        BasicTableModel tm = new BasicTableModel(tableColumnNames, tableData);
-        table = new JTable(tm);
+        //BasicTableModel tm = new BasicTableModel(tableColumnNames, tableData);
+        //table = new JTable(tm);
+        TableSorter sorter = new TableSorter(new BasicTableModel(tableColumnNames, tableData));
+        table = new JTable(sorter);
+        sorter.setTableHeader(table.getTableHeader());
 
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
         table.getColumnModel().getColumn(1).setPreferredWidth(100);
