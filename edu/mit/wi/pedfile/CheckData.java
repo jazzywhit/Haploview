@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.8 2006/04/11 17:02:46 djbender Exp $
+* $Id: CheckData.java,v 3.9 2006/04/11 20:31:09 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -32,6 +32,11 @@ public class CheckData {
     static public int failedGenoCut = 75;
     static public int numMendErrCut = 1;
     static public double mafCut = 0.001;
+    //These are unchanging defaults used for the reset button.
+    static public double defaultHwCut = 0.001;
+    static public int defaultFailedGenoCut = 75;
+    static public int defaultNumMendErrCut = 1;
+    static public double defaultMafCut = 0.001;
 
 
     public CheckData(PedFile pedFile) {
