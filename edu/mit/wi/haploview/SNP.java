@@ -27,6 +27,14 @@ public class SNP implements Comparable{
         extra = e;
     }
 
+    public String getDisplayName(){
+        if (name != null){
+            return name;
+        }else{
+            return "Marker " + position;
+        }
+    }
+
     public String getName(){
         return name;
     }

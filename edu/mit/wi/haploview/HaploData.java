@@ -380,7 +380,7 @@ public class HaploData implements Constants{
                         pmr = mr;
                     }
                 }else{
-                    markerInfo.add(new SNP("Marker " + String.valueOf(i+1), (i*4000), maf,a1,a2));
+                    markerInfo.add(new SNP(null,i+1,maf,a1,a2));
                 }
                 percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
