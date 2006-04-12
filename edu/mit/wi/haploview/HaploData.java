@@ -804,7 +804,6 @@ public class HaploData implements Constants{
     }
 
     public Haplotype[][] generateHaplotypes(Vector blocks, boolean storeEM) throws HaploViewException{
-        //TODO: output indiv hap estimates
         Haplotype[][] rawHaplotypes = new Haplotype[blocks.size()][];
 
         for (int k = 0; k < blocks.size(); k++){
@@ -867,7 +866,6 @@ public class HaploData implements Constants{
             EM theEM = new EM(chromosomes,numTrios);
             theEM.doEM(theBlock);
 
-            //int p = 0;
             Haplotype[] tempArray = new Haplotype[theEM.numHaplos()];
             int[][] returnedHaplos = theEM.getHaplotypes();
             double[] returnedFreqs = theEM.getFrequencies();
@@ -910,6 +908,7 @@ public class HaploData implements Constants{
                         //this (somewhat laboriously) reconstructs whether to add the minor or major allele
                         //for markers with MAF close to 0.50 we can't use major/minor alleles to match
                         //'em up 'cause these might change given missing data
+                        boolean success = false;
                         if (Chromosome.getMarker(selectedMarkers[currentClass]).getMAF() > 0.4){
                             for (int z = 0; z < chromosomes.size(); z++){
                                 Chromosome thisChrom = (Chromosome)chromosomes.elementAt(z);
@@ -920,9 +919,14 @@ public class HaploData implements Constants{
                                         && thisChrom.getGenotype(preFiltBlock[q]) != 0){
                                     hapsHash.put(new Integer(preFiltBlock[q]),
                                             new Integer(thisChrom.getGenotype(preFiltBlock[q])));
+                                    success = true;
+                                    break;
                                 }
                             }
-                        }else{
+                        }
+
+                        //either we didn't use careful counting or it didn't work due to missing data
+                        if(!success){
                             if (Chromosome.getMarker(selectedMarkers[currentClass]).getMajor() ==
                                     genos[indexIntoBlock]){
                                 hapsHash.put(new Integer(preFiltBlock[q]),
@@ -1385,7 +1389,6 @@ public class HaploData implements Constants{
         byte a1,a2,b1,b2;
         //iterate through all chromosomes in dataset
         for (int i = 0; i < chromosomes.size(); i++){
-            //System.out.println(i + " " + pos1 + " " + pos2);
             //assign alleles for each of a pair of chromosomes at a marker to four variables
 
             if(!((Chromosome)chromosomes.elementAt(i)).isHaploid()){
