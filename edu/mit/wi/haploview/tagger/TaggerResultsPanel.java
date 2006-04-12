@@ -136,6 +136,8 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         JPanel listsButtonPanel = new JPanel();
         listsButtonPanel.add(dumpTestsButton);
         listsButtonPanel.add(dumpTagsButton);
+        listsButtonPanel.setMaximumSize(listsButtonPanel.getPreferredSize());
+        listsButtonPanel.setAlignmentX(LEFT_ALIGNMENT);
         listsPanel.add(listsButtonPanel);
         listsPanel.add(Box.createRigidArea(new Dimension(0,5)));
 
