@@ -1,6 +1,5 @@
 package edu.mit.wi.haploview;
 
-import java.math.BigInteger;
 
 public class SNP implements Comparable{
 
@@ -80,7 +79,7 @@ public class SNP implements Comparable{
         }
         if(o instanceof SNP) {
             SNP s = (SNP)o;
-            if(this.name == s.name && this.position == s.position) {
+            if(this.name.equals(s.name) && this.position == s.position) {
                 return true;
             }
         }
