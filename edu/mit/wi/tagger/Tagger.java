@@ -660,6 +660,8 @@ public class Tagger {
             TagSequence theTag = (TagSequence) tags.get(i);
             line.append(theTag.getName()).append("\t");
             Vector tagged = theTag.getBestTagged();
+            //todo: could be useful to allow this option
+            //Vector tagged = theTag.getTagged();
             for (int j = 0; j < tagged.size(); j++) {
                 VariantSequence varSeq = (VariantSequence) tagged.elementAt(j);
                 if(j !=0){
