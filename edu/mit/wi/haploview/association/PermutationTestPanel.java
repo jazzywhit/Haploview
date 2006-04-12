@@ -136,7 +136,7 @@ public class PermutationTestPanel extends JPanel implements Constants,ActionList
         blocksChangedLabel = new JLabel("The current blocks may have changed, so these values may not be accurate!");
         blocksChangedLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         blocksChangedLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
-        blocksChangedLabel.setForeground(Color.RED);
+        blocksChangedLabel.setForeground(Color.red);
 
     }
 
