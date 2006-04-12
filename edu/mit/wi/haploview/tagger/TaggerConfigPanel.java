@@ -183,7 +183,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
             runTaggerButton.setEnabled(false);
 
             taggerProgress.setIndeterminate(true);
-            taggerProgress.setForeground(Color.BLUE);
+            taggerProgress.setForeground(new Color(40,40,255));
             taggerProgress.setMaximumSize(new Dimension(250,20));
             taggerProgressPanel.setLayout(new BoxLayout(taggerProgressPanel,BoxLayout.Y_AXIS));
             taggerProgressPanel.add(taggerProgressLabel);
