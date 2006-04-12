@@ -49,6 +49,10 @@ public class HaploData implements Constants{
     int dPrimeTotalCount = -1;
     int dPrimeCount;
 
+    //Boolean to account for various processing differences between haps and ped files.
+    public boolean isHaps = false;
+
+
     public int numTrios, numSingletons,numPeds;
     private HashSet whitelist;
 
@@ -388,85 +392,57 @@ public class HaploData implements Constants{
         }
     }
 
-    void prepareHapsInput(File infile) throws IOException, HaploViewException{
+    public Vector prepareHapsInput(File infile) throws IOException, HaploViewException, PedFileException {
         //this method is called to suck in data from a file (its only argument)
         //of genotypes and sets up the Chromosome objects.
-        String currentLine;
+        isHaps = true;
         Vector chroms = new Vector();
-        byte[] genos = new byte[0];
-        String ped, indiv;
+        Vector hapsFileStrings = new Vector();
+        BufferedReader reader = new BufferedReader(new FileReader(infile));
 
-        if(infile.length() < 1){
-            throw new HaploViewException("Genotype file is empty or does not exist: " + infile.getName());
-        }
-        //read the file:
-        BufferedReader in = new BufferedReader(new FileReader(infile));
-
-        int lineCount = 0;
-        int numTokens = 0;
-        boolean even = true;
-        while ((currentLine = in.readLine()) != null){
-            lineCount++;
-            //each line is expected to be of the format:
-            //ped   indiv   geno   geno   geno   geno...
-            if (currentLine.length() == 0){
+        String line;
+        while((line = reader.readLine())!=null){
+            if (line.length() == 0){
                 //skip blank lines
                 continue;
             }
-            even = !even;
-            StringTokenizer st = new StringTokenizer(currentLine);
-            //first two tokens are expected to be ped, indiv
-            if (st.countTokens() >2){
-                ped = st.nextToken();
-                indiv = st.nextToken();
-            }else{
-                throw new HaploViewException("Genotype file error:\nLine " + lineCount +
-                        " appears to have fewer than 3 columns.");
+            if (line.startsWith("#")){
+                //skip comments
+                continue;
             }
-
-            //all other tokens are loaded into a vector (they should all be genotypes)
-            genos = new byte[st.countTokens()];
-            int q = 0;
-
-            if (numTokens == 0){
-                numTokens = st.countTokens();
-            }
-            if (numTokens != st.countTokens()){
-                throw new HaploViewException("Genotype file error:\nLine " + lineCount +
-                        " appears to have an incorrect number of entries");
-            }
-            while (st.hasMoreTokens()){
-                String thisGenotype = (String)st.nextElement();
-                if (thisGenotype.equals("h")) {
-                    genos[q] = 9;
-                }else{
-                    try{
-                        genos[q] = Byte.parseByte(thisGenotype);
-                    }catch (NumberFormatException nfe){
-                        throw new HaploViewException("Genotype file input error:\ngenotype value \""
-                                + thisGenotype + "\" on line " + lineCount + " not allowed.");
-                    }
-                }
-                if (genos[q] < 0 || genos[q] > 9){
-                    throw new HaploViewException("Genotype file input error:\ngenotype value \"" + genos[q] +
-                            "\" on line " + lineCount + " not allowed.");
-                }
-                q++;
-            }
-            //a Chromosome is created and added to a vector of chromosomes.
-            //this is what is evetually returned.
-            chroms.add(new Chromosome(ped, indiv, genos, infile.getName(), 0));
-
+            hapsFileStrings.add(line);
         }
-        if (!even){
-            //we're missing a line here
-            throw new HaploViewException("Genotype file appears to have an odd number of lines.\n"+
-                    "Each individual is required to have two chromosomes");
+        pedFile = new PedFile();
+        pedFile.parseHapsFile(hapsFileStrings);
+        Vector result = pedFile.check();
+        Vector indList = pedFile.getUnrelatedIndividuals();
+        numSingletons = 0;
+        Individual currentInd;
+        int numMarkers = 0;
+        for (int x=0; x<indList.size(); x++){
+            currentInd = (Individual)indList.elementAt(x);
+            numMarkers = currentInd.getNumMarkers();
+            byte[] chrom1 = new byte[numMarkers];
+            byte[] chrom2 = new byte[numMarkers];
+            for (int i = 0; i < numMarkers; i++){
+                /*byte[] thisMarker;
+                thisMarker = currentInd.getMarker(i);
+                chrom1[i] = thisMarker[0];
+                chrom2[i] = thisMarker[1];
+                */
+                chrom1[i] = currentInd.getMarkerA(i);
+                chrom2[i] = currentInd.getMarkerB(i);
+            }
+            chroms.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1,currentInd.getAffectedStatus(),0));
+            chroms.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(),0));
+            numSingletons++;
         }
+
         chromosomes = chroms;
 
         //wipe clean any existing marker info so we know we're starting clean with a new file
         Chromosome.markers = null;
+        return result;
     }
 
     public Vector linkageToChrom(File infile, int type)
@@ -763,6 +739,7 @@ public class HaploData implements Constants{
         Chromosome.markers = null;
         return result;
     }
+
 
     void generateDPrimeTable(){
         //calculating D prime requires the number of each possible 2 marker
