@@ -1206,7 +1206,8 @@ public class HaploText implements Constants{
 
         }
         catch(IOException e){
-            System.err.println("An error has occured. This probably has to do with file input or output");
+            System.err.println("An error has occured:");
+            System.err.println(e.getMessage());
         }
         catch(HaploViewException e){
             System.err.println(e.getMessage());
