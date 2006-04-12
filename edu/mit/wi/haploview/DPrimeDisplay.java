@@ -1095,7 +1095,6 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                     gbleft = minpos;
                     gbright = maxpos+1;
                 }
-                //TODO DB: BUILD
                 String dataBuild = "_" + Chromosome.getDataBuild().substring(5).toUpperCase();
 
                 //This removes the build parameter in the case of the hapmap default build (currently B34).

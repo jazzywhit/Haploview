@@ -101,7 +101,6 @@ public interface Constants {
     static final int SHOW_HAP_RATIOS = 1;
 
     //GBrowse options
-    //TODO DB: BUILD
     //static final String[] GB_TYPES = {"genotyped_SNPs", "LocusLink_genes", "RefSeq_mRNA", "NT_contigs", "Gaps", "DNA"};
     static final String[] GB_TYPES = {"gtsh", "mRNA", "NT", "Gaps", "DNA"};
     //static final String[] GB_OPTS = {"genotyped_SNPs+1", "", "", "", "", ""};
