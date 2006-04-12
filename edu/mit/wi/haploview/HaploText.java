@@ -873,7 +873,7 @@ public class HaploText implements Constants{
             Hashtable snpsByName = new Hashtable();
             for(int i=0;i<Chromosome.getUnfilteredSize();i++) {
                 SNP snp = Chromosome.getUnfilteredMarker(i);
-                snpsByName.put(snp.getName(), snp);
+                snpsByName.put(snp.getDisplayName(), snp);
             }
 
             if(forceIncludeTags != null) {
@@ -884,7 +884,7 @@ public class HaploText implements Constants{
                 }
             }
 
-            textData.setWhiteList(whiteListedCustomMarkers);
+            textData.getPedFile().setWhiteList(whiteListedCustomMarkers);
 
             boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
             Vector result = null;
@@ -912,7 +912,7 @@ public class HaploText implements Constants{
 
 
             for(int i=0;i<Chromosome.getUnfilteredSize();i++) {
-                if(textData.isWhiteListed(Chromosome.getUnfilteredMarker(i))) {
+                if(textData.getPedFile().isWhiteListed(Chromosome.getUnfilteredMarker(i))) {
                     markerResults[i] = true;
                 }
             }
@@ -923,8 +923,7 @@ public class HaploText implements Constants{
                 System.out.println("Using marker information file: " + infoFile.getName());
             }
             if(outputCheck && result != null){
-                CheckDataPanel cp = new CheckDataPanel(textData);
-                cp.printTable(validateOutputFile(fileName + ".CHECK"));
+                textData.getPedFile().saveCheckDataToText(validateOutputFile(fileName + ".CHECK"));
             }
             if(individualCheck && result != null){
                 IndividualDialog id = new IndividualDialog(textData);
@@ -1153,12 +1152,12 @@ public class HaploText implements Constants{
                 HashSet names = new HashSet();
                 for (int i = 0; i < snps.size(); i++) {
                     SNP snp = (SNP) snps.elementAt(i);
-                    names.add(snp.getName());
+                    names.add(snp.getDisplayName());
                 }
 
                 HashSet filteredNames = new HashSet();
                 for(int i=0;i<Chromosome.getSize();i++) {
-                    filteredNames.add(Chromosome.getMarker(i).getName());
+                    filteredNames.add(Chromosome.getMarker(i).getDisplayName());
                 }
 
                 Vector sitesToCapture = new Vector();

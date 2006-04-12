@@ -17,7 +17,6 @@ import edu.mit.wi.pedfile.CheckData;
 public class CheckDataPanel extends JPanel implements TableModelListener, ActionListener{
     private JTable table;
     private CheckDataTableModel tableModel;
-    private PedFile pedfile;
     private HaploData theData;
 
     boolean changed;
@@ -31,7 +30,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
 
         JPanel missingPanel = new JPanel();
-        JLabel countsLabel = new JLabel();
+        JLabel countsLabel;
         //This has been adjusted for haps files.
         if (theData.isHaps){
             countsLabel = new JLabel("Using " + theData.numSingletons + " singletons.");
@@ -60,7 +59,10 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         JPanel extraPanel = new JPanel();
         extraPanel.add(missingPanel);
 
-        table = new JTable(tableModel);
+        TableSorter sorter = new TableSorter(tableModel);
+        table = new JTable(sorter);
+        sorter.setTableHeader(table.getTableHeader());
+
         final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
         try{
             table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
@@ -101,79 +103,18 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
     }
 
     public CheckDataPanel(HaploData hd){
-        if (hd.isHaps){
-            STATUS_COL = 7;
-        }else{
-            STATUS_COL = 9;
-        }
+        STATUS_COL = 9;
 
-        pedfile = hd.getPedFile();
         theData = hd;
-        Vector result = pedfile.getResults();
+        PedFile pf = theData.getPedFile();
 
-        int numResults = result.size();
-        Vector tableColumnNames = new Vector();
-        tableColumnNames.add("#");
+        Vector tableColumnNames = pf.getColumnNames();
         if (theData.infoKnown){
-            tableColumnNames.add("Name");
-            tableColumnNames.add("Position");
             STATUS_COL += 2;
         }
-        tableColumnNames.add("ObsHET");
-        tableColumnNames.add("PredHET");
-        tableColumnNames.add("HWpval");
-        tableColumnNames.add("%Geno");
-        if (!hd.isHaps){
-            tableColumnNames.add("FamTrio");
-            tableColumnNames.add("MendErr");
-        }
-        tableColumnNames.add("MAF");
-        tableColumnNames.add("MinorAllele");
-        tableColumnNames.add("Rating");
 
-        Vector tableData = new Vector();
-        int[] markerRatings = new int[numResults];
-        int[] dups = new int[numResults];
-        for (int i = 0; i < numResults; i++){
-            Vector tempVect = new Vector();
-            MarkerResult currentResult = (MarkerResult)result.get(i);
-            tempVect.add(new Integer(i+1));
-            if (theData.infoKnown){
-                tempVect.add(Chromosome.getUnfilteredMarker(i).getName());
-                tempVect.add(new Long(Chromosome.getUnfilteredMarker(i).getPosition()));
-            }
-            tempVect.add(new Double(currentResult.getObsHet()));
-            tempVect.add(new Double(currentResult.getPredHet()));
-            tempVect.add(new Double(currentResult.getHWpvalue()));
-            tempVect.add(new Double(currentResult.getGenoPercent()));
-            if (!hd.isHaps){
-                tempVect.add(new Integer(currentResult.getFamTrioNum()));
-                tempVect.add(new Integer(currentResult.getMendErrNum()));
-            }
-            tempVect.add(new Double(currentResult.getMAF()));
-            tempVect.add(currentResult.getMinorAllele());
-
-            int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
-            if ((currentResult.getRating() > 0 && dupStatus != 2) ||
-                    theData.isWhiteListed(Chromosome.getUnfilteredMarker(i))){
-                tempVect.add(new Boolean(true));
-            }else{
-                tempVect.add(new Boolean(false));
-            }
-
-            //these values are never displayed, just kept for bookkeeping
-            markerRatings[i] = currentResult.getRating();
-            dups[i] = dupStatus;
-
-            tableData.add(tempVect.clone());
-        }
-
-        tableModel = new CheckDataTableModel(tableColumnNames, tableData, markerRatings, dups);
+        tableModel = new CheckDataTableModel(tableColumnNames, pf.getTableData(), pf.getMarkerRatings(), pf.getDups());
         tableModel.addTableModelListener(this);
-    }
-
-    public PedFile getPedFile(){
-        return pedfile;
     }
 
     public JTable getTable(){
@@ -183,47 +124,6 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
     public void tableChanged(TableModelEvent e) {
         if (e.getColumn() == STATUS_COL){
             changed = true;
-        }
-    }
-
-    public void printTable(File outfile) throws IOException{
-        FileWriter checkWriter = null;
-        if (outfile != null){
-            checkWriter = new FileWriter(outfile);
-        }
-
-        int numCols = tableModel.getColumnCount();
-        StringBuffer header = new StringBuffer();
-        for (int i = 0; i < numCols; i++){
-            header.append(tableModel.getColumnName(i)).append("\t");
-        }
-        header.append("\n");
-
-        if (outfile != null){
-            checkWriter.write(header.toString());
-        }else{
-            System.out.print(header.toString());
-        }
-        for (int i = 0; i < tableModel.getRowCount(); i++){
-            StringBuffer sb = new StringBuffer();
-            //don't print the true/false vals in last column
-            for (int j = 0; j < numCols-1; j++){
-                sb.append(tableModel.getValueAt(i,j)).append("\t");
-            }
-            //print BAD if last column is false
-            if (((Boolean)tableModel.getValueAt(i, numCols-1)).booleanValue()){
-                sb.append("\n");
-            }else{
-                sb.append("BAD\n");
-            }
-            if (outfile != null){
-                checkWriter.write(sb.toString());
-            }else{
-                System.out.print(sb.toString());
-            }
-        }
-        if (outfile != null){
-            checkWriter.close();
         }
     }
 
@@ -243,7 +143,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
 
     public void redoRatings(){
         try{
-            Vector result = new CheckData(pedfile).check();
+            Vector result = new CheckData(theData.getPedFile()).check();
 
             for (int i = 0; i < table.getRowCount(); i++){
                 MarkerResult cur = (MarkerResult)result.get(i);
@@ -251,8 +151,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
                 //use this marker as long as it has a good (i.e. positive) rating and is not an "unused" dup (==2)
                 int curRating = cur.getRating();
                 int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
-                if ((curRating > 0 && dupStatus != 2) || 
-                    theData.isWhiteListed(Chromosome.getUnfilteredMarker(i))){
+                if ((curRating > 0 && dupStatus != 2) ||
+                    theData.getPedFile().isWhiteListed(Chromosome.getUnfilteredMarker(i))){
                     table.setValueAt(new Boolean(true),i,STATUS_COL);
                 }else{
                     table.setValueAt(new Boolean(false),i,STATUS_COL);
@@ -354,8 +254,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         {
             Component cell = super.getTableCellRendererComponent
                     (table, value, isSelected, hasFocus, row, column);
-            int myRating = ((CheckDataTableModel)table.getModel()).getRating(row);
-            int myDupStatus = ((CheckDataTableModel)table.getModel()).getDupStatus(row);
+            int myRating = ((CheckDataTableModel)((TableSorter)table.getModel()).getTableModel()).getRating(row);
+            int myDupStatus = ((CheckDataTableModel)((TableSorter)table.getModel()).getTableModel()).getDupStatus(row);
             String thisColumnName = table.getColumnName(column);
             cell.setForeground(Color.black);
             cell.setBackground(Color.white);
@@ -401,7 +301,4 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             return cell;
         }
     }
-
-
-
 }

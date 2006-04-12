@@ -54,7 +54,6 @@ public class HaploData implements Constants{
 
 
     public int numTrios, numSingletons,numPeds;
-    private HashSet whitelist;
 
     public PedFile getPedFile(){
         return this.pedFile;
@@ -943,6 +942,7 @@ public class HaploData implements Constants{
                     }
                 }
 
+                //TODO: what's all this commented out shit?
                 //if (tempPerc*100 > hapthresh){
                 if(storeEM) {
                     tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock, theEM);
@@ -1418,8 +1418,16 @@ public class HaploData implements Constants{
                 a1 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos1];
                 a2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
 
-                if(a1 == 0 || a2 == 0) {
-                }else{
+                //TODO: don't check me in, this is ghetto!
+                if (a1 >=5){
+                    a1 = (byte)(a1 - 4);
+                }
+                if (a2 >=5){
+                    a2 = (byte)(a2 - 4);
+                }
+
+
+                if(a1 != 0 && a2 != 0) {
                     twoMarkerHaplos[marker1num[a1]][marker2num[a2]]++;
                 }
 
@@ -1958,163 +1966,5 @@ public class HaploData implements Constants{
 
     public Haplotype[][] getRawHaplotypes() {
         return rawHaplotypes;
-    }
-
-    //this whole method is broken at the very least because it doesn't check for zeroing
-    //out of mendel errors correctly. on the other hand we may never want to
-    //resurrect this format, so who cares...
-    /* public void linkageToHapsFormat(boolean[] markerResults, PedFile pedFile,
-    String hapFileName)throws IOException, PedFileException{
-    FileWriter linkageToHapsWriter = new FileWriter(new File(hapFileName));
-
-    Vector indList = pedFile.getAllIndividuals();
-    int numMarkers = 0;
-    Vector usedParents = new Vector();
-    Individual currentInd;
-    Family currentFamily;
-
-
-    for(int x=0; x < indList.size(); x++){
-
-    String[] indAndFamID = (String[])indList.elementAt(x);
-    currentFamily = pedFile.getFamily(indAndFamID[0]);
-    currentInd = currentFamily.getMember(indAndFamID[1]);
-
-    boolean begin = false;
-
-    if(currentInd.getIsTyped()){
-    //singleton
-    if(currentFamily.getNumMembers() == 1){
-    StringBuffer hap1 = new StringBuffer(numMarkers);
-    StringBuffer hap2 = new StringBuffer(numMarkers);
-    hap1.append(currentInd.getFamilyID()).append("\t").append(currentInd.getIndividualID()).append("\t");
-    hap2.append(currentInd.getFamilyID()).append("\t").append(currentInd.getIndividualID()).append("\t");
-    numMarkers = currentInd.getNumMarkers();
-    for (int i = 0; i < numMarkers; i++){
-    if (markerResults[i]){
-    if (begin){
-    hap1.append(" "); hap2.append(" ");
-    }
-    byte[] thisMarker = currentInd.getUnfilteredMarker(i);
-    if (thisMarker[0] == thisMarker[1]){
-    hap1.append(thisMarker[0]);
-    hap2.append(thisMarker[1]);
-    }else{
-    hap1.append("h");
-    hap2.append("h");
-    }
-    begin=true;
-    }
-    }
-    hap1.append("\n"); hap2.append("\n");
-    hap1.append(hap2);
-    linkageToHapsWriter.write(hap1.toString());
-    }
-    else{
-    //skip if indiv is parent in trio or unaffected
-    if (!(currentInd.getMomID().equals("0") || currentInd.getDadID().equals("0") || currentInd.getAffectedStatus() != 2)){
-    //trio
-    String dadT = new String("");
-    String dadU = new String("");
-    String momT = new String("");
-    String momU = new String("");
-    if (!(usedParents.contains( currentInd.getFamilyID() + " " + currentInd.getMomID()) ||
-    usedParents.contains(currentInd.getFamilyID() + " " + currentInd.getDadID()))){
-    //add 4 phased haps provided that we haven't used this trio already
-    numMarkers = currentInd.getNumMarkers();
-    for (int i = 0; i < numMarkers; i++){
-    if (markerResults[i]){
-    if (begin){
-    dadT+=" ";dadU+=" ";momT+=" ";momU+=" ";
-    }
-    byte[] thisMarker = currentInd.getUnfilteredMarker(i);
-    int kid1 = thisMarker[0];
-    int kid2 = thisMarker[1];
-
-    thisMarker = (currentFamily.getMember(currentInd.getMomID())).getUnfilteredMarker(i);
-    int mom1 = thisMarker[0];
-    int mom2 = thisMarker[1];
-    thisMarker = (currentFamily.getMember(currentInd.getDadID())).getUnfilteredMarker(i);
-    int dad1 = thisMarker[0];
-    int dad2 = thisMarker[1];
-
-    if (kid1==0 || kid2==0){
-    //kid missing
-    if (dad1==dad2){dadT += dad1; dadU +=dad1;}
-    else{dadT+="h"; dadU+="h";}
-    if (mom1==mom2){momT+=mom1; momU+=mom1;}
-    else{momT+="h"; momU+="h";}
-    }else if (kid1==kid2){
-    //kid homozygous
-    if(dad1==0){dadT+=kid1;dadU+="0";}
-    else if (dad1==kid1){dadT+=dad1;dadU+=dad2;}
-    else {dadT+=dad2;dadU+=dad1;}
-
-    if(mom1==0){momT+=kid1;momU+="0";}
-    else if (mom1==kid1){momT+=mom1;momU+=mom2;}
-    else {momT+=mom2;momU+=mom1;}
-    }else{
-    //kid heterozygous and this if tree's a bitch
-    if(dad1==0 && mom1==0){
-    //both missing
-    dadT+="0";dadU+="0";momT+="0";momU+="0";
-    }else if (dad1==0 && mom1 != mom2){
-    //dad missing mom het
-    dadT+="0";dadU+="0";momT+="h";momU+="h";
-    }else if (mom1==0 && dad1 != dad2){
-    //dad het mom missing
-    dadT+="h"; dadU+="h"; momT+="0"; momU+="0";
-    }else if (dad1==0 && mom1 == mom2){
-    //dad missing mom hom
-    momT += mom1; momU += mom1; dadU+="0";
-    if(kid1==mom1){dadT+=kid2;}else{dadT+=kid1;}
-    }else if (mom1==0 && dad1==dad2){
-    //mom missing dad hom
-    dadT+=dad1;dadU+=dad1;momU+="0";
-    if(kid1==dad1){momT+=kid2;}else{momT+=kid1;}
-    }else if (dad1==dad2 && mom1 != mom2){
-    //dad hom mom het
-    dadT+=dad1; dadU+=dad2;
-    if(kid1==dad1){momT+=kid2;momU+=kid1;
-    }else{momT+=kid1;momU+=kid2;}
-    }else if (mom1==mom2 && dad1!=dad2){
-    //dad het mom hom
-    momT+=mom1; momU+=mom2;
-    if(kid1==mom1){dadT+=kid2;dadU+=kid1;
-    }else{dadT+=kid1;dadU+=kid2;}
-    }else if (dad1==dad2 && mom1==mom2){
-    //mom & dad hom
-    dadT+=dad1; dadU+=dad1; momT+=mom1; momU+=mom1;
-    }else{
-    //everybody het
-    dadT+="h";dadU+="h";momT+="h";momU+="h";
-    }
-    }
-    begin=true;
-    }
-    }
-    momT+="\n";momU+="\n";dadT+="\n";dadU+="\n";
-    linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getDadID()+"\tT\t" + dadT);
-    linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getDadID()+"\tU\t" + dadU);
-    linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getMomID()+"\tT\t" + momT);
-    linkageToHapsWriter.write(currentInd.getFamilyID()+"-"+currentInd.getMomID()+"\tU\t" + momU);
-
-    usedParents.add(currentInd.getFamilyID()+" "+currentInd.getDadID());
-    usedParents.add(currentInd.getFamilyID()+" "+currentInd.getMomID());
-    }
-    }
-    }
-    }
-    }
-    linkageToHapsWriter.close();
-
-    }*/
-
-    public void setWhiteList(HashSet whiteListedCustomMarkers) {
-        whitelist = whiteListedCustomMarkers;
-    }
-
-    public boolean isWhiteListed(SNP snp){
-        return whitelist.contains(snp);
     }
 }

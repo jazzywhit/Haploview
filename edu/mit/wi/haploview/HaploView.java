@@ -707,7 +707,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 //initialize realIndex
                 Chromosome.doFilter(Chromosome.getUnfilteredSize());
                 customAssocSet = null;
-                theData.setWhiteList(emptyHashSet);
+                theData.getPedFile().setWhiteList(emptyHashSet);
                 checkPanel = new CheckDataPanel(this);
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
@@ -719,7 +719,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }else{
                     customAssocSet = null;
                 }
-                theData.setWhiteList(whiteListedCustomMarkers);
+                theData.getPedFile().setWhiteList(whiteListedCustomMarkers);
 
                 checkPanel = new CheckDataPanel(this);
                 checkPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -1259,7 +1259,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }else if (tab.equals(hapsTab)){
                         theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray, outfile);
                     }else if (tab.equals(checkTab)){
-                        checkPanel.printTable(outfile);
+                        theData.getPedFile().saveCheckDataToText(outfile);
                     }else if (tab.equals(associationTab)){
                         Component selectedTab = ((JTabbedPane)associationTab.getComponent(0)).getSelectedComponent();
 

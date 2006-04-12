@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.17 2006/04/12 15:47:08 djbender Exp $
+* $Id: PedFile.java,v 3.18 2006/04/12 18:02:41 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -14,10 +14,14 @@ package edu.mit.wi.pedfile;
 
 import edu.mit.wi.haploview.Chromosome;
 import edu.mit.wi.haploview.Options;
+import edu.mit.wi.haploview.SNP;
 import edu.mit.wi.pedparser.PedParser;
 import edu.mit.wi.pedparser.PedigreeException;
 
 import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.FileWriter;
 
 import org._3pq.jgrapht.graph.SimpleGraph;
 
@@ -45,6 +49,10 @@ public class PedFile {
     private boolean bogusParents = false;
 
     private static Hashtable hapMapTranslate;
+    private int[] markerRatings;
+    private int[] dups;
+    private HashSet whitelist;
+
 
     public PedFile(){
 
@@ -1035,6 +1043,120 @@ public class PedFile {
 
     public boolean isBogusParents() {
         return bogusParents;
+    }
+
+    public Vector getTableData(){
+        Vector tableData = new Vector();
+        int numResults = results.size();
+        markerRatings = new int[numResults];
+        dups = new int[numResults];
+        for (int i = 0; i < numResults; i++){
+            Vector tempVect = new Vector();
+            MarkerResult currentResult = (MarkerResult)results.get(i);
+            tempVect.add(new Integer(i+1));
+            if (Chromosome.getUnfilteredMarker(0).getName() != null){
+                tempVect.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
+                tempVect.add(new Long(Chromosome.getUnfilteredMarker(i).getPosition()));
+            }
+            tempVect.add(new Double(currentResult.getObsHet()));
+            tempVect.add(new Double(currentResult.getPredHet()));
+            tempVect.add(new Double(currentResult.getHWpvalue()));
+            tempVect.add(new Double(currentResult.getGenoPercent()));
+            tempVect.add(new Integer(currentResult.getFamTrioNum()));
+            tempVect.add(new Integer(currentResult.getMendErrNum()));
+            tempVect.add(new Double(currentResult.getMAF()));
+            tempVect.add(currentResult.getMinorAllele());
+
+            int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
+            if ((currentResult.getRating() > 0 && dupStatus != 2) ||
+                    isWhiteListed(Chromosome.getUnfilteredMarker(i))){
+                tempVect.add(new Boolean(true));
+            }else{
+                tempVect.add(new Boolean(false));
+            }
+
+            //these values are never displayed, just kept for bookkeeping
+            markerRatings[i] = currentResult.getRating();
+            dups[i] = dupStatus;
+
+            tableData.add(tempVect.clone());
+        }
+
+        return tableData;
+    }
+
+    public int[] getMarkerRatings(){
+        return markerRatings;
+    }
+
+    public int[] getDups(){
+        return dups;
+    }
+
+    public Vector getColumnNames() {
+        Vector c = new Vector();
+        c = new Vector();
+        c.add("#");
+        if (Chromosome.getUnfilteredMarker(0).getName() != null){
+            c.add("Name");
+            c.add("Position");
+        }
+        c.add("ObsHET");
+        c.add("PredHET");
+        c.add("HWpval");
+        c.add("%Geno");
+        c.add("FamTrio");
+        c.add("MendErr");
+        c.add("MAF");
+        c.add("M.A.");
+        c.add("Rating");
+        return c;
+    }
+
+    public void saveCheckDataToText(File outfile) throws IOException {
+        FileWriter checkWriter = null;
+        if (outfile != null){
+            checkWriter = new FileWriter(outfile);
+        }else{
+            throw new IOException("Error saving checkdata to file.");
+        }
+
+        Vector names = getColumnNames();
+        int numCols = names.size();
+        StringBuffer header = new StringBuffer();
+        for (int i = 0; i < numCols; i++){
+            header.append(names.get(i)).append("\t");
+        }
+        header.append("\n");
+        checkWriter.write(header.toString());
+
+        Vector tableData = getTableData();
+        for (int i = 0; i < tableData.size(); i++){
+            StringBuffer sb = new StringBuffer();
+            Vector row = (Vector)tableData.get(i);
+            //don't print the true/false vals in last column
+            for (int j = 0; j < numCols-1; j++){
+                sb.append(row.get(j)).append("\t");
+            }
+            //print BAD if last column is false
+            if (((Boolean)row.get(numCols-1)).booleanValue()){
+                sb.append("\n");
+            }else{
+                sb.append("BAD\n");
+            }
+            checkWriter.write(sb.toString());
+        }
+
+        checkWriter.close();
+    }
+
+
+    public void setWhiteList(HashSet whiteListedCustomMarkers) {
+        whitelist = whiteListedCustomMarkers;
+    }
+
+    public boolean isWhiteListed(SNP snp){
+        return whitelist.contains(snp);
     }
 }
 
