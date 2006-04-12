@@ -80,7 +80,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     JProgressBar haploProgress;
     boolean isMaxSet = false;
     JPanel progressPanel = new JPanel();
-    JLabel progressLabel = new JLabel("Analyzing...");
     LayoutManager defaultLayout = new GridBagLayout();
 
     public HaploView(){
@@ -741,12 +740,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     haploProgress = new JProgressBar(0,2);
                     haploProgress.setValue(0);
                     haploProgress.setStringPainted(true);
-                    haploProgress.setForeground(Color.BLUE);
+                    haploProgress.setForeground(new Color(40,40,255));
                     haploProgress.setPreferredSize(new Dimension(250,20));
                     progressPanel.setLayout(new BoxLayout(progressPanel,BoxLayout.Y_AXIS));
+                    JLabel progressLabel = new JLabel("Loading data...");
                     progressPanel.add(progressLabel);
                     progressLabel.setAlignmentX(CENTER_ALIGNMENT);
-                    progressPanel.add(new JLabel("         "));
                     progressPanel.add(haploProgress);
                     contents.add(progressPanel);
                     progressPanel.revalidate();
@@ -922,8 +921,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         readMarkerItem.setEnabled(true);
                         blocksItem.setEnabled(true);
                         exportMenuItems[2].setEnabled(true);
-                        progressPanel.remove(progressLabel);
-                        progressPanel.remove(haploProgress);
+                        progressPanel.removeAll();
                         isMaxSet = false;
                         theData.dPrimeCount = 0;
                         theData.dPrimeTotalCount = -1;
