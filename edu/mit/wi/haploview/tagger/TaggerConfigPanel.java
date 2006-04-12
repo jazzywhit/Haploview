@@ -82,11 +82,11 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
 
         for (int i = 0; i < Chromosome.getSize(); i++){
             SNP tempSNP = Chromosome.getMarker(i);
-            snpsByName.put(tempSNP.getName(), tempSNP);
+            snpsByName.put(tempSNP.getDisplayName(), tempSNP);
             Vector tempData = new Vector();
 
             tempData.add(Integer.toString(Chromosome.realIndex[i]+1));
-            tempData.add(tempSNP.getName());
+            tempData.add(tempSNP.getDisplayName());
             tempData.add(String.valueOf(tempSNP.getPosition()));
             tempData.add(new Boolean(false));
             tempData.add(new Boolean(false));

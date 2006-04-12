@@ -146,7 +146,7 @@ public class AssociationTestSet implements Constants{
 
 
                 Haplotype[] daBlock = {thisSNP1, thisSNP2};
-                results.add(new MarkerAssociationResult(daBlock, currentMarker.getName(), currentMarker));
+                results.add(new MarkerAssociationResult(daBlock, currentMarker.getDisplayName(), currentMarker));
             }
         }
 
@@ -268,7 +268,7 @@ public class AssociationTestSet implements Constants{
                 thisSNP2.setUntransCount(tt.counts[1][1]);
 
                 Haplotype[] daBlock = {thisSNP1, thisSNP2};
-                results.add(new MarkerAssociationResult(daBlock, currentMarker.getName(), currentMarker));
+                results.add(new MarkerAssociationResult(daBlock, currentMarker.getDisplayName(), currentMarker));
             }
         }
         this.results = results;
@@ -417,7 +417,7 @@ public class AssociationTestSet implements Constants{
                 thisSNP2.setDiscordantAlleleCounts(tt.getDiscordantCountsAllele2());
 
                 Haplotype[] daBlock = {thisSNP1, thisSNP2};
-                results.add(new MarkerAssociationResult(daBlock, currentMarker.getName(), currentMarker));
+                results.add(new MarkerAssociationResult(daBlock, currentMarker.getDisplayName(), currentMarker));
 
             }
         }
@@ -493,7 +493,7 @@ public class AssociationTestSet implements Constants{
         int count = 0;
         while (mitr.hasNext()){
             SNP n = (SNP) mitr.next();
-            indicesByName.put(n.getName(),new Integer(count));
+            indicesByName.put(n.getDisplayName(),new Integer(count));
             count++;
         }
 
@@ -725,10 +725,10 @@ public class AssociationTestSet implements Constants{
         String getName(){
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i < markers.size() - 1; i++){
-                sb.append(Chromosome.getUnfilteredMarker(((Integer)markers.get(i)).intValue()).getName());
+                sb.append(Chromosome.getUnfilteredMarker(((Integer)markers.get(i)).intValue()).getDisplayName());
                 sb.append(",");
             }
-            sb.append(Chromosome.getUnfilteredMarker(((Integer)markers.get(markers.size()-1)).intValue()).getName());
+            sb.append(Chromosome.getUnfilteredMarker(((Integer)markers.get(markers.size()-1)).intValue()).getDisplayName());
 
             return sb.toString();
         }

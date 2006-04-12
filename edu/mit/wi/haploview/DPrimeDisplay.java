@@ -618,9 +618,9 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
 
             //// draw the marker names
             if (printMarkerNames){
-                widestMarkerName = metrics.stringWidth(Chromosome.getMarker(0).getName());
+                widestMarkerName = metrics.stringWidth(Chromosome.getMarker(0).getDisplayName());
                 for (int x = 1; x < Chromosome.getSize(); x++) {
-                    int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getName());
+                    int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getDisplayName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }
 
@@ -633,7 +633,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                         g2.setFont(markerNameFont);
                     }
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(green);
-                    g2.drawString(Chromosome.getMarker(x).getName(),(float)TEXT_GAP, (float)alignedPositions[x] + ascent/3);
+                    g2.drawString(Chromosome.getMarker(x).getDisplayName(),(float)TEXT_GAP, (float)alignedPositions[x] + ascent/3);
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(Color.black);
                 }
 
@@ -1329,8 +1329,8 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
 
                     displayStrings = new Vector();
                     if (theData.infoKnown){
-                        displayStrings.add(new String ("(" +Chromosome.getMarker(boxX).getName() +
-                                ", " + Chromosome.getMarker(boxY).getName() + ")"));
+                        displayStrings.add(new String ("(" +Chromosome.getMarker(boxX).getDisplayName() +
+                                ", " + Chromosome.getMarker(boxY).getDisplayName() + ")"));
                         double sep = (int)((Chromosome.getMarker(boxY).getPosition() -
                                 Chromosome.getMarker(boxX).getPosition())/100);
                         sep /= 10;
@@ -1389,7 +1389,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                 displayStrings = new Vector();
 
                 if (theData.infoKnown){
-                    displayStrings.add(new String (Chromosome.getMarker(marker).getName()));
+                    displayStrings.add(new String (Chromosome.getMarker(marker).getDisplayName()));
                 }else{
                     displayStrings.add(new String("Marker " + (Chromosome.realIndex[marker]+1)));
                 }

@@ -335,7 +335,7 @@ public class EM implements Constants {
                             thisHap[j] = '2';
                         }else{
                             throw new HaploViewException("Marker with > 2 alleles: " +
-                                    Chromosome.getMarker(theBlock[j]).getName());
+                                    Chromosome.getMarker(theBlock[j]).getDisplayName());
                         }
                     }
                 }

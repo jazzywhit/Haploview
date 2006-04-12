@@ -26,9 +26,9 @@ public class TaggerController {
 
         for(int i=0;i<sitesToCapture.size();i++) {
             SNP tempSNP = (SNP) sitesToCapture.get(i);
-            edu.mit.wi.tagger.SNP s = new edu.mit.wi.tagger.SNP(tempSNP.getName(),tempSNP.getPosition(),tempSNP.getMAF());
+            edu.mit.wi.tagger.SNP s = new edu.mit.wi.tagger.SNP(tempSNP.getDisplayName(),tempSNP.getPosition(),tempSNP.getMAF());
             taggerSNPs.add(s);
-            snpHash.put(tempSNP.getName(),s);
+            snpHash.put(tempSNP.getDisplayName(),s);
         }
 
         Vector includedSNPs = new Vector();
@@ -44,20 +44,20 @@ public class TaggerController {
         Hashtable indicesByVarSeq = new Hashtable();
         for(int i=0;i<Chromosome.getSize();i++) {
             if(sitesToCapture.contains(Chromosome.getMarker(i))) {
-                indicesByVarSeq.put(snpHash.get(Chromosome.getMarker(i).getName()),new Integer(i));
+                indicesByVarSeq.put(snpHash.get(Chromosome.getMarker(i).getDisplayName()),new Integer(i));
             }
         }
 
         for (int i = 0; i < sitesToCapture.size(); i++){
             SNP tempSNP = (SNP) sitesToCapture.get(i);
-            edu.mit.wi.tagger.SNP taggerSNP = (edu.mit.wi.tagger.SNP) snpHash.get(tempSNP.getName());
+            edu.mit.wi.tagger.SNP taggerSNP = (edu.mit.wi.tagger.SNP) snpHash.get(tempSNP.getDisplayName());
             int p = ((Integer)indicesByVarSeq.get(taggerSNP)).intValue();
             for (int j = 1; j < theData.dpTable.getLength(p); j++){
                 PairwiseLinkage pl = theData.dpTable.getLDStats(p,j+p);
                 if (pl != null && pl.getLOD() >= Options.getTaggerLODCutoff()){
                     if (indicesByVarSeq.containsValue(new Integer(j+p))){
                         edu.mit.wi.tagger.SNP ldsnp =
-                                (edu.mit.wi.tagger.SNP) snpHash.get(Chromosome.getMarker(j+p).getName());
+                                (edu.mit.wi.tagger.SNP) snpHash.get(Chromosome.getMarker(j+p).getDisplayName());
                         taggerSNP.addToLDList(ldsnp);
                         ldsnp.addToLDList(taggerSNP);
                     }
@@ -91,7 +91,7 @@ public class TaggerController {
         //returns a vector with the details of how this marker was tagged:
         //name, tag_name, r^2 with its tag
         Vector res = new Vector();
-        String name = Chromosome.getMarker(i).getName();
+        String name = Chromosome.getMarker(i).getDisplayName();
         res.add(name);
         if (snpHash.containsKey(name)){
             edu.mit.wi.tagger.SNP ts = (edu.mit.wi.tagger.SNP)snpHash.get(name);

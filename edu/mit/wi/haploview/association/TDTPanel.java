@@ -46,7 +46,7 @@ public class TDTPanel extends JPanel implements Constants, ActionListener {
 
     public void refreshNames() {
         for (int i = 0; i < table.getRowCount(); i++){
-            table.setValueAt(Chromosome.getMarker(i).getName(),i,1);
+            table.setValueAt(Chromosome.getMarker(i).getDisplayName(),i,1);
         }
     }
 
