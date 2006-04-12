@@ -18,6 +18,7 @@ public class Chromosome{
     private String origin;
 
     private static String dataChrom = "none";
+    private static String dataBuild = "none";   //TODO DB: BUILD
     public static int[] realIndex;
     public static int[] filterIndex;
     static Vector markers;
@@ -151,6 +152,14 @@ public class Chromosome{
 
     public static String getDataChrom(){
         return dataChrom;
+    }
+
+    public static void setDataBuild(String build){           //TODO DB: BUILD.
+        dataBuild = build;
+    }
+
+    public static String getDataBuild(){
+        return dataBuild;
     }
 
     public Integer getKidAffected() {

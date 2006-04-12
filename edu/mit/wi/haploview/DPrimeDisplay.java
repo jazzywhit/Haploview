@@ -1095,9 +1095,25 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                     gbleft = minpos;
                     gbright = maxpos+1;
                 }
-                URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
+                //TODO DB: BUILD
+                String dataBuild = "_" + Chromosome.getDataBuild().substring(5).toUpperCase();
+
+                //This removes the build parameter in the case of the hapmap default build (currently B34).
+                if (dataBuild.equals("_B34")){
+                    dataBuild = "";
+                }
+
+                URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" + "Chr" +
                         Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
                         ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
+                //System.out.println(("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
+                        //Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
+                        //";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts()));
+                /*
+                    imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
+                            Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
+                            ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
+                */
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 //getImage() caches by default so it will only download an image when the URL changes
                 Image i = toolkit.getImage(imageUrl);

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.16 2006/04/11 17:02:46 djbender Exp $
+* $Id: PedFile.java,v 3.17 2006/04/12 15:47:08 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -721,6 +721,9 @@ public class PedFile {
                     if (skip == 3){
                         hminfo[k-1][1] = s;
                     }
+                    if (skip == 5){
+                        Chromosome.setDataBuild(s);
+                }
                 }
                 int index = 0;
                 int indexIncludingDups = -1;
