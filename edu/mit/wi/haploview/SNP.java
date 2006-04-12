@@ -96,6 +96,11 @@ public class SNP implements Comparable{
 
     public int hashCode() {
         //uses idea from Long hashcode to hash position
-        return (name.hashCode() + (int)(position ^ (position >>> 32)));
+        if (name != null){
+            return (name.hashCode() + (int)(position ^ (position >>> 32)));
+        }else{
+            //in this case all names are null and positions are unique integers from 1..N
+            return (int)position;
+        }
     }
 }
