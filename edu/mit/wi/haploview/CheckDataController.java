@@ -39,8 +39,10 @@ public class CheckDataController extends JPanel{
 
         JButton selAll = new JButton("Select All");
         selAll.addActionListener(parent);
+        newPanel.add(selAll);
         JButton deSelAll = new JButton("Deselect All");
         deSelAll.addActionListener(parent);
+        newPanel.add(deSelAll);
         JButton setDefault = new JButton("Reset Values");
         setDefault.addActionListener(parent);
         newPanel.add(setDefault);
@@ -49,8 +51,6 @@ public class CheckDataController extends JPanel{
         newPanel.add(rescore);
 
         this.add(failPanel);
-        this.add(selAll);
-        this.add(deSelAll);
         failPanel.add(newPanel);
     }
 
