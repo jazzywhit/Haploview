@@ -677,7 +677,9 @@ public class AssociationTestSet implements Constants{
     }
 
     public void cat(AssociationTestSet ats){
-        results.addAll(ats.getResults());
+        if (ats != null && ats.getResults() != null){
+            results.addAll(ats.getResults());
+        }
     }
 
     public boolean isCustom() {
