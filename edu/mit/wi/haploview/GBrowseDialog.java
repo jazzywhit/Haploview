@@ -8,7 +8,7 @@ import java.awt.*;
 
 public class GBrowseDialog extends JDialog implements ActionListener, Constants{
 
-    JComboBox cbox;
+    JComboBox cbox,buildBox;
     JTextField minField, maxField;
     HaploView hv;
 
@@ -46,6 +46,14 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
         boundsPanel.add(maxField);
         contents.add(boundsPanel);
 
+        JPanel buildPanel = new JPanel();
+        buildPanel.add(new JLabel("Genome build: "));
+        String[]b ={"34","35"};
+        buildBox = new JComboBox(b);
+        buildBox.setSelectedIndex(1);
+        buildPanel.add(buildBox);
+        contents.add(buildPanel);
+
         JPanel buttonPanel = new JPanel();
         JButton cancelBut = new JButton("Cancel");
         cancelBut.addActionListener(this);
@@ -76,6 +84,7 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
                 Chromosome.setDataChrom("chr"+cbox.getSelectedItem());
                 Options.setgBrowseLeft(minpos);
                 Options.setgBrowseRight(maxpos);
+                Chromosome.setDataBuild("ncbi_b"+buildBox.getSelectedItem());
                 Options.setShowGBrowse(true);
                 hv.gbEditItem.setEnabled(true);
                 this.dispose();

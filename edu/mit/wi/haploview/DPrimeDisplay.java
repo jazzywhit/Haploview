@@ -1102,17 +1102,10 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                     dataBuild = "";
                 }
 
-                URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" + "Chr" +
+                URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
                         Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
                         ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
-                //System.out.println(("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
-                        //Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
-                        //";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts()));
-                /*
-                    imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img?source=hapmap;name=" +
-                            Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
-                            ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
-                */
+
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 //getImage() caches by default so it will only download an image when the URL changes
                 Image i = toolkit.getImage(imageUrl);
@@ -1126,7 +1119,13 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                     gBrowseImage.getGraphics().drawImage(i,0,0, this);
                     gbImageHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
                 }else{
+                    //couldn't get the image for whatever reason.
+                    JOptionPane.showMessageDialog(theHV,
+                            "An error occured while accessing the HapMap website.\n ",
+                            "HapMap Info Track",
+                            JOptionPane.ERROR_MESSAGE);
                     gBrowseImage = null;
+                    Options.setShowGBrowse(false);
                 }
             }catch (MalformedURLException mue){
                 //this exception sucks walnuts, so I refuse to handle it on principle
