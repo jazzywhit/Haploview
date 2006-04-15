@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.18 2006/04/12 18:02:41 jcbarret Exp $
+* $Id: PedFile.java,v 3.19 2006/04/15 14:06:57 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -731,7 +731,7 @@ public class PedFile {
                     }
                     if (skip == 5){
                         Chromosome.setDataBuild(s);
-                }
+                    }
                 }
                 int index = 0;
                 int indexIncludingDups = -1;
