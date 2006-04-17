@@ -6,6 +6,7 @@ import edu.mit.wi.pedfile.CheckData;
 import edu.mit.wi.haploview.association.*;
 import edu.mit.wi.haploview.tagger.TaggerController;
 import edu.mit.wi.tagger.Tagger;
+import edu.mit.wi.tagger.TaggerException;
 
 import java.io.*;
 import java.util.*;
@@ -1214,6 +1215,9 @@ public class HaploText implements Constants{
         }
         catch(PedFileException pfe) {
             System.err.println(pfe.getMessage());
+        }
+        catch(TaggerException te){
+            System.err.println(te.getMessage());
         }
     }
 

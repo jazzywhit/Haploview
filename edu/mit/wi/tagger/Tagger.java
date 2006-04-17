@@ -43,17 +43,21 @@ public class Tagger {
 
     public int taggedSoFar;
 
-    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac){
+    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac) throws TaggerException{
         this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS,true);
     }
 
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut,
-                  int aggressionLevel, long maxCompDist, int maxNumTags, boolean findTags) {
-        //todo: throw illegal argument exception if maxNumTags < include.size()
+                  int aggressionLevel, long maxCompDist, int maxNumTags, boolean findTags) throws TaggerException{
         minRSquared = rsqCut;
         aggression = aggressionLevel;
         this.maxNumTags = maxNumTags;
         this.findTags = findTags;
+
+        if (maxNumTags < include.size()){
+            throw new TaggerException("Number of forced-in tags greater than max number of tags:\n"+
+            include.size() + " > " + maxNumTags);
+        }
 
         if(maxCompDist < 0 ) {
             maxComparisonDistance = DEFAULT_MAXDIST;

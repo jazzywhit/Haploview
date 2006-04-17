@@ -18,7 +18,8 @@ public class TaggerController {
     private Hashtable snpHash;
 
     public TaggerController(HaploData hd, Vector included, Vector excluded,
-                            Vector sitesToCapture, int aggressionLevel, int maxNumTags,boolean findTags) {
+                            Vector sitesToCapture, int aggressionLevel, int maxNumTags,boolean findTags)
+            throws TaggerException{
         theData = hd;
         Vector taggerSNPs = new Vector();
 

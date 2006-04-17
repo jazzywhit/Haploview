@@ -2,6 +2,7 @@ package edu.mit.wi.haploview.tagger;
 
 import edu.mit.wi.haploview.*;
 import edu.mit.wi.tagger.Tagger;
+import edu.mit.wi.tagger.TaggerException;
 
 import javax.swing.*;
 import javax.swing.event.TableModelListener;
@@ -195,7 +196,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
             add(buttonPanel);
             revalidate();
 
-            double rsqCut = new Double(rsqField.getText()).doubleValue();
+            double rsqCut = Double.parseDouble(rsqField.getText());
             if (rsqCut > 1){
                 Options.setTaggerRsqCutoff(1.0);
                 rsqField.setText("1.0");
@@ -206,7 +207,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                 Options.setTaggerRsqCutoff(rsqCut);
             }
 
-            double lodCut = new Double(lodField.getText()).doubleValue();
+            double lodCut = Double.parseDouble(lodField.getText());
             if (lodCut < 0){
                 Options.setTaggerLODCutoff(0.0);
                 lodField.setText("0.0");
@@ -218,7 +219,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
             if (maxNumTagsField.getText().equals("")){
                 maxNumTags = 0;
             }else{
-                maxNumTags = new Integer(maxNumTagsField.getText()).intValue();
+                maxNumTags = Integer.parseInt(maxNumTagsField.getText());
             }
 
             //build include/exclude lists
@@ -236,8 +237,15 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                 }
             }
 
-            tagControl = new TaggerController(theData,include,exclude,capture,
-                    Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue(),maxNumTags,true);
+            try{
+                tagControl = new TaggerController(theData,include,exclude,capture,
+                        Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue(),maxNumTags,true);
+            }catch (TaggerException t){
+                JOptionPane.showMessageDialog(this,
+                        t.getMessage(),
+                        "Tagger",
+                        JOptionPane.ERROR_MESSAGE);
+            }
             tagControl.runTagger();
 
             final TaggerConfigPanel tcp = this;
