@@ -54,7 +54,7 @@ public class Tagger {
         this.maxNumTags = maxNumTags;
         this.findTags = findTags;
 
-        if (maxNumTags < include.size()){
+        if (maxNumTags > 0 && maxNumTags < include.size()){
             throw new TaggerException("Number of forced-in tags greater than max number of tags:\n"+
             include.size() + " > " + maxNumTags);
         }
@@ -205,7 +205,6 @@ public class Tagger {
         //we've done the best we can. now we check to see if there's a limit to the
         //num of tags we're allowed to choose.
         if (maxNumTags > 0){
-            //todo: shouldn't let it kick out forced include stuff
             //if so we need to chuck out the extras. figure out the utility of each tagSNP
             //i.e. how many SNPs for which they and their combos are the only tags
 
@@ -235,7 +234,12 @@ public class Tagger {
                 Vector potTagVec = new Vector(potentialTagByVarSeq.values());
                 Collections.sort(potTagVec,ptcomp);
 
-                PotentialTag dumpedPT = (PotentialTag)potTagVec.firstElement();
+                int count = 0;
+                PotentialTag dumpedPT = (PotentialTag)potTagVec.elementAt(count);
+                while (forceInclude.contains(dumpedPT.sequence)){
+                    count++;
+                    dumpedPT = (PotentialTag)potTagVec.elementAt(count);
+                }
                 TagSequence dumpedTS = (TagSequence) tagSeqByPotentialTag.get(dumpedPT);
                 Vector taggedByCurTag = dumpedTS.getTagged();
                 for (int j = 0; j < taggedByCurTag.size(); j++){
@@ -263,7 +267,6 @@ public class Tagger {
                         tags.remove(ts);
                     }
                 }
-
                 tags.remove(dumpedTS);
             }
         }

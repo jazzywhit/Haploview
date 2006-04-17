@@ -28,7 +28,6 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
     private final static int CAPTURE_COL = 5;
 
     private JButton runTaggerButton;
-    private JButton resetTableButton;
     private Timer timer;
     private HaploData theData;
     private Hashtable snpsByName;
@@ -154,7 +153,7 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
         runTaggerButton = new JButton("Run Tagger");
         runTaggerButton.addActionListener(this);
 
-        resetTableButton = new JButton("Reset Table");
+        JButton resetTableButton = new JButton("Reset Table");
         resetTableButton.addActionListener(this);
 
         JPanel buttonPanel = new JPanel();
@@ -181,89 +180,91 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command.equals("Run Tagger")) {
-            runTaggerButton.setEnabled(false);
-
-            taggerProgress.setIndeterminate(true);
-            taggerProgress.setForeground(new Color(40,40,255));
-            taggerProgress.setMaximumSize(new Dimension(250,20));
-            taggerProgressPanel.setLayout(new BoxLayout(taggerProgressPanel,BoxLayout.Y_AXIS));
-            taggerProgressPanel.add(taggerProgressLabel);
-            taggerProgressLabel.setAlignmentX(CENTER_ALIGNMENT);
-            taggerProgressPanel.add(new JLabel("         "));
-            taggerProgressPanel.add(taggerProgress);
-            remove(buttonPanel);
-            add(taggerProgressPanel);
-            add(buttonPanel);
-            revalidate();
-
-            double rsqCut = Double.parseDouble(rsqField.getText());
-            if (rsqCut > 1){
-                Options.setTaggerRsqCutoff(1.0);
-                rsqField.setText("1.0");
-            }else if (rsqCut < 0){
-                Options.setTaggerRsqCutoff(0.0);
-                rsqField.setText("0.0");
-            }else{
-                Options.setTaggerRsqCutoff(rsqCut);
-            }
-
-            double lodCut = Double.parseDouble(lodField.getText());
-            if (lodCut < 0){
-                Options.setTaggerLODCutoff(0.0);
-                lodField.setText("0.0");
-            }else{
-                Options.setTaggerLODCutoff(lodCut);
-            }
-
-            int maxNumTags;
-            if (maxNumTagsField.getText().equals("")){
-                maxNumTags = 0;
-            }else{
-                maxNumTags = Integer.parseInt(maxNumTagsField.getText());
-            }
-
-            //build include/exclude lists
-            Vector include = new Vector();
-            Vector exclude = new Vector();
-            Vector capture = new Vector();
-            for(int i= 0;i <table.getRowCount(); i++) {
-                if(((Boolean)table.getValueAt(i,INCLUDE_COL)).booleanValue()) {
-                    include.add((String)table.getValueAt(i,NAME_COL));
-                }else if(((Boolean)table.getValueAt(i,EXCLUDE_COL)).booleanValue()) {
-                    exclude.add((String)table.getValueAt(i,NAME_COL));
-                }
-                if (((Boolean)table.getValueAt(i,CAPTURE_COL)).booleanValue()){
-                    capture.add(snpsByName.get(table.getValueAt(i,NAME_COL)));
-                }
-            }
-
             try{
+                double rsqCut = Double.parseDouble(rsqField.getText());
+                if (rsqCut > 1){
+                    Options.setTaggerRsqCutoff(1.0);
+                    rsqField.setText("1.0");
+                }else if (rsqCut < 0){
+                    Options.setTaggerRsqCutoff(0.0);
+                    rsqField.setText("0.0");
+                }else{
+                    Options.setTaggerRsqCutoff(rsqCut);
+                }
+
+                double lodCut = Double.parseDouble(lodField.getText());
+                if (lodCut < 0){
+                    Options.setTaggerLODCutoff(0.0);
+                    lodField.setText("0.0");
+                }else{
+                    Options.setTaggerLODCutoff(lodCut);
+                }
+
+                int maxNumTags;
+                if (maxNumTagsField.getText().equals("")){
+                    maxNumTags = 0;
+                }else{
+                    maxNumTags = Integer.parseInt(maxNumTagsField.getText());
+                }
+
+                //build include/exclude lists
+                Vector include = new Vector();
+                Vector exclude = new Vector();
+                Vector capture = new Vector();
+                for(int i= 0;i <table.getRowCount(); i++) {
+                    if(((Boolean)table.getValueAt(i,INCLUDE_COL)).booleanValue()) {
+                        include.add((String)table.getValueAt(i,NAME_COL));
+                    }else if(((Boolean)table.getValueAt(i,EXCLUDE_COL)).booleanValue()) {
+                        exclude.add((String)table.getValueAt(i,NAME_COL));
+                    }
+                    if (((Boolean)table.getValueAt(i,CAPTURE_COL)).booleanValue()){
+                        capture.add(snpsByName.get(table.getValueAt(i,NAME_COL)));
+                    }
+                }
+
                 tagControl = new TaggerController(theData,include,exclude,capture,
                         Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue(),maxNumTags,true);
+
+                runTaggerButton.setEnabled(false);
+
+                taggerProgress.setIndeterminate(true);
+                taggerProgress.setForeground(new Color(40,40,255));
+                taggerProgress.setMaximumSize(new Dimension(250,20));
+                taggerProgressPanel.setLayout(new BoxLayout(taggerProgressPanel,BoxLayout.Y_AXIS));
+                taggerProgressPanel.add(taggerProgressLabel);
+                taggerProgressLabel.setAlignmentX(CENTER_ALIGNMENT);
+                taggerProgressPanel.add(new JLabel("         "));
+                taggerProgressPanel.add(taggerProgress);
+                remove(buttonPanel);
+                add(taggerProgressPanel);
+                add(buttonPanel);
+                revalidate();
+
+                tagControl.runTagger();
+
+                final TaggerConfigPanel tcp = this;
+                timer = new Timer(100, new ActionListener(){
+                    public void actionPerformed(ActionEvent e) {
+                        if(tagControl.isTaggingCompleted()) {
+                            remove(taggerProgressPanel);
+                            runTaggerButton.setEnabled(true);
+                            //the parent of this is a meta jpanel used to haxor the layout
+                            //the parent of that jpanel is the jtabbedPane in the tagger tab of HV
+                            ((JTabbedPane)(tcp.getParent().getParent())).setSelectedIndex(1);
+                            fireTaggerEvent(new ActionEvent(tcp,ActionEvent.ACTION_PERFORMED,"taggingdone"));
+                            timer.stop();
+                        }
+                    }
+                });
+
+                timer.start();
             }catch (TaggerException t){
                 JOptionPane.showMessageDialog(this,
                         t.getMessage(),
                         "Tagger",
                         JOptionPane.ERROR_MESSAGE);
             }
-            tagControl.runTagger();
 
-            final TaggerConfigPanel tcp = this;
-            timer = new Timer(100, new ActionListener(){
-                public void actionPerformed(ActionEvent e) {
-                    if(tagControl.isTaggingCompleted()) {
-                        remove(taggerProgressPanel);
-                        runTaggerButton.setEnabled(true);
-                        //the parent of this is a meta jpanel used to haxor the layout
-                        //the parent of that jpanel is the jtabbedPane in the tagger tab of HV
-                        ((JTabbedPane)(tcp.getParent().getParent())).setSelectedIndex(1);
-                        fireTaggerEvent(new ActionEvent(tcp,ActionEvent.ACTION_PERFORMED,"taggingdone"));
-                        timer.stop();
-                    }
-                }
-            });
-
-            timer.start();
         }else if (command.equals("Reset Table")){
             for (int i = 0; i < table.getRowCount(); i++){
                 table.setValueAt(new Boolean(false), i, EXCLUDE_COL);
