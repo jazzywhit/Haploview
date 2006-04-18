@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.19 2006/04/15 14:06:57 jcbarret Exp $
+* $Id: PedFile.java,v 3.20 2006/04/18 14:37:27 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -614,15 +614,15 @@ public class PedFile {
         if (hapsData != null){
             String indName;
             for (int i=0; i < hapsData.size(); i++){
-                StringTokenizer db = new StringTokenizer((String)hapsData.get(i));
-                if (db.countTokens() < 6){
+                StringTokenizer hd = new StringTokenizer((String)hapsData.get(i));
+                if (hd.countTokens() < 6){
                     throw new PedFileException("Hapmap data format error: pedigree data on line " + (i+1) + ".");
                 }
-                if (db.countTokens() > 7){
+                if (hd.countTokens() > 7){
                     throw new PedFileException("Hapmap data format error: pedigree data on line " + (i+1) + ".");
                 }
-                db.nextToken();
-                indName = db.nextToken();
+                hd.nextToken();
+                indName = hd.nextToken();
                 hapMapTranslate.put(indName, (String)hapsData.get(i));
             }
         }
@@ -784,8 +784,8 @@ public class PedFile {
         int numTokens = 0;
         Vector chromA = new Vector();
         Vector chromB = new Vector();
-        boolean dbEven = false;
-        boolean dbErrorB = false;
+        boolean hapsEven = false;
+        boolean hapsError = false;
 
         for (int i=0; i<numLines; i++){
             lineCount++;
@@ -802,7 +802,7 @@ public class PedFile {
                 throw new PedFileException("Genotype file error:\nLine " + lineCount +
                         " appears to have fewer than 3 columns.");
             }
-            if(dbEven){
+            if(hapsEven){
                 ind = new Individual(st.countTokens());
                 ind.setFamilyID(ped);
                 ind.setIndividualID(indiv);
@@ -827,7 +827,7 @@ public class PedFile {
             //Allowed for A/C/G/T input in Haps files.
             while (st.hasMoreTokens()){
                 String thisGenotype = (String)st.nextElement();
-                if (!dbEven){
+                if (!hapsEven){
                     chromA.add(thisGenotype);
                 }
                 else {
@@ -852,7 +852,7 @@ public class PedFile {
                                 + thisGenotype + "\" on line " + lineCount + " not allowed.");
                     }
                 }
-                //DB: Allele values other then 0-4 or 9 generate exceptions.
+                //Allele values other then 0-4 or 9 generate exceptions.
                 if ((genos[q] < 0 || genos[q] > 4) && (genos[q] != 9)){
                     throw new PedFileException("Genotype file input error:\ngenotype value \"" + genos[q] +
                             "\" on line " + lineCount + " not allowed.");
@@ -860,39 +860,39 @@ public class PedFile {
                 q++;
             }
 
-            if (dbEven) {
+            if (hapsEven) {
                 for (int m=0; m<chromA.size(); m++){
                     if (((String)chromA.get(m)).equals("h")){
                         chromA.set(m, "9");
                     }else if (((String)chromA.get(m)).equalsIgnoreCase("A")){
                         chromA.set(m, "1");
-                        dbErrorB = !dbErrorB;
+                        hapsError = !hapsError;
                     }else if (((String)chromA.get(m)).equalsIgnoreCase("C")){
                         chromA.set(m, "2");
-                        dbErrorB = !dbErrorB;
+                        hapsError = !hapsError;
                     }else if (((String)chromA.get(m)).equalsIgnoreCase("G")){
                         chromA.set(m, "3");
-                        dbErrorB = !dbErrorB;
+                        hapsError = !hapsError;
                     }else if (((String)chromA.get(m)).equalsIgnoreCase("T")){
                         chromA.set(m, "4");
-                        dbErrorB = !dbErrorB;
+                        hapsError = !hapsError;
                     }
                     if (((String)chromB.get(m)).equals("h")){
                         chromB.set(m, "9");
                     }else if (((String)chromB.get(m)).equalsIgnoreCase("A")){
                         chromB.set(m, "1");
-                        dbErrorB = !dbErrorB;
+                        hapsError = !hapsError;
                     }else if (((String)chromB.get(m)).equalsIgnoreCase("C")){
                         chromB.set(m, "2");
-                        dbErrorB = !dbErrorB;
+                        hapsError = !hapsError;
                     }else if (((String)chromB.get(m)).equalsIgnoreCase("G")){
                         chromB.set(m, "3");
-                        dbErrorB = !dbErrorB;
+                        hapsError = !hapsError;
                     }else if (((String)chromB.get(m)).equalsIgnoreCase("T")){
                         chromB.set(m, "4");
-                        dbErrorB = !dbErrorB;
+                        hapsError = !hapsError;
                     }
-                    if (dbErrorB){
+                    if (hapsError){
                         throw new PedFileException("File input error: Individual " + ind.getFamilyID() + " strand " + ind.getIndividualID()  + ", marker " + (m+1)  +
                                 ".\nFor any marker, an individual's genotype must be only letters or only numbers.");
                     }
@@ -917,9 +917,9 @@ public class PedFile {
                 chromA = new Vector();
                 chromB = new Vector();
             }
-            dbEven = !dbEven;
+            hapsEven = !hapsEven;
         }
-        if (dbEven){
+        if (hapsEven){
             //we're missing a line here
             throw new PedFileException("Genotype file appears to have an odd number of lines.\n"+
                     "Each individual is required to have two chromosomes");
