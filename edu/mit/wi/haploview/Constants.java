@@ -11,7 +11,7 @@ public interface Constants {
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
     public static final String ABOUT_STRING = TITLE_STRING + "\n" + RELEASE_DATE + "\n" +
             WEBSITE_STRING + "\n\n" +
-            "Daly Lab at the Broad Insititute\n" +
+            "Daly Lab at the Broad Institute\n" +
             "Cambridge, MA 02141, USA\n\n"+
             "Jeffrey Barrett\n" +
             "Julian Maller\n" +
