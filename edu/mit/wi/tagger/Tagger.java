@@ -288,6 +288,8 @@ public class Tagger {
                 }
             }
         }
+        //apparently some people think untagged SNPS should be averaged in as zeroes...leaving commented out for now.
+        //count += untagged.size();
         meanRSq /= count;
         percentOver8 = (int) Math.rint((100*numOver8) / count);
 
