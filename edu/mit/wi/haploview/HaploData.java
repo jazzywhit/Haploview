@@ -12,6 +12,9 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.text.NumberFormat;
 
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
 
 public class HaploData implements Constants{
 
@@ -26,8 +29,7 @@ public class HaploData implements Constants{
     private PedFile pedFile;
     public boolean finished = false;
     private double[] percentBadGenotypes;
-    Vector analysisPositions = new Vector();
-    Vector analysisValues = new Vector();
+    XYSeriesCollection analysisTracks = new XYSeriesCollection();
     boolean trackExists = false;
     boolean dupsToBeFlagged = false, dupNames = false;
 
@@ -1867,13 +1869,12 @@ public class HaploData implements Constants{
 
     public void readAnalysisTrack(File inFile) throws HaploViewException, IOException{
         //clear out the vector of old values
-        analysisPositions = new Vector();
-        analysisValues = new Vector();
 
         if (!inFile.exists()){
             throw new HaploViewException("File " + inFile.getName() + " doesn't exist!");
         }
 
+        XYSeries xys = new XYSeries(new Integer(analysisTracks.getSeriesCount()));
         BufferedReader in = new BufferedReader(new FileReader(inFile));
         String currentLine;
         int lineCount = 0;
@@ -1895,11 +1896,10 @@ public class HaploData implements Constants{
             }catch (NumberFormatException nfe) {
                 throw new HaploViewException("Format error on line " + lineCount + " in " + inFile.getName());
             }
-            analysisPositions.add(pos);
-            analysisValues.add(val);
-            trackExists = true;
+            xys.add(pos,val);
         }
-
+        analysisTracks.addSeries(xys);
+        trackExists = true;
     }
 
     public Vector readBlocks(File infile) throws HaploViewException, IOException{

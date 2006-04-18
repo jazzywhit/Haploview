@@ -1,5 +1,12 @@
 package edu.mit.wi.haploview;
 
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.ui.RectangleEdge;
+import org.jfree.ui.RectangleInsets;
+
 import java.awt.*;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -25,7 +32,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
     private static final int TICK_BOTTOM = 50;
 
     private static final int TRACK_BUMPER = 3;
-    private static final int TRACK_PALETTE = 45;
+    private static final int TRACK_PALETTE = 50;
     private static final int TRACK_HEIGHT = TRACK_PALETTE + TRACK_BUMPER*2;
     private static final int TRACK_GAP = 5;
 
@@ -119,7 +126,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
 
                     double d = thisPair.getDPrime();
                     double l = thisPair.getLOD();
-                    Color boxColor = null;
+                    Color boxColor;
                     if (l > 2) {
                         if (d < 0.5) {
                             //high LOD, low D'
@@ -540,40 +547,32 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
 
         if (theData.trackExists){
             //draw the analysis track above where the marker positions will be marked
-            g2.setColor(Color.white);
-            g2.fill(new Rectangle2D.Double(left, top, lineSpan, TRACK_HEIGHT));
-            g2.setColor(Color.black);
-            g2.drawRect(left,top,(int)lineSpan,TRACK_HEIGHT);
 
-            //get the data into an easier format
-            double positions[] = new double[theData.analysisPositions.size()];
-            double values[] = new double[theData.analysisPositions.size()];
-            for (int x = 0; x < positions.length; x++){
-                positions[x] = ((Double)theData.analysisPositions.elementAt(x)).doubleValue();
-                values[x] = ((Double)theData.analysisValues.elementAt(x)).doubleValue();
-            }
+            JFreeChart jfc = ChartFactory.createXYLineChart(null,null,null,
+                    theData.analysisTracks,
+                    PlotOrientation.VERTICAL,false,false,false);
 
-            g2.setColor(Color.black);
-            double min = Double.MAX_VALUE;
-            double max = -min;
-            for (int x = 0; x < positions.length; x++){
-                if(values[x] < min){
-                    min = values[x];
-                }
-                if (values[x] > max){
-                    max = values[x];
-                }
-            }
-            double range = max-min;
-            //todo: this is kinda hideous
-            for (int x = 0; x < positions.length - 1; x++){
-                if (positions[x] >= minpos && positions[x+1] <= maxpos){
-                    g2.draw(new Line2D.Double(lineSpan * Math.abs((positions[x] - minpos)/spanpos) + left,
-                            top + TRACK_PALETTE + TRACK_BUMPER - (TRACK_PALETTE * Math.abs((values[x] - min)/range)),
-                            lineSpan * Math.abs((positions[x+1] - minpos)/spanpos) + left,
-                            top + TRACK_PALETTE + TRACK_BUMPER - (TRACK_PALETTE * Math.abs((values[x+1] - min)/range))));
-                }
-            }
+            //customise the analysis track
+            XYPlot xyp = (XYPlot)jfc.getPlot();
+
+            //no x axis, since it takes up too much space.
+            xyp.getDomainAxis().setAxisLineVisible(false);
+            xyp.getDomainAxis().setTickLabelsVisible(false);
+            xyp.getDomainAxis().setTickMarksVisible(false);
+
+            //x range must align with markers
+            xyp.getDomainAxis().setRange(minpos,maxpos);
+
+            //size of the axis and graph inset
+            double axisWidth = xyp.getRangeAxis().
+                    reserveSpace(g2,xyp,new Rectangle(0,TRACK_HEIGHT),RectangleEdge.LEFT,null).getLeft();
+            RectangleInsets insets = xyp.getInsets();
+
+            jfc.setBackgroundPaint(BG_GREY);
+            BufferedImage bi = jfc.createBufferedImage(
+                    (int)(lineSpan + axisWidth + insets.getLeft() + insets.getRight()),TRACK_HEIGHT);
+            //hide the axis in the margin so everything lines up.
+            g2.drawImage(bi,(int)(left - axisWidth - insets.getLeft()),top,this);
             top += TRACK_HEIGHT + TRACK_GAP;
         }
 
@@ -972,7 +971,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
     public double[] doMarkerLayout(double[] snpPositions, double goalSpan){
         //create an array for the projected positions, initialized to starting positions
         double spp[] = new double[snpPositions.length];
-        for (int i=0; i<spp.length; ++i) spp[i] = snpPositions[i];
+        System.arraycopy(snpPositions, 0, spp, 0, spp.length);
 
         /*
         Create some simple structures to keep track of which snps are bumping into each other (and whose
@@ -984,7 +983,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
             conflicts[i].set(i);
         }
 
-        while (1==1) {
+        while (true) {
             boolean trouble = false;
             for (int i=0; i<spp.length-1; ++i) {
 
@@ -1098,6 +1097,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                 String dataBuild = "_" + Chromosome.getDataBuild().substring(5).toUpperCase();
 
                 //This removes the build parameter in the case of the hapmap default build (currently B34).
+                //TODO: Hapmap needs to fix this before we can release.
                 if (dataBuild.equals("_B34")){
                     dataBuild = "";
                 }
@@ -1108,6 +1108,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
 
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 //getImage() caches by default so it will only download an image when the URL changes
+                //TODO: this should use a hand-rolled HTTP connection so we can set the user-agent.
                 Image i = toolkit.getImage(imageUrl);
                 MediaTracker mt = new MediaTracker(this);
                 mt.addImage(i,0);
@@ -1544,5 +1545,6 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
 
     public void mouseExited(MouseEvent e) {
     }
+
 }
 
