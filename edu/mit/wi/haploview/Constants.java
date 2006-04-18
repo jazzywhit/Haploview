@@ -101,9 +101,9 @@ public interface Constants {
     static final int SHOW_HAP_RATIOS = 1;
 
     //GBrowse options
-    static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "Gaps", "DNA"};
-    static final String[] GB_OPTS = {"gtsh%201", "mRNA%203", "", "", "", ""};
-    static final String[] GB_OPTS_NAMES = {"HapMap SNPs", "Entrez Genes", "Recombination Rate", "NT Contigs", "Gaps", "DNA/GC Content"};
+    static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "DNA"};
+    static final String[] GB_OPTS = {"gtsh%201", "mRNA%203", "", "", ""};
+    static final String[] GB_OPTS_NAMES = {"HapMap SNPs", "Entrez Genes", "Recombination Rate", "NT Contigs", "DNA/GC Content"};
     static final String GB_DEFAULT_OPTS = GB_OPTS[0] + "+" + GB_OPTS[1];
     static final String GB_DEFAULT_TYPES = GB_TYPES[0] + "+" + GB_TYPES[1];
 
