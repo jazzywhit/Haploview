@@ -139,7 +139,6 @@ public class Tagger {
 
         debugPrint("snps to tag: " + sitesToCapture.size());
 
-        Vector potentialTags = new Vector(potentialTagByVarSeq.values());
 
         int countTagged = 0;
         //add Tags for the ones which are forced in.
@@ -155,7 +154,7 @@ public class Tagger {
         //add each forced in sequence to the list of tags
         for(int i=0;i<includedPotentialTags.size();i++) {
             PotentialTag curPT = (PotentialTag) includedPotentialTags.get(i);
-            HashSet newlyTagged = addTag(curPT,potentialTagByVarSeq,sitesToCapture);
+            HashSet newlyTagged = addTag(curPT,potentialTagByVarSeq);
             countTagged += newlyTagged.size();
             sitesToCapture.removeAll(newlyTagged);
             sitesToCapture.remove(curPT.sequence);
@@ -165,7 +164,7 @@ public class Tagger {
         if (findTags){
             //loop until all snps are tagged
             while(sitesToCapture.size() > 0) {
-                potentialTags = new Vector(potentialTagByVarSeq.values());
+                Vector potentialTags = new Vector(potentialTagByVarSeq.values());
                 if(potentialTags.size() == 0) {
                     //we still have sites left to capture, but we have no more available tags.
                     //this should only happen if the sites remaining in sitesToCapture were specifically
@@ -178,7 +177,7 @@ public class Tagger {
                 Collections.sort(potentialTags,ptcomp);
                 PotentialTag currentBestTag = (PotentialTag) potentialTags.lastElement();
 
-                HashSet newlyTagged = addTag(currentBestTag,potentialTagByVarSeq,sitesToCapture);
+                HashSet newlyTagged = addTag(currentBestTag,potentialTagByVarSeq);
                 countTagged += newlyTagged.size();
 
                 sitesToCapture.removeAll(newlyTagged);
@@ -475,7 +474,7 @@ public class Tagger {
         return new Vector(tests);
     }
 
-    private HashSet addTag(PotentialTag theTag,Hashtable potentialTagHash, Vector sitesToCapture) {
+    private HashSet addTag(PotentialTag theTag,Hashtable potentialTagHash) {
         Vector potentialTags = new Vector(potentialTagHash.values());
 
         potentialTags.remove(theTag);
