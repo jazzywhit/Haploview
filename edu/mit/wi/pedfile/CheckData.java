@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.10 2006/04/11 20:32:02 djbender Exp $
+* $Id: CheckData.java,v 3.11 2006/04/19 13:28:06 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -357,7 +357,6 @@ public class CheckData {
         return freqStuff;
     }
 
-
     private double getPValue(int[] parentHom, int parentHet) throws PedFileException{
         //ie: 11 13 31 33 -> homA =1 homB = 1 parentHet=2
         int homA=0, homB=0;
@@ -376,7 +375,6 @@ public class CheckData {
         }
         return pvalue;
     }
-
 
     private double hwCalculate(int obsAA, int obsAB, int obsBB) throws PedFileException{
         //Calculates exact two-sided hardy-weinberg p-value. Parameters
