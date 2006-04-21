@@ -45,7 +45,7 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
         countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         missingPanel.add(countsLabel);
         JButton missingButton = new JButton("Show Excluded Individuals");
-        JButton individualButton = new JButton("Individual Dialog");
+        JButton individualButton = new JButton("Individual Summary");
         individualButton.setEnabled(true);
         if (hv.theData.getPedFile().getAxedPeople().size() == 0){
             missingButton.setEnabled(false);
@@ -182,8 +182,8 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
             fid.pack();
             fid.setVisible(true);
         }
-        if (command.equals("Individual Dialog")) {
-            IndividualDialog fd = new IndividualDialog(hv,"Individual Dialog");
+        if (command.equals("Individual Summary")) {
+            IndividualDialog fd = new IndividualDialog(hv,"Individual Summary");
             fd.pack();
             fd.setVisible(true);
         }
