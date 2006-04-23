@@ -16,8 +16,6 @@ import java.awt.event.*;
 import java.util.*;
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.net.HttpURLConnection;
-import java.io.InputStream;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
@@ -27,6 +25,9 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;
     private static final int GBROWSE_MARGIN = 25;
+    private static final int LAST_SELECTION_LEFT = 7;
+    private static final int LAST_SELECTION_TOP  = 18;
+
 
     private static final int BOX_SIZES[] = {50, 24, 12};
     private static final int BOX_RADII[] = {24, 11, 6};
@@ -91,6 +92,8 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
     private Rectangle blockRect = null;
     private int blockStartX = 0;
     private double[] alignedPositions;
+    private String currentSelection;
+    private String lastSelection = new String("");
 
 
     DPrimeDisplay(HaploView h){
@@ -986,6 +989,26 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
             }
         }
 
+
+       // draw the cached last right-click selection
+       // The purpose of testing for empty string is just to avoid an 2-unit empty white box
+        if ((zoomLevel == 0) && (!lastSelection.equals("")) && (!forExport))
+        {
+            g2.setFont(boxFont);
+            // a bit extra on all side
+            int last_descent = g2.getFontMetrics().getDescent();
+            int last_box_x = (visRect.x + LAST_SELECTION_LEFT) - 2;
+            int last_box_y = (visRect.y - g2.getFontMetrics().getHeight() + LAST_SELECTION_TOP + last_descent) - 1 ;
+            int last_box_width = g2.getFontMetrics().stringWidth(lastSelection) + 4;
+            int last_box_height = g2.getFontMetrics().getHeight() + 2;
+            g2.setColor(Color.white);
+            g2.fillRect(last_box_x, last_box_y, last_box_width, last_box_height);
+            g2.setColor(Color.black);
+            g2.drawRect(last_box_x, last_box_y, last_box_width, last_box_height);
+            g2.drawString(lastSelection, LAST_SELECTION_LEFT + visRect.x, LAST_SELECTION_TOP + visRect.y);
+        }
+
+
         //see if we're drawing a worldmap resize rect
         if (resizeWMRect != null){
             g2.setColor(Color.black);
@@ -1377,6 +1400,7 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                     double[] freqs = dPrimeTable.getLDStats(boxX,boxY).getFreqs();
 
                     displayStrings = new Vector();
+                    currentSelection = new String ("Last Selection: ("); // update the cached value
                     if (theData.infoKnown){
                         displayStrings.add(new String ("(" +Chromosome.getMarker(boxX).getDisplayName() +
                                 ", " + Chromosome.getMarker(boxY).getDisplayName() + ")"));
@@ -1384,9 +1408,13 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                                 Chromosome.getMarker(boxX).getPosition())/100);
                         sep /= 10;
                         displayStrings.add(new Double(sep).toString() + " kb");
+                        currentSelection += Chromosome.getMarker(boxX).getName() +
+                                ", " + Chromosome.getMarker(boxY).getName();
                     }else{
                         displayStrings.add(new String("(" + (Chromosome.realIndex[boxX]+1) + ", " +
                                 (Chromosome.realIndex[boxY]+1) + ")"));
+                        currentSelection += new String((Chromosome.realIndex[boxX]+1) +
+                                 ", " + (Chromosome.realIndex[boxY]+1));
                     }
                     displayStrings.add(new String ("D': " + dPrimeTable.getLDStats(boxX,boxY).getDPrime()));
                     displayStrings.add(new String ("LOD: " + dPrimeTable.getLDStats(boxX,boxY).getLOD()));
@@ -1394,6 +1422,11 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                     displayStrings.add(new String ("D' conf. bounds: " +
                             dPrimeTable.getLDStats(boxX,boxY).getConfidenceLow() + "-" +
                             dPrimeTable.getLDStats(boxX,boxY).getConfidenceHigh()));
+                    currentSelection += ")  -   D': " + dPrimeTable.getLDStats(boxX,boxY).getDPrime() +
+                            "   LOD: " + dPrimeTable.getLDStats(boxX,boxY).getLOD() +
+                            "   r-squared: " + dPrimeTable.getLDStats(boxX,boxY).getRSquared();
+
+
 
                     //get the alleles for the 4 two-marker haplotypes
                     String[] alleleStrings = new String[4];
@@ -1431,20 +1464,21 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                 }
             } else if (blockselector.contains(clickX, clickY)){
                 int marker = getPreciseMarkerAt(clickX - clickXShift);
-                int size = 2;
-
-                if (Chromosome.getMarker(marker).getExtra() != null) size++;
 
                 displayStrings = new Vector();
+                currentSelection = new String ("Last Selection: "); // update the cached value
 
                 if (theData.infoKnown){
                     displayStrings.add(new String (Chromosome.getMarker(marker).getDisplayName()));
+                    currentSelection += Chromosome.getMarker(marker).getName();
                 }else{
                     displayStrings.add(new String("Marker " + (Chromosome.realIndex[marker]+1)));
+                    currentSelection += new String("Marker " + (Chromosome.realIndex[marker]+1));
                 }
                 displayStrings.add(new String ("MAF: " + Chromosome.getMarker(marker).getMAF()));
                 if (Chromosome.getMarker(marker).getExtra() != null)
                     displayStrings.add(new String (Chromosome.getMarker(marker).getExtra()));
+                currentSelection += new String (", MAF: " + Chromosome.getMarker(marker).getMAF());
             }
             if (displayStrings != null){
                 int strlen = 0;
@@ -1476,6 +1510,9 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
             }
         }else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
                 InputEvent.BUTTON1_MASK){
+            // clear the last selection if the mouse is left clicked
+            lastSelection = new String ("");
+
             int x = e.getX();
             int y = e.getY();
             if (blockselector.contains(x,y)){
@@ -1486,14 +1523,18 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
     }
 
     public void mouseReleased(MouseEvent e) {
-        //remove popped up window
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
                 InputEvent.BUTTON3_MASK){
+            //remove popped up window
             popupDrawRect = null;
+
+            //cache last selection.
+            lastSelection = currentSelection;
+
             repaint();
-        //resize window once user has ceased dragging
         } else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
                 InputEvent.BUTTON1_MASK){
+            //resize window once user has ceased dragging
             if (getCursor() == Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR)){
                 noImage = true;
                 if (resizeWMRect.width > 20){
