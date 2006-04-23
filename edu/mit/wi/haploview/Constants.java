@@ -77,6 +77,7 @@ public interface Constants {
     static final int WMF_SCHEME = 2;
     static final int GAB_SCHEME = 3;
     static final int GAM_SCHEME = 4;
+    static final int GOLD_SCHEME = 5;
 
     //what LD stat to print
     static final int D_PRIME = 0;

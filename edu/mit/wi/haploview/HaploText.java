@@ -387,6 +387,9 @@ public class HaploText implements Constants{
                     else if(args[i].equalsIgnoreCase("GAM")) {
                         Options.setLDColorScheme(GAM_SCHEME);
                     }
+                    else if(args[i].equalsIgnoreCase("GOLD")) {
+                        Options.setLDColorScheme(GOLD_SCHEME);
+                    }
                 }
                 else {
                     //defaults to STD color scheme

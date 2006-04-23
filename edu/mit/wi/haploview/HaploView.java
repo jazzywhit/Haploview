@@ -43,7 +43,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     };
     JRadioButtonMenuItem zoomMenuItems[];
     String colorItems[] = {
-        "Standard (D' / LOD)", "R-squared", "D' / LOD (alt)", "Confidence bounds", "4 Gamete"
+        "Standard (D' / LOD)", "R-squared", "D' / LOD (alt)", "Confidence bounds", "4 Gamete", "GOLD heatmap"
     };
     JRadioButtonMenuItem colorMenuItems[];
     JRadioButtonMenuItem blockMenuItems[];
@@ -613,6 +613,27 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             keyMenu.add(keyItem);
             keyItem = new JMenuItem("4 Gametes");
             keyItem.setBackground(Color.white);
+            keyMenu.add(keyItem);
+        }else if (scheme == GOLD_SCHEME){
+            JMenuItem keyItem = new JMenuItem("High D'");
+            Dimension size = keyItem.getPreferredSize();
+            keyItem.setBackground(Color.red);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("");
+            keyItem.setPreferredSize(size);
+            keyItem.setBackground(new Color(255,255,0));
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("");
+            keyItem.setPreferredSize(size);
+            keyItem.setBackground(Color.green);
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("");
+            keyItem.setPreferredSize(size);
+            keyItem.setBackground(new Color(0,255,255));
+            keyMenu.add(keyItem);
+            keyItem = new JMenuItem("Low D'");
+            keyItem.setForeground(Color.white);
+            keyItem.setBackground(new Color(0,0,127));
             keyMenu.add(keyItem);
         }
     }

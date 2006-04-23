@@ -16,6 +16,8 @@ import java.awt.event.*;
 import java.util.*;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
+import java.io.InputStream;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
@@ -288,6 +290,40 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                     thisPair.setColor(boxColor);
                 }
             }
+        }else if (scheme == GOLD_SCHEME){
+            for (int i = 0; i < Chromosome.getSize(); i++){
+                for (int j = i+1; j < i + dPrime.getLength(i); j++){
+                    PairwiseLinkage thisPair = dPrime.getLDStats(i,j);
+                    if (thisPair == null){
+                        continue;
+                    }
+                    double dprime = thisPair.getDPrime();
+                    int r,g,b;
+                    if (dprime < 0.2){
+                        r = 0;
+                        g = 0;
+                        b = 127 + (int)((dprime/0.2)*127);
+                    }else if(dprime < 0.4){
+                        r = 0;
+                        g = (int)(((dprime-0.2)/0.2)*255);
+                        b = 255;
+                    }else if (dprime < 0.6){
+                        r = 0;
+                        g = 127 + (int)(((dprime-0.4)/0.2)*127);
+                        b = 0;
+                    }else if (dprime < 0.8){
+                        r = (int)(((dprime-0.6)/0.2)*255);
+                        g = 255;
+                        b = 0;
+                    }else{
+                        r = 255;
+                        g = (int)(((1-dprime)/0.2)*255);
+                        b = 0;
+                    }
+                    thisPair.setColor(new Color(r,g,b));
+                }
+            }
+
         }
         repaint();
     }
@@ -1108,8 +1144,21 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
 
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 //getImage() caches by default so it will only download an image when the URL changes
-                //TODO: this should use a hand-rolled HTTP connection so we can set the user-agent.
                 Image i = toolkit.getImage(imageUrl);
+                //TODO: this should use a hand-rolled HTTP connection so we can set the user-agent.
+                /*try{
+                    HttpURLConnection con = (HttpURLConnection)imageUrl.openConnection();
+                    con.connect();
+                    InputStream inputStream = con.getInputStream();
+                    byte[] buf = new byte[200];
+                    StringBuffer b = new StringBuffer();
+                    while ((inputStream.read(buf,0,200)) != -1){
+                        b.append(buf);
+                    }
+                    i = toolkit.createImage(b.toString().getBytes());
+                }catch (Exception e){
+
+                }*/
                 MediaTracker mt = new MediaTracker(this);
                 mt.addImage(i,0);
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
