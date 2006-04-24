@@ -430,45 +430,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }else if (command.equals("Show tags in blocks")){
             Options.setShowBlockTags(((JCheckBoxMenuItem)e.getSource()).getState());
             hapDisplay.repaint();
-        }else if (command.equals("Select All")){
-            checkPanel.selectAll();
-        }else if (command.equals("Deselect All")){
-            checkPanel.deSelectAll();
-        }else if (command.equals("Rescore Markers")){
-            String cut = cdc.hwcut.getText();
-            if (cut.equals("")){
-                cut = "0";
-            }
-            CheckData.hwCut = Double.parseDouble(cut);
-
-            cut = cdc.genocut.getText();
-            if (cut.equals("")){
-                cut="0";
-            }
-            CheckData.failedGenoCut = Integer.parseInt(cut);
-            if (!theData.isHaps){
-                cut = cdc.mendcut.getText();
-                if (cut.equals("")){
-                    cut="0";
-                }
-                CheckData.numMendErrCut = Integer.parseInt(cut);
-            }
-            cut = cdc.mafcut.getText();
-            if (cut.equals("")){
-                cut="0";
-            }
-            CheckData.mafCut = Double.parseDouble(cut);
-
-            checkPanel.redoRatings();
-            JTable jt = checkPanel.getTable();
-            jt.repaint();
-        }else if (command.equals("Reset Values")){
-            cdc.hwcut.setText(String.valueOf(CheckData.defaultHwCut));
-            cdc.genocut.setText(String.valueOf(CheckData.defaultFailedGenoCut));
-            if (!theData.isHaps){
-                cdc.mendcut.setText(String.valueOf(CheckData.defaultNumMendErrCut));
-            }
-            cdc.mafcut.setText(String.valueOf(CheckData.defaultMafCut));
         }else if (command.equals("LD Display Spacing")){
             ProportionalSpacingDialog spaceDialog = new ProportionalSpacingDialog(this, "Adjust LD Spacing");
             spaceDialog.pack();
@@ -833,7 +794,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     //check data panel
                     if (checkPanel != null){
                         checkTab = new HaploviewTab(checkPanel);
-                        cdc = new CheckDataController(window, theData.isHaps);
+                        cdc = new CheckDataController(checkPanel, theData.isHaps);
                         checkTab.add(cdc);
 
                         tabs.addTab(VIEW_CHECK_PANEL, checkTab);
@@ -1025,7 +986,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 JPanel metaCheckPanel = new JPanel();
                 metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
                 metaCheckPanel.add(checkPanel);
-                cdc = new CheckDataController(window, theData.isHaps);
+                cdc = new CheckDataController(checkPanel, theData.isHaps);
                 metaCheckPanel.add(cdc);
 
                 checkTab.add(metaCheckPanel);
