@@ -794,7 +794,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     //check data panel
                     if (checkPanel != null){
                         checkTab = new HaploviewTab(checkPanel);
-                        cdc = new CheckDataController(checkPanel, theData.isHaps);
+                        cdc = new CheckDataController(checkPanel);
                         checkTab.add(cdc);
 
                         tabs.addTab(VIEW_CHECK_PANEL, checkTab);
@@ -986,7 +986,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 JPanel metaCheckPanel = new JPanel();
                 metaCheckPanel.setLayout(new BoxLayout(metaCheckPanel, BoxLayout.Y_AXIS));
                 metaCheckPanel.add(checkPanel);
-                cdc = new CheckDataController(checkPanel, theData.isHaps);
+                cdc = new CheckDataController(checkPanel);
                 metaCheckPanel.add(cdc);
 
                 checkTab.add(metaCheckPanel);

@@ -51,9 +51,6 @@ public class HaploData implements Constants{
     int dPrimeTotalCount = -1;
     int dPrimeCount;
 
-    //Boolean to account for various processing differences between haps and ped files.
-    public boolean isHaps = false;
-
 
     public int numTrios, numSingletons,numPeds;
 
@@ -396,7 +393,6 @@ public class HaploData implements Constants{
     public Vector prepareHapsInput(File infile) throws IOException, HaploViewException, PedFileException {
         //this method is called to suck in data from a file (its only argument)
         //of genotypes and sets up the Chromosome objects.
-        isHaps = true;
         Vector chroms = new Vector();
         Vector hapsFileStrings = new Vector();
         BufferedReader reader = new BufferedReader(new FileReader(infile));

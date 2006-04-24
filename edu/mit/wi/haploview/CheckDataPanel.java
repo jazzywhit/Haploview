@@ -31,14 +31,9 @@ public class CheckDataPanel extends JPanel implements TableModelListener, Action
 
         JPanel missingPanel = new JPanel();
         JLabel countsLabel;
-        //This has been adjusted for haps files.
-        if (theData.isHaps){
-            countsLabel = new JLabel("Using " + theData.numSingletons + " singletons.");
-        }else{
-            countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
-                    + theData.numTrios + " trios from "
-                    + theData.numPeds + " families.");
-        }
+        countsLabel = new JLabel("Using " + theData.numSingletons + " singletons and "
+                + theData.numTrios + " trios from "
+                + theData.numPeds + " families.");
         if (theData.numTrios + theData.numSingletons == 0){
             countsLabel.setForeground(Color.red);
         }
