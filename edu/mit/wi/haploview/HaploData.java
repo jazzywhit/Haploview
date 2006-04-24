@@ -1655,7 +1655,6 @@ public class HaploData implements Constants{
             boolean[] tags = finishedHaplos[i][0].getTags();
             for (int j = 0; j < markerNums.length; j++){
                 saveHapsWriter.write(" " + (Chromosome.realIndex[markerNums[j]]+1));
-                if (tags[j]) saveHapsWriter.write("!");
             }
             saveHapsWriter.write("\n");
             //write haps and crossover percentages

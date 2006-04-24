@@ -76,7 +76,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     HaploAssocPanel hapAssocPanel;
     private TaggerConfigPanel taggerConfigPanel;
     HaploviewTab ldTab, hapsTab, checkTab, taggerTab, associationTab;
-    //Progress Bar.
     JProgressBar haploProgress;
     boolean isMaxSet = false;
     JPanel progressPanel = new JPanel();
@@ -244,6 +243,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         gbEditItem.addActionListener(this);
         gbEditItem.setEnabled(false);
         displayMenu.add(gbEditItem);
+
+        //show block tag pooper?
+        JCheckBoxMenuItem pooper = new JCheckBoxMenuItem("Show tags in blocks");
+        pooper.addActionListener(this);
+        displayMenu.add(pooper);
 
         displayMenu.setEnabled(false);
 
@@ -423,6 +427,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             ExportDialog exDialog = new ExportDialog(this);
             exDialog.pack();
             exDialog.setVisible(true);
+        }else if (command.equals("Show tags in blocks")){
+            Options.setShowBlockTags(((JCheckBoxMenuItem)e.getSource()).getState());
+            hapDisplay.repaint();
         }else if (command.equals("Select All")){
             checkPanel.selectAll();
         }else if (command.equals("Deselect All")){
@@ -1236,6 +1243,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     void export(HaploviewTab tab, int format, int start, int stop){
         fc.setSelectedFile(new File(""));
+        //todo: make this force you to pick export format.
+        JComboBox balls = new JComboBox();
+        balls.addItem("foo");
+        balls.addItem("bar");
+        fc.setAccessory(balls);
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
             File outfile = fc.getSelectedFile();
             if (format == PNG_MODE || format == COMPRESSED_PNG_MODE){
@@ -1326,6 +1338,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         Options.setgBrowseTypes(GB_DEFAULT_TYPES);
         Options.setTdtType(TDT_STD);
         Options.setPrintWhat(D_PRIME);
+        Options.setShowBlockTags(false);
 
         //this parses the command line arguments. if nogui mode is specified,
         //then haploText will execute whatever the user specified

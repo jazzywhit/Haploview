@@ -335,7 +335,7 @@ public class HaplotypeDisplay extends JComponent {
                 //g.translate(tagLeft, 20);
 
                 // if tag snp, draw little triangle pooper
-                if (tags[z]) {
+                if (tags[z] && Options.isShowBlockTags()) {
                     g.drawImage(tagImage, left + z*CHAR_WIDTH,
                             top + markerDigits*MARKER_CHAR_WIDTH
                             -(CHAR_HEIGHT - TAG_SPAN), null);

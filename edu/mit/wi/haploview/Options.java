@@ -17,6 +17,7 @@ public class Options {
     private static double taggerRsqCutoff;
     private static double taggerLODCutoff;
     private static int printWhat;
+    private static boolean showBlockTags;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -154,5 +155,13 @@ public class Options {
 
     public static void setPrintWhat(int printWhat) {
         Options.printWhat = printWhat;
+    }
+
+    public static boolean isShowBlockTags() {
+        return showBlockTags;
+    }
+
+    public static void setShowBlockTags(boolean showBlockTags) {
+        Options.showBlockTags = showBlockTags;
     }
 }
