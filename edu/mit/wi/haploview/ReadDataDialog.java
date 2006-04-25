@@ -1,13 +1,16 @@
 package edu.mit.wi.haploview;
 
 import javax.swing.*;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
 
 
-public class ReadDataDialog extends JDialog implements ActionListener, Constants {
+public class ReadDataDialog extends JDialog
+        implements ActionListener, DocumentListener, Constants {
 
     static final String HAPMAP_DATA = "Load HapMap data";
     static final String RAW_DATA = "Load genotypes (linkage format)";
@@ -19,7 +22,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
     int fileType;
     JTextField genoFileField, infoFileField, testFileField;
-    JCheckBox doTDT, doGB, xChrom;
+    JCheckBox doAssociation, doGB, xChrom;
     JRadioButton trioButton, ccButton, standardTDT, parenTDT;
     JButton browseAssocButton;
     NumberTextField maxComparisonDistField;
@@ -82,7 +85,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
                 Options.setMissingThreshold(missingThreshold);
             }
 
-            if (doTDT.isSelected()){
+            if (doAssociation.isSelected()){
                 if (trioButton.isSelected()){
                     Options.setAssocTest(ASSOC_TRIO);
                     if(standardTDT.isSelected()){
@@ -120,7 +123,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
             String[] returnStrings = {genoFileField.getText(), infoFileField.getText(), testFileField.getText()};
             if (returnStrings[1].equals("")) returnStrings[1] = null;
-            if (returnStrings[2].equals("") || !doTDT.isSelected()) returnStrings[2] = null;
+            if (returnStrings[2].equals("") || !doAssociation.isSelected()) returnStrings[2] = null;
 
 
             //if a dataset was previously loaded during this session, discard the display panes for it.
@@ -130,25 +133,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         }else if (command.equals("Cancel")){
             this.dispose();
         }else if (command.equals("association")){
-            if(this.doTDT.isSelected()){
-                trioButton.setEnabled(true);
-                ccButton.setEnabled(true);
-                browseAssocButton.setEnabled(true);
-                testFileField.setEnabled(true);
-                testFileField.setBackground(Color.white);
-                testFileLabel.setEnabled(true);
-                standardTDT.setEnabled(true);
-                parenTDT.setEnabled(true);
-            }else{
-                trioButton.setEnabled(false);
-                ccButton.setEnabled(false);
-                browseAssocButton.setEnabled(false);
-                testFileField.setEnabled(false);
-                testFileField.setBackground(this.getBackground());
-                testFileLabel.setEnabled(false);
-                standardTDT.setEnabled(false);
-                parenTDT.setEnabled(false);
-            }
+            switchAssoc(doAssociation.isSelected());
         }else if(command.equals("tdt")){
             standardTDT.setEnabled(true);
             parenTDT.setEnabled(true);
@@ -234,6 +219,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
         );*/
 
         infoFileField = new JTextField("",20);
+        infoFileField.getDocument().addDocumentListener(this);
         JButton browseGenoButton = new JButton("Browse");
         browseGenoButton.setActionCommand(BROWSE_GENO);
         browseGenoButton.addActionListener(this);
@@ -276,10 +262,11 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             contents.add(gBrowsePanel);
         }
 
-        doTDT = new JCheckBox();//"Do association test?");
-        doTDT.setSelected(false);
-        doTDT.setActionCommand("association");
-        doTDT.addActionListener(this);
+        doAssociation = new JCheckBox("Do association test?");
+        doAssociation.setSelected(false);
+        doAssociation.setEnabled(false);
+        doAssociation.setActionCommand("association");
+        doAssociation.addActionListener(this);
         xChrom = new JCheckBox();
         xChrom.setSelected(false);
         xChrom.setActionCommand("xChrom");
@@ -318,8 +305,7 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
             JPanel tdtCheckBoxPanel = new JPanel();
             tdtCheckBoxPanel.add(xChrom);
             tdtCheckBoxPanel.add(new JLabel("X Chromosome"));
-            tdtCheckBoxPanel.add(doTDT);
-            tdtCheckBoxPanel.add(new JLabel("Do association test?"));
+            tdtCheckBoxPanel.add(doAssociation);
             tdtOptsPanel.add(trioButton);
             tdtOptsPanel.add(ccButton);
             tdtTypePanel.add(standardTDT);
@@ -349,6 +335,52 @@ public class ReadDataDialog extends JDialog implements ActionListener, Constants
 
         this.setContentPane(contents);
         this.pack();
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        checkInfo(e);
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        checkInfo(e);
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        //not fired by plain text components
+    }
+
+    private void switchAssoc(boolean b){
+        if(b){
+            doAssociation.setEnabled(true);
+            trioButton.setEnabled(true);
+            ccButton.setEnabled(true);
+            browseAssocButton.setEnabled(true);
+            testFileField.setEnabled(true);
+            testFileField.setBackground(Color.white);
+            testFileLabel.setEnabled(true);
+            standardTDT.setEnabled(true);
+            parenTDT.setEnabled(true);
+        }else{
+            doAssociation.setSelected(false);
+            trioButton.setEnabled(false);
+            ccButton.setEnabled(false);
+            browseAssocButton.setEnabled(false);
+            testFileField.setEnabled(false);
+            testFileField.setBackground(this.getBackground());
+            testFileLabel.setEnabled(false);
+            standardTDT.setEnabled(false);
+            parenTDT.setEnabled(false);
+        }
+    }
+
+    private void checkInfo(DocumentEvent e){
+        //the text in the info field has changed. if it is empty, disable assoc testing
+        if (infoFileField.getText().equals("")){
+            switchAssoc(false);
+            doAssociation.setEnabled(false);
+        }else{
+            doAssociation.setEnabled(true);
+        }
     }
 }
 
