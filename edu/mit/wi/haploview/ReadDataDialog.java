@@ -240,14 +240,14 @@ public class ReadDataDialog extends JDialog
         contents.add(filePanel);
 
         JPanel compDistPanel = new JPanel();
-        maxComparisonDistField = new NumberTextField("500",6, false);
+        maxComparisonDistField = new NumberTextField(String.valueOf(Options.getMaxDistance()/1000),6, false);
         compDistPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
         compDistPanel.add(maxComparisonDistField);
         compDistPanel.add(new JLabel("kb apart."));
         contents.add(compDistPanel);
 
         JPanel missingCutoffPanel = new JPanel();
-        missingCutoffField = new NumberTextField("50",3, false);
+        missingCutoffField = new NumberTextField(String.valueOf(Options.getMissingThreshold()*100),3, false);
         missingCutoffPanel.add(new JLabel("Exclude individuals with >"));
         missingCutoffPanel.add(missingCutoffField);
         missingCutoffPanel.add(new JLabel("% missing genotypes."));
