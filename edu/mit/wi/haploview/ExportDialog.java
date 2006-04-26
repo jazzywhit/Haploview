@@ -9,7 +9,8 @@ import java.awt.*;
 public class ExportDialog extends JDialog implements ActionListener, Constants{
 
     HaploView hv;
-    JRadioButton dpButton, hapButton, checkButton, singleAssocButton, hapAssocButton, permAssocButton;
+    JRadioButton dpButton, hapButton, checkButton, taggerButton;
+    JRadioButton singleAssocButton, hapAssocButton, permAssocButton, custAssocButton;
     JRadioButton txtButton, pngButton;
     JRadioButton allButton, someButton, adjButton;
     JCheckBox compressCheckBox;
@@ -56,34 +57,52 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
         }
         if (Options.getAssocTest() != ASSOC_NONE){
             singleAssocButton = new JRadioButton("Single Marker Association Tests");
-            singleAssocButton.setActionCommand("singleassoctab");
+            singleAssocButton.setActionCommand("assoctab");
             singleAssocButton.addActionListener(this);
             g1.add(singleAssocButton);
             tabPanel.add(singleAssocButton);
 
             hapAssocButton = new JRadioButton("Haplotype Association Tests");
-            hapAssocButton.setActionCommand("hapassoctab");
+            hapAssocButton.setActionCommand("assoctab");
             hapAssocButton.addActionListener(this);
             g1.add(hapAssocButton);
             tabPanel.add(hapAssocButton);
 
+            if (custAssocButton != null){
+                custAssocButton = new JRadioButton("Custom Association Tests");
+                custAssocButton.setActionCommand("assoctab");
+                custAssocButton.addActionListener(this);
+                g1.add(custAssocButton);
+                tabPanel.add(custAssocButton);
+            }
+
             permAssocButton = new JRadioButton("Permutation Results");
-            permAssocButton.setActionCommand("permtab");
+            permAssocButton.setActionCommand("assoctab");
             permAssocButton.addActionListener(this);
             g1.add(permAssocButton);
             tabPanel.add(permAssocButton);
 
             if (currTab == VIEW_ASSOC_NUM){
-                Component c = ((JTabbedPane)((HaploviewTab)hv.tabs.getComponent(currTab)).getComponent()).getSelectedComponent();
+                Component c = ((JTabbedPane)((HaploviewTab)hv.tabs.getComponent(currTab)).getComponent(0)).getSelectedComponent();
                 if(c == hv.tdtPanel){
                     singleAssocButton.setSelected(true);
                 }else if (c == hv.hapAssocPanel){
                     hapAssocButton.setSelected(true);
                 }else if (c == hv.permutationPanel){
                     permAssocButton.setSelected(true);
+                }else if (c == hv.custAssocPanel){
+                    custAssocButton.setSelected(true);
                 }
             }
         }
+        if (hv.taggerResultsPanel != null){
+            taggerButton = new JRadioButton("Tagger output");
+            taggerButton.setActionCommand("taggertab");
+            taggerButton.addActionListener(this);
+            g1.add(taggerButton);
+            tabPanel.add(taggerButton);
+        }
+
         contents.add(tabPanel);
 
         JPanel formatPanel = new JPanel();
@@ -183,12 +202,11 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
 
         if (command.equals("ldtab") || command.equals("haptab")){
             pngButton.setEnabled(true);
-        }else if (command.equals("checktab") || command.equals("singleassoctab") || command.equals("hapassoctab")){
+        }else if (command.equals("checktab") || command.equals("assoctab") || command.equals("taggertab")){
             pngButton.setEnabled(false);
             txtButton.setSelected(true);
         }else if (command.equals("OK")){
             int format;
-            HaploviewTab tab;
             if (pngButton.isSelected()){
                 if (compressCheckBox.isSelected()){
                     format = COMPRESSED_PNG_MODE;
@@ -198,29 +216,33 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             }else{
                 format = TXT_MODE;
             }
+
+            Component c = null;
+
             if (dpButton.isSelected()){
-                tab = hv.ldTab;
+                c = hv.dPrimeDisplay;
             } else if (hapButton.isSelected()){
-                tab = hv.hapsTab;
+                c = hv.hapDisplay;
             } else if (checkButton.isSelected()){
-                tab = hv.checkTab;
+                c = hv.checkPanel;
             } else if (singleAssocButton.isSelected()){
-                tab = hv.associationTab;
-                ((JTabbedPane)tab.getComponent(0)).setSelectedComponent(hv.tdtPanel);
+                c = hv.tdtPanel;
             }else if (hapAssocButton.isSelected()){
-                tab = hv.associationTab;
-                ((JTabbedPane)tab.getComponent(0)).setSelectedComponent(hv.hapAssocPanel);
-            }else{
-                tab = hv.associationTab;
-                ((JTabbedPane)tab.getComponent(0)).setSelectedComponent(hv.permutationPanel);
+                c = hv.hapAssocPanel;
+            }else if (permAssocButton.isSelected()){
+                c = hv.permutationPanel;
+            }else if (custAssocButton.isSelected()){
+                c = hv.custAssocPanel;
+            }else if (taggerButton.isSelected()){
+                c = hv.taggerResultsPanel;
             }
             this.dispose();
 
             if (allButton.isSelected()){
-                hv.export(tab,format,0,Chromosome.getUnfilteredSize());
+                hv.export(c,format,0,Chromosome.getUnfilteredSize());
             }else if (someButton.isSelected()){
                 try{
-                    hv.export(tab,format,Integer.parseInt(lowRange.getText())-1, Integer.parseInt(upperRange.getText()));
+                    hv.export(c,format,Integer.parseInt(lowRange.getText())-1, Integer.parseInt(upperRange.getText()));
                 }catch (NumberFormatException nfe){
                     JOptionPane.showMessageDialog(hv,
                             "Invalid marker range: " + lowRange.getText() + " - " + upperRange.getText(),
@@ -229,7 +251,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
                 }
 
             }else{
-                hv.export(tab,format,-1,-1);
+                hv.export(c,format,-1,-1);
             }
 
         }else if (command.equals("Cancel")){
