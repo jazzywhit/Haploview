@@ -10,7 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Dimension;
 
-public class TDTPanel extends JPanel implements Constants, ActionListener {
+public class TDTPanel extends HaploviewTab
+        implements Constants, ActionListener {
 
     private AssociationTestSet assocSet;
     private JTable table;

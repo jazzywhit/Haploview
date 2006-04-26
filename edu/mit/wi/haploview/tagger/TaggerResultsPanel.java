@@ -12,15 +12,12 @@ import java.io.File;
 import java.io.IOException;
 
 import edu.mit.wi.tagger.*;
-import edu.mit.wi.haploview.Chromosome;
-import edu.mit.wi.haploview.BasicTableModel;
-import edu.mit.wi.haploview.HaploView;
-import edu.mit.wi.haploview.Util;
+import edu.mit.wi.haploview.*;
 
-public class TaggerResultsPanel extends JPanel implements ListSelectionListener, ActionListener{
+public class TaggerResultsPanel extends HaploviewTab
+        implements ListSelectionListener, ActionListener {
     private JList tagList;
     private JList taggedList;
-    private JTable markerTable;
     private TaggerController tc;
 
     private Vector tags;
@@ -46,7 +43,7 @@ public class TaggerResultsPanel extends JPanel implements ListSelectionListener,
         }
 
         BasicTableModel btm = new BasicTableModel(colNames, tableData);
-        markerTable = new JTable(btm);
+        JTable markerTable = new JTable(btm);
         GreyedOutRenderer gor = new GreyedOutRenderer();
         markerTable.setDefaultRenderer(String.class,gor);
 

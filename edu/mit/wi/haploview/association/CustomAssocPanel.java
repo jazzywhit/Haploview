@@ -1,15 +1,13 @@
 package edu.mit.wi.haploview.association;
 
-import edu.mit.wi.haploview.Options;
-import edu.mit.wi.haploview.Constants;
-import edu.mit.wi.haploview.BasicTableModel;
+import edu.mit.wi.haploview.*;
 
 import javax.swing.*;
 import java.util.Vector;
 import java.util.Iterator;
 import java.awt.*;
 
-public class CustomAssocPanel extends JPanel implements Constants{
+public class CustomAssocPanel extends HaploviewTab implements Constants {
 
     AssociationTestSet testSet;
 

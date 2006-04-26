@@ -8,12 +8,13 @@ import java.awt.event.ActionEvent;
 import edu.mit.wi.haploview.TreeTable.*;
 import edu.mit.wi.haploview.Constants;
 import edu.mit.wi.haploview.Options;
+import edu.mit.wi.haploview.HaploviewTab;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 
-public class HaploAssocPanel extends JPanel implements Constants,ActionListener{
+public class HaploAssocPanel extends HaploviewTab implements Constants,ActionListener {
     public double initialHaplotypeDisplayThreshold;
     private AssociationTestSet testSet;
     public JTreeTable jtt;

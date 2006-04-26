@@ -1,8 +1,6 @@
 package edu.mit.wi.haploview.association;
 
-import edu.mit.wi.haploview.Constants;
-import edu.mit.wi.haploview.NumberTextField;
-import edu.mit.wi.haploview.BasicTableModel;
+import edu.mit.wi.haploview.*;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
@@ -20,7 +18,8 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 
-public class PermutationTestPanel extends JPanel implements Constants,ActionListener {
+public class PermutationTestPanel extends HaploviewTab
+        implements Constants,ActionListener {
     private JLabel bestPermutationValueLabel;
     private JLabel blocksChangedLabel;
     private NumberTextField permCountField;

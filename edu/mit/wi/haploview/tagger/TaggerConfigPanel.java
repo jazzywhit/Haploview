@@ -17,7 +17,8 @@ import java.util.Hashtable;
 import java.io.File;
 import java.io.IOException;
 
-public class TaggerConfigPanel extends JPanel implements TableModelListener, ActionListener{
+public class TaggerConfigPanel extends HaploviewTab
+        implements TableModelListener, ActionListener {
     private JTable table;
     private TaggerController tagControl;
 
@@ -248,9 +249,8 @@ public class TaggerConfigPanel extends JPanel implements TableModelListener, Act
                         if(tagControl.isTaggingCompleted()) {
                             remove(taggerProgressPanel);
                             runTaggerButton.setEnabled(true);
-                            //the parent of this is a meta jpanel used to haxor the layout
-                            //the parent of that jpanel is the jtabbedPane in the tagger tab of HV
-                            ((JTabbedPane)(tcp.getParent().getParent())).setSelectedIndex(1);
+                            //the parent of this is the jtabbedPane in the tagger tab of HV
+                            ((JTabbedPane)(tcp.getParent())).setSelectedIndex(1);
                             fireTaggerEvent(new ActionEvent(tcp,ActionEvent.ACTION_PERFORMED,"taggingdone"));
                             timer.stop();
                         }

@@ -7,14 +7,14 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.*;
 import java.util.Vector;
 
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
 import edu.mit.wi.pedfile.CheckData;
 
-public class CheckDataPanel extends JPanel implements TableModelListener, ActionListener{
+public class CheckDataPanel extends JPanel
+        implements TableModelListener, ActionListener {
     private JTable table;
     private CheckDataTableModel tableModel;
     private HaploData theData;

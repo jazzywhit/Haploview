@@ -5,17 +5,19 @@ import java.awt.*;
 
 public class HaploviewTab extends JPanel{
 
-    //todo: this should be a little fancier and be able to access its principal components
-    //todo: and maybe call their export functions, perhaps this should be an interface?
+    private Component primary;
 
-    public HaploviewTab(Component c){
-        this.add(c);
+    public HaploviewTab(){
+        primary = this;
+    }
+
+    public HaploviewTab(Component primary){
+        this.primary = primary;
         this.setLayout(new BoxLayout(this,BoxLayout.Y_AXIS));
     }
 
-
-    public Component getComponent(){
-        return getComponent(0);
+    public Component getPrimary() {
+        return primary;
     }
 
 }
