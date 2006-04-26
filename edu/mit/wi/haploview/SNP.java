@@ -87,8 +87,14 @@ public class SNP implements Comparable{
         }
         if(o instanceof SNP) {
             SNP s = (SNP)o;
-            if(this.name.equals(s.name) && this.position == s.position) {
-                return true;
+            if (name != null){
+                if(this.name.equals(s.name) && this.position == s.position) {
+                    return true;
+                }
+            }else{
+                if (this.position == s.position){
+                    return true;
+                }
             }
         }
         return false;
