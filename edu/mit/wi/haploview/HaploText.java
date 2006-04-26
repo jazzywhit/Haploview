@@ -539,7 +539,7 @@ public class HaploText implements Constants{
             argHandlerMessages.add("Skipping genotype file check");
         }
         if(maxDistance == -1){
-            maxDistance = 500;
+            maxDistance = MAXDIST_DEFAULT;
         }else{
             if (!quietMode) argHandlerMessages.add("Max LD comparison distance = " +maxDistance);
         }
@@ -606,9 +606,12 @@ public class HaploText implements Constants{
 
         if(assocTDT) {
             Options.setAssocTest(ASSOC_TRIO);
-        }
-        else if(assocCC) {
+        }else if(assocCC) {
             Options.setAssocTest(ASSOC_CC);
+        }
+
+        if (Options.getAssocTest() != ASSOC_NONE && infoFileName == null && hapmapFileName == null) {
+            die("A marker info file must be specified when performing association tests.");
         }
 
         if(doPermutationTest) {
