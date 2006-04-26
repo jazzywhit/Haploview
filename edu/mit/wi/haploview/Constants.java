@@ -101,6 +101,9 @@ public interface Constants {
     static final int SHOW_HAP_COUNTS = 0;
     static final int SHOW_HAP_RATIOS = 1;
 
+    //default LD comparison distance (in kb)
+    static final int MAXDIST_DEFAULT = 500;
+
     //GBrowse options
     static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "DNA"};
     static final String[] GB_OPTS = {"gtsh%201", "mRNA%203", "", "", ""};
