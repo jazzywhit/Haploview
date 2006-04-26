@@ -1,23 +1,24 @@
 package edu.mit.wi.haploview;
 
-public class Options {
-    private static int maxDistance;
-    private static int genoFileType;
-    private static double missingThreshold;
-    private static double spacingThreshold;
-    private static int assocTest;
-    private static int tdtType;
-    private static double haplotypeDisplayThreshold;
-    private static int LDColorScheme;
-    private static boolean showGBrowse;
-    private static long gBrowseLeft;
-    private static long gBrowseRight;
-    private static String gBrowseOpts;
-    private static String gBrowseTypes;
-    private static double taggerRsqCutoff;
-    private static double taggerLODCutoff;
-    private static int printWhat;
-    private static boolean showBlockTags;
+import edu.mit.wi.tagger.Tagger;
+
+public class Options implements Constants{
+    private static int maxDistance = MAXDIST_DEFAULT*1000;
+    private static double missingThreshold = 0.5;
+    private static double spacingThreshold = 0.0;
+    private static int assocTest = ASSOC_NONE;
+    private static int tdtType = TDT_STD;
+    private static double haplotypeDisplayThreshold = 0.01;
+    private static int LDColorScheme = STD_SCHEME;
+    private static boolean showGBrowse = false;
+    private static long gBrowseLeft = 0;
+    private static long gBrowseRight = 0;
+    private static String gBrowseOpts = GB_DEFAULT_OPTS;
+    private static String gBrowseTypes = GB_DEFAULT_TYPES;
+    private static double taggerRsqCutoff = Tagger.DEFAULT_RSQ_CUTOFF;
+    private static double taggerLODCutoff = Tagger.DEFAULT_LOD_CUTOFF;
+    private static int printWhat = D_PRIME;
+    private static boolean showBlockTags = false;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -25,14 +26,6 @@ public class Options {
 
     public static void setLDColorScheme(int LDColorScheme) {
         Options.LDColorScheme = LDColorScheme;
-    }
-
-    public static int getGenoFileType() {
-        return genoFileType;
-    }
-
-    public static void setGenoFileType(int genoFileType) {
-        Options.genoFileType = genoFileType;
     }
 
     public static int getMaxDistance() {
