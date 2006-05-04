@@ -1181,7 +1181,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     theData.blocksChanged = false;
                 }
-                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                if (theData.finished){
+                    setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                }
             }
         }
     }
