@@ -7,9 +7,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.util.Vector;
+import java.util.Locale;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.text.NumberFormat;
 
 
 /**
@@ -25,6 +27,11 @@ import java.io.FileWriter;
 
 public class IndividualDialog extends JDialog implements ActionListener, Constants {
     private BasicTableModel tableModel;
+    private static NumberFormat nf = NumberFormat.getInstance(Locale.US);
+    static {
+        nf.setMinimumFractionDigits(0);
+        nf.setMaximumFractionDigits(1);
+    }
 
     public IndividualDialog (HaploView h, String title) {
         super(h,title);
@@ -48,7 +55,7 @@ public class IndividualDialog extends JDialog implements ActionListener, Constan
             Individual axedInd = (Individual)excludedPeople.get(i);
             tmpVecB.add(axedInd.getFamilyID());
             tmpVecB.add(axedInd.getIndividualID());
-            tmpVecB.add(new Double(axedInd.getGenoPC()*100));
+            tmpVecB.add(new Double(nf.format(axedInd.getGenoPC()*100)));
             data.add(tmpVecB);
         }
 
@@ -57,12 +64,14 @@ public class IndividualDialog extends JDialog implements ActionListener, Constan
             Individual currentInd = (Individual)people.get(i);
             tmpVec.add(currentInd.getFamilyID());
             tmpVec.add(currentInd.getIndividualID());
-            tmpVec.add(new Double(currentInd.getGenoPC()*100));
+            tmpVec.add(new Double(nf.format(currentInd.getGenoPC()*100)));
             data.add(tmpVec);
         }
 
-        tableModel = new BasicTableModel(colNames, data);
-        table = new JTable(tableModel);
+        TableSorter sorter = new TableSorter(new BasicTableModel(colNames, data));
+        table = new JTable(sorter);
+        sorter.setTableHeader(table.getTableHeader());
+
         IndividualCellRenderer renderer = new IndividualCellRenderer();
         try{
             table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
@@ -109,7 +118,7 @@ public class IndividualDialog extends JDialog implements ActionListener, Constan
             Individual currentInd = (Individual)people.get(i);
             tmpVec.add(currentInd.getFamilyID());
             tmpVec.add(currentInd.getIndividualID());
-            tmpVec.add(new Double(currentInd.getGenoPC()*100));
+            tmpVec.add(new Double(nf.format(currentInd.getGenoPC()*100)));
             data.add(tmpVec);
         }
 

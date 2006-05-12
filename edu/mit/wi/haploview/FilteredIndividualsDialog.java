@@ -14,7 +14,6 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
     public FilteredIndividualsDialog(HaploView h, String title) {
         super(h,title);
 
-        BasicTableModel tableModel;
         JTable table;
         JPanel contents = new JPanel();
 
@@ -37,8 +36,9 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
             data.add(tmpVec);
         }
 
-        tableModel = new BasicTableModel(colNames, data);
-        table = new JTable(tableModel);
+        TableSorter sorter = new TableSorter(new BasicTableModel(colNames, data));
+        table = new JTable(sorter);
+        sorter.setTableHeader(table.getTableHeader());
         table.getColumnModel().getColumn(2).setPreferredWidth(300);
 
         JScrollPane tableScroller = new JScrollPane(table);

@@ -84,8 +84,6 @@ public class TDTPanel extends HaploviewTab
             tableData.add(tempVect.clone());
         }
 
-        //BasicTableModel tm = new BasicTableModel(tableColumnNames, tableData);
-        //table = new JTable(tm);
         TableSorter sorter = new TableSorter(new BasicTableModel(tableColumnNames, tableData));
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
