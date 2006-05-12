@@ -1085,9 +1085,9 @@ public class HaploText implements Constants{
                         }
                     }
                     Collections.shuffle(aff);
-                    markerTestSet = new AssociationTestSet(textData.getPedFile(),aff,Chromosome.getAllMarkers());
+                    markerTestSet = new AssociationTestSet(textData.getPedFile(),aff,null,Chromosome.getAllMarkers());
                 }else{
-                    markerTestSet = new AssociationTestSet(textData.getPedFile(),null,Chromosome.getAllMarkers());
+                    markerTestSet = new AssociationTestSet(textData.getPedFile(),null,null,Chromosome.getAllMarkers());
                 }
                 markerTestSet.saveSNPsToText(validateOutputFile(fileName + ".ASSOC"));
             }

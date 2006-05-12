@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 3.2 2006/01/11 20:44:22 jmaller Exp $
+* $Id: Individual.java,v 3.3 2006/05/12 17:38:39 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -13,7 +13,6 @@
 package edu.mit.wi.pedfile;
 
 import java.util.Vector;
-import java.util.Iterator;
 
 /**
  * stores information about an individual from a pedigree file
@@ -33,26 +32,24 @@ public class Individual {
     private String reasonImAxed;
     private int liability; //optional
     //private Vector markers;
-    private byte[] markersa;
-    private byte[] markersb;
+    //private byte[] alleles1;
+    //private byte[] alleles2;
+    private byte[][] alleles;
     private double numGoodMarkers;
     private boolean[] zeroed;
     //this is used to keep track of the index of the last marker added
     private int currMarker;
 
-	public final static int FEMALE = 2;
-	public final static int MALE = 1;
-	public final static int AFFACTED = 2;
-	public final static int UNAFFACTED = 1;
-	public final static String DATA_MISSING ="0";
+    public final static int FEMALE = 2;
+    public final static int MALE = 1;
+    public final static int AFFACTED = 2;
+    public final static int UNAFFACTED = 1;
+    public final static String DATA_MISSING ="0";
 
 
 
     public Individual(int numMarkers) {
-        //this.markers = new Vector(numMarkers);
-        markersa = new byte[numMarkers];
-        markersb = new byte[numMarkers];
-        //this.zeroed = new Vector(numMarkers);
+        alleles = new byte[2][numMarkers];
         this.zeroed = new boolean[numMarkers];
         this.currMarker = 0;
     }
@@ -165,8 +162,8 @@ public class Individual {
     }
 
     public void setMarkers(byte[] ma, byte[] mb){
-        markersa = ma;
-        markersb = mb;
+        alleles[0] = ma;
+        alleles[1] = mb;
     }
 
     /**
@@ -174,31 +171,17 @@ public class Individual {
      * @return integer count of markers
      */
     public int getNumMarkers(){
-        return this.markersa.length;
+        return this.alleles[0].length;
     }
 
-
-    public byte getMarkerA(int location) {
-        return markersa[location];
+    public byte getAllele(int location, int index){
+            return alleles[index][location];
     }
 
-    public byte getMarkerB(int location) {
-        return markersb[location];
-    }
-
- /*   public void addMarker(byte[] marker){
-        this.markers.add(marker);
-        //this.zeroed.add(new Boolean(false));
-        this.zeroed[currMarker] = false;
-        this.currMarker++;
-        if (!(marker[0] == 0 || marker[1] == 0)){
-            numGoodMarkers++;
-        }
-    }*/
 
     public void addMarker(byte markera, byte markerb) {
-        markersa[currMarker] = markera;
-        markersb[currMarker] = markerb;
+        alleles[0][currMarker] = markera;
+        alleles[1][currMarker] = markerb;
         zeroed[currMarker] = false;
         currMarker++;
          if (!(markera == 0 || markerb == 0)){
@@ -234,7 +217,7 @@ public class Individual {
     }
 
     public double getGenoPC(){
-        return numGoodMarkers/markersa.length;
+        return numGoodMarkers/alleles[0].length;
     }
 
     public boolean[] getZeroedArray() {

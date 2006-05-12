@@ -140,6 +140,13 @@ public class ReadDataDialog extends JDialog
         }else if(command.equals("ccButton")){
             standardTDT.setEnabled(false);
             parenTDT.setEnabled(false);
+        }else if (command.equals("xChrom")){
+            if (xChrom.isSelected()){
+                parenTDT.setEnabled(false);
+                standardTDT.setSelected(true);
+            }else{
+                parenTDT.setEnabled(true);
+            }
         }
     }
 

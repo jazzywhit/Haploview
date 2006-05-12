@@ -141,8 +141,10 @@ public class PermutationTestSet implements Constants{
         //we start by creating a vector of the right size, but with a bunch of nulls
         //since ea. permutation (below) will set the values in the vector
         Vector permuteInd = new Vector();
+        Vector permuteDiscPar = new Vector();
         for (int i = 0; i < pedFile.getAllIndividuals().size(); i++){
             permuteInd.add(null);
+            permuteDiscPar.add(null);
         }
 
         permutationsPerformed = 0;
@@ -165,6 +167,15 @@ public class PermutationTestSet implements Constants{
                         permuteInd.set(j,Boolean.valueOf(false));
                     }
                 }
+                if(Options.getTdtType() == TDT_PAREN) {
+                    for(int j =0;j<pedFile.getAllIndividuals().size();j++) {
+                        if(Math.random() < .5) {
+                            permuteDiscPar.set(j,Boolean.valueOf(true));
+                        } else {
+                            permuteDiscPar.set(j,Boolean.valueOf(false));
+                        }
+                    }
+                }
             }else if (Options.getAssocTest() == ASSOC_CC){
                 Collections.shuffle(affectedStatus);
             }
@@ -173,9 +184,9 @@ public class PermutationTestSet implements Constants{
                 //begin single marker association test
                 try{
                     if (Options.getAssocTest() == ASSOC_TRIO){
-                        curResults = new AssociationTestSet(pedFile, permuteInd, snpSet).getMarkerAssociationResults();
+                        curResults = new AssociationTestSet(pedFile, permuteInd,permuteDiscPar, snpSet).getMarkerAssociationResults();
                     }else if (Options.getAssocTest() == ASSOC_CC){
-                        curResults = new AssociationTestSet(pedFile,affectedStatus, snpSet).getMarkerAssociationResults();
+                        curResults = new AssociationTestSet(pedFile,affectedStatus, null,snpSet).getMarkerAssociationResults();
                     }
                 } catch(PedFileException pfe) {
                 }
@@ -191,16 +202,19 @@ public class PermutationTestSet implements Constants{
                 if(Options.getAssocTest() == ASSOC_TRIO) {
                     for(int j=0;j<fakeHaplos.length;j++) {
                         EM curEM = fakeHaplos[j][0].getEM();
-                        curEM.doAssociationTests(null,permuteInd, null);
+                        curEM.doAssociationTests(null,permuteInd,permuteDiscPar, null);
                         for(int k=0;k<fakeHaplos[j].length;k++) {
                             fakeHaplos[j][k].setTransCount(curEM.getTransCount(k));
                             fakeHaplos[j][k].setUntransCount(curEM.getUntransCount(k));
+                            if(Options.getTdtType() == TDT_PAREN) {
+                                fakeHaplos[j][k].setDiscordantAlleleCounts(curEM.getDiscordantCounts(k));
+                            }
                         }
                     }
                 } else if(Options.getAssocTest() == ASSOC_CC) {
                     for(int j=0;j<fakeHaplos.length;j++) {
                         EM curEM = fakeHaplos[j][0].getEM();
-                        curEM.doAssociationTests(affectedStatus,null, null);
+                        curEM.doAssociationTests(affectedStatus,null,null, null);
                         for(int k=0;k<fakeHaplos[j].length;k++) {
                             fakeHaplos[j][k].setCaseCount(curEM.getCaseCount(k));
                             fakeHaplos[j][k].setControlCount(curEM.getControlCount(k));

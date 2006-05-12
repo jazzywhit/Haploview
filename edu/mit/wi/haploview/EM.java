@@ -31,6 +31,7 @@ public class EM implements Constants {
     private boolean[][][] kidConsistentCache;
     private Vector realAffectedStatus, realKidAffectedStatus;
     private MapWrap fullProbMap;
+    private boolean[] haploid;
 
     EM(Vector chromosomes, int numTrios){
 
@@ -376,17 +377,17 @@ public class EM implements Constants {
 
         haploidTrios.addAll(haploidSingletons);
 
-        boolean[] haploid = new boolean[haploidTrios.size()];
+        haploid = new boolean[haploidTrios.size()];
         for(int i=0;i<haploidTrios.size();i++){
             haploid[i] = ((Boolean)haploidTrios.elementAt(i)).booleanValue();
         }
 
-        full_em_breakup(input_haplos, block_size, affTrios, affKids,haploid);
+        full_em_breakup(input_haplos, block_size, affTrios, affKids);
 
 
     }
 
-    private void full_em_breakup( byte[][] input_haplos, int[] block_size, Vector affStatus, Vector kidAffStatus, boolean[] haploid) throws HaploViewException{
+    private void full_em_breakup( byte[][] input_haplos, int[] block_size, Vector affStatus, Vector kidAffStatus) throws HaploViewException{
         int num_poss, iter;
         double total = 0;
         int block, start_locus, end_locus, biggest_block_size;
@@ -588,8 +589,8 @@ public class EM implements Constants {
                         }
                     }else{
                         superdata[i].superposs[k].p = (float)
-                            (fullProbMap.get(new Long(superdata[i].superposs[k].h1))*
-                            fullProbMap.get(new Long(superdata[i].superposs[k].h2)));
+                                (fullProbMap.get(new Long(superdata[i].superposs[k].h1))*
+                                        fullProbMap.get(new Long(superdata[i].superposs[k].h2)));
                     }
                     total+=superdata[i].superposs[k].p;
                 }
@@ -644,7 +645,7 @@ public class EM implements Constants {
         realAffectedStatus = affStatus;
         realKidAffectedStatus = kidAffStatus;
 
-        doAssociationTests(affStatus, null, kidAffStatus);
+        doAssociationTests(affStatus, null,null, kidAffStatus);
 
 
         Vector haplos_present = new Vector();
@@ -694,7 +695,7 @@ public class EM implements Constants {
         //return 0;
     }
 
-    public void doAssociationTests(Vector affStatus, Vector permuteInd, Vector kidAffStatus) {
+    public void doAssociationTests(Vector affStatus, Vector permuteInd,Vector permuteDiscPar, Vector kidAffStatus) {
         if(fullProbMap == null || superdata == null || realAffectedStatus == null || realKidAffectedStatus == null) {
             return;
         }
@@ -710,6 +711,13 @@ public class EM implements Constants {
             permuteInd = new Vector();
             for (int i = 0; i < superdata.length; i++){
                 permuteInd.add(new Boolean(false));
+            }
+        }
+
+        if(permuteDiscPar == null) {
+            permuteDiscPar = new Vector();
+            for(int i=0; i< superdata.length; i++) {
+                permuteDiscPar.add(new Boolean(false));
             }
         }
 
@@ -730,10 +738,14 @@ public class EM implements Constants {
                     Long long2 = new Long(superdata[i].superposs[n].h2);
                     if (((Integer)affStatus.elementAt(i)).intValue() == 1){
                         tempControl.put(long1,tempControl.get(long1) + superdata[i].superposs[n].p);
-                        tempControl.put(long2,tempControl.get(long2) + superdata[i].superposs[n].p);
+                        if(!haploid[i]){
+                            tempControl.put(long2,tempControl.get(long2) + superdata[i].superposs[n].p);
+                        }
                     }else if (((Integer)affStatus.elementAt(i)).intValue() == 2){
                         tempCase.put(long1,tempCase.get(long1) + superdata[i].superposs[n].p);
-                        tempCase.put(long2,tempCase.get(long2) + superdata[i].superposs[n].p);
+                        if(!haploid[i]){
+                            tempCase.put(long2,tempCase.get(long2) + superdata[i].superposs[n].p);
+                        }
                     }
                     tempnorm += superdata[i].superposs[n].p;
                 }
@@ -820,6 +832,15 @@ public class EM implements Constants {
                                         unaff2 = h2;
                                         aff1 = h3;
                                         aff2 = h4;
+                                    }
+                                    //if were permuting then we switch the affected and unaffected
+                                    if(((Boolean)permuteDiscPar.get(i)).booleanValue()){
+                                        Long temp1 = aff1;
+                                        Long temp2 = aff2;
+                                        aff1 = unaff1;
+                                        aff2 = unaff2;
+                                        unaff1 = temp1;
+                                        unaff2 = temp2;
                                     }
                                     DiscordantTally dt = getTally(aff1,tempDiscordantCounts);
                                     dt.tally(aff1.longValue(),aff2.longValue(),unaff1.longValue(),unaff2.longValue(),product);

@@ -228,22 +228,6 @@ public abstract class AssociationResult implements Constants{
                 return;
             }
             discordantTallied++;
-           /* if(allele1 == 0 && allele2 == 0) {
-                if(affected1 != affected2) {
-                    allele1 = affected1;
-                    allele2 = affected2;
-                }else if(unaffected1 != unaffected2 ) {
-                    allele1 = unaffected1;
-                    allele2 = unaffected2;
-                } else if(affected1 != unaffected1) {
-                    //both are homozygous, so if they are different alleles we can use them to set allele1/allele2
-                    allele1 = affected1;
-                    allele2 = unaffected1;
-                }
-            }*/
-            if(allele1 == 0 && allele2 == 0) {
-                System.out.println("ah crap");
-            }
 
 
             if(affected1 != affected2 ) {

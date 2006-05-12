@@ -816,7 +816,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     if(Options.getAssocTest() != ASSOC_NONE) {
                         HaploviewTabbedPane metaAssoc = new HaploviewTabbedPane();
                         try{
-                            tdtPanel = new TDTPanel(new AssociationTestSet(theData.getPedFile(), null, Chromosome.getAllMarkers()));
+                            tdtPanel = new TDTPanel(new AssociationTestSet(theData.getPedFile(), null,null, Chromosome.getAllMarkers()));
                         } catch(PedFileException e) {
                             JOptionPane.showMessageDialog(window,
                                     e.getMessage(),

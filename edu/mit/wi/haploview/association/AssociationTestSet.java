@@ -22,14 +22,14 @@ public class AssociationTestSet implements Constants{
         whitelist = new HashSet();
     }
 
-    public AssociationTestSet(PedFile pf, Vector permute, Vector snpsToBeTested) throws PedFileException{
+    public AssociationTestSet(PedFile pf, Vector permute, Vector permuteDiscPar, Vector snpsToBeTested) throws PedFileException{
         whitelist = new HashSet();
 
         if (Options.getAssocTest() == ASSOC_TRIO){
             if(Options.getTdtType() == TDT_STD) {
                 buildTrioSet(pf, permute, new TreeSet(snpsToBeTested));
             }else if(Options.getTdtType() == TDT_PAREN) {
-                buildParenTDTTrioSet(pf,permute,new TreeSet(snpsToBeTested));
+                buildParenTDTTrioSet(pf,permute,permuteDiscPar,new TreeSet(snpsToBeTested));
             }
         }else if (Options.getAssocTest() == ASSOC_CC){
             buildCCSet(pf, permute, new TreeSet(snpsToBeTested));
@@ -91,8 +91,8 @@ public class AssociationTestSet implements Constants{
 
                         if (cc == 0) continue;
                         if (cc == 2) cc = 0;
-                        byte a1 = currentInd.getMarkerA(i);
-                        byte a2 = currentInd.getMarkerB(i);
+                        byte a1 = currentInd.getAllele(i,0);
+                        byte a2 = currentInd.getAllele(i,1);
 
                         if (a1 >= 5 && a2 >= 5){
                             counts[cc][0]++;
@@ -123,11 +123,13 @@ public class AssociationTestSet implements Constants{
                                     counts[cc][1] ++;
                                 }
                             }
-                            if (a2 != 0){
-                                if (a2 == allele1){
-                                    counts[cc][0]++;
-                                }else{
-                                    counts[cc][1]++;
+                            if (currentInd.getGender() == 2 || !Chromosome.getDataChrom().equals("chrx")){
+                                if (a2 != 0){
+                                    if (a2 == allele1){
+                                        counts[cc][0]++;
+                                    }else{
+                                        counts[cc][1]++;
+                                    }
                                 }
                             }
                         }
@@ -181,19 +183,22 @@ public class AssociationTestSet implements Constants{
                         //if he has both parents, and is affected, we can get a transmission
                         Individual mom = currentFam.getMember(currentInd.getMomID());
                         Individual dad = currentFam.getMember(currentInd.getDadID());
-                         if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
+                        if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
                             continue;
                         }
-                        byte kid1 = currentInd.getMarkerA(i);
-                        byte kid2 = currentInd.getMarkerB(i);
-                        byte dad1 = dad.getMarkerA(i);
-                        byte dad2 = dad.getMarkerB(i);
-                        byte mom1 = mom.getMarkerA(i);
-                        byte mom2 = mom.getMarkerB(i);
+                        byte kid1 = currentInd.getAllele(i,0);
+                        byte kid2 = currentInd.getAllele(i,1);
+                        byte dad1 = dad.getAllele(i,0);
+                        byte dad2 = dad.getAllele(i,1);
+                        byte mom1 = mom.getAllele(i,0);
+                        byte mom2 = mom.getAllele(i,1);
                         byte momT=0, momU=0, dadT=0, dadU=0;
+
                         if (kid1 == 0 || kid2 == 0 || dad1 == 0 || dad2 == 0 || mom1 == 0 || mom2 == 0) {
                             continue;
-                        } else if (kid1 == kid2) {
+                        }
+
+                        if (kid1 == kid2) {
                             //kid homozygous
                             if (dad1 == kid1) {
                                 dadT = dad1;
@@ -246,6 +251,7 @@ public class AssociationTestSet implements Constants{
                                 momT = (byte)(4+mom1);
                                 momU = (byte)(4+mom2);
                             }
+
                         }
                         if(((Boolean)permuteInd.get(j)).booleanValue()) {
                             tt.tallyTrioInd(dadU, dadT);
@@ -274,8 +280,9 @@ public class AssociationTestSet implements Constants{
         this.results = results;
     }
 
-    private void buildParenTDTTrioSet(PedFile pf, Vector permuteInd, TreeSet snpsToBeTested) throws PedFileException{
+    private void buildParenTDTTrioSet(PedFile pf, Vector permuteInd, Vector permuteDiscPar, TreeSet snpsToBeTested) throws PedFileException{
         Vector results = new Vector();
+        //TODO: implement X chrom switching.
 
         Vector indList = pf.getAllIndividuals();
 
@@ -283,6 +290,13 @@ public class AssociationTestSet implements Constants{
             permuteInd = new Vector();
             for (int i = 0; i < indList.size(); i++){
                 permuteInd.add(new Boolean(false));
+            }
+        }
+
+        if(permuteDiscPar == null || permuteDiscPar.size() != indList.size()){
+            permuteDiscPar = new Vector();
+            for (int i = 0; i < indList.size(); i++){
+                permuteDiscPar.add(new Boolean(false));
             }
         }
 
@@ -310,12 +324,12 @@ public class AssociationTestSet implements Constants{
                          if(currentInd.getZeroed(i) || dad.getZeroed(i) || mom.getZeroed(i)) {
                             continue;
                         }
-                        byte kid1 = currentInd.getMarkerA(i);
-                        byte kid2 = currentInd.getMarkerB(i);
-                        byte dad1 = dad.getMarkerA(i);
-                        byte dad2 = dad.getMarkerB(i);
-                        byte mom1 = mom.getMarkerA(i);
-                        byte mom2 = mom.getMarkerB(i);
+                        byte kid1 = currentInd.getAllele(i,0);
+                        byte kid2 = currentInd.getAllele(i,1);
+                        byte dad1 = dad.getAllele(i,0);
+                        byte dad2 = dad.getAllele(i,1);
+                        byte mom1 = mom.getAllele(i,0);
+                        byte mom2 = mom.getAllele(i,1);
                         byte momT=0, momU=0, dadT=0, dadU=0;
                         if (kid1 == 0 || kid2 == 0 || dad1 == 0 || dad2 == 0 || mom1 == 0 || mom2 == 0) {
                             continue;
@@ -386,11 +400,19 @@ public class AssociationTestSet implements Constants{
                             if(usedParents.contains(mom) || usedParents.contains(dad)) {
                                 continue;
                             }
+                            int momAffected = mom.getAffectedStatus();
+                            int dadAffected = dad.getAffectedStatus();
+                            if(permuteDiscPar.get(j) != null) {
+                                if(((Boolean)permuteDiscPar.get(j)).booleanValue()) {
+                                    momAffected = dad.getAffectedStatus();
+                                    dadAffected = mom.getAffectedStatus();
+                                }
+                            }
                             if(!(dad1 == mom1 && dad2 == mom2) && !(dad1 == mom2 && dad2 == mom1)) {
-                                if(mom.getAffectedStatus() == 2) {
+                                if(momAffected == 2) {
                                     tt.tallyDiscordantParents(momT,momU,dadT,dadU);
 
-                                } else if(dad.getAffectedStatus() == 2) {
+                                } else if(dadAffected == 2) {
                                     tt.tallyDiscordantParents(dadT,dadU,momT,momU);
                                 }
                                 discordantTallied++;
@@ -415,6 +437,7 @@ public class AssociationTestSet implements Constants{
                 thisSNP2.setTransCount(tt.counts[0][1]);
                 thisSNP2.setUntransCount(tt.counts[1][1]);
                 thisSNP2.setDiscordantAlleleCounts(tt.getDiscordantCountsAllele2());
+
 
                 Haplotype[] daBlock = {thisSNP1, thisSNP2};
                 results.add(new MarkerAssociationResult(daBlock, currentMarker.getDisplayName(), currentMarker));
@@ -460,6 +483,7 @@ public class AssociationTestSet implements Constants{
                         blockname = (String) names.get(i);
                     }
                     results.add(new HaplotypeAssociationResult(haplos[i], (String)alleles.get(i),blockname));
+
                 }catch(HaploViewException hve) {
                     missing = true;
                     missingAlleles.add((String)names.get(i) + "\t " + (String)alleles.get(i));

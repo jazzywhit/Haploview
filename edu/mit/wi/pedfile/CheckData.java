@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.11 2006/04/19 13:28:06 jcbarret Exp $
+* $Id: CheckData.java,v 3.12 2006/05/12 17:38:39 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -83,8 +83,8 @@ public class CheckData {
             //loop through each individual in the current Family
             while(indList.hasMoreElements()){
                 currentInd = currentFamily.getMember((String)indList.nextElement());
-                allele1 = currentInd.getMarkerA(loc);
-                allele2 = currentInd.getMarkerB(loc);
+                allele1 = currentInd.getAllele(loc,0);
+                allele2 = currentInd.getAllele(loc,1);
 
                 //no allele data missing
                 if(allele1 > 0 && allele2 >0){
@@ -92,10 +92,10 @@ public class CheckData {
                     if (currentFamily.containsMember(currentInd.getMomID()) &&
                             currentFamily.containsMember(currentInd.getDadID())){
                         //do mendel check
-                        int momAllele1 = (currentFamily.getMember(currentInd.getMomID())).getMarkerA(loc);
-                        int momAllele2 = (currentFamily.getMember(currentInd.getMomID())).getMarkerB(loc);
-                        int dadAllele1 = (currentFamily.getMember(currentInd.getDadID())).getMarkerA(loc);
-                        int dadAllele2 = (currentFamily.getMember(currentInd.getDadID())).getMarkerB(loc);
+                        int momAllele1 = (currentFamily.getMember(currentInd.getMomID())).getAllele(loc,0);
+                        int momAllele2 = (currentFamily.getMember(currentInd.getMomID())).getAllele(loc,1);
+                        int dadAllele1 = (currentFamily.getMember(currentInd.getDadID())).getAllele(loc,0);
+                        int dadAllele2 = (currentFamily.getMember(currentInd.getDadID())).getAllele(loc,1);
 
 
                         if(Chromosome.getDataChrom().equals("chrx")){
@@ -207,8 +207,8 @@ public class CheckData {
                     allele1 = 0;
                     allele2 = 0;
                 }else{
-                    allele1 = currentInd.getMarkerA(loc);
-                    allele2 = currentInd.getMarkerB(loc);
+                    allele1 = currentInd.getAllele(loc,0);
+                    allele2 = currentInd.getAllele(loc,1);
                 }
 
                 String familyID = currentInd.getFamilyID();

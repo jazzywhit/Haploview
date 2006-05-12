@@ -276,8 +276,8 @@ public class HaploData implements Constants{
                     boolean[] unsortedZeroed = ind.getZeroedArray();
                     boolean[] sortedZeroed = new boolean[unsortedZeroed.length];
                     for (int j = 0; j < ind.getNumMarkers(); j++){
-                        sortedMarkersa[j] = ind.getMarkerA(realPos[j]);
-                        sortedMarkersb[j] = ind.getMarkerB(realPos[j]);
+                        sortedMarkersa[j] = ind.getAllele(realPos[j],0);
+                        sortedMarkersb[j] = ind.getAllele(realPos[j],1);
                         sortedZeroed[j] = unsortedZeroed[realPos[j]];
                     }
                     ind.setMarkers(sortedMarkersa, sortedMarkersb);
@@ -427,8 +427,8 @@ public class HaploData implements Constants{
                 chrom1[i] = thisMarker[0];
                 chrom2[i] = thisMarker[1];
                 */
-                chrom1[i] = currentInd.getMarkerA(i);
-                chrom2[i] = currentInd.getMarkerB(i);
+                chrom1[i] = currentInd.getAllele(i,0);
+                chrom2[i] = currentInd.getAllele(i,1);
             }
             chroms.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1,currentInd.getAffectedStatus(),0));
             chroms.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(),0));
@@ -507,8 +507,8 @@ public class HaploData implements Constants{
                             kid1 = 0;
                             kid2 = 0;
                         }else{
-                            kid1 = currentInd.getMarkerA(i);
-                            kid2 = currentInd.getMarkerB(i);
+                            kid1 = currentInd.getAllele(i,0);
+                            kid2 = currentInd.getAllele(i,1);
                         }
 
                         byte mom1,mom2;
@@ -516,8 +516,8 @@ public class HaploData implements Constants{
                             mom1 = 0;
                             mom2 = 0;
                         }else{
-                            mom1 = (currentFamily.getMember(currentInd.getMomID())).getMarkerA(i);
-                            mom2 = (currentFamily.getMember(currentInd.getMomID())).getMarkerB(i);
+                            mom1 = (currentFamily.getMember(currentInd.getMomID())).getAllele(i,0);
+                            mom2 = (currentFamily.getMember(currentInd.getMomID())).getAllele(i,1);
                         }
 
                         byte dad1,dad2;
@@ -525,8 +525,8 @@ public class HaploData implements Constants{
                             dad1 = 0;
                             dad2 = 0;
                         }else{
-                            dad1 = (currentFamily.getMember(currentInd.getDadID())).getMarkerA(i);
-                            dad2 = (currentFamily.getMember(currentInd.getDadID())).getMarkerB(i);
+                            dad1 = (currentFamily.getMember(currentInd.getDadID())).getAllele(i,0);
+                            dad2 = (currentFamily.getMember(currentInd.getDadID())).getAllele(i,1);
                         }
 
 
@@ -711,8 +711,8 @@ public class HaploData implements Constants{
                         thisMarkerA = 0;
                         thisMarkerB = 0;
                     }else{
-                        thisMarkerA = currentInd.getMarkerA(i);
-                        thisMarkerB = currentInd.getMarkerB(i);
+                        thisMarkerA = currentInd.getAllele(i,0);
+                        thisMarkerB = currentInd.getAllele(i,1);
                     }
                     if (thisMarkerA == thisMarkerB || thisMarkerA == 0 || thisMarkerB == 0){
                         chrom1[i] = thisMarkerA;
@@ -940,8 +940,6 @@ public class HaploData implements Constants{
                     }
                 }
 
-                //TODO: what's all this commented out shit?
-                //if (tempPerc*100 > hapthresh){
                 if(storeEM) {
                     tempArray[i] = new Haplotype(genos, returnedFreqs[i], preFiltBlock, theEM);
                 }else {
@@ -952,14 +950,12 @@ public class HaploData implements Constants{
                     tempArray[i].setTransCount(theEM.getTransCount(i));
                     tempArray[i].setUntransCount(theEM.getUntransCount(i));
                     if(Options.getTdtType() == TDT_PAREN) {
-                        //tempArray[i].setDiscordantAlleleCounts(theEM.getDiscordantCounts(i));
+                        tempArray[i].setDiscordantAlleleCounts(theEM.getDiscordantCounts(i));
                     }
                 }else if (Options.getAssocTest() == ASSOC_CC){
                     tempArray[i].setCaseCount(theEM.getCaseCount(i));
                     tempArray[i].setControlCount(theEM.getControlCount(i));
                 }
-                //p++;
-                //}
             }
             //make the rawHaplotypes array only large enough to hold haps
             //which pass threshold above
