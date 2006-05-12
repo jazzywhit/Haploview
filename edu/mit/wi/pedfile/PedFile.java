@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.20 2006/04/18 14:37:27 djbender Exp $
+* $Id: PedFile.java,v 3.21 2006/05/12 18:01:28 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -47,6 +47,7 @@ public class PedFile {
     private String[][] hminfo;
     //bogusParents is true if someone in the file referenced a parent not in the file
     private boolean bogusParents = false;
+    private boolean haploidHets = false;
 
     private static Hashtable hapMapTranslate;
     private int[] markerRatings;
@@ -1157,6 +1158,14 @@ public class PedFile {
 
     public boolean isWhiteListed(SNP snp){
         return whitelist.contains(snp);
+    }
+
+    public boolean isHaploidHets() {
+        return haploidHets;
+    }
+
+    public void setHaploidHets(boolean haploidHets) {
+        this.haploidHets = haploidHets;
     }
 }
 

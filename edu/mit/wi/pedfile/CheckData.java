@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.12 2006/05/12 17:38:39 jmaller Exp $
+* $Id: CheckData.java,v 3.13 2006/05/12 18:01:28 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -26,7 +26,7 @@ import java.util.*;
  */
 
 public class CheckData {
-    private PedFile _pedFile;
+    private PedFile pedFile;
 
     static public double hwCut = 0.001;
     static public int failedGenoCut = 75;
@@ -40,7 +40,7 @@ public class CheckData {
 
 
     public CheckData(PedFile pedFile) {
-        this._pedFile = pedFile;
+        this.pedFile = pedFile;
     }
 
     /**
@@ -50,9 +50,9 @@ public class CheckData {
      * number of families with a fully genotyped trio and number of Mendelian inheritance errors.
      */
     public Vector check() throws PedFileException{
-        int numOfMarkers = _pedFile.getNumMarkers();
+        int numOfMarkers = pedFile.getNumMarkers();
         Vector results = new Vector(numOfMarkers);
-        //_size = _pedFile.getNumIndividuals();
+        //_size = pedFile.getNumIndividuals();
 
         for(int i= 0; i < numOfMarkers; i++){
             results.add(checkMarker(i));
@@ -76,15 +76,23 @@ public class CheckData {
         }
 
         //loop through each family, check data for marker loc
-        Enumeration famList = _pedFile.getFamList();
+        Enumeration famList = pedFile.getFamList();
         while(famList.hasMoreElements()){
-            Family currentFamily = _pedFile.getFamily((String)famList.nextElement());
+            Family currentFamily = pedFile.getFamily((String)famList.nextElement());
             Enumeration indList = currentFamily.getMemberList();
             //loop through each individual in the current Family
             while(indList.hasMoreElements()){
                 currentInd = currentFamily.getMember((String)indList.nextElement());
                 allele1 = currentInd.getAllele(loc,0);
                 allele2 = currentInd.getAllele(loc,1);
+
+                //if haploid, check for male hets
+                if(Chromosome.getDataChrom().equals("chrx") && currentInd.getGender()==1){
+                    if(allele1 != allele2) {
+                        currentInd.zeroOutMarker(loc);
+                        pedFile.setHaploidHets(true);
+                    }
+                }
 
                 //no allele data missing
                 if(allele1 > 0 && allele2 >0){
@@ -292,7 +300,7 @@ public class CheckData {
 
         // num of families with a fully genotyped trio
         //int famTrio =0;
-        int famTrio = getNumOfFamTrio(_pedFile.getFamList(), founderGenoCount, kidgeno);
+        int famTrio = getNumOfFamTrio(pedFile.getFamList(), founderGenoCount, kidgeno);
 
         //rating
         int rating = this.getRating(genopct, pvalue, mendErrNum,maf);

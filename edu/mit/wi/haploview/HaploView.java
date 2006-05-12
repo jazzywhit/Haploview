@@ -658,9 +658,16 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 theData.linkageToChrom(inFile, type);
             }
 
-            if(type != HAPS_FILE && theData.getPedFile().isBogusParents()) {
+            if(theData.getPedFile().isBogusParents()) {
                 JOptionPane.showMessageDialog(this,
                         "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
+                        "File Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+
+            if(theData.getPedFile().isHaploidHets()) {
+                JOptionPane.showMessageDialog(this,
+                        "One or more males in the file is heterozygous.\nThese genotypes have been ignored.",
                         "File Error",
                         JOptionPane.ERROR_MESSAGE);
             }

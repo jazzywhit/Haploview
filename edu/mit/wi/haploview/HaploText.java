@@ -856,6 +856,9 @@ public class HaploText implements Constants{
                 if(textData.getPedFile().isBogusParents()) {
                     System.out.println("Error: One or more individuals in the file reference non-existent parents.\nThese references have been ignored.");
                 }
+                if(textData.getPedFile().isHaploidHets()){
+                    System.out.println("Error: One or more males in the file is heterozygous.\nThese genotypes have been ignored.");
+                }
             }else{
                 //read in hapmapfile
                 textData.linkageToChrom(inputFile,HMP_FILE);

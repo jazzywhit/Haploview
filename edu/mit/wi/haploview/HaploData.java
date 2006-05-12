@@ -1412,15 +1412,6 @@ public class HaploData implements Constants{
                 a1 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos1];
                 a2 = ((Chromosome) chromosomes.elementAt(i)).genotypes[pos2];
 
-                //TODO: don't check me in, this is ghetto!
-                if (a1 >=5){
-                    a1 = (byte)(a1 - 4);
-                }
-                if (a2 >=5){
-                    a2 = (byte)(a2 - 4);
-                }
-
-
                 if(a1 != 0 && a2 != 0) {
                     twoMarkerHaplos[marker1num[a1]][marker2num[a2]]++;
                 }
