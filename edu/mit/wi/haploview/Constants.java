@@ -4,10 +4,10 @@ package edu.mit.wi.haploview;
 public interface Constants {
 
     //main jframe setup stuff & labels.
-    public static final double VERSION = 3.2;
+    public static final double VERSION = 3.3;
     public static final String EMAIL_STRING = "haploview@broad.mit.edu";
-    public static final String TITLE_STRING = "Haploview "+VERSION + "[dev-unstable]";
-    public static final String RELEASE_DATE = "13 April, 2005";
+    public static final String TITLE_STRING = "Haploview "+VERSION;
+    public static final String RELEASE_DATE = "15 May, 2006";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
     public static final String ABOUT_STRING = TITLE_STRING + "\n" + RELEASE_DATE + "\n" +
             WEBSITE_STRING + "\n\n" +
@@ -15,6 +15,7 @@ public interface Constants {
             "Cambridge, MA 02141, USA\n\n"+
             "Jeffrey Barrett\n" +
             "Julian Maller\n" +
+            "David Bender\n" +
             EMAIL_STRING;
 
     public static final String READ_GENOTYPES = "Open genotype data";
