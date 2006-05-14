@@ -6,6 +6,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
+import org.freehep.util.export.ExportDialog;
+import org.freehep.graphics2d.VectorGraphics;
+import org.freehep.graphicsio.ps.PSGraphics2D;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
@@ -16,11 +19,14 @@ import java.awt.event.*;
 import java.util.*;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
+import java.io.*;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 
 
-public class DPrimeDisplay extends JComponent implements MouseListener, MouseMotionListener, Constants{
+public class DPrimeDisplay extends JComponent
+        implements MouseListener, MouseMotionListener, Constants {
     private static final int H_BORDER = 30;
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;
@@ -408,6 +414,19 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
         BufferedImage i = new BufferedImage(pref.width, pref.height,
                 BufferedImage.TYPE_3BYTE_BGR);
         paintComponent(i.getGraphics());
+
+/*        try{
+            VectorGraphics g = new PSGraphics2D(new File("foo.ps"),new Dimension(pref.width,pref.height));
+            g.startExport();
+            print(g);
+            g.endExport();
+        }catch (Exception e){
+
+        }
+        //todo: rewrite this so freehep correctly sizes object when exporting.
+        //org.freehep.util.export.ExportDialog ed = new ExportDialog();
+        //ed.showExportDialog(this,"zoo",this,"zoo");
+        */
 
         boxSize = startBS;
         boxRadius = startBR;
@@ -1166,22 +1185,33 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                         ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
 
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
-                //getImage() caches by default so it will only download an image when the URL changes
-                Image i = toolkit.getImage(imageUrl);
-                //TODO: this should use a hand-rolled HTTP connection so we can set the user-agent.
-                /*try{
-                    HttpURLConnection con = (HttpURLConnection)imageUrl.openConnection();
-                    con.connect();
-                    InputStream inputStream = con.getInputStream();
-                    byte[] buf = new byte[200];
-                    StringBuffer b = new StringBuffer();
-                    while ((inputStream.read(buf,0,200)) != -1){
-                        b.append(buf);
-                    }
-                    i = toolkit.createImage(b.toString().getBytes());
-                }catch (Exception e){
+                HttpURLConnection con = (HttpURLConnection)imageUrl.openConnection();
+                con.setRequestProperty("User-agent",Constants.TITLE_STRING);
+                //todo: make it timeout quicker
+                con.connect();
 
-                }*/
+                int response = con.getResponseCode();
+
+                if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
+                    //if something went wrong
+                    throw new IOException("Could not connect to HapMap server.");
+                }
+
+                InputStream inputStream = con.getInputStream();
+                BufferedInputStream bis = new BufferedInputStream(inputStream);
+                byte[] buf = new byte[2048];
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                BufferedOutputStream bos = new BufferedOutputStream(baos);
+                int bytesRead;
+                while ((bytesRead = bis.read(buf,0,buf.length)) != -1){
+                    bos.write(buf,0,bytesRead);
+                }
+                bos.flush();
+                bos.close();
+                bis.close();
+
+                Image i = toolkit.createImage(baos.toByteArray());
+
                 MediaTracker mt = new MediaTracker(this);
                 mt.addImage(i,0);
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
@@ -1194,14 +1224,18 @@ public class DPrimeDisplay extends JComponent implements MouseListener, MouseMot
                 }else{
                     //couldn't get the image for whatever reason.
                     JOptionPane.showMessageDialog(theHV,
-                            "An error occured while accessing the HapMap website.\n ",
+                            "An error occured while accessing the HapMap website.\n",
                             "HapMap Info Track",
                             JOptionPane.ERROR_MESSAGE);
                     gBrowseImage = null;
                     Options.setShowGBrowse(false);
                 }
-            }catch (MalformedURLException mue){
-                //this exception sucks walnuts, so I refuse to handle it on principle
+            }catch (IOException e){
+                //couldn't get the image for whatever reason.
+                JOptionPane.showMessageDialog(theHV,
+                        "An error occured while accessing the HapMap website.\n"+e.getMessage(),
+                        "HapMap Info Track",
+                        JOptionPane.ERROR_MESSAGE);
             }catch (InterruptedException e){
                 //just in case something awful happens
                 gBrowseImage = null;
