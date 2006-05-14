@@ -67,8 +67,6 @@ public class UpdateChecker {
                 String data = "";
                 if(read != 0)  {
                     data = new String(buf);
-                    //System.out.println("\nfile contents:");
-                    //System.out.println(data);
                     double newestVersion = Double.parseDouble(data);
 
                     if(newestVersion > Constants.VERSION) {
