@@ -68,7 +68,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             g1.add(hapAssocButton);
             tabPanel.add(hapAssocButton);
 
-            if (custAssocButton != null){
+            if (hv.custAssocPanel != null){
                 custAssocButton = new JRadioButton("Custom Association Tests");
                 custAssocButton.setActionCommand("assoctab");
                 custAssocButton.addActionListener(this);
