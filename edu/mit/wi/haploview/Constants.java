@@ -115,6 +115,7 @@ public interface Constants {
 
     static final String HELP_OUTPUT = TITLE_STRING + " Command line options\n" +
             "-h, -help                       Print this message\n" +
+            "-memory <memsize>               allocates <memsize> megabytes of memory (default 512)\n"+
             "-nogui                          Command line output only\n" +
             "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
             "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
