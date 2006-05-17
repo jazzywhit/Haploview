@@ -2,7 +2,6 @@ package edu.mit.wi.haploview;
 
 import javax.swing.*;
 import java.io.*;
-import java.util.StringTokenizer;
 
 class StreamGobbler extends Thread{
     InputStream is;
@@ -15,7 +14,7 @@ class StreamGobbler extends Thread{
         try{
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
-            String line=null;
+            String line;
             while ( (line = br.readLine()) != null)
                 System.out.println(line);
         } catch (IOException ioe){
@@ -34,9 +33,9 @@ public class HVWrap {
     public static void main(String[] args) {
 
         int exitValue = 0;
-        String dir = System.getProperty("user.dir");
+        //String dir = System.getProperty("user.dir");
+        //String ver = System.getProperty("java.version");
         String sep = System.getProperty("file.separator");
-        String ver = System.getProperty("java.version");
         String javaHome = System.getProperty("java.home");
 
         //TODO:do some version checking and bitch at people with old JVMs
@@ -59,7 +58,7 @@ public class HVWrap {
 
         String xmxArg = "512";
 
-        String argsToBePassed = new String();
+        String argsToBePassed = "";
         boolean headless = false;
         for (int a = 0; a < args.length; a++){
             if (args[a].equalsIgnoreCase("-memory")){
@@ -76,7 +75,8 @@ public class HVWrap {
 
         try {
             //if the nogui flag is present we force it into headless mode
-            String runString = javaHome + sep + "bin" + sep + "java -Xmx" + xmxArg + "m -classpath " + jarfile;
+            String runString = javaHome + sep + "bin" + sep +
+                    "java -Dsun.java2d.noddraw=true -Xmx" + xmxArg + "m -classpath " + jarfile;
             if (headless){
                 runString += " -Djava.awt.headless=true";
             }
@@ -91,7 +91,7 @@ public class HVWrap {
             boolean dead = false;
             StringBuffer errorMsg = new StringBuffer("Fatal Error:\n");
             BufferedReader besr = new BufferedReader(new InputStreamReader(child.getErrorStream()));
-            String line = null;
+            String line;
 
             while ( !dead  && (line = besr.readLine()) != null) {
                 if(line.lastIndexOf("Memory") != -1) {
