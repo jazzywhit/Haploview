@@ -18,7 +18,6 @@ import java.awt.image.BufferedImage;
 import java.awt.event.*;
 import java.util.*;
 import java.net.URL;
-import java.net.MalformedURLException;
 import java.net.HttpURLConnection;
 import java.io.*;
 import javax.swing.*;
@@ -1181,7 +1180,7 @@ public class DPrimeDisplay extends JComponent
                 }
 
                 URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
-                        Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + (gblineSpan+2*GBROWSE_MARGIN) +
+                        Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + gblineSpan +
                         ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
 
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
