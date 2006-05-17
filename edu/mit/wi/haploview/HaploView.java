@@ -1104,6 +1104,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     //resizing correctly
                     dPrimeDisplay.computePreferredSize();
                     dPrimeDisplay.colorDPrime();
+                    dPrimeDisplay.revalidate();
 
                     hapDisplay.theData = theData;
 
