@@ -13,9 +13,9 @@
     <title>Using Haploview</title>
     
     <section id="load"> <title>Loading a Dataset</title>
-      
+
       <para>
-	Data can be loaded in three <link linkend="formats">formats</link> along with an optional marker info file 
+	Data can be loaded in three <link linkend="formats">formats</link> along with an optional marker info file
 	(except for HapMap files which do not require an info
 	file). Further options are presented on the load screen:
 	
@@ -46,8 +46,10 @@
 	  <listitem>
 	    If you wish to perform association tests, you must inform
 	    the program now and select either family trios or
-	    case/controls. More details are available under
-	    <link linkend="association">association</link>. [pedfile only]
+	    case/controls. For family datasets a standard TDT or
+	    parenTDT are available.  More details are available under
+	    <link linkend="association">association</link>. [pedfile
+	    only]
 	  </listitem>
 
 	  <listitem>
@@ -61,7 +63,7 @@
 	  in the <ulink
 	  url="http://www.broad.mit.edu/mpg/haploview/faq.php">FAQ</ulink>.
 	  </listitem>
-	  
+
 	</itemizedlist>
       </para>
       
@@ -76,18 +78,22 @@
       </para>
 
       <para>
-	Haploview allocates 1G of memory by default. This is usually
+	Haploview allocates 512MB of memory by default. This is usually
 	sufficient to handle datasets with several thousand
 	markers. If you are running the program on very large datasets
 	(>20,000 markers) you may need to force more memory (presuming
 	your computer has sufficient resources available). This can be
 	accomplished using the following command:
       </para>
-      <screen>java -Xmx2000M -cp Haploview.jar edu/mit/wi/haploview/Haploview</screen>
+      <screen>java -jar Haploview.jar -memory 2000</screen>
+
       <para>
-	Where "2000M" in this case specifies 2000 megabytes (2G) of
-	memory and can be adjusted as necessary.
-	</para>
+      Where "2000" in this case specifies 2000 megabytes of memory and
+      can be adjusted as necessary. Previous versions of Haploview
+      required a slightly different command to adjust available
+      memory, which still works: </para>
+
+      <screen>java -Xmx2000M -cp Haploview.jar edu/mit/wi/haploview/Haploview</screen>
 
     </section>
     <section id="checks">
@@ -95,13 +101,14 @@
 
       <section>
 	<title>Marker Checks</title>
+
 	<para>
-	  After loading a linkage or HapMap format file, Haploview
-	  shows some basic data quality checks for the
-	  markers. Markers are filtered out based on some default
-	  criteria which can be adjusted as necessary. Markers can be
-	  added or removed from analyses by hand via the checkboxes.
-	</para>
+	  After loading a file, Haploview shows some basic data
+	  quality checks for the markers. Markers are filtered out
+	  based on some default criteria which can be adjusted as
+	  necessary. Markers can be added or removed from analyses by
+	  hand via the checkboxes.  </para>
+
 	<itemizedlist>
 	  <listitem><emphasis role="bold">#</emphasis> is the marker number.</listitem>
 	  <listitem><emphasis role="bold">Name</emphasis> is the marker ID specified (only if an info file is loaded).</listitem>
@@ -113,15 +120,18 @@
 	  <listitem><emphasis role="bold">FamTrio</emphasis> is the number of fully genotyped family trios for this marker (0 for datasets with unrelated individuals).</listitem>
 	  <listitem><emphasis role="bold">MendErr</emphasis> is the number of observed Mendelian inheritance errors (0 for datasets with unrelated individuals).</listitem>
 	  <listitem><emphasis role="bold">MAF</emphasis> is the minor allele frequency (using founders only) for this marker.</listitem>
+	  <listitem><emphasis role="bold">M.A.</emphasis> is the minor allele for this marker.</listitem>
 	  <listitem><emphasis role="bold">Rating</emphasis> is checked if the marker passes all the tests and unchecked if it fails one or more tests (highlighted in red).</listitem>
 	</itemizedlist>
 
 	<para>
 	  You can adjust the filtering thresholds and click "Rescore"
-	  to refilter the markers using the new values. Markers can
+	  to refilter the markers using the new values. These thresholds 
+	  can be reset to values by clicking "Reset Values". Markers can
 	  also be selected/unselected by hand by clicking the "Rating"
-	  checkbox. Any marker which fails one of the quality tests
-	  will have the relevant field(s) highlighted in red.
+	  checkbox or using the "Select All" and "Deselect All" buttons.
+      Any marker which fails one of the quality tests will have the
+      relevant field(s) highlighted in red.
 	</para>
       </section>
       
@@ -152,7 +162,9 @@ If two markers in an input file have the same name, Haploview renames the second
 	  loaded. Further information about filtered individuals can
 	  be shown by clicking the "Show Excluded Individuals"
 	  button. This will present a list of excluded individuals as
-	  well as the reason for exclusion. Details about individual
+	  well as the reason for exclusion.  View genotyping percentage by
+      family and individual by clicking
+	  the "Individual Summary" button.  Details about individual
 	  filtering can be found in the 
 <ulink url="http://www.broad.mit.edu/mpg/haploview/faq.php#filter">FAQ</ulink>.
 	</para>
@@ -342,8 +354,8 @@ If two markers in an input file have the same name, Haploview renames the second
 	    
 	    This track display can be configured with the "HapMap Info
 	    Track Options" item in the "Display" menu. Available
-	    tracks include HapMap SNPs, gene names, mRNAs, contigs,
-	    gaps and GC content.
+	    tracks include HapMap SNPs, Entrez genes, recombination rate,
+        contigs, and GC content.
 	    
 	  </para>
 
@@ -620,7 +632,20 @@ those SNPs.</para>
 	  </glossentry>
 	</glosslist>
 
-	<para>The "Dump Tests File" button exports a <link linkend="custassocfile">file with the list of tests</link> in the format used by Haploview's custom association test file and Tagger's export.</para>
+	<para>The "Dump Tests File" button exports a <link
+	linkend="taggertests">file with the list of tests</link> in
+	the format used by Haploview's custom association test file
+	and Tagger's export. This file contains the list of all tests
+	(single SNPs and multi-marker tests) selected by Tagger for
+	subsequent association analysis. In pairwise-only tagging this
+	file will be identical to the "Tags" file, below.</para>
+
+    <para>The "Dump Tags File" button exports a <link
+    linkend="taggertags">file with the list of Tag SNPs</link> in the
+    format used by Haploview's custom association test file and
+    Tagger's export. It is the concise list of SNPs selected by Tagger
+    for genotyping. In pairwise-only tagging this file will be
+    identical to the "Tests" file, above.</para>
 
 <para>The "Export Tab to Text" option in the File menu will export a <link linkend="taggerout">summary
 file</link> showing the best tag for each marker and the list of tests along
@@ -1018,13 +1043,19 @@ BLOCK 2.  MARKERS: 10! 11! 12
 	  </glossdef>
 	</glossentry>
 
-	<glossentry><glossterm>Tagger Tests Dump</glossterm>
+	<glossentry id="taggertests"><glossterm>Tagger Tests Dump</glossterm>
 	  <glossdef>
 	    <para>This file is the same format used by Haploview for custom association tests and exported by <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger</ulink>. It is <link linkend="custassocfile">discussed below</link> in the auxiliary files section.</para>
 	  </glossdef>
 	</glossentry>
 
-	<glossentry><glossterm>Marker Check Text Output File</glossterm>
+    <glossentry id="taggertags"><glossterm>Tagger Tags Dump</glossterm>
+	  <glossdef>
+	    <para>This file is the same format used by Haploview for custom association tests and exported by <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger</ulink>. It is <link linkend="custassocfile">discussed below</link> in the auxiliary files section.</para>
+	  </glossdef>
+	</glossentry>
+
+    <glossentry><glossterm>Marker Check Text Output File</glossterm>
 	  <glossdef>
 	    <para>The marker check data is a tab-delimited file with the
 	      following columns:</para>
@@ -1039,7 +1070,8 @@ BLOCK 2.  MARKERS: 10! 11! 12
 	      <listitem><literal>FamTrio</literal> is the number of fully genotyped family trios for this marker (0 for datasets with unrelated individuals).</listitem>
 	      <listitem><literal>MendErr</literal> is the number of observed Mendelian inheritance errors (0 for datasets with unrelated individuals).</listitem>
 	      <listitem><literal>MAF</literal> is the minor allele frequency (using founders only) for this marker.</listitem>
-	      <listitem><literal>Rating</literal> is "BAD" if the marker failed any of the above tests and blank otherwise.</listitem>
+          <listitem><literal>M.A.</literal> is the minor allele for this marker.</listitem>
+          <listitem><literal>Rating</literal> is "BAD" if the marker failed any of the above tests and blank otherwise.</listitem>
 	    </itemizedlist>
 	  </glossdef></glossentry>
       </glosslist>
@@ -1134,18 +1166,17 @@ marker9</screen>
 
 
   <chapter id="commandline">
-    <title>Command Line Options</title> 
+    <title>Command Line Options</title>
 
-    <para>Haploview can be run from the command line without the display
-    in order to do processing of multiple datasets or quick
-    computation on very large datasets. The Haploview .jar file can be
-    run from the command line using:</para>
+    <para>Haploview can be run from the command line without the
+      display in order to do processing of multiple datasets or quick
+      computation on very large datasets. In order to run Haploview
+      without the display, add the "-nogui" flag. The "-help" flag
+      shows a condensed explanation of all the command line options
+      explained below. Haploview can be run from the command line
+      using:</para>
 
-    <screen>java -jar Haploview.jar</screen>
-
-      <para>In order to run Haploview without the display,
-        add the "-nogui" flag. The "-help" flag shows a condensed explanation
-	of all the command line options explained below.</para>
+      <screen>java -jar Haploview.jar</screen>
 
     <section>    
       <title>General Options</title>
@@ -1243,24 +1274,24 @@ marker9</screen>
 <glosslist>
 	<glossentry><glossterm>-check</glossterm>
 	  <glossdef><para>Output marker quality checks to &lt;inputfile&gt;.CHECK</para></glossdef></glossentry>
-	
+
 	<glossentry><glossterm>-dprime</glossterm>
 	  <glossdef><para>Output pairwise LD text table to &lt;inputfile&gt;.LD. Note that -dprime and -check default to no haplotype output unless the -blockoutput flag is also specified.</para></glossdef></glossentry>
-	
+
 	<glossentry><glossterm>-png</glossterm>
 	  <glossdef><para>Output PNG image file of LD display to &lt;inputfile&gt;.LD.PNG</para></glossdef></glossentry>
-	
+
 	<glossentry><glossterm>-compressedpng</glossterm>
 	  <glossdef><para>Output low-resolution (smaller file) PNG image of LD display to &lt;inputfile&gt;.LD.PNG</para></glossdef></glossentry>
-	
+
 	<glossentry><glossterm>-spacing &lt;threshold&gt;</glossterm>
 	  <glossdef><para>Use proportional spacing for dumped LD pngs. &lt;threshold&gt; ranges from 0 (no spacing) to 1 (max spacing) with a default of 0.</para></glossdef></glossentry>
-	
+
 	<glossentry><glossterm>-ldcolorscheme &lt;type&gt;</glossterm>
 	  <glossdef><para>Use a particular color scheme for dumped LD pngs. &lt;type&gt; can be DEFAULT, RSQ, DPALT, GAB or GAM. More information can be found with the <link linkend="lddisplay">LD</link> display help</para></glossdef></glossentry>
 	<glossentry><glossterm>-hapthresh &lt;threshold&gt;</glossterm>
 	  <glossdef><para>Only output haplotypes with frequency &ge; &lt;threshold&gt;. Note that multiallelic D' and htSNPs are computed using only displayed haplotypes.</para></glossdef></glossentry>
-	
+
 	<glossentry><glossterm>-excludeMarkers &lt;markers&gt;</glossterm>
 	  <glossdef><para>Exclude markers in a comma separated list with ranges specified as start..end. So, to exclude markers 3, 5 and 10 through 15 you'd use "-excludeMarkers 3,5,10..15"</para></glossdef></glossentry>
 </glosslist>
@@ -1269,7 +1300,7 @@ marker9</screen>
 <glosslist>
 	<glossentry><glossterm>-assocCC</glossterm>
 	  <glossdef><para>Output case/control association results. Saves single marker results to &lt;inputfile&gt;.ASSOC and haplotype results to &lt;inputfile&gt;.HAPASSOC. Haplotype association results are not generated if block type is set to ALL.</para></glossdef></glossentry>
-	
+
 	<glossentry><glossterm>-assocTDT</glossterm>
 	  <glossdef><para>Output TDT association results. Saves single marker results to &lt;inputfile&gt;.ASSOC and haplotype results to &lt;inputfile&gt;.HAPASSOC. Haplotype association results not generated if block type is set to ALL.</para></glossdef></glossentry>
 
@@ -1300,7 +1331,7 @@ marker9</screen>
 	<glossentry><glossterm>-tagrsqcutoff &lt;thresh&gt;</glossterm>
 	  <glossdef><para>Tagger r^2 cutoff.</para></glossdef></glossentry>
 
-	
+
       </glosslist>
     </section>
   </chapter>
