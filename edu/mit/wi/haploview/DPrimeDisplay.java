@@ -1173,19 +1173,13 @@ public class DPrimeDisplay extends JComponent
                 }
                 String dataBuild = "_" + Chromosome.getDataBuild().substring(5).toUpperCase();
 
-                //This removes the build parameter in the case of the hapmap default build (currently B34).
-                //TODO: Hapmap needs to fix this before we can release.
-                if (dataBuild.equals("_B34")){
-                    dataBuild = "";
-                }
-
                 URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
                         Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + gblineSpan +
                         ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
 
                 Toolkit toolkit = Toolkit.getDefaultToolkit();
                 HttpURLConnection con = (HttpURLConnection)imageUrl.openConnection();
-                con.setRequestProperty("User-agent",Constants.TITLE_STRING);
+                con.setRequestProperty("User-agent",Constants.USER_AGENT);
                 //todo: make it timeout quicker
                 con.connect();
 
