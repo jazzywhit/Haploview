@@ -1340,21 +1340,22 @@ marker9</screen>
     <title>About Haploview</title>
     <section> 
       <para>
-	Haploview was developed in and is maintained by 
-	<ulink url="http://www.broad.mit.edu/personal/mjdaly/">Mark Daly's lab</ulink>
-	at the <ulink url="http://www.wi.mit.edu">Whitehead Institute</ulink> by 
-	Jeffrey Barrett and Julian Maller. Questions and comments should be addressed to: 
+	Haploview was developed in and is maintained by Mark Daly's lab
+	at the <ulink url="http://www.broad.mit.edu">Broad Institute</ulink> by
+	Jeffrey Barrett, Julian Maller and David Bender. Questions and comments should be addressed to:
 <ulink url="mailto:haploview@broad.mit.edu">haploview@broad.mit.edu</ulink>
 </para>
       
       <itemizedlist>
-	<listitem>The design of the interfaces is the work of <emphasis role="bold">Ben Fry</emphasis> at
+	<listitem>The design of the LD and haplotype interfaces is the work of <emphasis role="bold">Ben Fry</emphasis> at
 	  the <ulink url="http://acg.media.mit.edu/people/fry">MIT Media
 	    Lab</ulink>.</listitem>
 	
 	<listitem>Thanks to <emphasis role="bold">Andrew Kirby</emphasis> for large chunks of coding.</listitem>
-	
-	<listitem>Hardy-Weinberg calculation code courtesy of <emphasis role="bold">Goncalo
+
+    <listitem>Thanks to <emphasis role="bold">Itsik Pe`er</emphasis> and <emphasis role="bold">Paul de Bakker</emphasis> for their extensive contributions to methods development and testing.</listitem>
+
+    <listitem>Hardy-Weinberg calculation code courtesy of <emphasis role="bold">Goncalo
 	    Abecasis</emphasis> and <emphasis role="bold">Jan Wigginton</emphasis> at the 
 	  <ulink url="http://www.sph.umich.edu/csg/index.html">University of Michigan
 	    Center for Statistical Genetics</ulink></listitem>
