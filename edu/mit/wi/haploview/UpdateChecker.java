@@ -42,7 +42,7 @@ public class UpdateChecker {
         try {
             URL url = new URL("http://www.broad.mit.edu/mpg/haploview/uc/version.txt");
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
-            con.setRequestProperty("User-agent",Constants.TITLE_STRING);
+            con.setRequestProperty("User-agent",Constants.USER_AGENT);
             con.connect();
 
             int response = con.getResponseCode();
