@@ -35,7 +35,7 @@
 
     <path id="xslt.processor.classpath">                                         
       <pathelement path="/opt/saxon/saxon.jar" />
-      <pathelement path="${xslPath}/extensions/saxon651.jar"/> 
+      <pathelement path="${xslPath}/extensions/saxon653.jar"/> 
     </path>
     <tstamp>
       <format property="build.number" pattern="yyyyMMddHHmm"/>
@@ -52,8 +52,8 @@
       <arg line="${doc.xml} ${stylesheet.fo} ${stylesheet.params.pdf}" /> 
     </java>
 
-    <exec executable="pdfxmltex" dir="${out.doc.pdf}" output="/dev/null">
-      <arg line="haploview.fo"/>
+    <exec executable="/opt/fop/fop.sh" dir="${out.doc.pdf}" output="/dev/null">
+      <arg line="-fo haploview.fo -pdf haploview.pdf"/>
     </exec>
 </target>
 
