@@ -53,6 +53,12 @@
 	  </listitem>
 
 	  <listitem>
+	  If your data is from the X chromosome, tick the box so that
+	  Haploview will correctly process your data. All
+	  functionality now works with the X, except haplotype
+	  association testing.  </listitem>
+
+	  <listitem>
 	  Haploview will maximize the information available from a
 	  pedigree for both LD analyses and association tests. For the
 	  former it creates a maximal set of unrelated individuals,
@@ -107,7 +113,10 @@
 	  quality checks for the markers. Markers are filtered out
 	  based on some default criteria which can be adjusted as
 	  necessary. Markers can be added or removed from analyses by
-	  hand via the checkboxes.  </para>
+	  hand via the checkboxes. The data in this table can be
+	  sorted by clicking on any of the column headers. Compound
+	  sorts can be done by clicking on the first column header
+	  then CTRL clicking on the next one.</para>
 
 	<itemizedlist>
 	  <listitem><emphasis role="bold">#</emphasis> is the marker number.</listitem>
@@ -289,9 +298,10 @@ If two markers in an input file have the same name, Haploview renames the second
 
 	  <listitem>
 	    In order to help keep the display uncluttered, D prime
-	    values of 1.0 are never shown (the box is empty). The
-	    r<superscript>2</superscript> and Alternate D'/LOD schemes
-	    do not show any values in the boxes.</listitem>
+	    values of 1.0 are never shown (the box is empty). These
+	    values can be switched on or off with the "Show LD values"
+	    option in the Display menu.  </listitem>
+
 	  <listitem>
 	    The zoom option (Display menu) allows you to select one of
 	    three zoom modes. The two zoomed out versions can be
@@ -310,17 +320,24 @@ If two markers in an input file have the same name, Haploview renames the second
 	    LD chart are green in the zoomed-out view. Details can be
 	    viewed by right clicking on the marker number (as
 	    mentioned below).</listitem>
+
 	  <listitem>
 	    Right clicking on the marker number (or the equivalent
 	    space in the zoomed out views) shows the marker name,
 	    minor allele frequency and any additional notes specified
-	    in the <link linkend="info">info</link> file. This can be especially helpful in the
-	    zoomed out views which do not display marker
-	    names.</listitem>
+	    in the <link linkend="info">info</link> file. This can be
+	    especially helpful in the zoomed out views which do not
+	    display marker names. The last such piece of popup
+	    information clicked will be shown at the top of the LD
+	    plot. This reminder can be dismissed by left clicking
+	    anywhere on the LD plot.</listitem>
+
 	  <listitem>
 	    Right clicking on any pairwise LD comparison will show a
 	    more detailed summary of the LD between the two markers in
-	    question.</listitem>
+	    question. This information is also shown at the top of the
+	    screen as described above and can be dismissed by left
+	    clicking anywhere on the LD plot.</listitem>
 	  
 	</itemizedlist>
       </section>
@@ -328,13 +345,16 @@ If two markers in an input file have the same name, Haploview renames the second
 	<title>Additional Data Tracks </title>
 	<section>
 	  <title>Analysis Track </title>
+
 	  <para>
 	    A graph of any variable versus chromosomal location can be
 	    added above the LD plot with the "Load Analysis Track"
-	    option. Simply create a file with two columns: &lt;position&gt; 
-	    &lt;value&gt; . Haploview will plot the values in a continuous
-	    line along the top of the screen.
-	  </para>
+	    option. Simply create a file with two columns:
+	    &lt;position&gt; &lt;value&gt; . Haploview will plot the
+	    values in a continuous line along the top of the screen,
+	    along with a scale bar on the Y-axis. You can load several
+	    analysis tracks which will all be plotted in the same box
+	    at the top of the LD plot.  </para>
 
 	</section>
 	<section>
@@ -347,9 +367,9 @@ If two markers in an input file have the same name, Haploview renames the second
 	    specified, the default boundaries are the positions of the
 	    first and last markers (which is only valid if the info
 	    file is in genomic coordinates). You must specify the
-	    proper chromosome in the dialog box. If you are using a
+	    proper chromosome and genomic build in the dialog box. If you are using a
 	    file downloaded from the HapMap website the program will
-	    specify the correct default chromosome and start/end
+	    specify the correct default chromosome, build and start/end
 	    positions.
 	    
 	    This track display can be configured with the "HapMap Info
@@ -474,27 +494,11 @@ If two markers in an input file have the same name, Haploview renames the second
 	<section>
 	  <title>Tag SNPs </title>
 
-	  <para> The htSNPs are selected on a block-by-block
-	    basis. This means that the end set is not necessarily the
-	    most parsimonious one for the entire dataset, but it
-	    provides for a much more thorough testing set if you plan to
-	    move from an initial sample used to pick htSNPs to a much
-	    larger sample, that is, it is much more likely to catch
-	    variation in the new, large dataset that was not observed in
-	    the initial dataset. Preference for this method or another
-	    depends on experimental design.
-	  </para>
-
-	  <para>Specifically, the SNPs in each block are ranked in
-	    order of completeness of genotyping and then a set is
-	    selected which defines all haplotypes above a certain
-	    (adjustable) frequency threshold. The method ensures the
-	    most efficient possible set for strict 4 gamete blocks, but
-	    occasionally features redundancies of larger and more
-	    loosely defined blocks (where some recombination has
-	    occurred).
-
-	  </para>
+	  <para>Haplotype tag SNPs are no longer displayed by default
+	  in the Haplotypes tab. It is recommended that all tagging be
+	  done via the Tagger tab. The block-by-block tags can be
+	  displayed by ticking the "Show tags in blocks" option in the
+	  Display menu.  </para>
 	  
 	</section>
 	
@@ -657,14 +661,16 @@ with the alleles tagged by each test.</para>
     <section id="association">
       <title>Association Tests</title>
       <para>
-	If selected when <link linkend="load">loading</link>
-	the data, Haploview computes single
-	locus and multi-marker haplotype association tests. For
-	case/control data, the chi square and p-value for the allele
-	frequencies in cases vs. control are shown. For family trios,
-	all probands (affected individual with genotyped parents) are
-	used to compute TDT values.
-      </para>
+	If selected when <link linkend="load">loading</link> the data,
+	Haploview computes single locus and multi-marker haplotype
+	association tests. For case/control data, the chi square and
+	p-value for the allele frequencies in cases vs. control are
+	shown. For family trios, all probands (affected individual
+	with genotyped parents) are used to compute TDT values. If the
+	parenTDT option is selected, additional information is gained
+	from parental phenotypes. More information about this method
+	can be found in the Citations list in the <link
+	linkend="about">About Haploview</link> section.  </para>
       <para>
 	The haplotype association test is performed on the set of blocks
 	selected on the LD and haplotype tabs. Results are shown only for
@@ -709,6 +715,13 @@ with the alleles tagged by each test.</para>
 	    <para>Permute the individual SNPs as above, along with all the haplotypes shown in the Haplotypes tab.</para>
 	  </glossdef>
 	</glossentry>
+
+	<glossentry><glossterm>Haplotypes in blocks only</glossterm>
+	<glossdef>
+	<para>Permute only the haplotypes in the Haplotypes tab, ignoring the single marker results.</para>
+	</glossdef>
+	</glossentry>
+
 	<glossentry><glossterm>Custom Tests from File</glossterm>
 	  <glossdef>
 	    <para>Permute the set of tests loaded from an external file. Note that this choice is only available if you provided a <link linkend="custassocfile">tests file</link> when you loaded your dataset.</para>
@@ -778,7 +791,7 @@ a     b    c    d    e    f    -----------g------------ </screen>
 	      <glossentry><glossterm>(f)  affectation status</glossterm>
 		<glossdef><para>Affectation status to be used for association tests (0=UNKNOWN, 1=UNAFFECTED, 2=AFFECTED).</para></glossdef></glossentry>
 	      <glossentry><glossterm>(g)  marker genotypes</glossterm>
-		<glossdef><para>Each marker is represented by two columns (one for each allele, separated by a space) and coded 1-4 where: 1=A, 2=C, 3=G, T=4. 
+		<glossdef><para>Each marker is represented by two columns (one for each allele, separated by a space) and coded either ACGT or 1-4 where: 1=A, 2=C, 3=G, T=4. 
 		  A 0 in any of the marker genotype position (as in the the genotypes for the third marker above) indicates missing data.
 		</para></glossdef></glossentry>
 	    </glosslist>
@@ -825,9 +838,8 @@ FAM1    FAM1F02    3    h    1    2</screen>
 	<glossentry id="hapmap"><glossterm>HapMap Project Data Dumps</glossterm>
 	  <glossdef>
 	    <para>Data from the HapMap Project
-	      can be dumped by region using the GBrowse interface. Downloading
-	      data requires user registration and agreement to the terms of
-	      use. The saved data file is in a marker-per-line format which
+	      can be dumped by region using the GBrowse interface. 
+	      The saved data file is in a marker-per-line format which
 	      can be loaded in Haploview.</para>
 	    
 	    <para>GBrowse dumps only one file, which has one marker per line
@@ -836,6 +848,25 @@ FAM1    FAM1F02    3    h    1    2</screen>
 	      has several header lines (beginning with "#") which Haploview
 	      parses. Open the file by selecting "Browse HapMap Data" option
 	      and selecting the downloaded file.</para>
+
+	      <para>If you wish to load data from another source in
+	      HapMap style format, you will need to specify pedigree
+	      information in the header of the file you've
+	      created. This can be done by creating lines of the
+	      following format at the top of your file:</para>
+
+	      <screen>#@ FAM01 NA0001 0 0 1 1</screen>
+
+	      <para>This data is the same as the pedfile format
+	      discussed above. That is, the fields are
+	      family,individual,father,mother,gender,affected
+	      status. You would then replace the NAXXXX identifiers in
+	      the header row of the HapMap file with your identifiers,
+	      subject to two important constraints: they must be
+	      unique across the entire dataset, not just within a
+	      family and they must begin with the characters
+	      NA.</para>
+
 	  </glossdef></glossentry>
 
 	<glossentry id="info"><glossterm>Marker Information File</glossterm>
@@ -1189,6 +1220,9 @@ marker9</screen>
 	
 	<glossentry><glossterm>-q, -quiet</glossterm>
 	  <glossdef><para>Quiet mode&mdash;minimizes output to command line.</para></glossdef></glossentry>
+
+	  <glossentry><glossterm>-memory &lt;memsize&gt;</glossterm>
+	  <glossdef><para>Allocate &lt;memsize&gt; megabytes of memory to the Haploview process (default is 512MB).</para></glossdef></glossentry>
       </glosslist>
     </section>
     
@@ -1219,6 +1253,10 @@ marker9</screen>
 	
 	<glossentry><glossterm>-track &lt;filename&gt;</glossterm>
 	  <glossdef><para>Specify an analysis <link linkend="trackfile">track</link> file</para></glossdef></glossentry>
+
+	  <glossentry><glossterm>-chromosome &lt;1-22,X&gt;</glossterm>
+	  <glossdef><para>Specify which chromosome these data come from. This is especially critical when analyzing data from the X chromosome.</para></glossdef></glossentry>
+
       </glosslist>
     </section>
 
@@ -1338,7 +1376,6 @@ marker9</screen>
 
   <chapter id="about">
     <title>About Haploview</title>
-    <section> 
       <para>
 	Haploview was developed in and is maintained by Mark Daly's lab
 	at the <ulink url="http://www.broad.mit.edu">Broad Institute</ulink> by
@@ -1351,9 +1388,9 @@ marker9</screen>
 	  the <ulink url="http://acg.media.mit.edu/people/fry">MIT Media
 	    Lab</ulink>.</listitem>
 	
-	<listitem>Thanks to <emphasis role="bold">Andrew Kirby</emphasis> for large chunks of coding.</listitem>
+	<listitem>Thanks to <emphasis role="bold">Andrew Kirby and Hin-Tak Leung</emphasis> for code contributions.</listitem>
 
-    <listitem>Thanks to <emphasis role="bold">Itsik Pe`er</emphasis> and <emphasis role="bold">Paul de Bakker</emphasis> for their extensive contributions to methods development and testing.</listitem>
+    <listitem>Thanks to <emphasis role="bold">Itsik Pe'er and Paul de Bakker</emphasis> for their extensive contributions to methods development and testing.</listitem>
 
     <listitem>Hardy-Weinberg calculation code courtesy of <emphasis role="bold">Goncalo
 	    Abecasis</emphasis> and <emphasis role="bold">Jan Wigginton</emphasis> at the 
@@ -1376,7 +1413,7 @@ marker9</screen>
 	the SourceForge <ulink url="http://sf.net/projects/haploview/">project
 	  site</ulink>.</para>
       
-      <para><emphasis role="bold">Citation</emphasis></para>
+      <para><emphasis role="bold">Citations</emphasis></para>
       
       <para>Haploview can be cited with the following 
 	<ulink url="http://bioinformatics.oupjournals.org/cgi/content/full/bth457?ijkey=54SiAdNbKzbNg">paper</ulink>:</para> 
@@ -1384,11 +1421,18 @@ marker9</screen>
       <para>Barrett JC, Fry B, Maller J, Daly MJ. Haploview: analysis and
 	visualization of LD and haplotype maps. <emphasis>Bioinformatics</emphasis>. 2005
 	Jan 15 [PubMed ID: 15297300]</para>
+
+	<para>Information about the exact test for HW can be found in the following paper:</para>
+
+	<para>Wigginton JE, Cutler DJ, Abecasis GR. A note on exact tests of Hardy-Weinberg equilibrium. <emphasis>Am J Hum Genet.</emphasis> 2005 May;76(5):887-93.</para>
+
+	<para>Information about parenTDT can be found in the following paper:</para>
+
+	<para>Purcell S, Sham P, Daly MJ. Parental phenotypes in family-based association analysis. <emphasis>Am J Hum Genet.</emphasis> 2005 Feb;76(2):249-59.</para>
       
       <para>Questions, complaints and suggestion should be directed to 
 	<ulink url="mailto:haploview@broad.mit.edu">haploview@broad.mit.edu</ulink>.</para>
       
-    </section>
     
     <section>
       <title>System Requirements</title>
@@ -1403,7 +1447,14 @@ marker9</screen>
     </section>
 
     <section>
-      <title>Known Issues</title>
+      <title>Known Issues</title> 
+
+      <para>We are working to correct some problems with haplotype
+      association for complex pedigrees which sometimes yield
+      different results when the same dataset is analyzed several
+      times. We are also working to implement haplotype association
+      testing for the X chromosome.</para>
+
       <para>Saving PNG files from the command line (the -png and -compressedpng
 	flags) requires Java version 1.4 or later.</para>
 
