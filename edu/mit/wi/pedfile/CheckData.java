@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.13 2006/05/12 18:01:28 jmaller Exp $
+* $Id: CheckData.java,v 3.14 2006/05/24 19:37:37 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -68,6 +68,7 @@ public class CheckData {
         Hashtable founderGenoCount = new Hashtable();
         Hashtable kidgeno = new Hashtable();
         int[] founderHomCount = new int[5];
+        Vector mendels = new Vector();
 
         int[] count = new int[5];
         for(int i=0;i<5;i++) {
@@ -113,6 +114,9 @@ public class CheckData {
                                     //allele1 matches either momallele1 or momallele2
                                     if(allele1 != momAllele1 && allele1 != momAllele2) {
                                         mendErrNum ++;
+                                        MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                currentInd.getIndividualID());
+                                        mendels.add(mend);
                                         currentInd.zeroOutMarker(loc);
                                         currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                         currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
@@ -126,6 +130,9 @@ public class CheckData {
                                         //kid must be hom same allele
                                         if(allele1 != momAllele1 || allele2 != momAllele2){
                                             mendErrNum ++;
+                                            MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                    currentInd.getIndividualID());
+                                            mendels.add(mend);
                                             currentInd.zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
@@ -134,6 +141,9 @@ public class CheckData {
                                         //kid must be het
                                         if(allele1 == allele2 ){
                                             mendErrNum ++;
+                                            MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                    currentInd.getIndividualID());
+                                            mendels.add(mend);
                                             currentInd.zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
@@ -143,6 +153,9 @@ public class CheckData {
                                     //mom het,so only need to check that at least one allele matches dad
                                     if(allele1 != dadAllele1 && allele2 != dadAllele2){
                                         mendErrNum ++;
+                                        MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                currentInd.getIndividualID());
+                                        mendels.add(mend);
                                         currentInd.zeroOutMarker(loc);
                                         currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                         currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
@@ -162,6 +175,9 @@ public class CheckData {
                                             //kid must be hom same allele
                                             if (allele1 != momAllele1 || allele2 != momAllele1) {
                                                 mendErrNum ++;
+                                                MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                        currentInd.getIndividualID());
+                                                mendels.add(mend);
                                                 currentInd.zeroOutMarker(loc);
                                                 currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                                 currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
@@ -171,6 +187,9 @@ public class CheckData {
                                             //kid must be het
                                             if (allele1 == allele2) {
                                                 mendErrNum++;
+                                                MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                        currentInd.getIndividualID());
+                                                mendels.add(mend);
                                                 currentInd.zeroOutMarker(loc);
                                                 currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                                 currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
@@ -181,6 +200,9 @@ public class CheckData {
                                         //kid can't be hom for non-momallele
                                         if (allele1 != momAllele1 && allele2 != momAllele1){
                                             mendErrNum++;
+                                            MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                    currentInd.getIndividualID());
+                                            mendels.add(mend);
                                             currentInd.zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
@@ -193,6 +215,9 @@ public class CheckData {
                                         //kid can't be hom for non-dadallele
                                         if(allele1 != dadAllele1 && allele2 != dadAllele1){
                                             mendErrNum++;
+                                            MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                    currentInd.getIndividualID());
+                                            mendels.add(mend);
                                             currentInd.zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
@@ -314,6 +339,7 @@ public class CheckData {
         result.setFamTrioNum(famTrio);
         result.setMendErrNum(mendErrNum);
         result.setRating(rating);
+        result.setMendelErrors(mendels);
         return result;
     }
 

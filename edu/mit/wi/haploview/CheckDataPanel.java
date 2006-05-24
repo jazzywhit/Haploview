@@ -42,6 +42,8 @@ public class CheckDataPanel extends JPanel
         JButton missingButton = new JButton("Show Excluded Individuals");
         JButton individualButton = new JButton("Individual Summary");
         individualButton.setEnabled(true);
+        JButton mendelButton = new JButton("Mendel Errors");
+        mendelButton.setEnabled(true);
         if (hv.theData.getPedFile().getAxedPeople().size() == 0){
             missingButton.setEnabled(false);
         }
@@ -50,6 +52,8 @@ public class CheckDataPanel extends JPanel
         missingPanel.add(missingButton);
         individualButton.addActionListener(this);
         missingPanel.add(individualButton);
+        mendelButton.addActionListener(this);
+        missingPanel.add(mendelButton);
         missingPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         JPanel extraPanel = new JPanel();
         extraPanel.add(missingPanel);
@@ -181,6 +185,11 @@ public class CheckDataPanel extends JPanel
             IndividualDialog fd = new IndividualDialog(hv,"Individual Summary");
             fd.pack();
             fd.setVisible(true);
+        }
+        if (command.equals("Mendel Errors")) {
+            MendelDialog md = new MendelDialog(hv,"Mendel Errors");
+            md.pack();
+            md.setVisible(true);
         }
     }
 

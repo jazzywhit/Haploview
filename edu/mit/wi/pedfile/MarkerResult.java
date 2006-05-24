@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.6 2006/04/11 15:08:33 djbender Exp $
+ * $Id: MarkerResult.java,v 3.7 2006/05/24 19:37:37 djbender Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -15,6 +15,7 @@ package edu.mit.wi.pedfile;
 import edu.mit.wi.haploview.Util;
 import java.text.*;
 import java.util.Locale;
+import java.util.Vector;
 
 /**
  * <p>Title: MarkerResult.java </p>
@@ -37,6 +38,7 @@ public class MarkerResult {
 	private int _famTrioNum;
 	private int _mendErrNum;
 	private int _rating;
+    private Vector mendelErrors;
 
     private static NumberFormat nf = NumberFormat.getInstance(Locale.US);
     private static NumberFormat pctNF = NumberFormat.getInstance(Locale.US);
@@ -114,7 +116,11 @@ public class MarkerResult {
 		this._rating = rating;
 	}
 
-	/**
+    public void setMendelErrors(Vector mends){
+        mendelErrors = mends;
+    }
+
+    /**
 	 * Gets observed heterozygosity
 	 */
 	public double getObsHet(){
@@ -183,7 +189,11 @@ public class MarkerResult {
 		return this._rating;
 	}
 
-	public String toString(){
+    public Vector getMendelErrors(){
+        return mendelErrors;
+    }
+
+    public String toString(){
 		StringBuffer buffer = new StringBuffer();
 		NumberFormat format=NumberFormat.getInstance();
 		format.setMaximumFractionDigits(3);
