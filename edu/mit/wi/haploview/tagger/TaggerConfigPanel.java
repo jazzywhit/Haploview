@@ -16,6 +16,8 @@ import java.util.Vector;
 import java.util.Hashtable;
 import java.io.File;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 public class TaggerConfigPanel extends HaploviewTab
         implements TableModelListener, ActionListener {
@@ -29,6 +31,7 @@ public class TaggerConfigPanel extends HaploviewTab
     private final static int CAPTURE_COL = 5;
 
     private JButton runTaggerButton;
+    public static JFileChooser fc;
     private Timer timer;
     private HaploData theData;
     private Hashtable snpsByName;
@@ -43,6 +46,20 @@ public class TaggerConfigPanel extends HaploviewTab
     public TaggerConfigPanel(HaploData hd)  {
         theData = hd;
         refreshTable();
+        try{
+            fc = new JFileChooser(System.getProperty("user.dir"));
+        }catch(NullPointerException n){
+            try{
+                UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+                fc = new JFileChooser(System.getProperty("user.dir"));
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }catch(Exception e){
+                JOptionPane.showMessageDialog(this,
+                        e.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 
     public void tableChanged(TableModelEvent e) {
@@ -153,14 +170,18 @@ public class TaggerConfigPanel extends HaploviewTab
 
         runTaggerButton = new JButton("Run Tagger");
         runTaggerButton.addActionListener(this);
-
         JButton resetTableButton = new JButton("Reset Table");
         resetTableButton.addActionListener(this);
+        JButton forceIncludeButton = new JButton("Load Include File");
+        forceIncludeButton.addActionListener(this);
+        JButton forceExcludeButton = new JButton("Load Exclude File");
+        forceExcludeButton.addActionListener(this);
 
-        JPanel buttonPanel = new JPanel();
-
+        buttonPanel = new JPanel();
         buttonPanel.add(runTaggerButton);
         buttonPanel.add(resetTableButton);
+        buttonPanel.add(forceIncludeButton);
+        buttonPanel.add(forceExcludeButton);
 
         add(buttonPanel);
     }
@@ -238,7 +259,6 @@ public class TaggerConfigPanel extends HaploviewTab
                 taggerProgressPanel.add(taggerProgress);
                 remove(buttonPanel);
                 add(taggerProgressPanel);
-                add(buttonPanel);
                 revalidate();
 
                 tagControl.runTagger();
@@ -248,6 +268,7 @@ public class TaggerConfigPanel extends HaploviewTab
                     public void actionPerformed(ActionEvent e) {
                         if(tagControl.isTaggingCompleted()) {
                             remove(taggerProgressPanel);
+                            add(buttonPanel);
                             runTaggerButton.setEnabled(true);
                             //the parent of this is the jtabbedPane in the tagger tab of HV
                             ((JTabbedPane)(tcp.getParent())).setSelectedIndex(1);
@@ -272,6 +293,52 @@ public class TaggerConfigPanel extends HaploviewTab
                 table.setValueAt(new Boolean(true), i, CAPTURE_COL);
             }
             rsqField.setText(String.valueOf(Tagger.DEFAULT_RSQ_CUTOFF));
+        }else if (command.equals("Load Include File")){
+            Hashtable forceIncludes = new Hashtable(1,1);
+            fc.setSelectedFile(new File(""));
+            int returnVal = fc.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION){
+                try{
+                    BufferedReader br = new BufferedReader(new FileReader(fc.getSelectedFile()));
+                    String line;
+                    while((line = br.readLine()) != null) {
+                        if(line.length() > 0 && line.charAt(0) != '#'){
+                            forceIncludes.put(line,"I");
+                        }
+                    }
+                }catch(IOException ioe){
+                    //throw new IOException("An error occured while reading the force includes file.");
+                }
+            }
+
+            for (int i = 0; i < table.getRowCount(); i++){
+                if (forceIncludes.containsKey(table.getValueAt(i,NAME_COL))){
+                    table.setValueAt(new Boolean(true),i,INCLUDE_COL);
+                }
+            }
+        }else if (command.equals("Load Exclude File")){
+            Hashtable forceExcludes = new Hashtable(1,1);
+            fc.setSelectedFile(new File(""));
+            int returnVal = fc.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION){
+                try{
+                    BufferedReader br = new BufferedReader(new FileReader(fc.getSelectedFile()));
+                    String line;
+                    while((line = br.readLine()) != null) {
+                        if(line.length() > 0 && line.charAt(0) != '#'){
+                            forceExcludes.put(line,"E");
+                        }
+                    }
+                }catch(IOException ioe){
+                    //throw new IOException("An error occured while reading the force excludes file.");
+                }
+            }
+
+            for (int j = 0; j < table.getRowCount(); j++){
+                if (forceExcludes.containsKey(table.getValueAt(j,NAME_COL))){
+                    table.setValueAt(new Boolean(true),j,EXCLUDE_COL);
+                }
+            }
         }
     }
 
