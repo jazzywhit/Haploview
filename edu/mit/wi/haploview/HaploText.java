@@ -31,6 +31,7 @@ public class HaploText implements Constants{
     private int blockOutputType;
     private boolean outputCheck;
     private boolean individualCheck;
+    private boolean mendel;
     private boolean outputDprime;
     private boolean outputPNG;
     private boolean outputCompressedPNG;
@@ -313,6 +314,9 @@ public class HaploText implements Constants{
             }
             else if (args[i].equalsIgnoreCase("-indcheck")){
                  individualCheck = true;
+            }
+            else if (args[i].equalsIgnoreCase("-mendel")){
+                mendel = true;
             }
             else if(args[i].equalsIgnoreCase("-m") || args[i].equalsIgnoreCase("-maxdistance")) {
                 i++;
@@ -937,7 +941,11 @@ public class HaploText implements Constants{
             }
             if(individualCheck && result != null){
                 IndividualDialog id = new IndividualDialog(textData);
-                id.printTable(validateOutputFile(fileName +".INDCHECK"));
+                id.printTable(validateOutputFile(fileName + ".INDCHECK"));
+            }
+            if(mendel && result != null){
+                MendelDialog md = new MendelDialog(textData);
+                md.printTable(validateOutputFile(fileName + ".MENDEL" ));
             }
             Vector cust = new Vector();
             AssociationTestSet blockTestSet = null;

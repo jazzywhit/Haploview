@@ -141,6 +141,7 @@ public interface Constants {
             "                                note: -dprime  and -check default to no blocks output. \n" +
             "                                Use -blockoutput to also output blocks\n" +
             "-indcheck                       Outputs genotype percent per individual to <inputfile>.INDCHECK\n" +
+            "-mendel                         Outputs mendel error information to <inputfile>.MENDEL\n" +
             "-blockoutput <GAB,GAM,SPI,ALL>  Output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
             "-blockCutHighCI <thresh>        Gabriel 'Strong LD' high confidence interval D' cutoff.\n" +
             "-blockCutLowCI <thresh>         Gabriel 'Strong LD' low confidence interval D' cutoff.\n" +

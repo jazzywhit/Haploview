@@ -88,6 +88,35 @@ public class MendelDialog extends JDialog implements ActionListener, Constants {
         this.setModal(true);
     }
 
+    public MendelDialog(HaploData hd){
+        Vector results = hd.getPedFile().getResults();
+
+        Vector colNames = new Vector();
+        colNames.add("FamilyID");
+        colNames.add("ChildID");
+        colNames.add("Marker");
+        colNames.add("Position");
+        Vector data = new Vector();
+
+        for(int i=0;i<results.size();i++) {
+            MarkerResult currentResult = (MarkerResult)results.get(i);
+            if (currentResult.getMendErrNum() > 0){
+                Vector tmpVec = new Vector();
+                Vector mendelErrors = currentResult.getMendelErrors();
+                for (int j = 0; j < mendelErrors.size(); j++){
+                    MendelError error = (MendelError)mendelErrors.get(j);
+                    tmpVec.add(error.getFamilyID());
+                    tmpVec.add(error.getChildID());
+                    tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
+                    tmpVec.add(new Long(Chromosome.getUnfilteredMarker(i).getPosition()));
+                    data.add(tmpVec);
+                }
+            }
+        }
+
+        tableModel = new BasicTableModel(colNames, data);
+    }
+
     public void printTable(File outfile) throws IOException {
         FileWriter checkWriter = null;
         if (outfile != null){
