@@ -1217,7 +1217,8 @@ public class HaploText implements Constants{
 
                 tc.saveResultsToFile(validateOutputFile(fileName + ".TAGS"));
                 tc.dumpTests(validateOutputFile(fileName + ".TESTS"));
-                tc.dumpTags(validateOutputFile(fileName + ".TAGSNPS"));
+                //todo: I don't like this at the moment, removed subject to further consideration.
+                //tc.dumpTags(validateOutputFile(fileName + ".TAGSNPS"));
             }
 
 
