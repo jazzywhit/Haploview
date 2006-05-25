@@ -6,9 +6,9 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
-import org.freehep.util.export.ExportDialog;
-import org.freehep.graphics2d.VectorGraphics;
-import org.freehep.graphicsio.ps.PSGraphics2D;
+//import org.freehep.util.export.ExportDialog;
+//import org.freehep.graphics2d.VectorGraphics;
+//import org.freehep.graphicsio.ps.PSGraphics2D;
 
 import java.awt.*;
 import java.awt.geom.GeneralPath;
