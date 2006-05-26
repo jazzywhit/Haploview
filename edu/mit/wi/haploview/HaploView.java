@@ -834,7 +834,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                         metaAssoc.add("Single Marker", tdtPanel);
 
-                        hapAssocPanel = new HaploAssocPanel(new AssociationTestSet(theData.getHaplotypes(), null));
+                        if (!Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+                            hapAssocPanel = new HaploAssocPanel(new AssociationTestSet(theData.getHaplotypes(), null));
+                        }else{
+                            hapAssocPanel = new HaploAssocPanel(new AssociationTestSet(null,null));
+                        }
                         metaAssoc.add("Haplotypes", hapAssocPanel);
 
                         //custom association tests
@@ -1063,7 +1067,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     JTabbedPane metaAssoc = ((JTabbedPane)((HaploviewTab)tabs.getSelectedComponent()).getComponent(0));
                     //this is the haps ass tab inside the assoc super-tab
                     HaploAssocPanel htp = (HaploAssocPanel) metaAssoc.getComponent(1);
-                    if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold()){
+                    if (htp.initialHaplotypeDisplayThreshold != Options.getHaplotypeDisplayThreshold() &&
+                            !Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
                         htp.makeTable(new AssociationTestSet(theData.getHaplotypes(), null));
                         permutationPanel.setBlocksChanged();
                         AssociationTestSet custSet = null;
@@ -1164,7 +1169,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 if (hapDisplay != null && theData.blocksChanged){
                     try{
                         hapDisplay.getHaps();
-                        if(Options.getAssocTest() != ASSOC_NONE) {
+                        if(Options.getAssocTest() != ASSOC_NONE &&
+                                !Chromosome.getDataChrom().equalsIgnoreCase("chrx")) {
                             //this is the haps ass tab inside the assoc super-tab
                             hapAssocPanel.makeTable(new AssociationTestSet(theData.getHaplotypes(), null));
 
