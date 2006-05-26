@@ -1483,6 +1483,34 @@ marker9</screen>
       <title>Change Log</title>
 
       <section>
+      <title>Version 3.3, 26 May 2006</title>
+      <itemizedlist>
+      <listitem>support for X chromosome</listitem>
+      <listitem>major memory usage improvements</listitem>
+      <listitem>allow multiple analysis tracks and label Y axis</listitem>
+      <listitem>added user defined hapmap sample option</listitem>
+      <listitem>added haplotypes only permutation option</listitem>
+      <listitem>added option to show different LD measures or hide them</listitem>      
+      <listitem>added -memory switch and changed default to 512M</listitem>
+      <listitem>added minor allele to check panel</listitem>
+      <listitem>support for alphabetical (ACGT) input format</listitem>
+      <listitem>added individual information dialog</listitem>
+      <listitem>added check panel for phased haps files</listitem>
+      <listitem>added dump tags button</listitem>
+      <listitem>last popup dialog is shown at top of display</listitem>
+      <listitem>added GOLD style color scheme</listitem>
+      <listitem>can sort tables by clicking on headers</listitem>
+      <listitem>changed case control allele order</listitem>
+      <listitem>fixed grey screen with no text bug</listitem>
+      <listitem>fixed tagger bugs for maxnumtags and forceinclude</listitem>
+      <listitem>fixed batch mode for hapmap files</listitem>
+      <listitem>fixed Tagger bug where some SNPs were tagged by more than one tag.</listitem>
+      <listitem>fixed export options bug with association tab</listitem>
+      <listitem>fixed generateHaplotyeps bug for matching alleles</listitem>
+      </itemizedlist>
+      </section>
+
+      <section>
 	<title>Version 3.2, 13 April 2005</title>
 	<itemizedlist>
 	  <listitem>added Tagger interface</listitem>
