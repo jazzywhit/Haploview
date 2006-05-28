@@ -19,7 +19,7 @@ foreach $file (@files){
 	close FILE;
 
 	open (OUT, ">$dir/$file");
-	print OUT "<? \$documentation=true;\nrequire(\"header.php\"); ?>\n";
+	print OUT "<?php \$documentation=true;\nrequire(\"header.php\"); ?>\n";
 	$lines =~ s/(<html[.\n]*<body.*?>)//;
 	$lines =~ s/<\/body><\/html>//;
 	print OUT $lines;
