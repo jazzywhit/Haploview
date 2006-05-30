@@ -637,8 +637,8 @@ public class HaploText implements Constants{
         }
 
         if(tagging != Tagger.NONE) {
-            if(infoFileName == null && hapmapFileName == null) {
-                die("A marker info file must be specified when using -doTagging");
+            if(infoFileName == null && hapmapFileName == null && batchFileName == null) {
+                die("A marker info file must be specified when tagging.");
             }
 
             if(forceExcludeTags == null) {
@@ -704,7 +704,7 @@ public class HaploText implements Constants{
             }
 
         } else if(forceExcludeTags != null || forceIncludeTags != null || tagRSquaredCutOff != -1) {
-            die("-tagrSqCutoff, -excludeTags, -excludeTagsFile, -includeTags and -includeTagsFile cannot be used without -doTagging");
+            die("-tagrSqCutoff, -excludeTags, -excludeTagsFile, -includeTags and -includeTagsFile cannot be used without a tagging option");
         }
 
 
