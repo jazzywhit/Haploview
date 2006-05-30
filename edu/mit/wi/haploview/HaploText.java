@@ -448,6 +448,9 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-pairwiseTagging")){
                 tagging = Tagger.PAIRWISE_ONLY;
             }
+            else if (args[i].equalsIgnoreCase("-printalltags")){
+                Options.setPrintAllTags(true);
+            }
             else if(args[i].equalsIgnoreCase("-maxNumTags")){
                 i++;
                 maxNumTags = getIntegerArg(args,i);
@@ -464,7 +467,7 @@ public class HaploText implements Constants{
                 Options.setTaggerLODCutoff(getDoubleArg(args,i,0,100000));
             }
             else if(args[i].equalsIgnoreCase("-includeTags")) {
-                i++; 
+                i++;
                 if(i>=args.length || args[i].charAt(0) == '-') {
                     die(args[i-1] + " requires a list of marker names.");
                 }
@@ -554,7 +557,7 @@ public class HaploText implements Constants{
             Options.setHaplotypeDisplayThreshold(hapThresh);
             if (!quietMode) argHandlerMessages.add("Haplotype display threshold = " + hapThresh);
         }
-        
+
         if(minimumMAF != -1) {
             CheckData.mafCut = minimumMAF;
             if (!quietMode) argHandlerMessages.add("Minimum MAF = " + minimumMAF);

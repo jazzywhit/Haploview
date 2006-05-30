@@ -34,6 +34,7 @@ public class Tagger {
     private int maxNumTags;
     private long maxComparisonDistance;
     private boolean findTags;
+    private boolean printAllTags;
 
     //Vector of Tag objects determined by the most recent call to findTags()
     private Vector tags;
@@ -44,15 +45,17 @@ public class Tagger {
     public int taggedSoFar;
 
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac) throws TaggerException{
-        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS,true);
+        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS,true,false);
     }
 
     public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut,
-                  int aggressionLevel, long maxCompDist, int maxNumTags, boolean findTags) throws TaggerException{
+                  int aggressionLevel, long maxCompDist, int maxNumTags, boolean findTags, boolean printAllTags)
+            throws TaggerException{
         minRSquared = rsqCut;
         aggression = aggressionLevel;
         this.maxNumTags = maxNumTags;
         this.findTags = findTags;
+        this.printAllTags = printAllTags;
 
         if (maxNumTags > 0 && maxNumTags < include.size()){
             throw new TaggerException("Number of forced-in tags greater than max number of tags:\n"+
@@ -667,9 +670,12 @@ public class Tagger {
             StringBuffer line = new StringBuffer();
             TagSequence theTag = (TagSequence) tags.get(i);
             line.append(theTag.getName()).append("\t");
-            Vector tagged = theTag.getBestTagged();
-            //todo: could be useful to allow this option
-            //Vector tagged = theTag.getTagged();
+            Vector tagged;
+            if (printAllTags){
+                tagged = theTag.getTagged();
+            }else{
+                tagged = theTag.getBestTagged();
+            }
             for (int j = 0; j < tagged.size(); j++) {
                 VariantSequence varSeq = (VariantSequence) tagged.elementAt(j);
                 if(j !=0){

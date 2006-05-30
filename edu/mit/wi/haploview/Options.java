@@ -19,6 +19,7 @@ public class Options implements Constants{
     private static double taggerLODCutoff = Tagger.DEFAULT_LOD_CUTOFF;
     private static int printWhat = D_PRIME;
     private static boolean showBlockTags = false;
+    private static boolean printAllTags = false;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -156,5 +157,13 @@ public class Options implements Constants{
 
     public static void setShowBlockTags(boolean showBlockTags) {
         Options.showBlockTags = showBlockTags;
+    }
+
+    public static boolean isPrintAllTags() {
+        return printAllTags;
+    }
+
+    public static void setPrintAllTags(boolean printAllTags) {
+        Options.printAllTags = printAllTags;
     }
 }

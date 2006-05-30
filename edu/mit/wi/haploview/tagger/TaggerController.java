@@ -67,7 +67,8 @@ public class TaggerController {
         }
 
         HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq,theData);
-        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff(), aggressionLevel, Options.getMaxDistance(), maxNumTags,findTags);
+        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, hac, Options.getTaggerRsqCutoff(),
+                aggressionLevel, Options.getMaxDistance(), maxNumTags,findTags,Options.isPrintAllTags());
     }
 
     public void runTagger() {
