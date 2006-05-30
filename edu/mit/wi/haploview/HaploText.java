@@ -763,6 +763,8 @@ public class HaploText implements Constants{
 
                     if(dataFile.exists()) {
                         String name = dataFile.getName();
+                        //TODO: are there other things which need to be reset? 
+                        Chromosome.setDataChrom("none");
                         if( name.substring(name.length()-4,name.length()).equalsIgnoreCase(".ped") ) {
                             processFile(name,PED_FILE,infoMaybe);
                         }
