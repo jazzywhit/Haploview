@@ -136,7 +136,9 @@ public class ReadDataDialog extends JDialog
             switchAssoc(doAssociation.isSelected());
         }else if(command.equals("tdt")){
             standardTDT.setEnabled(true);
-            parenTDT.setEnabled(true);
+            if (!xChrom.isSelected()){
+                parenTDT.setEnabled(true);
+            }
         }else if(command.equals("ccButton")){
             standardTDT.setEnabled(false);
             parenTDT.setEnabled(false);
@@ -144,7 +146,7 @@ public class ReadDataDialog extends JDialog
             if (xChrom.isSelected()){
                 parenTDT.setEnabled(false);
                 standardTDT.setSelected(true);
-            }else{
+            }else if (standardTDT.isEnabled()){
                 parenTDT.setEnabled(true);
             }
         }
@@ -365,8 +367,12 @@ public class ReadDataDialog extends JDialog
             testFileField.setEnabled(true);
             testFileField.setBackground(Color.white);
             testFileLabel.setEnabled(true);
-            standardTDT.setEnabled(true);
-            parenTDT.setEnabled(true);
+            if (trioButton.isSelected()){
+                standardTDT.setEnabled(true);
+                if (!xChrom.isSelected()){
+                    parenTDT.setEnabled(true);
+                }
+            }
         }else{
             doAssociation.setSelected(false);
             trioButton.setEnabled(false);
