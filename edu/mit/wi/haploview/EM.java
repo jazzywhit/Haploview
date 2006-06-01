@@ -787,7 +787,8 @@ public class EM implements Constants {
                 double tempnorm = 0;
                 if (((Integer)kidAffStatus.elementAt(i)).intValue() == 2){
                     boolean discordantParentPhenos = false;
-                    if(((Integer)affStatus.elementAt(i)).intValue() != ((Integer)affStatus.elementAt(i+1)).intValue()) {
+                    if(Options.getTdtType() == TDT_PAREN &&
+                            ((Integer)affStatus.elementAt(i)) .intValue() != ((Integer)affStatus.elementAt(i+1)).intValue()) {
                         discordantParentPhenos = true;
                     }
                     for (int n=0; n<superdata[i].nsuper; n++) {
