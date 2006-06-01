@@ -685,8 +685,8 @@ public class HaploData implements Constants{
                         chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
                         ((Chromosome)chrom.lastElement()).setHaploid(true);
                     }else {
-                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
-                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
                     }
 
 
