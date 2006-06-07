@@ -58,7 +58,7 @@ public class CheckDataPanel extends JPanel
         JPanel extraPanel = new JPanel();
         extraPanel.add(missingPanel);
 
-        TableSorter sorter = new TableSorter(tableModel);
+        CheckDataTableSorter sorter = new CheckDataTableSorter(tableModel);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
 
@@ -258,8 +258,8 @@ public class CheckDataPanel extends JPanel
         {
             Component cell = super.getTableCellRendererComponent
                     (table, value, isSelected, hasFocus, row, column);
-            int myRating = ((CheckDataTableModel)((TableSorter)table.getModel()).getTableModel()).getRating(row);
-            int myDupStatus = ((CheckDataTableModel)((TableSorter)table.getModel()).getTableModel()).getDupStatus(row);
+            int myRating = ((CheckDataTableSorter)table.getModel()).getRating(row);
+            int myDupStatus = ((CheckDataTableSorter)table.getModel()).getDupStatus(row);
             String thisColumnName = table.getColumnName(column);
             cell.setForeground(Color.black);
             cell.setBackground(Color.white);
