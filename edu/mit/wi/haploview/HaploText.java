@@ -763,7 +763,7 @@ public class HaploText implements Constants{
 
                     if(dataFile.exists()) {
                         String name = dataFile.getName();
-                        //TODO: are there other things which need to be reset? 
+                        //TODO: are there other things which need to be reset?
                         Chromosome.setDataChrom("none");
                         if( name.substring(name.length()-4,name.length()).equalsIgnoreCase(".ped") ) {
                             processFile(name,PED_FILE,infoMaybe);
@@ -866,7 +866,7 @@ public class HaploText implements Constants{
                     System.out.println("Error: One or more individuals in the file reference non-existent parents.\nThese references have been ignored.");
                 }
                 if(textData.getPedFile().isHaploidHets()){
-                    System.out.println("Error: One or more males in the file is heterozygous.\nThese genotypes have been ignored.");
+                    System.out.println("Error: At least one male in the file is heterozygous.\nThese genotypes have been ignored.");
                 }
             }else{
                 //read in hapmapfile

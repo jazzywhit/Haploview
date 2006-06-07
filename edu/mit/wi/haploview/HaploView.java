@@ -667,7 +667,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             if(theData.getPedFile().isHaploidHets()) {
                 JOptionPane.showMessageDialog(this,
-                        "One or more males in the file is heterozygous.\nThese genotypes have been ignored.",
+                        "At least one male in the file is heterozygous.\nThese genotypes have been ignored.",
                         "File Error",
                         JOptionPane.ERROR_MESSAGE);
             }
