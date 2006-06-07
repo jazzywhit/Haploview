@@ -303,6 +303,7 @@ public class TaggerConfigPanel extends HaploviewTab
                     String line;
                     while((line = br.readLine()) != null) {
                         if(line.length() > 0 && line.charAt(0) != '#'){
+                            line = line.trim();
                             forceIncludes.put(line,"I");
                         }
                     }
@@ -326,6 +327,7 @@ public class TaggerConfigPanel extends HaploviewTab
                     String line;
                     while((line = br.readLine()) != null) {
                         if(line.length() > 0 && line.charAt(0) != '#'){
+                            line = line.trim();
                             forceExcludes.put(line,"E");
                         }
                     }
