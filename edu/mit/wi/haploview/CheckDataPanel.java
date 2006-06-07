@@ -17,6 +17,7 @@ public class CheckDataPanel extends JPanel
         implements TableModelListener, ActionListener {
     private JTable table;
     private CheckDataTableModel tableModel;
+    private CheckDataTableSorter sorter;
     private HaploData theData;
 
     boolean changed;
@@ -58,7 +59,7 @@ public class CheckDataPanel extends JPanel
         JPanel extraPanel = new JPanel();
         extraPanel.add(missingPanel);
 
-        CheckDataTableSorter sorter = new CheckDataTableSorter(tableModel);
+        sorter = new CheckDataTableSorter(tableModel);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
 
@@ -143,6 +144,10 @@ public class CheckDataPanel extends JPanel
     public void redoRatings(){
         try{
             Vector result = new CheckData(theData.getPedFile()).check();
+
+            for (int j = 0; j < table.getColumnCount(); j++){
+                sorter.setSortingStatus(j,TableSorter.NOT_SORTED);
+            }
 
             for (int i = 0; i < table.getRowCount(); i++){
                 MarkerResult cur = (MarkerResult)result.get(i);
