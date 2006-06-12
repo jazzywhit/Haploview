@@ -315,6 +315,7 @@ public class TaggerConfigPanel extends HaploviewTab
             for (int i = 0; i < table.getRowCount(); i++){
                 if (forceIncludes.containsKey(table.getValueAt(i,NAME_COL))){
                     table.setValueAt(new Boolean(true),i,INCLUDE_COL);
+                    table.setValueAt(new Boolean(true),i,CAPTURE_COL);
                 }
             }
         }else if (command.equals("Load Exclude File")){
@@ -339,6 +340,7 @@ public class TaggerConfigPanel extends HaploviewTab
             for (int j = 0; j < table.getRowCount(); j++){
                 if (forceExcludes.containsKey(table.getValueAt(j,NAME_COL))){
                     table.setValueAt(new Boolean(true),j,EXCLUDE_COL);
+                    table.setValueAt(new Boolean(true),j,CAPTURE_COL);
                 }
             }
         }
