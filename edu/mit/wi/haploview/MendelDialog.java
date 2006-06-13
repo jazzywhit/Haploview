@@ -48,10 +48,10 @@ public class MendelDialog extends JDialog implements ActionListener, Constants {
         for(int i=0;i<results.size();i++) {
             MarkerResult currentResult = (MarkerResult)results.get(i);
             if (currentResult.getMendErrNum() > 0){
-                Vector tmpVec = new Vector();
                 Vector mendelErrors = currentResult.getMendelErrors();
                 for (int j = 0; j < mendelErrors.size(); j++){
                     MendelError error = (MendelError)mendelErrors.get(j);
+                    Vector tmpVec = new Vector();
                     tmpVec.add(error.getFamilyID());
                     tmpVec.add(error.getChildID());
                     tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
