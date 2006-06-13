@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.21 2006/05/12 18:01:28 jmaller Exp $
+* $Id: PedFile.java,v 3.22 2006/06/13 20:03:59 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -517,12 +517,12 @@ public class PedFile {
             if(colNum != numTokens) {
                 //this line has a different number of columns
                 //should send some sort of error message
-                throw new PedFileException("Column number mismatch in pedfile. line " + (numLines+1));
+                throw new PedFileException("Column number mismatch in pedfile. line " + (k+1));
             }
 
             ind = new Individual(numMarkers);
             if(numTokens < 6) {
-                throw new PedFileException("Incorrect number of fields on line " + (numLines+1));
+                throw new PedFileException("Incorrect number of fields on line " + (k+1));
             }
 
             if(tokenizer.hasMoreTokens()){
@@ -538,7 +538,7 @@ public class PedFile {
                         ind.setLiability(Integer.parseInt(tokenizer.nextToken().trim()));
                     }
                 }catch(NumberFormatException nfe) {
-                    throw new PedFileException("Pedfile error: invalid gender or affected status on line " + (numLines+1));
+                    throw new PedFileException("Pedfile error: invalid gender or affected status on line " + (k+1));
                 }
 
                 byte genotype1;
@@ -567,7 +567,7 @@ public class PedFile {
                         genotype2 = (byte)checker2[0];
                         ind.addMarker(genotype1,genotype2);
                     }catch(NumberFormatException nfe) {
-                        throw new PedFileException("Pedigree file input error: invalid genotype on line " + (numLines+1) );
+                        throw new PedFileException("Pedigree file input error: invalid genotype on line " + (k+1) );
                     }
                 }
 
