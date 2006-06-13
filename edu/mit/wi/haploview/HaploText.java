@@ -548,7 +548,7 @@ public class HaploText implements Constants{
         if(maxDistance == -1){
             maxDistance = MAXDIST_DEFAULT;
         }else{
-            if (!quietMode) argHandlerMessages.add("Max LD comparison distance = " +maxDistance);
+            if (!quietMode) argHandlerMessages.add("Max LD comparison distance = " +maxDistance + "kb");
         }
 
         Options.setMaxDistance(maxDistance);
