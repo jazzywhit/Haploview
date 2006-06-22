@@ -19,7 +19,7 @@ public class HaplotypeAssociationNode {
         this.name = name;
         this.freq = "";
         this.chisq = -1;
-        this.pval = new Double(0);
+        this.pval = null;
     }
 
     public HaplotypeAssociationNode(HaplotypeAssociationResult ar, int index) {
