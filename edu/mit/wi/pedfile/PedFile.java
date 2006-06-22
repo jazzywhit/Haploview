@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.22 2006/06/13 20:03:59 djbender Exp $
+* $Id: PedFile.java,v 3.23 2006/06/22 21:11:12 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1066,7 +1066,7 @@ public class PedFile {
             tempVect.add(new Integer(currentResult.getFamTrioNum()));
             tempVect.add(new Integer(currentResult.getMendErrNum()));
             tempVect.add(new Double(currentResult.getMAF()));
-            tempVect.add(currentResult.getMinorAllele());
+            tempVect.add(currentResult.getMajorAllele() + ":" + currentResult.getMinorAllele());
 
             int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
             if ((currentResult.getRating() > 0 && dupStatus != 2) ||
@@ -1109,7 +1109,7 @@ public class PedFile {
         c.add("FamTrio");
         c.add("MendErr");
         c.add("MAF");
-        c.add("M.A.");
+        c.add("Alleles");
         c.add("Rating");
         return c;
     }

@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.14 2006/05/24 19:37:37 djbender Exp $
+* $Id: CheckData.java,v 3.15 2006/06/22 21:11:12 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -306,7 +306,7 @@ public class CheckData {
         }
         double preHET = freqStuff[0];
         double maf = freqStuff[1];
-        String minorAllele;
+        String minorAllele, majorAllele;
         if (freqStuff[2] == 1){
             minorAllele = "A";
         }else if (freqStuff[2] == 2){
@@ -315,6 +315,16 @@ public class CheckData {
             minorAllele = "G";
         }else{
             minorAllele = "T";
+        }
+
+        if (freqStuff[3] == 1){
+            majorAllele = "A";
+        }else if (freqStuff[3] == 2){
+            majorAllele = "C";
+        }else if (freqStuff[3] == 3){
+            majorAllele = "G";
+        }else{
+            majorAllele = "T";
         }
 
         //HW p value
@@ -334,6 +344,7 @@ public class CheckData {
         result.setPredHet(preHET);
         result.setMAF(maf);
         result.setMinorAllele(minorAllele);
+        result.setMajorAllele(majorAllele);
         result.setHWpvalue(pvalue);
         result.setGenoPercent(genopct);
         result.setFamTrioNum(famTrio);
@@ -357,7 +368,7 @@ public class CheckData {
     }
 
     private double[] getFreqStuff(int[] count) throws PedFileException{
-        double[] freqStuff = new double[3];
+        double[] freqStuff = new double[4];
         int sumsq=0, sum=0, num=0, mincount = -1;
         int numberOfAlleles = 0;
         for(int i=0;i<count.length;i++){
@@ -366,6 +377,11 @@ public class CheckData {
                 num = count[i];
                 sumsq += num*num;
                 sum += num;
+
+                if (num > mincount){
+                    freqStuff[3] = i;
+                }
+
                 if (mincount < 0 || mincount > num){
                     mincount = num;
                     freqStuff[2] = i;

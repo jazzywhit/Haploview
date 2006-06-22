@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.7 2006/05/24 19:37:37 djbender Exp $
+ * $Id: MarkerResult.java,v 3.8 2006/06/22 21:11:12 djbender Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -33,7 +33,8 @@ public class MarkerResult {
 	private double _predHET;
     private double _maf;
     private String _minorAllele;
-	private double _HWpval;
+    private String _majorAllele;
+    private double _HWpval;
 	private double _genoPercent;
 	private int _famTrioNum;
 	private int _mendErrNum;
@@ -105,8 +106,15 @@ public class MarkerResult {
     /**
      * Sets minor allele
      */
-    public void setMinorAllele(String mallele) {
-        this._minorAllele = mallele;
+    public void setMinorAllele(String minallele) {
+        this._minorAllele = minallele;
+    }
+
+    /**
+     * Sets major allele
+     */
+    public void setMajorAllele(String majallele){
+        this._majorAllele = majallele;
     }
 
     /**
@@ -140,6 +148,13 @@ public class MarkerResult {
      */
     public String getMinorAllele(){
         return this._minorAllele;
+    }
+
+    /**
+     * returns major allele
+     */
+    public String getMajorAllele(){
+        return this._majorAllele;
     }
 
     /**
