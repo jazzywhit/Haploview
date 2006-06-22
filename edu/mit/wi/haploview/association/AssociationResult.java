@@ -153,11 +153,11 @@ public abstract class AssociationResult implements Constants{
         }
     }
 
-    public String getPValue(int i) {
+    public Double getPValue(int i) {
         if (pValues == null || i >= pValues.size()){
-            return "";
+            return new Double(0);
         }
-        return Util.formatPValue(((Double)pValues.get(i)).doubleValue());
+        return new Double(Util.formatPValue(((Double)pValues.get(i)).doubleValue()));
     }
 
     public String getFreq(int i) {

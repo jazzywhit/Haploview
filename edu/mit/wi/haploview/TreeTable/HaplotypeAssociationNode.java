@@ -8,7 +8,8 @@ import java.text.NumberFormat;
 
 
 public class HaplotypeAssociationNode {
-    String name, pval;
+    String name;
+    Double pval;
     Vector children = new Vector();
     double chisq;
     NumberFormat nf = NumberFormat.getInstance(Locale.US);
@@ -18,7 +19,7 @@ public class HaplotypeAssociationNode {
         this.name = name;
         this.freq = "";
         this.chisq = -1;
-        this.pval = "";
+        this.pval = new Double(0);
     }
 
     public HaplotypeAssociationNode(HaplotypeAssociationResult ar, int index) {
@@ -62,7 +63,7 @@ public class HaplotypeAssociationNode {
         }
     }
 
-    public String getPVal(){
+    public Double getPVal(){
         return pval;
     }
 }
