@@ -117,6 +117,7 @@ public class TaggerConfigPanel extends HaploviewTab
         table = new JTable(tableModel);
         table.getColumnModel().getColumn(NUM_COL).setPreferredWidth(30);
         table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(100);
+        table.getTableHeader().setReorderingAllowed(false);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setPreferredSize(new Dimension(600, 700));

@@ -62,6 +62,7 @@ public class CheckDataPanel extends JPanel
         sorter = new CheckDataTableSorter(tableModel);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
+        table.getTableHeader().setReorderingAllowed(false);
 
         final CheckDataCellRenderer renderer = new CheckDataCellRenderer();
         try{
