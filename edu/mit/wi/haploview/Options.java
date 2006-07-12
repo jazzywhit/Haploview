@@ -17,9 +17,11 @@ public class Options implements Constants{
     private static String gBrowseTypes = GB_DEFAULT_TYPES;
     private static double taggerRsqCutoff = Tagger.DEFAULT_RSQ_CUTOFF;
     private static double taggerLODCutoff = Tagger.DEFAULT_LOD_CUTOFF;
+    private static int taggerMinDistance = Tagger.DEFAULT_MIN_DISTANCE;
     private static int printWhat = D_PRIME;
     private static boolean showBlockTags = false;
     private static boolean printAllTags = false;
+    private static boolean gZip;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -51,7 +53,7 @@ public class Options implements Constants{
     }
 
     public static void setSpacingThreshold(double spacingThreshold) {
-        //we scale from (0 to 1) to (0 to .5) since values greater than .5 cause the display to look really stupid 
+        //we scale from (0 to 1) to (0 to .5) since values greater than .5 cause the display to look really stupid
         Options.spacingThreshold = spacingThreshold*0.5;
     }
 
@@ -135,6 +137,14 @@ public class Options implements Constants{
         Options.taggerLODCutoff = taggerLODCutoff;
     }
 
+    public static int getTaggerMinDistance() {
+        return taggerMinDistance;
+    }
+
+    public static void setTaggerMinDistance(int taggerMinDistance) {
+        Options.taggerMinDistance = taggerMinDistance;
+    }
+
     public static int getTdtType() {
         return tdtType;
     }
@@ -165,5 +175,19 @@ public class Options implements Constants{
 
     public static void setPrintAllTags(boolean printAllTags) {
         Options.printAllTags = printAllTags;
+    }
+
+    public static boolean getGzip(){
+        return gZip;
+    }
+
+    public static void setGzip(boolean gZip){
+        Options.gZip = gZip;
+    }
+
+    public static void setProxy(String host, String port){
+        System.getProperties().put("proxySet", "true");
+        System.getProperties().put("proxyHost", host);
+        System.getProperties().put("proxyPort", port);
     }
 }

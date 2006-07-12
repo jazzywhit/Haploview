@@ -14,6 +14,7 @@ import java.awt.Dimension;
 import java.awt.Color;
 import java.util.Vector;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -26,19 +27,19 @@ public class TaggerConfigPanel extends HaploviewTab
 
     private final static int NUM_COL = 0;
     private final static int NAME_COL = 1;
-    private final static int INCLUDE_COL = 3;
-    private final static int EXCLUDE_COL = 4;
-    private final static int CAPTURE_COL = 5;
+    private final static int DESIGN_COL = 3;
+    private final static int INCLUDE_COL = 4;
+    private final static int EXCLUDE_COL = 5;
+    private final static int CAPTURE_COL = 6;
 
     private JButton runTaggerButton;
     public static JFileChooser fc;
     private Timer timer;
     private HaploData theData;
-    private Hashtable snpsByName;
-    private NumberTextField rsqField, lodField;
+    private Hashtable snpsByName, designScores;
+    private NumberTextField rsqField, lodField, maxNumTagsField, minDistField;
     private ButtonGroup aggressiveGroup;
-    private NumberTextField maxNumTagsField;
-    private JPanel buttonPanel = new JPanel();
+    private JPanel bottomButtonPanel = new JPanel();
     private JPanel taggerProgressPanel = new JPanel();
     JProgressBar taggerProgress = new JProgressBar();
     private JLabel taggerProgressLabel = new JLabel("Tagging...");
@@ -94,6 +95,7 @@ public class TaggerConfigPanel extends HaploviewTab
         columnNames.add("#");
         columnNames.add("Name");
         columnNames.add("Position");
+        columnNames.add("Design Score");
         columnNames.add("Force Include");
         columnNames.add("Force Exclude");
         columnNames.add("Capture this Allele?");
@@ -106,6 +108,7 @@ public class TaggerConfigPanel extends HaploviewTab
             tempData.add(Integer.toString(Chromosome.realIndex[i]+1));
             tempData.add(tempSNP.getDisplayName());
             tempData.add(String.valueOf(tempSNP.getPosition()));
+            tempData.add("0");
             tempData.add(new Boolean(false));
             tempData.add(new Boolean(false));
             tempData.add(new Boolean(true));
@@ -119,10 +122,38 @@ public class TaggerConfigPanel extends HaploviewTab
         table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(100);
         table.getTableHeader().setReorderingAllowed(false);
 
+        //TODO DB: Gridbag all of this for a sensible layout.
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setPreferredSize(new Dimension(600, 700));
         scrollPane.setMaximumSize(scrollPane.getPreferredSize());
+        //scrollPane.getViewport().setBackground(Color.WHITE);
         add(scrollPane);
+
+        runTaggerButton = new JButton("<html><b>Run Tagger</b>");
+        runTaggerButton.addActionListener(this);
+        runTaggerButton.setActionCommand("Run Tagger");
+        JButton resetTableButton = new JButton("Reset Table");
+        resetTableButton.addActionListener(this);
+        JButton forceIncludeButton = new JButton("Load Includes");
+        forceIncludeButton.addActionListener(this);
+        JButton includeAllButton = new JButton("Include All");
+        includeAllButton.addActionListener(this);
+        JButton forceExcludeButton = new JButton("Load Excludes");
+        forceExcludeButton.addActionListener(this);
+        JButton excludeAllButton = new JButton("Exclude All");
+        excludeAllButton.addActionListener(this);
+        JButton designScoresButton = new JButton("Design Scores");
+        designScoresButton.addActionListener(this);
+        JButton allelesCapturedButton = new JButton("Alleles to Capture");
+        allelesCapturedButton.addActionListener(this);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setMaximumSize(new Dimension(600,100));
+        buttonPanel.add(includeAllButton);
+        buttonPanel.add(excludeAllButton);
+        buttonPanel.add(resetTableButton);
+        add(buttonPanel);
 
         JPanel optsRightPanel = new JPanel();
         optsRightPanel.setLayout(new BoxLayout(optsRightPanel, BoxLayout.Y_AXIS));
@@ -142,9 +173,13 @@ public class TaggerConfigPanel extends HaploviewTab
         optsRightPanel.add(lodPanel);
 
         JPanel maxNumPanel = new JPanel();
-        maxNumPanel.add(new JLabel("Maximum number of tags (blank for no limit)"));
-        maxNumTagsField = new NumberTextField("",6,false);
+        maxNumPanel.add(new JLabel("Max tags"));
+        maxNumTagsField = new NumberTextField("",5,false);
         maxNumPanel.add(maxNumTagsField);
+        maxNumPanel.add(new JLabel("Min distance between tags"));
+        minDistField = new NumberTextField("",5,false);
+        maxNumPanel.add(minDistField);
+
         optsRightPanel.add(maxNumPanel);
 
         JPanel optsLeftPanel = new JPanel();
@@ -165,26 +200,23 @@ public class TaggerConfigPanel extends HaploviewTab
         tripleButton.setSelected(true);
 
         JPanel optsPanel = new JPanel();
+        //optsPanel.setMaximumSize(new Dimension(800,600));
+        //preferredViewPortsize
         optsPanel.add(optsLeftPanel);
         optsPanel.add(optsRightPanel);
         add(optsPanel);
 
-        runTaggerButton = new JButton("Run Tagger");
-        runTaggerButton.addActionListener(this);
-        JButton resetTableButton = new JButton("Reset Table");
-        resetTableButton.addActionListener(this);
-        JButton forceIncludeButton = new JButton("Load Include File");
-        forceIncludeButton.addActionListener(this);
-        JButton forceExcludeButton = new JButton("Load Exclude File");
-        forceExcludeButton.addActionListener(this);
+        bottomButtonPanel = new JPanel();
+        bottomButtonPanel.setPreferredSize(new Dimension(350,100));
+        //bottomButtonPanel.
+        //bottomButtonPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        bottomButtonPanel.add(runTaggerButton);
+        bottomButtonPanel.add(forceIncludeButton);
+        bottomButtonPanel.add(forceExcludeButton);
+        bottomButtonPanel.add(allelesCapturedButton);
+        bottomButtonPanel.add(designScoresButton);
 
-        buttonPanel = new JPanel();
-        buttonPanel.add(runTaggerButton);
-        buttonPanel.add(resetTableButton);
-        buttonPanel.add(forceIncludeButton);
-        buttonPanel.add(forceExcludeButton);
-
-        add(buttonPanel);
+        add(bottomButtonPanel);
     }
 
     public void addActionListener(ActionListener al){
@@ -223,6 +255,19 @@ public class TaggerConfigPanel extends HaploviewTab
                     Options.setTaggerLODCutoff(lodCut);
                 }
 
+                int minDist;
+                if (minDistField.getText().equals("")){
+                    minDist = 0;
+                }else{
+                    minDist = Integer.parseInt(minDistField.getText());
+                }
+                if (minDist < 0){
+                    Options.setTaggerMinDistance(0);
+                    minDistField.setText("");
+                }else{
+                    Options.setTaggerMinDistance(minDist);
+                }
+
                 int maxNumTags;
                 if (maxNumTagsField.getText().equals("")){
                     maxNumTags = 0;
@@ -245,7 +290,7 @@ public class TaggerConfigPanel extends HaploviewTab
                     }
                 }
 
-                tagControl = new TaggerController(theData,include,exclude,capture,
+                tagControl = new TaggerController(theData,include,exclude,capture,designScores,
                         Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue(),maxNumTags,true);
 
                 runTaggerButton.setEnabled(false);
@@ -258,7 +303,7 @@ public class TaggerConfigPanel extends HaploviewTab
                 taggerProgressLabel.setAlignmentX(CENTER_ALIGNMENT);
                 taggerProgressPanel.add(new JLabel("         "));
                 taggerProgressPanel.add(taggerProgress);
-                remove(buttonPanel);
+                remove(bottomButtonPanel);
                 add(taggerProgressPanel);
                 revalidate();
 
@@ -269,7 +314,7 @@ public class TaggerConfigPanel extends HaploviewTab
                     public void actionPerformed(ActionEvent e) {
                         if(tagControl.isTaggingCompleted()) {
                             remove(taggerProgressPanel);
-                            add(buttonPanel);
+                            add(bottomButtonPanel);
                             runTaggerButton.setEnabled(true);
                             //the parent of this is the jtabbedPane in the tagger tab of HV
                             ((JTabbedPane)(tcp.getParent())).setSelectedIndex(1);
@@ -294,7 +339,7 @@ public class TaggerConfigPanel extends HaploviewTab
                 table.setValueAt(new Boolean(true), i, CAPTURE_COL);
             }
             rsqField.setText(String.valueOf(Tagger.DEFAULT_RSQ_CUTOFF));
-        }else if (command.equals("Load Include File")){
+        }else if (command.equals("Load Includes")){
             Hashtable forceIncludes = new Hashtable(1,1);
             fc.setSelectedFile(new File(""));
             int returnVal = fc.showOpenDialog(this);
@@ -319,7 +364,12 @@ public class TaggerConfigPanel extends HaploviewTab
                     table.setValueAt(new Boolean(true),i,CAPTURE_COL);
                 }
             }
-        }else if (command.equals("Load Exclude File")){
+        }else if (command.equals("Include All")){
+            for (int i = 0; i < table.getRowCount(); i++){
+                table.setValueAt(new Boolean(true),i,INCLUDE_COL);
+                table.setValueAt(new Boolean(true),i,CAPTURE_COL);
+            }
+        }else if (command.equals("Load Excludes")){
             Hashtable forceExcludes = new Hashtable(1,1);
             fc.setSelectedFile(new File(""));
             int returnVal = fc.showOpenDialog(this);
@@ -342,6 +392,71 @@ public class TaggerConfigPanel extends HaploviewTab
                 if (forceExcludes.containsKey(table.getValueAt(j,NAME_COL))){
                     table.setValueAt(new Boolean(true),j,EXCLUDE_COL);
                     table.setValueAt(new Boolean(true),j,CAPTURE_COL);
+                }
+            }
+        }else if (command.equals("Exclude All")){
+            for (int i = 0; i < table.getRowCount(); i++){
+                table.setValueAt(new Boolean(true),i,EXCLUDE_COL);
+                table.setValueAt(new Boolean(true),i,CAPTURE_COL);
+            }
+        }else if (command.equals("Design Scores")){
+            designScores = new Hashtable(1,1);
+            fc.setSelectedFile(new File(""));
+            int returnVal = fc.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION){
+                try{
+                    BufferedReader br = new BufferedReader(new FileReader(fc.getSelectedFile()));
+                    String line;
+                    while((line = br.readLine()) != null) {
+                        if(line.length() > 0 && line.charAt(0) != '#'){
+                            StringTokenizer st = new StringTokenizer(line);
+                            String marker = st.nextToken();
+                            Double score = new Double(st.nextToken());
+                            designScores.put(marker,score);
+                        }
+                    }
+                }catch(IOException ioe){
+                    //throw new IOException("An error occured while reading the design scores file.");
+                }catch(NumberFormatException nfe){
+                    //throw new NumberFormatException("Invalid design score format.");
+                     JOptionPane.showMessageDialog(this,
+                        "Invalid file formatting",
+                        "File Error",
+                        JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                for (int i = 0; i < table.getRowCount();i++){
+                    if (designScores.containsKey(table.getValueAt(i,NAME_COL))){
+                        table.setValueAt(designScores.get(table.getValueAt(i,NAME_COL)),i,DESIGN_COL);
+                    }
+                }
+            }
+        }else if (command.equals("Alleles to Capture")){
+            Hashtable allelesCaptured = new Hashtable(1,1);
+            fc.setSelectedFile(new File(""));
+            int returnVal = fc.showOpenDialog(this);
+            if (returnVal == JFileChooser.APPROVE_OPTION){
+                try{
+                    BufferedReader br = new BufferedReader(new FileReader(fc.getSelectedFile()));
+                    String line;
+                    while((line = br.readLine()) != null) {
+                        if(line.length() > 0 && line.charAt(0) != '#'){
+                            line = line.trim();
+                            allelesCaptured.put(line,"C");
+                        }
+                    }
+                }catch(IOException ioe){
+                    //throw new IOException("An error occured while reading the alleles file.");
+                }
+
+                for (int j = 0; j < table.getRowCount(); j++){
+                    if (allelesCaptured.containsKey(table.getValueAt(j,NAME_COL))){
+                        table.setValueAt(new Boolean(true),j,CAPTURE_COL);
+                    }else{
+                        table.setValueAt(new Boolean(false),j,CAPTURE_COL);
+                        table.setValueAt(new Boolean(false),j,INCLUDE_COL);
+                        table.setValueAt(new Boolean(false),j,EXCLUDE_COL);
+                    }
                 }
             }
         }

@@ -5,6 +5,8 @@ import edu.mit.wi.pedfile.PedFileException;
 import edu.mit.wi.haploview.association.*;
 import edu.mit.wi.haploview.tagger.TaggerConfigPanel;
 import edu.mit.wi.haploview.tagger.TaggerResultsPanel;
+import edu.mit.wi.plink.Plink;
+import edu.mit.wi.plink.PlinkException;
 
 import javax.help.*;
 import javax.swing.*;
@@ -33,7 +35,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     JMenuItem clearBlocksItem;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TAGGER, VIEW_ASSOC
+        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TAGGER, VIEW_PLINK, VIEW_ASSOC
     };
     JRadioButtonMenuItem viewMenuItems[];
     String zoomItems[] = {
@@ -61,6 +63,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private javax.swing.Timer timer;
 
     static HaploView window;
+    private Vector plinkData, plinkColumns;
+    //private int plinkAssocType;
     public static JFileChooser fc;
     private JScrollPane hapScroller;
     HaploviewTabbedPane tabs;
@@ -74,6 +78,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     PermutationTestPanel permutationPanel;
     TaggerResultsPanel taggerResultsPanel;
     private TaggerConfigPanel taggerConfigPanel;
+    PlinkResultsPanel plinkPanel;
 
     JProgressBar haploProgress;
     boolean isMaxSet = false;
@@ -621,18 +626,22 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
-    void readGenotypes(String[] inputOptions, int type){
+    void readGenotypes(String[] inputOptions, int type, boolean downloadFile){
         //input is a 2 element array with
-        //inputOptions[0] = ped file
-        //inputOptions[1] = info file (null if none)
-        //inputOptions[2] = custom association test list file (null if none)
+        //inputOptions[0] = ped file or phased data file
+        //inputOptions[1] = info file or sample file for phased data (null if none)
+        //inputOptions[2] = custom association test list file or legend file for phased data (null if none)
         //type is either 3 or 4 for ped and hapmap files respectively
+        //type is 6 for phased hapmap files
+        //type is 7 for phased hapmap downloads
         final File inFile = new File(inputOptions[0]);
         final AssociationTestSet customAssocSet;
 
         try {
-            if (inputOptions[2] != null && inputOptions[1] == null){
-                throw new HaploViewException("A marker information file is required if a tests file is specified.");
+            if (type != PHASED_FILE && type != PHASEDHMPDL_FILE){
+                if (inputOptions[2] != null && inputOptions[1] == null){
+                    throw new HaploViewException("A marker information file is required if a tests file is specified.");
+                }
             }
 
             if (inputOptions[1] == null && Options.getAssocTest() != ASSOC_NONE){
@@ -640,7 +649,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
 
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            if (inFile.length() < 1){
+            if (!downloadFile && inFile.length() < 1){
                 throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
             }
 
@@ -654,15 +663,19 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             if (type == HAPS_FILE){
                 theData.prepareHapsInput(new File(inputOptions[0]));
+            }else if (type == PHASED_FILE || type == PHASEDHMPDL_FILE){
+                theData.phasedToChrom(inputOptions, downloadFile);
             }else{
                 theData.linkageToChrom(inFile, type);
             }
 
-            if(theData.getPedFile().isBogusParents()) {
-                JOptionPane.showMessageDialog(this,
-                        "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
-                        "File Error",
-                        JOptionPane.ERROR_MESSAGE);
+            if (type != PHASED_FILE & type != PHASEDHMPDL_FILE){
+                if(theData.getPedFile().isBogusParents()) {
+                    JOptionPane.showMessageDialog(this,
+                            "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
+                            "File Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
 
             if(theData.getPedFile().isHaploidHets()) {
@@ -698,6 +711,23 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 customAssocSet = null;
                 theData.getPedFile().setWhiteList(emptyHashSet);
                 checkPanel = new CheckDataPanel(this);
+            }else if (type == PHASED_FILE){
+                readMarkers(null, theData.getPedFile().getHMInfo());
+                HashSet emptyHashSetB = new HashSet();
+                Chromosome.doFilter(Chromosome.getUnfilteredSize());
+                customAssocSet = null;
+                theData.getPedFile().setWhiteList(emptyHashSetB);
+                checkPanel = new CheckDataPanel(this);
+            }else if (type == PHASEDHMPDL_FILE){
+               readMarkers(null, theData.getPedFile().getHMInfo());
+                HashSet emptyHashSetB = new HashSet();
+                Chromosome.doFilter(Chromosome.getUnfilteredSize());
+                customAssocSet = null;
+                theData.getPedFile().setWhiteList(emptyHashSetB);
+                checkPanel = new CheckDataPanel(this);
+                if (plinkData != null){
+                        plinkPanel = new PlinkResultsPanel(this,plinkData,plinkColumns);
+                }
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
                 //we read the file in first, so we can whitelist all the markers in the custom test set
@@ -876,6 +906,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     }
 
+                    if(plinkData != null){
+                            HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
+                            plinkTab.add(plinkPanel);
+                            tabs.addTab(VIEW_PLINK, plinkTab);
+                            viewMenuItems[VIEW_PLINK_NUM].setEnabled(true);
+                    }
+
 
                     contents.remove(progressPanel);
                     contents.setLayout(defaultLayout);
@@ -941,12 +978,62 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
+    void readWGA(String[] inputOptions) {
+        String wgaFile = inputOptions[0];
+        String mapFile = inputOptions[1];
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Plink plink = new Plink(this);
+
+        try{
+            if (inputOptions[2].equals("tdt")){
+                plink.parseTDT(wgaFile,mapFile);
+            }else{
+                plink.parseCC(wgaFile,mapFile);
+            }
+        }catch(PlinkException wge){
+            JOptionPane.showMessageDialog(this,
+                    wge.getMessage(),
+                    "File Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+        plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames());
+        HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
+        plinkTab.add(plinkPanel);
+
+
+        tabs = new HaploviewTabbedPane();
+        tabs.addTab(VIEW_PLINK, plinkTab);
+        readMarkerItem.setEnabled(false);
+        analysisItem.setEnabled(false);
+        blocksItem.setEnabled(false);
+        gbrowseItem.setEnabled(false);
+        for (int i = 0; i < exportItems.length; i++) {
+            exportMenuItems[i].setEnabled(false);
+        }
+        displayMenu.setEnabled(false);
+        analysisMenu.setEnabled(false);
+        keyMenu.setEnabled(false);
+        tabs.setSelectedComponent(plinkTab);
+
+
+        Container contents = getContentPane();
+        contents.removeAll();
+        contents.repaint();
+        contents.add(tabs);
+
+        repaint();
+        setVisible(true);
+        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+
+    }
+
     void readBlocksFile(File file) {
-       try{
-           Vector cust = theData.readBlocks(file);
-           theData.guessBlocks(BLOX_CUSTOM, cust);
-           changeBlocks(BLOX_CUSTOM);
-       }catch (HaploViewException hve){
+        try{
+            Vector cust = theData.readBlocks(file);
+            theData.guessBlocks(BLOX_CUSTOM, cust);
+            changeBlocks(BLOX_CUSTOM);
+        }catch (HaploViewException hve){
             JOptionPane.showMessageDialog(this,
                     hve.getMessage(),
                     "File Error",
@@ -991,7 +1078,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 tdtPanel.refreshNames();
             }
 
-            if (dPrimeDisplay != null){
+            if (dPrimeDisplay != null && plinkPanel == null){
                 dPrimeDisplay.computePreferredSize();
             }
         }catch (HaploViewException e){
@@ -1035,6 +1122,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         hapScroller.setViewportView(hapDisplay);
     }
 
+    public void setPlinkData(Vector data, Vector columns){
+        plinkData = data;
+        plinkColumns = columns;
+    }
+
     public void clearDisplays() {
         if (tabs != null){
             tabs.removeAll();
@@ -1042,6 +1134,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             hapDisplay = null;
             tdtPanel = null;
             checkPanel = null;
+            plinkPanel = null;
         }
     }
 
@@ -1302,58 +1395,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             window.setTitle(TITLE_STRING);
             window.setSize(800,600);
 
-            final SwingWorker worker = new SwingWorker(){
-                UpdateChecker uc;
-                public Object construct() {
-                    uc = new UpdateChecker();
-                    try {
-                        uc.checkForUpdate();
-                    } catch(IOException ioe) {
-                        //this means we couldnt connect but we want it to die quietly
-                    }
-                    return null;
-                }
-                public void finished() {
-                    if(uc != null) {
-                        if(uc.isNewVersionAvailable()) {
-                            //theres an update available so lets pop some crap up
-                            final JLayeredPane jlp = window.getLayeredPane();
 
-                            final JPanel udp = new JPanel();
-                            udp.setLayout(new BoxLayout(udp, BoxLayout.Y_AXIS));
-                            double version = uc.getNewVersion();
-                            Font detailsFont = new Font("Default", Font.PLAIN, 14);
-                            JLabel announceLabel = new JLabel("A newer version of Haploview (" +version+") is available.");
-                            announceLabel.setFont(detailsFont);
-                            JLabel detailsLabel = new JLabel("See \"Check for update\" in the file menu for details.");
-                            detailsLabel.setFont(detailsFont);
-                            udp.add(announceLabel);
-                            udp.add(detailsLabel);
-
-                            udp.setBorder(BorderFactory.createRaisedBevelBorder());
-                            int width = udp.getPreferredSize().width;
-                            int height = udp.getPreferredSize().height;
-                            int borderwidth = udp.getBorder().getBorderInsets(udp).right;
-                            int borderheight = udp.getBorder().getBorderInsets(udp).bottom;
-                            udp.setBounds(jlp.getWidth()-width-borderwidth, jlp.getHeight()-height-borderheight,
-                                   udp.getPreferredSize().width, udp.getPreferredSize().height);
-                            udp.setOpaque(true);
-
-                            jlp.add(udp, JLayeredPane.POPUP_LAYER);
-
-                            java.util.Timer updateTimer = new java.util.Timer();
-                            //show this update message for 6.5 seconds
-                            updateTimer.schedule(new TimerTask() {
-                                public void run() {
-                                    jlp.remove(udp);
-                                    jlp.repaint();
-                                }
-                            },6000);
-
-                        }
-                    }
-                }
-            };
 
 
 
@@ -1363,6 +1405,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     (screen.height - window.getHeight()) / 2);
 
             window.setVisible(true);
+
+            final SwingWorker worker = showUpdatePanel();
             worker.start();
 
 
@@ -1372,23 +1416,80 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
                 inputArray[2] = null;
-                window.readGenotypes(inputArray, HAPS_FILE);
+                window.readGenotypes(inputArray, HAPS_FILE, false);
             }else if (argParser.getPedFileName() != null){
                 inputArray[0] = argParser.getPedFileName();
                 inputArray[1] = argParser.getInfoFileName();
                 inputArray[2] = null;
-                window.readGenotypes(inputArray, PED_FILE);
+                window.readGenotypes(inputArray, PED_FILE, false);
             }else if (argParser.getHapmapFileName() != null){
                 inputArray[0] = argParser.getHapmapFileName();
                 inputArray[1] = null;
                 inputArray[2] = null;
-                window.readGenotypes(inputArray, HMP_FILE);
+                window.readGenotypes(inputArray, HMP_FILE, false);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
                 readDialog.pack();
                 readDialog.setVisible(true);
             }
         }
+    }
+
+    public static SwingWorker showUpdatePanel(){
+        final SwingWorker worker;
+        worker = new SwingWorker(){
+            UpdateChecker uc;
+            public Object construct() {
+                uc = new UpdateChecker();
+                try {
+                    uc.checkForUpdate();
+                } catch(IOException ioe) {
+                    //this means we couldnt connect but we want it to die quietly
+                }
+                return null;
+            }
+            public void finished() {
+                if(uc != null) {
+                    if(uc.isNewVersionAvailable()) {
+                        //theres an update available so lets pop some crap up
+                        final JLayeredPane jlp = window.getLayeredPane();
+
+                        final JPanel udp = new JPanel();
+                        udp.setLayout(new BoxLayout(udp, BoxLayout.Y_AXIS));
+                        double version = uc.getNewVersion();
+                        Font detailsFont = new Font("Default", Font.PLAIN, 14);
+                        JLabel announceLabel = new JLabel("A newer version of Haploview (" +version+") is available.");
+                        announceLabel.setFont(detailsFont);
+                        JLabel detailsLabel = new JLabel("See \"Check for update\" in the file menu for details.");
+                        detailsLabel.setFont(detailsFont);
+                        udp.add(announceLabel);
+                        udp.add(detailsLabel);
+
+                        udp.setBorder(BorderFactory.createRaisedBevelBorder());
+                        int width = udp.getPreferredSize().width;
+                        int height = udp.getPreferredSize().height;
+                        int borderwidth = udp.getBorder().getBorderInsets(udp).right;
+                        int borderheight = udp.getBorder().getBorderInsets(udp).bottom;
+                        udp.setBounds(jlp.getWidth()-width-borderwidth, jlp.getHeight()-height-borderheight,
+                                udp.getPreferredSize().width, udp.getPreferredSize().height);
+                        udp.setOpaque(true);
+
+                        jlp.add(udp, JLayeredPane.POPUP_LAYER);
+
+                        java.util.Timer updateTimer = new java.util.Timer();
+                        //show this update message for 6.5 seconds
+                        updateTimer.schedule(new TimerTask() {
+                            public void run() {
+                                jlp.remove(udp);
+                                jlp.repaint();
+                            }
+                        },6000);
+
+                    }
+                }
+            }
+        };
+        return worker;
     }
 
     class HaploviewTabbedPane extends JTabbedPane{
@@ -1406,7 +1507,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     }
 }
-
 
 
 

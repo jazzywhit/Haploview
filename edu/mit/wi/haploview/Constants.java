@@ -38,6 +38,7 @@ public interface Constants {
     public static final String VIEW_HAPLOTYPES = "Haplotypes";
     public static final String VIEW_CHECK_PANEL = "Check Markers";
     public static final String VIEW_ASSOC = "Association";
+    public static final String VIEW_PLINK = "PLINK";
     public static final String VIEW_TAGGER = "Tagger";
 
     //main frame tab numbers
@@ -45,7 +46,8 @@ public interface Constants {
     public static final int VIEW_HAP_NUM = 1;
     public static final int VIEW_CHECK_NUM = 2;
     public static final int VIEW_TAGGER_NUM = 3;
-    public static final int VIEW_ASSOC_NUM = 4;
+    public static final int VIEW_PLINK_NUM = 4;
+    public static final int VIEW_ASSOC_NUM = 5;
 
     //association tab subtab indices
     public static final int VIEW_SINGLE_ASSOC = 0;
@@ -73,6 +75,12 @@ public interface Constants {
     static final int PED_FILE = 3;
     static final int HMP_FILE = 4;
     static final int ASSOC_FILE = 5;
+    static final int PHASED_FILE = 6;
+    static final int PHASEDHMPDL_FILE = 7;
+    static final int SAMPLE_FILE = 8;
+    static final int LEGEND_FILE = 9;
+    static final int PLINK_FILE = 10;
+    static final int MAP_FILE = 11;
 
     //color modes
     static final int STD_SCHEME = 0;
@@ -107,6 +115,11 @@ public interface Constants {
     //default LD comparison distance (in kb)
     static final int MAXDIST_DEFAULT = 500;
 
+    //phased data stuff
+    static final String[] CHROM_NAMES = {"1","2","3","4","5","6","7","8","9","10",
+            "11","12","13","14","15","16","17","18","19","20","21","22","X"};
+    static final String[] POP_NAMES = {"YRI", "CEU", "HCB", "JPT", "HCB+JPT"};
+
     //GBrowse options
     static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "DNA"};
     static final String[] GB_OPTS = {"gtsh%201", "mRNA%203", "", "", ""};
@@ -122,6 +135,11 @@ public interface Constants {
             "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
             "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
             "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
+            "-phasedhmpdata <phasedfile>     Specify a phased HapMap data file\n" +
+            "-phasedhmpsample <samplefile>   Specify a phased HapMap sample file\n" +
+            "-phasedhmplegend <legendfile>   Specify a phased HapMap legend file\n" +
+            "-gzip                           Indicates that phased HapMap input files use GZIP compression\n" +
+            "-phasedhapmapdl                 Specify a phased HapMap download\n" +
             "-haps <hapsfile>                Specify an input file in .haps format\n" +
             "-info <infofile>                Specify a marker info file\n" +
             "-batch <batchfile>              Batch mode. Each line in batch file should contain a genotype file \n"+
@@ -131,7 +149,10 @@ public interface Constants {
             "-excludeMarkers <markers>       Specify markers (in range 1-N where N is total number of markers) to be\n"+
             "                                skipped for all analyses. Format: 1,2,5..12\n"+
             "-skipcheck                      Skips the various genotype file checks\n" +
-            "-chromosome <1-22,x>            Specifies the chromosome for this file\n" +
+            "-chromosome <1-22,x>            Specifies the chromosome for this file or download\n" +
+            "-population <CEU,YRI,HCB,JPT>   Specifies the population for this HapMap download\n" +
+            "-startpos <integer>             Specifies the start position for this HapMap download\n" +
+            "-endpos <integer>               Specifies the end position for this HapMap download\n" +
             "-dprime                         Outputs LD text to <inputfile>.LD\n" +
             "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
             "-compressedpng                  Outputs compressed LD display to <inputfile>.LD.PNG\n"+
@@ -176,6 +197,9 @@ public interface Constants {
             "-includeTagsFile <file>         Forces in a file of one marker name per line as tags.\n" +
             "-excludeTags <markers>          Excludes a comma separated list of marker names from being used as tags.\n" +
             "-excludeTagsFile <file>         Excludes a file of one marker name per line from being used as tags.\n" +
+            "-captureAlleles <file>          Capture only the alleles contained in a file of one marker name per line.\n" +
+            "-designScores <file>            Specify design scores in a file of one marker name and one score per line\n" +
+            "-mintagdistance <distance>      Specify a Minimum distance in bases between picked tags\n" +
             "-taglodcutoff <thresh>          Tagger LOD cutoff for creating multimarker tag haplotypes.\n" +
             "-tagrsqcutoff <thresh>          Tagger r^2 cutoff.\n"
             ;

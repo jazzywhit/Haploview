@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.23 2006/06/22 21:11:12 djbender Exp $
+* $Id: PedFile.java,v 3.24 2006/07/12 17:44:59 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -19,9 +19,10 @@ import edu.mit.wi.pedparser.PedParser;
 import edu.mit.wi.pedparser.PedigreeException;
 
 import java.util.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.FileWriter;
+import java.util.zip.GZIPInputStream;
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.io.*;
 
 import org._3pq.jgrapht.graph.SimpleGraph;
 
@@ -520,7 +521,11 @@ public class PedFile {
                 throw new PedFileException("Column number mismatch in pedfile. line " + (k+1));
             }
 
-            ind = new Individual(numMarkers);
+            try{
+                ind = new Individual(numMarkers, false);
+            }catch(NegativeArraySizeException neg) {
+                throw new PedFileException("File formatting error.");
+            }
             if(numTokens < 6) {
                 throw new PedFileException("Incorrect number of fields on line " + (k+1));
             }
@@ -654,7 +659,7 @@ public class PedFile {
         StringTokenizer dt;
         while (st.hasMoreTokens()){
             //todo: sort out how this used to work. now it's counting the header line so we subtract 1
-            ind = new Individual(numLines-1);
+            ind = new Individual(numLines-1, false);
 
             String name = st.nextToken();
             namesIncludingDups.add(name);
@@ -769,6 +774,404 @@ public class PedFile {
         }
     }
 
+    public void parsePhasedData(String[] info) throws IOException, PedFileException{
+        if (info[4].equals("")){
+            Chromosome.setDataChrom("none");
+        }else{
+            Chromosome.setDataChrom("chr" + info[4]);
+        }
+        Chromosome.setDataBuild("ncbi_b35");
+        Vector sampleData = new Vector();
+        Vector legendData = new Vector();
+        Vector legendMarkers = new Vector();
+        Vector legendPositions = new Vector();
+        Individual ind = null;
+        byte[] byteDataT = new byte[0];
+        byte[] byteDataU = new byte[0];
+        this.allIndividuals = new Vector();
+
+
+        File phasedFile = new File(info[0]);
+        File sampleFile = new File(info[1]);
+        File legendFile = new File(info[2]);
+
+        if (phasedFile.length() < 1){
+            throw new PedFileException("Genotypes file is empty or non-existent: " + phasedFile.getName());
+        }else if (sampleFile.length() < 1){
+            throw new PedFileException("Sample file is empty or non-existent: " + sampleFile.getName());
+        }else if (legendFile.length() < 1){
+            throw new PedFileException("Legend file is empty or non-existent: " + legendFile.getName());
+        }
+
+        //read in the individual ids data.
+        try{
+            BufferedReader sampleBuffReader;
+            if (Options.getGzip()){
+                FileInputStream sampleFis = new FileInputStream(sampleFile);
+                GZIPInputStream sampleInputStream = new GZIPInputStream(sampleFis);
+                sampleBuffReader = new BufferedReader(new InputStreamReader(sampleInputStream));
+            }else{
+                FileReader sampleReader = new FileReader(sampleFile);
+                sampleBuffReader = new BufferedReader(sampleReader);
+            }
+            String sampleLine;
+            while((sampleLine = sampleBuffReader.readLine())!=null){
+                StringTokenizer sampleTokenizer = new StringTokenizer(sampleLine);
+                sampleData.add(sampleTokenizer.nextToken());
+            }
+        }catch(NoSuchElementException nse){
+            throw new PedFileException("File format error: " + sampleFile.getName());
+        }
+
+
+
+        //read in the legend data
+        try{
+            BufferedReader legendBuffReader;
+            if (Options.getGzip()){
+                FileInputStream legendFis = new FileInputStream(legendFile);
+                GZIPInputStream legendInputStream = new GZIPInputStream(legendFis);
+                legendBuffReader = new BufferedReader(new InputStreamReader(legendInputStream));
+            }else{
+                FileReader legendReader = new FileReader(legendFile);
+                legendBuffReader = new BufferedReader(legendReader);
+            }
+            String legendLine;
+            String zero, one;
+            while((legendLine = legendBuffReader.readLine())!=null){
+                StringTokenizer legendSt = new StringTokenizer(legendLine);
+                String markerid = legendSt.nextToken();
+                if (markerid.equals("rs")){ //skip header
+                    continue;
+                }
+                legendMarkers.add(markerid);
+                legendPositions.add(legendSt.nextToken());
+                byte[] legendBytes = new byte[2];
+                zero = legendSt.nextToken();
+                one = legendSt.nextToken();
+
+                if (zero.equalsIgnoreCase("A")){
+                    legendBytes[0] = 1;
+                }else if (zero.equalsIgnoreCase("C")){
+                    legendBytes[0] = 2;
+                }else if (zero.equalsIgnoreCase("G")){
+                    legendBytes[0] = 3;
+                }else if (zero.equalsIgnoreCase("T")){
+                    legendBytes[0] = 4;
+                }else{
+                    throw new PedFileException("Invalid allele: " + zero);
+                }
+
+                if (one.equalsIgnoreCase("A")){
+                    legendBytes[1] = 1;
+                }else if (one.equalsIgnoreCase("C")){
+                    legendBytes[1] = 2;
+                }else if (one.equalsIgnoreCase("G")){
+                    legendBytes[1] = 3;
+                }else if (one.equalsIgnoreCase("T")){
+                    legendBytes[1] = 4;
+                }else{
+                    throw new PedFileException("Invalid allele: " + one);
+                }
+
+                legendData.add(legendBytes);
+            }
+
+            hminfo = new String[legendPositions.size()][2];
+
+            for (int i = 0; i < legendPositions.size(); i++){
+                //marker name.
+                hminfo[i][0] = (String)legendMarkers.get(i);
+                //marker position.
+                hminfo[i][1] = (String)legendPositions.get(i);
+            }
+        }catch(NoSuchElementException nse){
+            throw new PedFileException("File format error: " + legendFile.getName());
+        }
+
+        //read in the phased data.
+        try{
+            BufferedReader phasedBuffReader;
+            if (Options.getGzip()){
+                FileInputStream phasedFis = new FileInputStream(phasedFile);
+                GZIPInputStream phasedInputStream = new GZIPInputStream(phasedFis);
+                phasedBuffReader = new BufferedReader(new InputStreamReader(phasedInputStream));
+            }else{
+                FileReader phasedReader = new FileReader(phasedFile);
+                phasedBuffReader = new BufferedReader(phasedReader);
+            }
+            String phasedLine;
+            int columns = 0;
+            String token;
+            boolean even = false;
+            int iterator = 0;
+            while((phasedLine = phasedBuffReader.readLine()) != null){
+                StringTokenizer phasedSt = new StringTokenizer(phasedLine);
+                columns = phasedSt.countTokens();
+                if(even){
+                    iterator++;
+                }else{   //Only set up a new individual every 2 lines.
+                    ind = new Individual(columns, true);
+                    ind.setIndividualID((String)sampleData.get(iterator));
+                    if (columns != legendData.size()){
+                        throw new PedFileException("File error: invalid number of markers on Individual " + ind.getIndividualID());
+                    }
+                    String details = (String)hapMapTranslate.get(ind.getIndividualID());
+                    //exception in case of wierd compression combos in input files
+                    if (details == null){
+                        throw new PedFileException("File format error: " + sampleFile.getName());
+                    }
+                    StringTokenizer dt = new StringTokenizer(details, "\n\t\" \"");
+                    ind.setFamilyID(dt.nextToken().trim());
+                    //skip individualID since we already have it.
+                    dt.nextToken();
+                    ind.setDadID(dt.nextToken());
+                    ind.setMomID(dt.nextToken());
+                    try {
+                        ind.setGender(Integer.parseInt(dt.nextToken().trim()));
+                        ind.setAffectedStatus(Integer.parseInt(dt.nextToken().trim()));
+                    }catch(NumberFormatException nfe) {
+                        throw new PedFileException("File error: invalid gender or affected status for indiv " + ind.getIndividualID());
+                    }
+
+                    //check if the family exists already in the Hashtable
+                    Family fam = (Family)this.families.get(ind.getFamilyID());
+                    if(fam == null){
+                        //it doesnt exist, so create a new Family object
+                        fam = new Family(ind.getFamilyID());
+                    }
+                    fam.addMember(ind);
+                    this.families.put(ind.getFamilyID(),fam);
+                    this.allIndividuals.add(ind);
+                }
+
+                int index = 0;
+                if (!even){
+                    byteDataT = new byte[columns];
+                }else{
+                    byteDataU = new byte[columns];
+                }
+                while(phasedSt.hasMoreTokens()){
+                    token = phasedSt.nextToken();
+                    if (!even){
+                        if (token.equalsIgnoreCase("0")){
+                            byteDataT[index] = ((byte[])legendData.get(index))[0];
+                        }else if (token.equalsIgnoreCase("1")){
+                            byteDataT[index] = ((byte[])legendData.get(index))[1];
+                        }else {
+                            throw new PedFileException("File format error: " + phasedFile.getName());
+                        }
+                    }else{
+                        if (token.equalsIgnoreCase("0")){
+                            byteDataU[index] = ((byte[])legendData.get(index))[0];
+                        }else if (token.equalsIgnoreCase("1")){
+                            byteDataU[index] = ((byte[])legendData.get(index))[1];
+                        }else {
+                            throw new PedFileException("File format error: " + phasedFile.getName());
+                        }
+                    }
+                    index++;
+                }
+                if (even){
+                    for(int i=0; i < columns; i++){
+                        ind.addMarker(byteDataT[i], byteDataU[i]);
+                    }
+                }
+                even = !even;
+            }
+        }catch(NoSuchElementException nse){
+            throw new PedFileException("File format error: " + phasedFile.getName());
+        }
+    }
+
+    public void parsePhasedDownload(String[] info) throws IOException, PedFileException{
+        String targetChrom = "chr" + info[4];
+        Chromosome.setDataChrom(targetChrom);
+        Chromosome.setDataBuild("ncbi_b35");
+        Vector legendMarkers = new Vector();
+        Vector legendPositions = new Vector();
+        Vector hmpVector = new Vector();
+        Individual ind = null;
+        byte[] byteDataT = new byte[0];
+        byte[] byteDataU = new byte[0];
+        this.allIndividuals = new Vector();
+        String populationChoice = info[1];
+        boolean pseudoChecked = false;
+        int startPos;
+        if (info[2].equals("0")){
+            startPos = 1;
+        }else{
+            startPos = (Integer.parseInt(info[2]))*1000;
+        }
+        int stopPos = (Integer.parseInt(info[3]))*1000;
+        int numSnps = 0;
+        boolean infoDone = false;
+        boolean hminfoDone = false;
+        String urlHmp = "http://dev.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + populationChoice +
+                "&start=" + startPos + "&stop=" + stopPos + "&out=txt&dna=y";
+
+        try{
+            URL hmpUrl = new URL(urlHmp);
+            HttpURLConnection hmpCon = (HttpURLConnection)hmpUrl.openConnection();
+            hmpCon.connect();
+
+            int response = hmpCon.getResponseCode();
+
+            if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
+                throw new IOException("Could not connect to HapMap database.");
+            }else {
+                BufferedReader hmpBuffReader = new BufferedReader(new InputStreamReader(hmpCon.getInputStream()));
+                String hmpLine;
+                char token;
+                int columns;
+                while((hmpLine = hmpBuffReader.readLine())!=null){
+                    if (hmpLine.startsWith("#"+populationChoice) || hmpLine.startsWith("#CHB")){
+                        //continue;
+                    }else if (hmpLine.startsWith("##snps")){
+                        StringTokenizer snpSt = new StringTokenizer(hmpLine);
+                        snpSt.nextToken();
+                        numSnps = Integer.parseInt(snpSt.nextToken());
+                    }else if (hmpLine.startsWith("##phased")){
+                        infoDone = true;
+                    }else if (hmpLine.startsWith("No")){
+                        throw new PedFileException(hmpLine);
+                    }else if (hmpLine.startsWith("Too many")){
+                        throw new PedFileException(hmpLine);
+                    }else if (!infoDone){
+                        StringTokenizer posSt = new StringTokenizer(hmpLine);
+                        legendMarkers.add(posSt.nextToken());
+                        legendPositions.add(posSt.nextToken());
+                    }else if (infoDone){
+                        if (!hminfoDone){
+                            hminfo = new String[legendPositions.size()][2];
+                            for (int i = 0; i < legendPositions.size(); i++){
+                                //marker name.
+                                hminfo[i][0] = (String)legendMarkers.get(i);
+                                //marker position.
+                                hminfo[i][1] = (String)legendPositions.get(i);
+                            }
+                            hminfoDone = true;
+                        }
+                        hmpVector.add(hmpLine);
+                    }
+                }
+
+                for (int i = 0; i < hmpVector.size(); i++){
+                    StringTokenizer dataSt = new StringTokenizer((String)hmpVector.get(i));
+                    String newid = dataSt.nextToken();  //individual ID with _c1/_c2
+                    String data = dataSt.nextToken(); //alleles
+                    columns = data.length();
+                    StringTokenizer filter = new StringTokenizer(newid,"_");
+                    String id = filter.nextToken();
+                    String strand = filter.nextToken();
+                    if (strand.equals("c1")){   //Only set up a new individual on c1.
+                        ind = new Individual(columns, true);
+                        ind.setIndividualID(new String(id));
+                        if (columns != numSnps){
+                            throw new PedFileException("File error: invalid number of markers on Individual " + ind.getIndividualID());
+                        }
+                        String details = (String)hapMapTranslate.get(ind.getIndividualID());
+                        StringTokenizer dt = new StringTokenizer(details, "\n\t\" \"");
+                        ind.setFamilyID(dt.nextToken().trim());
+                        //skip individualID since we already have it.
+                        dt.nextToken();
+                        ind.setDadID(dt.nextToken());
+                        ind.setMomID(dt.nextToken());
+                        try {
+                            ind.setGender(Integer.parseInt(dt.nextToken().trim()));
+                            ind.setAffectedStatus(Integer.parseInt(dt.nextToken().trim()));
+                        }catch(NumberFormatException nfe) {
+                            throw new PedFileException("File error: invalid gender or affected status for indiv " + ind.getIndividualID());
+                        }
+                        if (!pseudoChecked){
+                            if (ind.getGender() == Individual.MALE){
+                                pseudoChecked = true;
+                                if (Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+                                    StringTokenizer checkSt = new StringTokenizer((String)hmpVector.get(i+1));
+                                    String checkNewid = checkSt.nextToken();
+                                    checkSt.nextToken(); //alleles
+                                    StringTokenizer checkFilter = new StringTokenizer(checkNewid,"_");
+                                    checkFilter.nextToken();
+                                    String checkStrand = checkFilter.nextToken();
+                                    if (checkStrand.equals("c2")){
+                                        Chromosome.setDataChrom("chrp");
+                                    }
+                                }
+                            }
+                        }
+
+                        //check if the family exists already in the Hashtable
+                        Family fam = (Family)this.families.get(ind.getFamilyID());
+                        if(fam == null){
+                            //it doesnt exist, so create a new Family object
+                            fam = new Family(ind.getFamilyID());
+                        }
+                        fam.addMember(ind);
+                        this.families.put(ind.getFamilyID(),fam);
+                        this.allIndividuals.add(ind);
+                    }
+
+                    int index = 0;
+                    if (strand.equals("c1")){
+                        byteDataT = new byte[columns];
+                    }else{
+                        byteDataU = new byte[columns];
+                    }
+                    for(int k = 0; k < columns; k++){
+                        token = data.charAt(k);
+                        if (strand.equals("c1")){
+                            if (token == 'A'){
+                                byteDataT[index] = 1;
+                            }else if (token == 'C'){
+                                byteDataT[index] = 2;
+                            }else if (token == 'G'){
+                                byteDataT[index] = 3;
+                            }else if (token == 'T'){
+                                byteDataT[index] = 4;
+                            }else {
+                                throw new PedFileException("Invalid Allele: " + token);
+                            }
+                        }else{
+                            if (token == 'A'){
+                                byteDataU[index] = 1;
+                            }else if (token == 'C'){
+                                byteDataU[index] = 2;
+                            }else if (token == 'G'){
+                                byteDataU[index] = 3;
+                            }else if (token == 'T'){
+                                byteDataU[index] = 4;
+                            }else if (token == '-'){
+                                /*if (!(Chromosome.getDataChrom().equalsIgnoreCase("chrx"))){
+                                                       throw new PedFileException("Missing allele on non X-chromosome data");
+                                                   }else{
+                                                       byteDataU[index] = byteDataT[index];
+                                                   }*/
+                                throw new PedFileException("Haploview does not currently support regions encompassing both\n"
+                                        + " pseudoautosomal and non-pseudoautosomal markers.");
+                            }else {
+                                throw new PedFileException("File format error.");
+                            }
+                        }
+                        index++;
+                    }
+                    if (strand.equals("c2")){
+                        for(int j=0; j < columns; j++){
+                            ind.addMarker(byteDataT[j], byteDataU[j]);
+                        }
+                    }else if (strand.equals("c1") && (ind.getGender() == Individual.MALE) &&
+                            (Chromosome.getDataChrom().equalsIgnoreCase("chrx"))){
+                        for(int j=0; j < columns; j++){
+                            ind.addMarker(byteDataT[j], byteDataT[j]);
+                        }
+                    }
+                }
+            }
+            hmpCon.disconnect();
+        }catch(IOException io){
+            throw new IOException("Could not connect to HapMap database.");
+        }
+    }
+
     public void parseHapsFile(Vector individs) throws PedFileException{
         //This method is used to parse haps files which now go through similar processing to ped files.
         String currentLine;
@@ -804,7 +1207,7 @@ public class PedFile {
                         " appears to have fewer than 3 columns.");
             }
             if(hapsEven){
-                ind = new Individual(st.countTokens());
+                ind = new Individual(st.countTokens(), false);
                 ind.setFamilyID(ped);
                 ind.setIndividualID(indiv);
                 ind.setDadID("");

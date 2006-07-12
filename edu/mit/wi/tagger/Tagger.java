@@ -1,6 +1,7 @@
 package edu.mit.wi.tagger;
 
 import edu.mit.wi.haploview.Util;
+import edu.mit.wi.haploview.Options;
 
 import java.util.*;
 import java.io.*;
@@ -8,6 +9,7 @@ import java.io.*;
 public class Tagger {
     public static final double DEFAULT_RSQ_CUTOFF = 0.8;
     public static final double DEFAULT_LOD_CUTOFF = 3.0;
+    public static final short DEFAULT_MIN_DISTANCE = 0;
     public static final int PAIRWISE_ONLY = 0;
     public static final int AGGRESSIVE_DUPLE = 1;
     public static final int AGGRESSIVE_TRIPLE = 2;
@@ -25,6 +27,8 @@ public class Tagger {
     //vector of SNPs which can never be included in the set of Tags
     //no object may be present in forceInclude and forceExclude concurrently.
     private Vector forceExclude;
+
+    private Hashtable designScores;
 
     private AlleleCorrelator alleleCorrelator;
     private double meanRSq;
@@ -44,11 +48,11 @@ public class Tagger {
 
     public int taggedSoFar;
 
-    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac) throws TaggerException{
-        this(s,include,exclude,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS,true,false);
+    public Tagger(Vector s, Vector include, Vector exclude, Hashtable design, AlleleCorrelator ac) throws TaggerException{
+        this(s,include,exclude,design,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS,true,false);
     }
 
-    public Tagger(Vector s, Vector include, Vector exclude, AlleleCorrelator ac, double rsqCut,
+    public Tagger(Vector s, Vector include, Vector exclude, Hashtable design, AlleleCorrelator ac, double rsqCut,
                   int aggressionLevel, long maxCompDist, int maxNumTags, boolean findTags, boolean printAllTags)
             throws TaggerException{
         minRSquared = rsqCut;
@@ -85,6 +89,8 @@ public class Tagger {
         } else {
             forceExclude = new Vector();
         }
+
+        designScores = design;
 
         alleleCorrelator = ac;
 
@@ -154,6 +160,7 @@ public class Tagger {
             }
         }
 
+        Vector toRemove = new Vector();
         //add each forced in sequence to the list of tags
         for(int i=0;i<includedPotentialTags.size();i++) {
             PotentialTag curPT = (PotentialTag) includedPotentialTags.get(i);
@@ -162,6 +169,22 @@ public class Tagger {
             sitesToCapture.removeAll(newlyTagged);
             sitesToCapture.remove(curPT.sequence);
 
+            if(Options.getTaggerMinDistance() !=0){
+                long tagLocation = ((SNP)curPT.sequence).getLocation();
+                Iterator itr = potentialTagByVarSeq.keySet().iterator();
+                while(itr.hasNext()) {
+                    PotentialTag pt = (PotentialTag) potentialTagByVarSeq.get(itr.next());
+                    if(Math.abs(((SNP)pt.sequence).getLocation() - tagLocation) <= Options.getTaggerMinDistance()  ){
+                        toRemove.add(pt.sequence);
+                    }
+                }
+            }
+        }
+
+        if(Options.getTaggerMinDistance() !=0){
+            for(int i=0;i<toRemove.size();i++){
+                potentialTagByVarSeq.remove(toRemove.get(i));
+            }
         }
 
         if (findTags){
@@ -179,12 +202,51 @@ public class Tagger {
                 //the last element is the one which tags the most untagged sites, so we choose that as our next tag.
                 Collections.sort(potentialTags,ptcomp);
                 PotentialTag currentBestTag = (PotentialTag) potentialTags.lastElement();
+                //look at the last one and ones before it that tag the same number of things
+                //from that set choose based on design score
+                if (designScores != null){
+                    double currentBestScore = 0;
+                    if (designScores.containsKey(currentBestTag.sequence.getName())){
+                        currentBestScore = ((Double)designScores.get(currentBestTag.sequence.getName())).doubleValue();
+                    }
+                    for (int i = potentialTags.size()-1; i>0; i--){
+                        if (currentBestTag.taggedCount() == ((PotentialTag)potentialTags.get(i)).taggedCount()){
+                            double previousScore = 0;
+                            if (designScores.containsKey(((PotentialTag)potentialTags.get(i)))){
+                                previousScore = ((Double)designScores.get(((PotentialTag)potentialTags.get(i)))).doubleValue();
+                            }
+                            if (previousScore > currentBestScore){
+                                currentBestTag = (PotentialTag)potentialTags.get(i);
+                                currentBestScore = previousScore;
+                            }
+                        }else{
+                            break;
+                        }
+                    }
+                }
 
                 HashSet newlyTagged = addTag(currentBestTag,potentialTagByVarSeq);
                 countTagged += newlyTagged.size();
 
                 sitesToCapture.removeAll(newlyTagged);
                 sitesToCapture.remove(currentBestTag.sequence);
+
+                if(Options.getTaggerMinDistance() !=0){
+                    Vector tooClose = new Vector();
+                    long tagLocation = ((SNP)currentBestTag.sequence).getLocation();
+                    Iterator itr = potentialTagByVarSeq.keySet().iterator();
+                    while(itr.hasNext()) {
+                        PotentialTag pt = (PotentialTag) potentialTagByVarSeq.get(itr.next());
+                        if(Math.abs(((SNP)pt.sequence).getLocation() - tagLocation) <= Options.getTaggerMinDistance()  ){
+                            potentialTags.remove(pt);
+                            tooClose.add(pt.sequence);
+                        }
+                    }
+                    for(int i =0;i<tooClose.size();i++){
+                        potentialTagByVarSeq.remove(tooClose.get(i));
+                    }
+                }
+
             }
         }
         taggedSoFar = countTagged;

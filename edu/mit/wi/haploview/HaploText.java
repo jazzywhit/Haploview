@@ -22,6 +22,10 @@ public class HaploText implements Constants{
     private String infoFileName;
     private String pedFileName;
     private String hapmapFileName;
+    private String phasedhmpdataFileName;
+    private String phasedhmpsampleFileName;
+    private String phasedhmplegendFileName;
+    private boolean phasedhapmapDownload = false;
     private String blockFileName;
     private String trackFileName;
     private String customAssocTestsFileName;
@@ -46,8 +50,15 @@ public class HaploText implements Constants{
     private String forceIncludeFileName;
     private Vector forceExcludeTags;
     private String forceExcludeFileName;
+    private Vector captureAlleleTags;
+    private String captureAllelesFileName;
+    private Hashtable designScores;
+    private String designScoresFileName;
+    private String minTagDistance;
     private Vector argHandlerMessages;
     private String chromosomeArg;
+    private String[] phasedHapMapInfo;
+    private String populationArg, startPos, endPos;
 
 
     public boolean isNogui() {
@@ -125,7 +136,7 @@ public class HaploText implements Constants{
             this.doBatch();
         }
 
-        if(!(this.pedFileName== null) || !(this.hapsFileName== null) || !(this.hapmapFileName== null)){
+        if(!(this.pedFileName== null) || !(this.hapsFileName== null) || !(this.hapmapFileName== null) || !(this.phasedhmpdataFileName== null) || phasedhapmapDownload){
             if(nogui){
                 System.out.println(TITLE_STRING);
                 for (int i = 0; i < argHandlerMessages.size(); i++){
@@ -257,6 +268,45 @@ public class HaploText implements Constants{
                     }
                     hapmapFileName = args[i];
                 }
+            }
+            else if (args[i].equalsIgnoreCase("-phasedhmpdata")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a filename");
+                }
+                else{
+                    if(phasedhmpdataFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last phased hapmap data file listed will be used");
+                    }
+                    phasedhmpdataFileName = args[i];
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-phasedhmpsample")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a filename");
+                }
+                else{
+                    if(phasedhmpsampleFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last phased hapmap sample file listed will be used");
+                    }
+                    phasedhmpsampleFileName = args[i];
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-phasedhmplegend")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a filename");
+                }
+                else{
+                    if(phasedhmplegendFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last phased hapmap legend file listed will be used");
+                    }
+                    phasedhmplegendFileName = args[i];
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-phasedhapmapdl")){
+                phasedhapmapDownload = true;
             }
             else if(args[i].equalsIgnoreCase("-k") || args[i].equalsIgnoreCase("-blocks")) {
                 i++;
@@ -504,6 +554,26 @@ public class HaploText implements Constants{
                     die(args[i-1] + " requires a filename");
                 }
             }
+            else if (args[i].equalsIgnoreCase("-captureAlleles")){
+                i++;
+                if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
+                    captureAllelesFileName =args[i];
+                }else {
+                    die(args[i-1] + " requires a filename");
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-designScores")){
+                i++;
+                if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
+                    designScoresFileName =args[i];
+                }else {
+                    die(args[i-1] + " requires a filename");
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-mintagdistance")){
+                i++;
+                minTagDistance = args[i];
+            }
             else if(args[i].equalsIgnoreCase("-chromosome") || args[i].equalsIgnoreCase("-chr")) {
                 i++;
                 if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
@@ -512,9 +582,38 @@ public class HaploText implements Constants{
                     die(args[i-1] + " requires a chromosome name");
                 }
 
+                if(!(chromosomeArg.equalsIgnoreCase("x"))){
+                    try{
+                        if (Integer.parseInt(chromosomeArg) > 22){
+                            die("-chromosome requires a chromsome name of 1-22 or X");
+                        }
+                    }catch(NumberFormatException nfe){
+                        die("-chromosome requires a chromsome name of 1-22 or X");
+                    }
+                }
+
+            }
+            else if(args[i].equalsIgnoreCase("-population")){
+                i++;
+                if(!(i>=args.length) && !(args[i].charAt(0)== '-')) {
+                    populationArg = args[i];
+                }else {
+                    die(args[i-1] + "requires a population name");
+                }
+            }
+            else if(args[i].equalsIgnoreCase("-startpos")){
+                i++;
+                startPos = args[i];
+            }
+            else if(args[i].equalsIgnoreCase("-endPos")){
+                i++;
+                endPos = args[i];
             }
             else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
+            }
+            else if(args[i].equalsIgnoreCase("-gzip")){
+                Options.setGzip(true);
             }
             else {
                 die("invalid parameter specified: " + args[i]);
@@ -529,6 +628,17 @@ public class HaploText implements Constants{
             countOptions++;
         }
         if(hapmapFileName != null) {
+            countOptions++;
+        }
+        if(phasedhmpdataFileName != null) {
+            countOptions++;
+            if(phasedhmpsampleFileName == null){
+                die("You must specify a sample file for phased hapmap input.");
+            }else if(phasedhmplegendFileName == null){
+                die("You must specify a legend file for phased hapmap input.");
+            }
+        }
+        if(phasedhapmapDownload) {
             countOptions++;
         }
         if(batchFileName != null) {
@@ -637,7 +747,7 @@ public class HaploText implements Constants{
         }
 
         if(tagging != Tagger.NONE) {
-            if(infoFileName == null && hapmapFileName == null && batchFileName == null) {
+            if(infoFileName == null && hapmapFileName == null && batchFileName == null && phasedhmpdataFileName == null && !phasedhapmapDownload) {
                 die("A marker info file must be specified when tagging.");
             }
 
@@ -687,6 +797,54 @@ public class HaploText implements Constants{
                 }
             }
 
+            if (captureAllelesFileName != null) {
+                File captureFile = new File(captureAllelesFileName);
+                captureAlleleTags = new Vector();
+
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(captureFile));
+                    String line;
+                    while((line = br.readLine()) != null) {
+                        if(line.length() > 0 && line.charAt(0) != '#'){
+                            line = line.trim();
+                            captureAlleleTags.add(line);
+                        }
+                    }
+                }catch(IOException ioe) {
+                    die("An error occured while reading the file specified by -captureAlleles.");
+                }
+            }
+
+            if (designScoresFileName != null) {
+                File designFile = new File(designScoresFileName);
+                designScores = new Hashtable(1,1);
+                try {
+                    BufferedReader br = new BufferedReader(new FileReader(designFile));
+                    String line;
+                    while((line = br.readLine()) != null) {
+                        if(line.length() > 0 && line.charAt(0) != '#'){
+                            StringTokenizer st = new StringTokenizer(line);
+                            String marker = st.nextToken();
+                            Double score = new Double(st.nextToken());
+                            designScores.put(marker,score);
+                        }
+                    }
+                }catch(IOException ioe) {
+                    die("An error occured while reading the file specified by -captureAlleles.");
+                }
+            }
+
+            if (minTagDistance != null) {
+                try{
+                    if (Integer.parseInt(minTagDistance) < 0){
+                        die("minimum tag distance cannot be negative");
+                    }
+                }catch(NumberFormatException nfe){
+                    die("minimum tag distance must be a positive integer");
+                }
+                Options.setTaggerMinDistance(Integer.parseInt(minTagDistance));
+            }
+
             //check that there isn't any overlap between include/exclude lists
             Vector tempInclude = (Vector) forceIncludeTags.clone();
             tempInclude.retainAll(forceExcludeTags);
@@ -714,6 +872,28 @@ public class HaploText implements Constants{
         }
         if(chromosomeArg != null) {
             Chromosome.setDataChrom("chr" + chromosomeArg);
+        }
+
+        if (phasedhapmapDownload){
+            if (chromosomeArg == null){
+                die("-phasedhapmapdl requires a chromosome specification");
+            }else if (!(populationArg.equalsIgnoreCase("CEU") || populationArg.equalsIgnoreCase("YRI")  || populationArg.equalsIgnoreCase("HCB")
+                    || populationArg.equalsIgnoreCase("JPT"))){
+                die("-phasedhapmapdl requires a population specification of CEU, YRI, HCB, or JPT");
+            }
+
+            if (Integer.parseInt(chromosomeArg) < 1 && Integer.parseInt(chromosomeArg) > 22){
+                if (!(chromosomeArg.equalsIgnoreCase("x"))){
+                    die("chromsome specification must be betweeen 1 and 22 or X");
+                }
+            }
+            try{
+                if (Integer.parseInt(startPos) > Integer.parseInt(endPos)){
+                    die("end position must be greater then start position");
+                }
+            }catch(NumberFormatException nfe){
+                die("start and end positions must be integer values");
+            }
         }
     }
 
@@ -821,6 +1001,16 @@ public class HaploText implements Constants{
         else if (pedFileName != null){
             fileName = pedFileName;
             fileType = PED_FILE;
+        }
+        else if (phasedhmpdataFileName != null){
+            fileName = phasedhmpdataFileName;
+            fileType = PHASED_FILE;
+            phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, "", ""};
+        }
+        else if (phasedhapmapDownload){
+            fileName = "Chromosome " + chromosomeArg + " " + populationArg;
+            fileType = PHASEDHMPDL_FILE;
+            phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg};
         }else{
             fileName = hapmapFileName;
             fileType = HMP_FILE;
@@ -842,11 +1032,15 @@ public class HaploText implements Constants{
             AssociationTestSet customAssocSet;
 
             if(!quietMode && fileName != null){
-                System.out.println("Using data file: " + fileName);
+                if (phasedhapmapDownload){
+                    System.out.println("Loading chromosome" + chromosomeArg + ", population " + populationArg + ".");
+                }else{
+                    System.out.println("Using data file: " + fileName);
+                }
             }
 
             inputFile = new File(fileName);
-            if(!inputFile.exists()){
+            if(!inputFile.exists() && !phasedhapmapDownload){
                 System.out.println("input file: " + fileName + " does not exist");
                 System.exit(1);
             }
@@ -868,7 +1062,16 @@ public class HaploText implements Constants{
                 if(textData.getPedFile().isHaploidHets()){
                     System.out.println("Error: At least one male in the file is heterozygous.\nThese genotypes have been ignored.");
                 }
-            }else{
+            }
+            else if (fileType == PHASED_FILE){
+                //read in phased hapmap data
+                textData.phasedToChrom(phasedHapMapInfo, false);
+            }
+            else if (fileType == PHASEDHMPDL_FILE){
+                //read in downloaded phased hapmap data
+                textData.phasedToChrom(phasedHapMapInfo, true);
+            }
+            else{
                 //read in hapmapfile
                 textData.linkageToChrom(inputFile,HMP_FILE);
             }
@@ -899,6 +1102,14 @@ public class HaploText implements Constants{
                 for(int i=0;i<forceIncludeTags.size();i++) {
                     if(snpsByName.containsKey(forceIncludeTags.get(i))) {
                         whiteListedCustomMarkers.add(snpsByName.get(forceIncludeTags.get(i)));
+                    }
+                }
+            }
+
+            if(captureAlleleTags != null) {
+                for(int i =0;i<captureAlleleTags.size();i++) {
+                    if(snpsByName.containsKey(captureAlleleTags.get(i))) {
+                        whiteListedCustomMarkers.add(snpsByName.get(captureAlleleTags.get(i)));
                     }
                 }
             }
@@ -1211,7 +1422,7 @@ public class HaploText implements Constants{
                 }
 
                 TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture,
-                        tagging,maxNumTags,findTags);
+                        designScores,tagging,maxNumTags,findTags);
                 tc.runTagger();
 
                 while(!tc.isTaggingCompleted()) {

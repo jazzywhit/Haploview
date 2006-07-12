@@ -430,8 +430,8 @@ public class HaploData implements Constants{
                 chrom1[i] = currentInd.getAllele(i,0);
                 chrom2[i] = currentInd.getAllele(i,1);
             }
-            chroms.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1,currentInd.getAffectedStatus(),0));
-            chroms.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(),0));
+            chroms.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1,currentInd.getAffectedStatus(),0, false));
+            chroms.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(),0, false));
             numSingletons++;
         }
 
@@ -675,18 +675,18 @@ public class HaploData implements Constants{
                             }
                         }
                     }
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momT, mom.getAffectedStatus(),currentInd.getAffectedStatus()));
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momU, mom.getAffectedStatus(),currentInd.getAffectedStatus()));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momT, mom.getAffectedStatus(),currentInd.getAffectedStatus(), false));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),momU, mom.getAffectedStatus(),currentInd.getAffectedStatus(), false));
 
                     if(haploid) {
-                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(),currentInd.getAffectedStatus(), false));
                         ((Chromosome)chrom.lastElement()).setHaploid(true);
                     }else if(Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
-                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus(), false));
                         ((Chromosome)chrom.lastElement()).setHaploid(true);
                     }else {
-                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(),currentInd.getAffectedStatus()));
-                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(), currentInd.getAffectedStatus()));
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadT, dad.getAffectedStatus(), currentInd.getAffectedStatus(), false));
+                        chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),dadU, dad.getAffectedStatus(), currentInd.getAffectedStatus(), false));
                     }
 
 
@@ -722,9 +722,9 @@ public class HaploData implements Constants{
                         chrom2[i] = (byte)(4+thisMarkerB);
                     }
                 }
-                chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus(), -1));
+                chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom1, currentInd.getAffectedStatus(), -1, false));
                 if(!haploid){
-                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(), -1));
+                    chrom.add(new Chromosome(currentInd.getFamilyID(),currentInd.getIndividualID(),chrom2,currentInd.getAffectedStatus(), -1, false));
                 }else{
                     ((Chromosome)chrom.lastElement()).setHaploid(true);
                 }
@@ -737,6 +737,47 @@ public class HaploData implements Constants{
         return result;
     }
 
+    public Vector phasedToChrom(String[] info, boolean downloadFile)
+            throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
+
+        infoKnown = true;
+        pedFile = new PedFile();
+        if (downloadFile){
+            pedFile.parsePhasedDownload(info);
+        }else{
+            pedFile.parsePhasedData(info);
+        }
+
+        Vector result = pedFile.check();
+        Vector indList = pedFile.getUnrelatedIndividuals();
+        Vector chroms = new Vector();
+        Individual currentInd;
+        int numMarkers;
+        byte thisMarkerA, thisMarkerB;
+        numSingletons = 0;
+
+        for (int x=0; x < indList.size(); x++){
+            currentInd = (Individual)indList.get(x);
+            numMarkers = currentInd.getNumMarkers();
+            byte[] chrom1 = new byte[numMarkers];
+            byte[] chrom2 = new byte[numMarkers];
+            for (int i=0; i < numMarkers; i++){
+                thisMarkerA = currentInd.getAllele(i,0);
+                thisMarkerB = currentInd.getAllele(i,1);
+                chrom1[i] = thisMarkerA;
+                chrom2[i] = thisMarkerB;
+            }
+            chroms.add(new Chromosome(currentInd.getFamilyID(), currentInd.getIndividualID(), chrom1, currentInd.getAffectedStatus(), 0, true));
+            chroms.add(new Chromosome(currentInd.getFamilyID(), currentInd.getIndividualID(), chrom2, currentInd.getAffectedStatus(), 0, true));
+            numSingletons++;
+        }
+
+        chromosomes = chroms;
+
+        //wipe clean any existing marker info so we know we're starting clean with a new file
+        Chromosome.markers = null;
+        return result;
+    }
 
     void generateDPrimeTable(){
         //calculating D prime requires the number of each possible 2 marker

@@ -1,5 +1,5 @@
 /*
-* $Id: Individual.java,v 3.3 2006/05/12 17:38:39 jmaller Exp $
+* $Id: Individual.java,v 3.4 2006/07/12 17:44:58 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -37,6 +37,7 @@ public class Individual {
     private byte[][] alleles;
     private double numGoodMarkers;
     private boolean[] zeroed;
+    private boolean phased = false;
     //this is used to keep track of the index of the last marker added
     private int currMarker;
 
@@ -48,10 +49,11 @@ public class Individual {
 
 
 
-    public Individual(int numMarkers) {
+    public Individual(int numMarkers, boolean isPhased) {
         alleles = new byte[2][numMarkers];
         this.zeroed = new boolean[numMarkers];
         this.currMarker = 0;
+        this.phased = isPhased;
     }
 
     /**
