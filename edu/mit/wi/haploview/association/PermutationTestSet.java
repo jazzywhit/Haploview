@@ -197,7 +197,7 @@ public class PermutationTestSet implements Constants{
             }
 
 
-            if (selectionType != SINGLE_ONLY){
+            if (selectionType != SINGLE_ONLY && selectionType != CUSTOM){
                 //begin haplotype association test
                 if(Options.getAssocTest() == ASSOC_TRIO) {
                     for(int j=0;j<fakeHaplos.length;j++) {
