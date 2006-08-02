@@ -25,6 +25,8 @@ public class HaploText implements Constants{
     private String phasedhmpdataFileName;
     private String phasedhmpsampleFileName;
     private String phasedhmplegendFileName;
+    private String plinkFileName;
+    private String mapFileName;
     private boolean phasedhapmapDownload = false;
     private String blockFileName;
     private String trackFileName;
@@ -83,6 +85,14 @@ public class HaploText implements Constants{
 
     public String getHapmapFileName(){
         return hapmapFileName;
+    }
+
+    public String getPlinkFileName(){
+        return plinkFileName;
+    }
+
+    public String getMapFileName(){
+        return mapFileName;
     }
 
     public int getBlockOutputType() {
@@ -307,6 +317,30 @@ public class HaploText implements Constants{
             }
             else if (args[i].equalsIgnoreCase("-phasedhapmapdl")){
                 phasedhapmapDownload = true;
+            }
+            else if (args[i].equalsIgnoreCase("-plink")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a filename");
+                }
+                else{
+                    if(plinkFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last PLINK file listed will be used");
+                    }
+                    plinkFileName = args[i];
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-map")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a filename");
+                }
+                else{
+                    if(plinkFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last map file listed will be used");
+                    }
+                    mapFileName = args[i];
+                }
             }
             else if(args[i].equalsIgnoreCase("-k") || args[i].equalsIgnoreCase("-blocks")) {
                 i++;
@@ -640,6 +674,12 @@ public class HaploText implements Constants{
         }
         if(phasedhapmapDownload) {
             countOptions++;
+        }
+        if(plinkFileName != null){
+            countOptions++;
+            if(mapFileName == null){
+                die("You must specify a map file for plink format input.");
+            }
         }
         if(batchFileName != null) {
             countOptions++;

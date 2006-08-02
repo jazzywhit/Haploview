@@ -118,7 +118,7 @@ public interface Constants {
     //phased data stuff
     static final String[] CHROM_NAMES = {"1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X"};
-    static final String[] POP_NAMES = {"YRI", "CEU", "HCB", "JPT", "HCB+JPT"};
+    static final String[] POP_NAMES = {"YRI", "CEU", "CHB+JPT"};
 
     //GBrowse options
     static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "DNA"};

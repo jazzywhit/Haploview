@@ -1,44 +1,24 @@
 package edu.mit.wi.plink;
 
-public abstract class AssociationResult {
+import java.util.Vector;
+
+public class AssociationResult {
 
     private Marker thisMarker;
-    private char allele1;
-    private char allele2;
-    private double odds;
-    private double chisq;
-    private double pval;
+    private Vector data;
 
-    public AssociationResult(Marker m, char a, char b, double o, double c, double p){
+    public AssociationResult(Marker m, Vector values){
         thisMarker = m;
-        allele1 = a;
-        allele2 = b;
-        odds = o;
-        chisq = c;
-        pval = p;
+        data = values;
     }
 
     public Marker getMarker(){
         return thisMarker;
     }
 
-    public char getAllele1(){
-        return allele1;
+    public Vector getValues(){
+        return data;
     }
 
-    public char getAllele2(){
-        return allele2;
-    }
 
-    public double getOdds(){
-        return odds;
-    }
-
-    public double getChisq(){
-        return chisq;
-    }
-
-    public double getPval(){
-        return pval;
-    }
 }

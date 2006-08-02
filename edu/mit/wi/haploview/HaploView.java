@@ -985,11 +985,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         Plink plink = new Plink(this);
 
         try{
-            if (inputOptions[2].equals("tdt")){
-                plink.parseTDT(wgaFile,mapFile);
-            }else{
-                plink.parseCC(wgaFile,mapFile);
-            }
+            plink.parseWGA(wgaFile,mapFile);
         }catch(PlinkException wge){
             JOptionPane.showMessageDialog(this,
                     wge.getMessage(),
@@ -1427,6 +1423,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[1] = null;
                 inputArray[2] = null;
                 window.readGenotypes(inputArray, HMP_FILE, false);
+            }else if (argParser.getPlinkFileName() != null){
+                inputArray[0] = argParser.getPlinkFileName();
+                inputArray[1] = argParser.getMapFileName();
+                inputArray[2] = null;
+                window.readWGA(inputArray);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
                 readDialog.pack();

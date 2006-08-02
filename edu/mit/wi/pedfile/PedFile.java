@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.24 2006/07/12 17:44:59 djbender Exp $
+* $Id: PedFile.java,v 3.25 2006/08/02 14:46:06 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -995,7 +995,12 @@ public class PedFile {
         byte[] byteDataT = new byte[0];
         byte[] byteDataU = new byte[0];
         this.allIndividuals = new Vector();
-        String populationChoice = info[1];
+        String populationChoice;
+        if (info[1].equals("CHB+JPT")){
+            populationChoice = "JC";
+        }else{
+            populationChoice = info[1];
+        }
         boolean pseudoChecked = false;
         int startPos;
         if (info[2].equals("0")){
@@ -1007,7 +1012,7 @@ public class PedFile {
         int numSnps = 0;
         boolean infoDone = false;
         boolean hminfoDone = false;
-        String urlHmp = "http://dev.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + populationChoice +
+        String urlHmp = "http://dev.hapmap.org/cgi-perl/phased2?chr=" + targetChrom + "&pop=" + populationChoice +
                 "&start=" + startPos + "&stop=" + stopPos + "&out=txt&dna=y";
 
         try{
@@ -1025,7 +1030,7 @@ public class PedFile {
                 char token;
                 int columns;
                 while((hmpLine = hmpBuffReader.readLine())!=null){
-                    if (hmpLine.startsWith("#"+populationChoice) || hmpLine.startsWith("#CHB")){
+                    if (hmpLine.startsWith("#"+populationChoice) || hmpLine.startsWith("#JPT")){
                         //continue;
                     }else if (hmpLine.startsWith("##snps")){
                         StringTokenizer snpSt = new StringTokenizer(hmpLine);

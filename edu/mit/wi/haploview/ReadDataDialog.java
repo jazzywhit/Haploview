@@ -29,14 +29,14 @@ public class ReadDataDialog extends JDialog
     private JTextField pedFileField, pedInfoField, hapsFileField, hapsInfoField, hmpFileField,
             phaseFileField, phaseSampleField, phaseLegendField, plinkFileField, plinkMapField, testFileField;
     private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip;
-    private JRadioButton trioButton, ccButton, standardTDT, parenTDT, plinkTrioButton, plinkCCButton;
+    private JRadioButton trioButton, ccButton, standardTDT, parenTDT;
     private JButton browseAssocButton;
     private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromEndField;
     private JLabel testFileLabel;
     private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox popChooser = new JComboBox(POP_NAMES);
-    private String chromChoice, popChoice, wgaChoice;
+    private String chromChoice, popChoice;
     private boolean isDownloaded = false;
 
     JTabbedPane dataFormatPane = new JTabbedPane(JTabbedPane.LEFT);
@@ -180,20 +180,6 @@ public class ReadDataDialog extends JDialog
         JButton browsePlinkMapButton = new JButton("Browse");
         browsePlinkMapButton.setActionCommand(BROWSE_MAP);
         browsePlinkMapButton.addActionListener(this);
-        JPanel plinkTypesPanel = new JPanel();
-        plinkTrioButton = new JRadioButton("Family trio data", true);
-        plinkTrioButton.setEnabled(true);
-        //plinkTrioButton.setActionCommand("tdt");
-        //plinkTrioButton.addActionListener(this);
-        plinkCCButton = new JRadioButton("Case/Control data");
-        plinkCCButton.setEnabled(true);
-        //plinkCCButton.setActionCommand("cc");
-        //plinkCCButton.addActionListener(this);
-        ButtonGroup plinkButtons = new ButtonGroup();
-        plinkButtons.add(plinkTrioButton);
-        plinkButtons.add(plinkCCButton);
-        plinkTypesPanel.add(plinkTrioButton);
-        plinkTypesPanel.add(plinkCCButton);
 
         JPanel pedTab = new JPanel(new GridBagLayout());
         pedTab.setPreferredSize(new Dimension(375,200));
@@ -281,7 +267,6 @@ public class ReadDataDialog extends JDialog
         pedTab.add(assocPanel,c);
         hapsTab.add(hapsXChrom, c);
         hmpTab.add(doGB,c);
-        plinkTab.add(plinkTypesPanel,c);
         c.gridy = 3;
         pedTab.add(tdtOptsPanel,c);
         phaseTab.add(phaseGzipPanel,c);
@@ -528,13 +513,6 @@ public class ReadDataDialog extends JDialog
                 popChoice = (String)popChooser.getSelectedItem();
 
             }
-            if (fileType == PLINK_FILE){
-                if (plinkTrioButton.isSelected()){
-                    wgaChoice = "tdt";
-                }else{
-                    wgaChoice = "cc";
-                }
-            }
 
             String[] returnStrings;
             if (fileType == HAPS_FILE){
@@ -548,7 +526,7 @@ public class ReadDataDialog extends JDialog
                 returnStrings = new String[]{"Chr " + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice};
             }else if (fileType == PLINK_FILE){
-                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),wgaChoice};
+                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText()};
             }
             else{
                 returnStrings = new String[]{pedFileField.getText(), pedInfoField.getText(), testFileField.getText()};

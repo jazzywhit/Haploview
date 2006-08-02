@@ -10,12 +10,25 @@ public class PlinkTableModel extends AbstractTableModel{
     private Vector data;
     private Vector filtered;
 
-    private int CHI_COLUMN;
-    private int PVAL_COLUMN;
+    private int NUM_COLUMN = 0;
+    private int CHROM_COLUMN = 1;
+    private int MARKER_COLUMN = 2;
+    private int POSITION_COLUMN = 3;
+    private int CHI_COLUMN = -1;
+    private int PVAL_COLUMN = -1;
 
     public PlinkTableModel(Vector c, Vector d){
         columnNames=c;
         data=d;
+
+        for (int j = 0; j < columnNames.size(); j++){
+           String column = (String)columnNames.get(j);
+           if ((column.equals("TDT_CHISQ")) || (column.equals("CHISQ"))){
+               CHI_COLUMN = j;
+           }else if ((column.equals("TDT_P")) || (column.equals("P"))){
+               PVAL_COLUMN = j;
+           }
+        }
 
         filtered = new Vector();
 
@@ -48,55 +61,22 @@ public class PlinkTableModel extends AbstractTableModel{
         AssociationResult result = (AssociationResult)data.get(realIndex);
         Marker marker = result.getMarker();
         Object value = null;
-        if (column == 0){
+        if (column == NUM_COLUMN){
             value = new Integer(row+1);
-        }else if (column == 1){
+        }else if (column == CHROM_COLUMN){
             value = marker.getChromosome();
-        }else if (column == 2){
+        }else if (column == MARKER_COLUMN){
             value = marker.getMarker();
-        }else if (column == 3){
+        }else if (column == POSITION_COLUMN){
             value = new Long(marker.getPosition());
-        }else if (column == 4){
-            if (result instanceof CCAssociationResult){
-                CHI_COLUMN = 8;
-                PVAL_COLUMN = 9;
-                value = Character.toString(result.getAllele1());
-            }else if (result instanceof TDTAssociationResult){
-                CHI_COLUMN = 7;
-                PVAL_COLUMN = 8;
-                value = result.getAllele1() + ":" + result.getAllele2();
-            }
-        }else if (column == 5){
-            if (result instanceof CCAssociationResult){
-                value = new Double(((CCAssociationResult)result).getFrequencyAffected());
-            }else if (result instanceof TDTAssociationResult){
-                value = ((TDTAssociationResult)result).getTransmitted() + ":" + ((TDTAssociationResult)result).getUntransmitted();
-            }
-        }else if (column == 6){
-            if (result instanceof CCAssociationResult){
-                value = new Double(((CCAssociationResult)result).getFrequencyUnaffected());
-            }else if (result instanceof TDTAssociationResult){
-                value = new Double(result.getOdds());
-            }
-        }else if (column == 7){
-            if (result instanceof CCAssociationResult){
-                value = Character.toString(result.getAllele2());
-            }else if (result instanceof TDTAssociationResult){
-                value = new Double(result.getChisq());
-            }
-        }else if (column == 8){
-            if (result instanceof CCAssociationResult){
-                value = new Double(result.getChisq());
-            }else if (result instanceof TDTAssociationResult){
-                value = new Double(result.getPval());
-            }
-        }else if (column == 9){
-            if (result instanceof CCAssociationResult){
-                value = new Double(result.getPval());
-            }
-        }else if (column == 10){
-            if (result instanceof CCAssociationResult){
-                value = new Double(result.getOdds());
+        }else{
+            try{
+                value = new Double((String)result.getValues().get(column-4));
+            }catch (NumberFormatException nfe){
+                value = result.getValues().get(column-4);
+                if (((String)value).equals("NA")){
+                    value = new Double(Double.NaN);
+                }
             }
         }
         return (value);
@@ -132,16 +112,26 @@ public class PlinkTableModel extends AbstractTableModel{
                 chromPass = true;
             }
 
-            if (chisq > 0){
-                if (((Double)getValueAt(i,CHI_COLUMN)).doubleValue() >= chisq){
+            if (CHI_COLUMN != -1){
+                if (chisq > 0){
+                    double chi = ((Double)getValueAt(i,CHI_COLUMN)).doubleValue();
+                    if (chi >= chisq){
+                        chiPass = true;
+                    }
+                }else{
                     chiPass = true;
                 }
             }else{
                 chiPass = true;
             }
 
-            if (pval != -1){
-                if (((Double)getValueAt(i,PVAL_COLUMN)).doubleValue() <= pval){
+            if (PVAL_COLUMN != -1){
+                if (pval != -1){
+                    double p = ((Double)getValueAt(i,PVAL_COLUMN)).doubleValue();
+                    if (p <= pval){
+                        pvalPass = true;
+                    }
+                }else{
                     pvalPass = true;
                 }
             }else{
