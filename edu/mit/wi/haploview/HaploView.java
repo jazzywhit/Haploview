@@ -1168,6 +1168,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }else if (title.equals(VIEW_ASSOC) || title.equals(VIEW_CHECK_PANEL) || title.equals(VIEW_TAGGER)){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(false);
+                }else if (title.equals(VIEW_PLINK)){
+                    exportMenuItems[0].setEnabled(false);
+                    exportMenuItems[1].setEnabled(false);
+                    exportMenuItems[2].setEnabled(false);
                 }else{
                     exportMenuItems[0].setEnabled(false);
                     exportMenuItems[1].setEnabled(false);
