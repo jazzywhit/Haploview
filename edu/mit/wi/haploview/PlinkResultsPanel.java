@@ -3,11 +3,13 @@ package edu.mit.wi.haploview;
 import edu.mit.wi.plink.PlinkTableModel;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.border.TitledBorder;
 import java.util.Vector;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 public class PlinkResultsPanel extends JPanel implements ActionListener, Constants {
     private JTable table;
@@ -18,13 +20,15 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             "<html>10<sup>-5</sup>"};
     String[] chromNames = {"","1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X"};
-    private JComboBox chromChooser, pvalChooser;
+    String[] signs = {">=","<=","="};
+    private JComboBox chromChooser, pvalChooser, genericChooser, signChooser;
     private NumberTextField chromStart, chromEnd, topField, chiField;
+    private JTextField valueField;
 
     private long startPos, endPos;
     private int numResults;
     private double chisq, pval;
-    private String chromChoice;
+    private String chromChoice, columnChoice, signChoice, value;
     private HaploView hv;
 
 
@@ -46,6 +50,15 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         table.getColumnModel().getColumn(2).setPreferredWidth(100);
         table.getColumnModel().getColumn(3).setPreferredWidth(100);
         table.getColumnModel().getColumn(8).setPreferredWidth(100);
+
+        final PlinkCellRenderer renderer = new PlinkCellRenderer();
+        try{
+            table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
+            table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
+            table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
+            table.setDefaultRenderer(Class.forName("java.lang.String"),renderer);
+        }catch (Exception e){
+        }
 
         JScrollPane tableScroller = new JScrollPane(table);
         //tableScroller.setMinimumSize(new Dimension(800,600));
@@ -76,20 +89,32 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         JPanel topResultsFilterPanel = new JPanel();
         topResultsFilterPanel.add(new JLabel("View top"));
         topField = new NumberTextField("100",6,false);
-        topField.setEnabled(false);  //TODO: demo
         topResultsFilterPanel.add(topField);
         topResultsFilterPanel.add(new JLabel("results"));
         JButton doTopFilter = new JButton("Filter");
         doTopFilter.setActionCommand("top filter");
         doTopFilter.addActionListener(this);
-        doTopFilter.setEnabled(false); //TODO: demo
         topResultsFilterPanel.add(doTopFilter);
+
+        JPanel genericFilterPanel = new JPanel();
+        genericFilterPanel.add(new JLabel("Filter"));
+        genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
+        genericChooser.setSelectedIndex(-1);
+        genericFilterPanel.add(genericChooser);
+        signChooser = new JComboBox(signs);
+        signChooser.setSelectedIndex(-1);
+        genericFilterPanel.add(signChooser);
+        valueField = new JTextField(8);
+        genericFilterPanel.add(valueField);
+        JButton doGenericFilter = new JButton("Filter");
+        doGenericFilter.setActionCommand("generic filter");
+        doGenericFilter.addActionListener(this);
+        genericFilterPanel.add(doGenericFilter);
 
         JButton resetFilters = new JButton("Reset Filters");
         resetFilters.addActionListener(this);
-        JButton moreFilters = new JButton("Advanced Filters");
-        moreFilters.addActionListener(this);
-        moreFilters.setEnabled(false); //TODO: demo
+        JButton moreResults = new JButton("Load Additional Results");
+        moreResults.addActionListener(this);
 
         JPanel filterPanel = new JPanel(new GridBagLayout());
         GridBagConstraints a = new GridBagConstraints();
@@ -104,10 +129,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         a.gridy = 1;
         filterPanel.add(topResultsFilterPanel,a);
         a.gridy = 2;
+        filterPanel.add(genericFilterPanel,a);
+        a.gridy = 3;
         //a.gridx = 0;
         a.gridwidth = 1;
         a.anchor = GridBagConstraints.SOUTHWEST;
-        filterPanel.add(moreFilters,a);
+        filterPanel.add(moreResults,a);
         a.gridx = 2;
         a.anchor = GridBagConstraints.SOUTHEAST;
         filterPanel.add(resetFilters,a);
@@ -146,6 +173,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         repaint();
     }
 
+    public void doGenericFilter(){
+        clearSorting();
+        plinkTableModel.filterGeneric(columnChoice,signChoice,value);
+        repaint();
+    }
+
     public void clearFilters(){
         clearSorting();
         plinkTableModel.resetFilters();
@@ -155,6 +188,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         topField.setText("100");
         chiField.setText("0.0");
         pvalChooser.setSelectedIndex(0);
+        genericChooser.setSelectedIndex(-1);
+        signChooser.setSelectedIndex(-1);
+        valueField.setText("");
         repaint();
     }
 
@@ -173,8 +209,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             return;
         }
         String gotoChrom = (String)table.getValueAt(table.getSelectedRow(),1);
+        String gotoMarker = (String)table.getValueAt(table.getSelectedRow(),2);
         long markerPosition = ((Long)(table.getValueAt(table.getSelectedRow(),3))).longValue();
-        RegionDialog rd = new RegionDialog(hv,gotoChrom,markerPosition,"Go to Region");
+        RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,markerPosition,"Go to Region");
         rd.pack();
         rd.setVisible(true);
     }
@@ -221,15 +258,75 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 pval = .00001;
             }
             doFilters();
+        }else if (command.equals("generic filter")){
+            if (genericChooser.getSelectedIndex() == -1){
+                JOptionPane.showMessageDialog(this.getParent(),
+                        "Please select a column to filter on.",
+                        "Invalid value",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            columnChoice = (String)genericChooser.getSelectedItem();
+
+            if (signChooser.getSelectedIndex() == -1){
+                JOptionPane.showMessageDialog(this.getParent(),
+                        "Please choose >=, <=, or =.",
+                        "Invalid value",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            signChoice = (String)signChooser.getSelectedItem();
+
+            if (valueField.getText().equals("")){
+                JOptionPane.showMessageDialog(this.getParent(),
+                        "Please enter a value to filter on.",
+                        "Invalid value",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            value = valueField.getText();
+            doGenericFilter();
         }else if (command.equals("top filter")){
             numResults = Integer.parseInt(topField.getText());
             doTopFilter();
         }else if (command.equals("Reset Filters")){
             clearFilters();
-        }else if (command.equals("Advanced Filters")){
-            //advanced filters dialog
+        }else if (command.equals("Load Additional Results")){
+            HaploView.fc.setSelectedFile(new File(""));
+            int returned = HaploView.fc.showOpenDialog(this);
+            if (returned != JFileChooser.APPROVE_OPTION) return;
+            File file = HaploView.fc.getSelectedFile();
+            String name = file.getName();
+            String[] inputs = {null,null,name};
+            hv.readWGA(inputs);
         }else if (command.equals("Go to Selected Region")){
             gotoRegion();
+        }
+    }
+
+    class PlinkCellRenderer extends DefaultTableCellRenderer {
+        public Component getTableCellRendererComponent
+                (JTable table, Object value, boolean isSelected,
+                 boolean hasFocus, int row, int column)
+        {
+            Component cell = super.getTableCellRendererComponent
+                    (table, value, isSelected, hasFocus, row, column);
+            String thisMarker = (String)table.getValueAt(row,2);
+            cell.setForeground(Color.black);
+            cell.setBackground(Color.white);
+
+            if (isSelected){
+                cell.setBackground(table.getSelectionBackground());
+            }else{
+                cell.setBackground(table.getBackground());
+            }
+
+            if (thisMarker.equals(hv.getChosenMarker())){
+                cell.setBackground(Color.cyan);
+            }
+
+
+            return cell;
         }
     }
 

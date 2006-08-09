@@ -11,15 +11,16 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
     private JComboBox popChooser;
     private NumberTextField rangeInput;
-    private String chrom;
+    private String chrom, marker;
     private long markerPosition;
 
-    public RegionDialog (HaploView h, String chr, long position, String title) {
+    public RegionDialog (HaploView h, String chr, String mark, long position, String title) {
         super(h,title);
 
         hv = h;
         chrom = chr;
         markerPosition = position;
+        marker = mark;
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
@@ -79,6 +80,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             long end = (markerPosition/1000)+range;
             String gotoStart = new Long(start).toString();
             String gotoEnd = new Long(end).toString();
+            hv.setChosenMarker(marker);
 
             String[] returnStrings;
             returnStrings = new String[]{"Chr " + chrom + ":" + pop + ":" + gotoStart + ".." +

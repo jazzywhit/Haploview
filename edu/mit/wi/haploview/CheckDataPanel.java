@@ -44,9 +44,11 @@ public class CheckDataPanel extends JPanel
         JButton individualButton = new JButton("Individual Summary");
         individualButton.setEnabled(true);
         JButton mendelButton = new JButton("Mendel Errors");
-        mendelButton.setEnabled(true);
         if (hv.theData.getPedFile().getAxedPeople().size() == 0){
             missingButton.setEnabled(false);
+        }
+        if (!hv.theData.getPedFile().getMendelsExist()){
+            mendelButton.setEnabled(false);
         }
 
         missingButton.addActionListener(this);
@@ -273,6 +275,10 @@ public class CheckDataPanel extends JPanel
             if (myDupStatus > 0){
                 //I'm a dup so color the background in bright, ugly yellow
                 cell.setBackground(Color.yellow);
+            }
+
+            if (((String)table.getValueAt(row,1)).equals(hv.getChosenMarker())){
+                cell.setBackground(Color.cyan);
             }
 
             //bitmasking to decode the status bits

@@ -9,17 +9,17 @@ public class Marker {
     private long position;
 
     public Marker(String chrom, String marker, long md, long pos){
-    chromosome = chrom;
-    markerID = marker;
-    morganDistance = md;
-    position = pos;
+        chromosome = chrom;
+        markerID = marker;
+        morganDistance = md;
+        position = pos;
     }
 
     public String getChromosome(){
         return chromosome;
     }
 
-    public String getMarker(){
+    public String getMarkerID(){
         return markerID;
     }
 

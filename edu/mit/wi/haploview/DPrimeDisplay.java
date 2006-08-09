@@ -682,6 +682,7 @@ public class DPrimeDisplay extends JComponent
 
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
+                boolean foundSNP = false;
                 for (int x = 0; x < Chromosome.getSize(); x++) {
                     if (theData.isInBlock[x]){
                         g2.setFont(boldMarkerNameFont);
@@ -689,8 +690,16 @@ public class DPrimeDisplay extends JComponent
                         g2.setFont(markerNameFont);
                     }
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(green);
+                    if (Chromosome.getMarker(x).getDisplayName().equals(theHV.getChosenMarker())){
+                        g2.setColor(Color.blue);
+                        foundSNP = true;
+                    }
                     g2.drawString(Chromosome.getMarker(x).getDisplayName(),(float)TEXT_GAP, (float)alignedPositions[x] + ascent/3);
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(Color.black);
+                    if (foundSNP){
+                        g2.setColor(Color.BLACK);
+                        foundSNP = false;
+                    }
                 }
 
                 g2.rotate(Math.PI / 2.0);

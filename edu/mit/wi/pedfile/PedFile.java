@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.25 2006/08/02 14:46:06 djbender Exp $
+* $Id: PedFile.java,v 3.26 2006/08/09 18:46:36 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -49,6 +49,7 @@ public class PedFile {
     //bogusParents is true if someone in the file referenced a parent not in the file
     private boolean bogusParents = false;
     private boolean haploidHets = false;
+    private boolean mendels = false;
 
     private static Hashtable hapMapTranslate;
     private int[] markerRatings;
@@ -1428,6 +1429,7 @@ public class PedFile {
             throw new PedFileException("File contains zero valid individuals.");
         }
 
+        setMendelsExist(false);
         CheckData cd = new CheckData(this);
         Vector results = cd.check();
         this.results = results;
@@ -1574,6 +1576,14 @@ public class PedFile {
 
     public void setHaploidHets(boolean haploidHets) {
         this.haploidHets = haploidHets;
+    }
+
+    public boolean getMendelsExist(){
+        return mendels;
+    }
+
+    public void setMendelsExist(boolean mendel){
+        mendels = mendel;
     }
 }
 

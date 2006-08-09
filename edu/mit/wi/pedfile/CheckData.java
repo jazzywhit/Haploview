@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.15 2006/06/22 21:11:12 djbender Exp $
+* $Id: CheckData.java,v 3.16 2006/08/09 18:46:36 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -339,6 +339,10 @@ public class CheckData {
 
         //rating
         int rating = this.getRating(genopct, pvalue, mendErrNum,maf);
+
+        if (mendErrNum > 0 && !pedFile.getMendelsExist()){
+            pedFile.setMendelsExist(true);
+        }
 
         result.setObsHet(obsHET);
         result.setPredHet(preHET);

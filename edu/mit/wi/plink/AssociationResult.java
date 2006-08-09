@@ -6,10 +6,16 @@ public class AssociationResult {
 
     private Marker thisMarker;
     private Vector data;
+    private int index;
 
-    public AssociationResult(Marker m, Vector values){
+    public AssociationResult(int i, Marker m, Vector values){
         thisMarker = m;
         data = values;
+        index = i;
+    }
+
+    public int getIndex(){
+        return index;
     }
 
     public Marker getMarker(){
@@ -20,5 +26,9 @@ public class AssociationResult {
         return data;
     }
 
-
+    public void addValues(Vector values){
+        for (int i = 0; i < values.size(); i++){
+            data.add(values.get(i));
+        }
+    }
 }

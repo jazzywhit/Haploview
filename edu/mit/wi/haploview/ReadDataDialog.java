@@ -526,7 +526,7 @@ public class ReadDataDialog extends JDialog
                 returnStrings = new String[]{"Chr " + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice};
             }else if (fileType == PLINK_FILE){
-                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText()};
+                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null};
             }
             else{
                 returnStrings = new String[]{pedFileField.getText(), pedInfoField.getText(), testFileField.getText()};

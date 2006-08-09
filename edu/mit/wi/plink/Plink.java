@@ -2,7 +2,10 @@ package edu.mit.wi.plink;
 
 import edu.mit.wi.haploview.Constants;
 import edu.mit.wi.haploview.HaploView;
+import edu.mit.wi.haploview.TableSorter;
+import edu.mit.wi.haploview.BasicTableModel;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -10,6 +13,9 @@ import java.io.FileReader;
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.util.Hashtable;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.awt.*;
 
 
 public class Plink implements Constants {
@@ -72,7 +78,7 @@ public class Plink implements Constants {
 
                 Marker mark = new Marker(chr, marker, mDistance, position);
                 markers.add(mark);
-                markerHash.put(mark.getMarker(), mark);
+                markerHash.put(mark.getMarkerID(), mark);
             }
 
             BufferedReader wgaReader = new BufferedReader(new FileReader(wgaFile));
@@ -113,16 +119,16 @@ public class Plink implements Constants {
                 //StringTokenizer tokenizer = new StringTokenizer(wgaLine,"\t :");
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
                 String marker = null;
-                String chrom = null;
+                String chromosome = null;
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
                     if (tokenNumber == markerColumn){
                         marker = new String(tokenizer.nextToken());
                     }else if(tokenNumber == chromColumn){
-                        chrom = new String(tokenizer.nextToken());
+                        chromosome = new String(tokenizer.nextToken());
                         //TODO: mess with this nonsense.
-                        if(chrom.equals("23")){
-                            chrom = "X";
+                        if(chromosome.equals("23")){
+                            chromosome = "X";
                         }
                     }
                     else{
@@ -139,11 +145,11 @@ public class Plink implements Constants {
 
                 if (assocMarker == null){
                     throw new PlinkException("Marker " + marker + " does not appear in the map file.");
-                }else if (!(assocMarker.getChromosome().equalsIgnoreCase(chrom))){
-                    throw new PlinkException("Incompatible chromsomes.");
+                }else if (!(assocMarker.getChromosome().equalsIgnoreCase(chromosome)) && chromosome != null){
+                    throw new PlinkException("Incompatible chromsomes.");  //TODO is this necessary?
                 }
 
-                AssociationResult result = new AssociationResult(assocMarker,values);
+                AssociationResult result = new AssociationResult(lineNumber,assocMarker,values);
                 results.add(result);
                 lineNumber++;
             }
@@ -151,6 +157,134 @@ public class Plink implements Constants {
             throw new PlinkException("File error.");
         }catch(NumberFormatException nfe){
             throw new PlinkException("File formatting error.");
+        }
+        hv.setPlinkData(results,columns);
+    }
+
+    public void parseMoreResults(String wga) throws PlinkException {
+        File moreResultsFile = new File(wga);
+        results = hv.getPlinkData();
+        columns = hv.getPlinkColumns();
+        Vector newColumns = new Vector();
+        Vector ignoredMarkers = new Vector();
+        boolean addColumns = false;
+
+
+        try{
+            if (moreResultsFile.length() < 1){
+                throw new PlinkException("plink file is empty or nonexistent.");
+            }
+
+            BufferedReader moreResultsReader = new BufferedReader(new FileReader(moreResultsFile));
+            int numColumns = 0;
+            boolean snpColumn = false;
+            int markerColumn = -1;
+            int chromColumn = -1;
+            String headerLine = moreResultsReader.readLine();
+            StringTokenizer headerSt = new StringTokenizer(headerLine);
+
+            while (headerSt.hasMoreTokens()){
+                String column = new String(headerSt.nextToken());
+
+                if (column.equals("SNP")){
+                    if (snpColumn){
+                        throw new PlinkException("Results file contains more then one SNP column.");
+                    }
+                    snpColumn = true;
+                    markerColumn = numColumns;
+                    numColumns++;
+                }else if (column.equals("CHR")){
+                    chromColumn = numColumns;
+                    numColumns++;
+                }else{
+                    if(columns.contains(column)){
+                        String dupColumn = column + "*";
+                        JOptionPane.showMessageDialog(hv,
+                                column + " already appears in the dataset.\n" +
+                                        "Duplicates are marked as " + dupColumn,
+                                "Duplicate value",
+                                JOptionPane.ERROR_MESSAGE);
+                        newColumns.add(dupColumn);
+                    }else{
+                        newColumns.add(column);
+                    }
+                    numColumns++;
+                }
+            }
+
+            if (!snpColumn){
+                throw new PlinkException("Results file must contain a SNP column.");
+            }
+
+            String wgaLine;
+            int lineNumber = 0;
+
+            while((wgaLine = moreResultsReader.readLine())!=null){
+               if (wgaLine.length() == 0){
+                    //skip blank lines
+                    continue;
+               }
+                int tokenNumber = 0;
+                StringTokenizer tokenizer = new StringTokenizer(wgaLine);
+                String marker = null;
+                String chrom = null;
+                Vector values = new Vector();
+                while(tokenizer.hasMoreTokens()){
+                    if (tokenNumber == markerColumn){
+                        marker = new String(tokenizer.nextToken());
+                    }else if(tokenNumber == chromColumn){
+                        chrom = new String(tokenizer.nextToken());
+                        //TODO: mess with this nonsense.
+                        if(chrom.equals("23")){
+                            chrom = "X";
+                        }
+                    }
+                    else{
+                        String value = tokenizer.nextToken();
+                        values.add(value);
+                    }
+                    tokenNumber++;
+                }
+
+                if (tokenNumber != numColumns){
+                    throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
+                }
+
+                AssociationResult currentResult;
+                boolean resultFound = false;
+
+                for (int i = 0; i < results.size(); i++){
+                    currentResult = (AssociationResult)results.get(i);
+                    if (currentResult.getMarker().getMarkerID().equals(marker)){
+                        resultFound = true;
+                        currentResult.addValues(values);
+                        break;
+                    }
+                }
+
+                if (resultFound){
+                    addColumns = true;
+                }else{
+                    ignoredMarkers.add(marker);
+                }
+
+                lineNumber++;
+            }
+        }catch(IOException ioe){
+            throw new PlinkException("File error.");
+        }
+
+        if (ignoredMarkers.size() != 0){
+            IgnoredMarkersDialog imd = new IgnoredMarkersDialog(hv,"Ignored Markers",ignoredMarkers);
+            imd.pack();
+            imd.setVisible(true);
+        }
+
+
+        if (addColumns){
+            for (int i = 0; i < newColumns.size(); i++){
+                columns.add(newColumns.get(i));
+            }
         }
         hv.setPlinkData(results,columns);
     }
@@ -165,6 +299,64 @@ public class Plink implements Constants {
 
     public Vector getColumnNames(){
         return columns;
+    }
+
+    class IgnoredMarkersDialog extends JDialog implements ActionListener {
+
+        public IgnoredMarkersDialog (HaploView h, String title, Vector ignored){
+            super(h,title);
+
+            JPanel contents = new JPanel();
+            contents.setPreferredSize(new Dimension(200,200));
+            contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
+            JTable table;
+
+            Vector colNames = new Vector();
+            colNames.add("#");
+            colNames.add("SNP");
+
+            Vector data = new Vector();
+
+            for (int i = 0; i < ignored.size(); i++){
+                Vector tmpVec = new Vector();
+                tmpVec.add(new Integer(i+1));
+                tmpVec.add((String)ignored.get(i));
+                data.add(tmpVec);
+            }
+
+            TableSorter sorter = new TableSorter(new BasicTableModel(colNames, data));
+            table = new JTable(sorter);
+            sorter.setTableHeader(table.getTableHeader());
+            table.getColumnModel().getColumn(0).setPreferredWidth(30);
+            table.getColumnModel().getColumn(1).setPreferredWidth(75);
+
+            JScrollPane tableScroller = new JScrollPane(table);
+            tableScroller.setPreferredSize(new Dimension(75,300));
+
+            JLabel label = new JLabel("<HTML><b>The following markers do not appear in the " +
+                    "loaded dataset and will therefore be ignored.</b>");
+            label.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(label);
+            tableScroller.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(tableScroller);
+            JButton okButton = new JButton("Close");
+            okButton.addActionListener(this);
+            okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(okButton);
+            setContentPane(contents);
+
+            this.setLocation(this.getParent().getX() + 100,
+                    this.getParent().getY() + 100);
+            this.setModal(true);
+            //this.setResizable(false);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+            if(command.equals("Close")) {
+                this.dispose();
+            }
+        }
     }
 
 }

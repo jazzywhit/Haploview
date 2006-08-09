@@ -64,6 +64,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     static HaploView window;
     private Vector plinkData, plinkColumns;
+    private String chosenMarker;
     //private int plinkAssocType;
     public static JFileChooser fc;
     private JScrollPane hapScroller;
@@ -719,7 +720,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 theData.getPedFile().setWhiteList(emptyHashSetB);
                 checkPanel = new CheckDataPanel(this);
             }else if (type == PHASEDHMPDL_FILE){
-               readMarkers(null, theData.getPedFile().getHMInfo());
+                readMarkers(null, theData.getPedFile().getHMInfo());
                 HashSet emptyHashSetB = new HashSet();
                 Chromosome.doFilter(Chromosome.getUnfilteredSize());
                 customAssocSet = null;
@@ -981,45 +982,50 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     void readWGA(String[] inputOptions) {
         String wgaFile = inputOptions[0];
         String mapFile = inputOptions[1];
+        String secondaryFile = inputOptions[2];
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Plink plink = new Plink(this);
-
         try{
-            plink.parseWGA(wgaFile,mapFile);
+            if (wgaFile != null){
+                plink.parseWGA(wgaFile,mapFile);
+            }
+            if (secondaryFile != null){
+                plink.parseMoreResults(secondaryFile);
+            }
+
+            plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames());
+            HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
+            plinkTab.add(plinkPanel);
+
+
+            tabs = new HaploviewTabbedPane();
+            tabs.addTab(VIEW_PLINK, plinkTab);
+            readMarkerItem.setEnabled(false);
+            analysisItem.setEnabled(false);
+            blocksItem.setEnabled(false);
+            gbrowseItem.setEnabled(false);
+            for (int i = 0; i < exportItems.length; i++) {
+                exportMenuItems[i].setEnabled(false);
+            }
+            displayMenu.setEnabled(false);
+            analysisMenu.setEnabled(false);
+            keyMenu.setEnabled(false);
+            tabs.setSelectedComponent(plinkTab);
+
+
+            Container contents = getContentPane();
+            contents.removeAll();
+            contents.repaint();
+            contents.add(tabs);
+
+            repaint();
+            setVisible(true);
         }catch(PlinkException wge){
             JOptionPane.showMessageDialog(this,
                     wge.getMessage(),
                     "File Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-
-        plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames());
-        HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
-        plinkTab.add(plinkPanel);
-
-
-        tabs = new HaploviewTabbedPane();
-        tabs.addTab(VIEW_PLINK, plinkTab);
-        readMarkerItem.setEnabled(false);
-        analysisItem.setEnabled(false);
-        blocksItem.setEnabled(false);
-        gbrowseItem.setEnabled(false);
-        for (int i = 0; i < exportItems.length; i++) {
-            exportMenuItems[i].setEnabled(false);
-        }
-        displayMenu.setEnabled(false);
-        analysisMenu.setEnabled(false);
-        keyMenu.setEnabled(false);
-        tabs.setSelectedComponent(plinkTab);
-
-
-        Container contents = getContentPane();
-        contents.removeAll();
-        contents.repaint();
-        contents.add(tabs);
-
-        repaint();
-        setVisible(true);
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
     }
@@ -1054,7 +1060,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 gbrowseItem.setEnabled(false);
                 spacingItem.setEnabled(false);
             }
-            if (checkPanel != null){
+            if (checkPanel != null && plinkData == null){
                 //this is triggered when loading markers after already loading genotypes
                 //it is dumb and sucks, but at least it works. bah.
                 checkPanel = new CheckDataPanel(this);
@@ -1121,6 +1127,22 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     public void setPlinkData(Vector data, Vector columns){
         plinkData = data;
         plinkColumns = columns;
+    }
+
+    public Vector getPlinkData(){
+        return plinkData;
+    }
+
+    public Vector getPlinkColumns(){
+        return plinkColumns;
+    }
+
+    public void setChosenMarker(String marker){
+        chosenMarker = marker;
+    }
+
+    public String getChosenMarker(){
+        return chosenMarker;
     }
 
     public void clearDisplays() {

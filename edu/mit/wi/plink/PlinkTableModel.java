@@ -3,12 +3,15 @@ package edu.mit.wi.plink;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.Vector;
+import java.util.Comparator;
+import java.util.Collections;
 
 public class PlinkTableModel extends AbstractTableModel{
 
     private Vector columnNames;
     private Vector data;
     private Vector filtered;
+    private Vector unknownColumns;
 
     private int NUM_COLUMN = 0;
     private int CHROM_COLUMN = 1;
@@ -20,14 +23,21 @@ public class PlinkTableModel extends AbstractTableModel{
     public PlinkTableModel(Vector c, Vector d){
         columnNames=c;
         data=d;
+        unknownColumns = new Vector();
 
-        for (int j = 0; j < columnNames.size(); j++){
+        for (int j = 4; j < columnNames.size(); j++){
            String column = (String)columnNames.get(j);
-           if ((column.equals("TDT_CHISQ")) || (column.equals("CHISQ"))){
-               CHI_COLUMN = j;
-           }else if ((column.equals("TDT_P")) || (column.equals("P"))){
-               PVAL_COLUMN = j;
-           }
+            if ((column.equalsIgnoreCase("TDT_CHISQ")) || (column.equalsIgnoreCase("CHISQ"))){
+                if (CHI_COLUMN == -1){
+                    CHI_COLUMN = j;
+                }
+            }else if ((column.equalsIgnoreCase("TDT_P")) || (column.equalsIgnoreCase("P"))){
+                if (PVAL_COLUMN == -1){
+                    PVAL_COLUMN = j;
+                }
+            }else{
+                unknownColumns.add(column);
+            }
         }
 
         filtered = new Vector();
@@ -55,6 +65,10 @@ public class PlinkTableModel extends AbstractTableModel{
         return filtered.size();
     }
 
+    public Vector getUnknownColumns(){
+        return unknownColumns;
+    }
+
     public Object getValueAt(int row, int column){
         int realIndex = ((Integer)filtered.get(row)).intValue();
         //AssociationResult result = (AssociationResult)data.get(row);
@@ -66,7 +80,7 @@ public class PlinkTableModel extends AbstractTableModel{
         }else if (column == CHROM_COLUMN){
             value = marker.getChromosome();
         }else if (column == MARKER_COLUMN){
-            value = marker.getMarker();
+            value = marker.getMarkerID();
         }else if (column == POSITION_COLUMN){
             value = new Long(marker.getPosition());
         }else{
@@ -77,6 +91,8 @@ public class PlinkTableModel extends AbstractTableModel{
                 if (((String)value).equals("NA")){
                     value = new Double(Double.NaN);
                 }
+            }catch (ArrayIndexOutOfBoundsException a){
+                value = null;
             }
         }
         return (value);
@@ -89,7 +105,72 @@ public class PlinkTableModel extends AbstractTableModel{
     }
 
     public void filterTop(int num){
+        if (PVAL_COLUMN != -1){
+            resetFilters();
+            Collections.sort(data,new PvalComparator());
 
+            Vector newFiltered = new Vector();
+
+            for (int i =0; i < num; i ++){
+                newFiltered.add(new Integer(i));
+            }
+
+            filtered = newFiltered;
+        }
+    }
+
+    public void filterGeneric(String column, String s, String value){
+        resetFilters();
+        double rowVal;
+        double val = 0;
+        String stringVal = null;
+        int col = -1;
+
+        try{
+            val = Double.parseDouble(value);
+        }catch (NumberFormatException nfe){
+            stringVal = value;
+        }
+
+        for (int j = 0; j < columnNames.size(); j++){
+            if(column.equalsIgnoreCase((String)columnNames.get(j))){
+                col = j;
+                break;
+            }
+        }
+
+        int rows = getRowCount();
+        Vector newFiltered = new Vector();
+        for (int i = 0; i < rows; i++){
+            if (getValueAt(i,col) != null){
+                if (stringVal != null){
+                    if (((String)getValueAt(i,col)).equalsIgnoreCase(stringVal)){
+                        newFiltered.add(new Integer(i));
+                    }
+
+                }else{
+                    try{
+                        rowVal = ((Double)getValueAt(i,col)).doubleValue();
+                    }catch (ClassCastException cce){
+                        rowVal = Double.NaN;
+                    }
+                    if (s.equals(">=")){
+                        if (rowVal >= val){
+                            newFiltered.add(new Integer(i));
+                        }
+                    }else if (s.equals("<=")){
+                        if (rowVal <= val){
+                            newFiltered.add(new Integer(i));
+                        }
+                    }else{
+                        if (rowVal == val){
+                            newFiltered.add(new Integer(i));
+                        }
+                    }
+                }
+            }
+        }
+        filtered = newFiltered;
     }
 
     public void filterAll(String chr, long start, long end, double chisq, double pval){
@@ -152,9 +233,26 @@ public class PlinkTableModel extends AbstractTableModel{
     public void resetFilters(){
         filtered = new Vector();
 
+        Collections.sort(data,new IndexComparator());
+
         for (int i = 0; i < data.size(); i++){
             filtered.add(new Integer(i));
         }
     }
 
+    class PvalComparator implements Comparator {
+        public int compare(Object o1, Object o2) {
+            Double d1 = Double.valueOf((String)((AssociationResult)o1).getValues().get(PVAL_COLUMN-4));
+            Double d2 = Double.valueOf((String)((AssociationResult)o2).getValues().get(PVAL_COLUMN-4));
+            return d1.compareTo(d2);
+        }
+    }
+
+    class IndexComparator implements Comparator {
+        public int compare (Object o1, Object o2) {
+            Integer i1 = new Integer(((AssociationResult)o1).getIndex());
+            Integer i2 = new Integer(((AssociationResult)o2).getIndex());
+            return i1.compareTo(i2);
+        }
+    }
 }
