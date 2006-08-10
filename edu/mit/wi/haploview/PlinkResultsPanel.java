@@ -296,8 +296,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             int returned = HaploView.fc.showOpenDialog(this);
             if (returned != JFileChooser.APPROVE_OPTION) return;
             File file = HaploView.fc.getSelectedFile();
-            String name = file.getName();
-            String[] inputs = {null,null,name};
+            String fullName = file.getParent()+File.separator+file.getName();
+            String[] inputs = {null,null,fullName};
             hv.readWGA(inputs);
         }else if (command.equals("Go to Selected Region")){
             gotoRegion();
