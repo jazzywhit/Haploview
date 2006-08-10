@@ -123,7 +123,7 @@ public class AssociationTestSet implements Constants{
                                     counts[cc][1] ++;
                                 }
                             }
-                            if (currentInd.getGender() == 2 || !Chromosome.getDataChrom().equals("chrx")){
+                            if (currentInd.getGender() == 2 || !Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
                                 if (a2 != 0){
                                     if (a2 == allele1){
                                         counts[cc][0]++;

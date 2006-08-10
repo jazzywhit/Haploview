@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.16 2006/08/09 18:46:36 djbender Exp $
+* $Id: CheckData.java,v 3.17 2006/08/10 17:04:50 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -88,7 +88,7 @@ public class CheckData {
                 allele2 = currentInd.getAllele(loc,1);
 
                 //if haploid, check for male hets
-                if(Chromosome.getDataChrom().equals("chrx") && currentInd.getGender()==1){
+                if(Chromosome.getDataChrom().equalsIgnoreCase("chrx") && currentInd.getGender()==1){
                     if(allele1 != allele2) {
                         currentInd.zeroOutMarker(loc);
                         pedFile.setHaploidHets(true);
@@ -107,9 +107,13 @@ public class CheckData {
                         int dadAllele2 = (currentFamily.getMember(currentInd.getDadID())).getAllele(loc,1);
 
 
-                        if(Chromosome.getDataChrom().equals("chrx")){
-                            if(currentInd.getGender() == 1) {
-                                if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0)){
+                        if(Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+                            if (dadAllele1 != dadAllele2){
+                                dadAllele1 = 0;
+                                dadAllele2 = 0;
+                            }
+                            if (!(momAllele1 == 0 || momAllele2 == 0 || dadAllele1 == 0 || dadAllele2 ==0)){
+                                if(currentInd.getGender() == 1) {
                                     //this is an x chrom for a male, so the only thing we need to check is if
                                     //allele1 matches either momallele1 or momallele2
                                     if(allele1 != momAllele1 && allele1 != momAllele2) {
@@ -121,14 +125,36 @@ public class CheckData {
                                         currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                         currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
                                     }
-                                }
-                            }else {
-                                //if gender is anything except 1 we assume female
-                                if(momAllele1 == momAllele2) {
-                                    //mom hom and dad matches mom
-                                    if(dadAllele1 == momAllele1) {
-                                        //kid must be hom same allele
-                                        if(allele1 != momAllele1 || allele2 != momAllele2){
+                                }else {
+                                    //if gender is anything except 1 we assume female
+                                    if(momAllele1 == momAllele2) {
+                                        //mom hom and dad matches mom
+                                        if(dadAllele1 == momAllele1) {
+                                            //kid must be hom same allele
+                                            if(allele1 != momAllele1 || allele2 != momAllele2){
+                                                mendErrNum ++;
+                                                MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                        currentInd.getIndividualID());
+                                                mendels.add(mend);
+                                                currentInd.zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                            }
+                                        }else {
+                                            //kid must be het
+                                            if(allele1 == allele2 ){
+                                                mendErrNum ++;
+                                                MendelError mend = new MendelError(currentInd.getFamilyID(),
+                                                        currentInd.getIndividualID());
+                                                mendels.add(mend);
+                                                currentInd.zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
+                                                currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
+                                            }
+                                        }
+                                    }else{
+                                        //mom het,so only need to check that at least one allele matches dad
+                                        if(allele1 != dadAllele1 && allele2 != dadAllele1){
                                             mendErrNum ++;
                                             MendelError mend = new MendelError(currentInd.getFamilyID(),
                                                     currentInd.getIndividualID());
@@ -137,28 +163,6 @@ public class CheckData {
                                             currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
                                             currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
                                         }
-                                    }else {
-                                        //kid must be het
-                                        if(allele1 == allele2 ){
-                                            mendErrNum ++;
-                                            MendelError mend = new MendelError(currentInd.getFamilyID(),
-                                                    currentInd.getIndividualID());
-                                            mendels.add(mend);
-                                            currentInd.zeroOutMarker(loc);
-                                            currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
-                                            currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
-                                        }
-                                    }
-                                }else{
-                                    //mom het,so only need to check that at least one allele matches dad
-                                    if(allele1 != dadAllele1 && allele2 != dadAllele2){
-                                        mendErrNum ++;
-                                        MendelError mend = new MendelError(currentInd.getFamilyID(),
-                                                currentInd.getIndividualID());
-                                        mendels.add(mend);
-                                        currentInd.zeroOutMarker(loc);
-                                        currentFamily.getMember(currentInd.getMomID()).zeroOutMarker(loc);
-                                        currentFamily.getMember(currentInd.getDadID()).zeroOutMarker(loc);
                                     }
                                 }
                             }
@@ -261,7 +265,7 @@ public class CheckData {
                         if (allele1 != 9){  //value of 9 means an 'h' allele for haps files...
                             count[allele1]++;
                         }
-                        if (!Chromosome.getDataChrom().equals("chrx") || currentInd.getGender() != 1) {
+                        if (!Chromosome.getDataChrom().equalsIgnoreCase("chrx") || currentInd.getGender() != 1) {
                             if(allele1 != allele2 || allele1 == 9 || allele2 == 9) {
                                 founderHetCount++;
                             }else{
@@ -281,7 +285,7 @@ public class CheckData {
                         }
                     }
 
-                    if (!Chromosome.getDataChrom().equals("chrx") || currentInd.getGender() != 1) {
+                    if (!Chromosome.getDataChrom().equalsIgnoreCase("chrx") || currentInd.getGender() != 1) {
                         if(allele1 == allele2) {
                             hom++;
                         }else {
