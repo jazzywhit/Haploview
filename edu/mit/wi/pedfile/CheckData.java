@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.17 2006/08/10 17:04:50 djbender Exp $
+* $Id: CheckData.java,v 3.18 2006/08/15 17:11:23 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -91,7 +91,7 @@ public class CheckData {
                 if(Chromosome.getDataChrom().equalsIgnoreCase("chrx") && currentInd.getGender()==1){
                     if(allele1 != allele2) {
                         currentInd.zeroOutMarker(loc);
-                        pedFile.setHaploidHets(true);
+                        pedFile.addHaploidHet(currentInd.getFamilyID() + "\t" + currentInd.getIndividualID() + "\t" + loc);
                     }
                 }
 

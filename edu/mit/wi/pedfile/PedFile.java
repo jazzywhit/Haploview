@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.26 2006/08/09 18:46:36 djbender Exp $
+* $Id: PedFile.java,v 3.27 2006/08/15 17:11:23 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -48,7 +48,7 @@ public class PedFile {
     private String[][] hminfo;
     //bogusParents is true if someone in the file referenced a parent not in the file
     private boolean bogusParents = false;
-    private boolean haploidHets = false;
+    private Vector haploidHets;
     private boolean mendels = false;
 
     private static Hashtable hapMapTranslate;
@@ -1570,12 +1570,41 @@ public class PedFile {
         return whitelist.contains(snp);
     }
 
-    public boolean isHaploidHets() {
+    public Vector getHaploidHets() {
         return haploidHets;
     }
 
-    public void setHaploidHets(boolean haploidHets) {
-        this.haploidHets = haploidHets;
+    public void addHaploidHet(String haploid) {
+        if(haploidHets != null){
+            haploidHets.add(haploid);
+        }else{
+            haploidHets = new Vector();
+            haploidHets.add(haploid);
+        }
+    }
+
+    public void printHaploidHets(File outfile) throws IOException {
+        FileWriter checkWriter = null;
+        try{
+            if (outfile != null){
+                checkWriter = new FileWriter(outfile);
+            }
+
+            checkWriter.write("Family\tIndividual\tMarker\n");
+            for (int i = 0; i < haploidHets.size(); i++){
+                StringTokenizer st = new StringTokenizer((String)haploidHets.get(i));
+                checkWriter.write(st.nextToken());
+                checkWriter.write("\t"+st.nextToken());
+                int markerLoc = Integer.parseInt(st.nextToken());
+                checkWriter.write("\t"+Chromosome.getUnfilteredMarker(markerLoc).getDisplayName()+"\n");
+            }
+
+            if (outfile != null){
+                checkWriter.close();
+            }
+        }catch(IOException ioe){
+            throw new IOException(ioe.getMessage());
+        }
     }
 
     public boolean getMendelsExist(){

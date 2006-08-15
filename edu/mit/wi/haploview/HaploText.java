@@ -38,6 +38,7 @@ public class HaploText implements Constants{
     private boolean outputCheck;
     private boolean individualCheck;
     private boolean mendel;
+    private boolean malehets;
     private boolean outputDprime;
     private boolean outputPNG;
     private boolean outputCompressedPNG;
@@ -401,6 +402,9 @@ public class HaploText implements Constants{
             }
             else if (args[i].equalsIgnoreCase("-mendel")){
                 mendel = true;
+            }
+            else if (args[i].equalsIgnoreCase("-malehets")){
+                malehets = true;
             }
             else if(args[i].equalsIgnoreCase("-m") || args[i].equalsIgnoreCase("-maxdistance")) {
                 i++;
@@ -1099,7 +1103,7 @@ public class HaploText implements Constants{
                 if(textData.getPedFile().isBogusParents()) {
                     System.out.println("Error: One or more individuals in the file reference non-existent parents.\nThese references have been ignored.");
                 }
-                if(textData.getPedFile().isHaploidHets()){
+                if(textData.getPedFile().getHaploidHets() != null){
                     System.out.println("Error: At least one male in the file is heterozygous.\nThese genotypes have been ignored.");
                 }
             }
@@ -1202,6 +1206,11 @@ public class HaploText implements Constants{
             if(mendel && result != null){
                 MendelDialog md = new MendelDialog(textData);
                 md.printTable(validateOutputFile(fileName + ".MENDEL" ));
+            }
+            if(malehets && result != null){
+                if(textData.getPedFile().getHaploidHets() != null){
+                    textData.getPedFile().printHaploidHets(validateOutputFile(fileName + ".MALEHETS"));
+                }
             }
             Vector cust = new Vector();
             AssociationTestSet blockTestSet = null;

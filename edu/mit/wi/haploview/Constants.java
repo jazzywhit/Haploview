@@ -29,6 +29,7 @@ public interface Constants {
 
     public static final String EXPORT_TEXT = "Export current tab to text";
     public static final String EXPORT_PNG = "Export current tab to PNG";
+    public static final String EXPORT_MALE_HETS = "Export heterozygous males";
     public static final String EXPORT_OPTIONS = "Export options";
 
     public static final String CLEAR_BLOCKS = "Clear all blocks";
@@ -163,6 +164,7 @@ public interface Constants {
             "                                Use -blockoutput to also output blocks\n" +
             "-indcheck                       Outputs genotype percent per individual to <inputfile>.INDCHECK\n" +
             "-mendel                         Outputs Mendel error information to <inputfile>.MENDEL\n" +
+            "-malehets                       Outputs male heterozygote information to <inputfile>.MALEHETS\n" +
             "-blockoutput <GAB,GAM,SPI,ALL>  Output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
             "-blockCutHighCI <thresh>        Gabriel 'Strong LD' high confidence interval D' cutoff.\n" +
             "-blockCutLowCI <thresh>         Gabriel 'Strong LD' low confidence interval D' cutoff.\n" +

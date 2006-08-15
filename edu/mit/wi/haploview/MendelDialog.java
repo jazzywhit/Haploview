@@ -54,20 +54,24 @@ public class MendelDialog extends JDialog implements ActionListener, Constants {
                     Vector tmpVec = new Vector();
                     tmpVec.add(error.getFamilyID());
                     tmpVec.add(error.getChildID());
-                    tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
-                    tmpVec.add(new Long(Chromosome.getUnfilteredMarker(i).getPosition()));
+
+tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
+                    tmpVec.add(new
+Long(Chromosome.getUnfilteredMarker(i).getPosition()));
                     data.add(tmpVec);
                 }
             }
         }
 
-        TableSorter sorter = new TableSorter(new BasicTableModel(colNames, data));
+        tableModel = new BasicTableModel(colNames,data);
+        TableSorter sorter = new TableSorter(tableModel);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
         table.getColumnModel().getColumn(2).setPreferredWidth(30);
 
         JScrollPane tableScroller = new JScrollPane(table);
-        int tableHeight = (table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+2);
+        int tableHeight =
+(table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+2);
         if (tableHeight > 300){
             tableScroller.setPreferredSize(new Dimension(400, 300));
         }else{
@@ -77,10 +81,15 @@ public class MendelDialog extends JDialog implements ActionListener, Constants {
 
         contents.add(tableScroller);
 
+        JPanel buttonPanel = new JPanel();
+        JButton exportButton = new JButton("Export to File");
+        exportButton.addActionListener(this);
         JButton okButton = new JButton("Close");
         okButton.addActionListener(this);
-        okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        contents.add(okButton);
+        //okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        buttonPanel.add(exportButton);
+        buttonPanel.add(okButton);
+        contents.add(buttonPanel);
         setContentPane(contents);
 
         this.setLocation(this.getParent().getX() + 100,
@@ -107,8 +116,10 @@ public class MendelDialog extends JDialog implements ActionListener, Constants {
                     MendelError error = (MendelError)mendelErrors.get(j);
                     tmpVec.add(error.getFamilyID());
                     tmpVec.add(error.getChildID());
-                    tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
-                    tmpVec.add(new Long(Chromosome.getUnfilteredMarker(i).getPosition()));
+
+tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
+                    tmpVec.add(new
+Long(Chromosome.getUnfilteredMarker(i).getPosition()));
                     data.add(tmpVec);
                 }
             }
@@ -157,6 +168,22 @@ public class MendelDialog extends JDialog implements ActionListener, Constants {
         String command = e.getActionCommand();
         if(command.equals("Close")) {
             this.dispose();
+        }else if (command.equals("Export to File")){
+            HaploView.fc.setSelectedFile(new File(""));
+
+            if (HaploView.fc.showSaveDialog(this) ==
+                    JFileChooser.APPROVE_OPTION){
+                File file = HaploView.fc.getSelectedFile();
+                try{
+                    printTable(file);
+                }catch(IOException ioe){
+                    JOptionPane.showMessageDialog(this,
+                            ioe.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
         }
     }
 }
+
