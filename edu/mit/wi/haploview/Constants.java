@@ -151,7 +151,7 @@ public interface Constants {
             "                                skipped for all analyses. Format: 1,2,5..12\n"+
             "-skipcheck                      Skips the various genotype file checks\n" +
             "-chromosome <1-22,x>            Specifies the chromosome for this file or download\n" +
-            "-population <CEU,YRI,HCB,JPT>   Specifies the population for this HapMap download\n" +
+            "-population <CEU,YRI,CHB+JPT>   Specifies the population for this HapMap download\n" +
             "-startpos <integer>             Specifies the start position for this HapMap download\n" +
             "-endpos <integer>               Specifies the end position for this HapMap download\n" +
             "-dprime                         Outputs LD text to <inputfile>.LD\n" +

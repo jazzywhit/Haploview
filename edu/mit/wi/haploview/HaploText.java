@@ -921,9 +921,9 @@ public class HaploText implements Constants{
         if (phasedhapmapDownload){
             if (chromosomeArg == null){
                 die("-phasedhapmapdl requires a chromosome specification");
-            }else if (!(populationArg.equalsIgnoreCase("CEU") || populationArg.equalsIgnoreCase("YRI")  || populationArg.equalsIgnoreCase("HCB")
-                    || populationArg.equalsIgnoreCase("JPT"))){
-                die("-phasedhapmapdl requires a population specification of CEU, YRI, HCB, or JPT");
+            }else if (!(populationArg.equalsIgnoreCase("CEU") || populationArg.equalsIgnoreCase("YRI")  ||
+                    populationArg.equalsIgnoreCase("CHB+JPT"))){
+                die("-phasedhapmapdl requires a population specification of CEU, YRI, or CHB+JPT");
             }
 
             if (Integer.parseInt(chromosomeArg) < 1 && Integer.parseInt(chromosomeArg) > 22){
