@@ -322,8 +322,8 @@ public class Tagger {
                         //this hap tag is now defunct because it was comprised in part by dumpedTS
                         Vector taggedByHap = ts.getTagged();
                         for (int j = 0; j < taggedByHap.size(); j++){
-                            VariantSequence vs =  (VariantSequence)taggedByCurTag.get(j);
-                            vs.removeTag(dumpedTS);
+                            VariantSequence vs =  (VariantSequence)taggedByHap.get(j);
+                            vs.removeTag(ts);
                             if (vs.getTags().size() == 0){
                                 taggedSoFar--;
                             }
