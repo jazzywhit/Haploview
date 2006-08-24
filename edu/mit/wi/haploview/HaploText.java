@@ -1052,7 +1052,7 @@ public class HaploText implements Constants{
             phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, "", ""};
         }
         else if (phasedhapmapDownload){
-            fileName = "Chromosome " + chromosomeArg + " " + populationArg;
+            fileName = "Chromosome" + chromosomeArg + populationArg;
             fileType = PHASEDHMPDL_FILE;
             phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg};
         }else{

@@ -523,7 +523,7 @@ public class ReadDataDialog extends JDialog
             }else if (fileType == PHASED_FILE ){
                 returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), phaseLegendField.getText(),"",chromChoice};
             }else if (fileType == PHASEDHMPDL_FILE){
-                returnStrings = new String[]{"Chr " + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
+                returnStrings = new String[]{"Chr" + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice};
             }else if (fileType == PLINK_FILE){
                 returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null};
