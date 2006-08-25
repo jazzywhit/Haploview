@@ -17,27 +17,25 @@ public class PlinkTableModel extends AbstractTableModel{
     private int CHROM_COLUMN = 1;
     private int MARKER_COLUMN = 2;
     private int POSITION_COLUMN = 3;
-    private int CHI_COLUMN = -1;
     private int PVAL_COLUMN = -1;
 
     public PlinkTableModel(Vector c, Vector d){
         columnNames=c;
         data=d;
         unknownColumns = new Vector();
+        unknownColumns.add("");
 
         for (int j = 4; j < columnNames.size(); j++){
-           String column = (String)columnNames.get(j);
-            if ((column.equalsIgnoreCase("TDT_CHISQ")) || (column.equalsIgnoreCase("CHISQ"))){
-                if (CHI_COLUMN == -1){
-                    CHI_COLUMN = j;
-                }
-            }else if ((column.equalsIgnoreCase("TDT_P")) || (column.equalsIgnoreCase("P"))){
+            String column = (String)columnNames.get(j);
+
+            if (column.equalsIgnoreCase("P")){
+                PVAL_COLUMN = j;
+            }else if ((column.equalsIgnoreCase("TDT_P")) || (column.startsWith("P_"))){
                 if (PVAL_COLUMN == -1){
                     PVAL_COLUMN = j;
                 }
-            }else{
-                unknownColumns.add(column);
             }
+            unknownColumns.add(column);
         }
 
         filtered = new Vector();
@@ -119,72 +117,21 @@ public class PlinkTableModel extends AbstractTableModel{
         }
     }
 
-    public void filterGeneric(String column, String s, String value){
-        resetFilters();
-        double rowVal;
-        double val = 0;
-        String stringVal = null;
-        int col = -1;
-
-        try{
-            val = Double.parseDouble(value);
-        }catch (NumberFormatException nfe){
-            stringVal = value;
-        }
-
-        for (int j = 0; j < columnNames.size(); j++){
-            if(column.equalsIgnoreCase((String)columnNames.get(j))){
-                col = j;
-                break;
-            }
-        }
-
-        int rows = getRowCount();
-        Vector newFiltered = new Vector();
-        for (int i = 0; i < rows; i++){
-            if (getValueAt(i,col) != null){
-                if (stringVal != null){
-                    if (((String)getValueAt(i,col)).equalsIgnoreCase(stringVal)){
-                        newFiltered.add(new Integer(i));
-                    }
-
-                }else{
-                    try{
-                        rowVal = ((Double)getValueAt(i,col)).doubleValue();
-                    }catch (ClassCastException cce){
-                        rowVal = Double.NaN;
-                    }
-                    if (s.equals(">=")){
-                        if (rowVal >= val){
-                            newFiltered.add(new Integer(i));
-                        }
-                    }else if (s.equals("<=")){
-                        if (rowVal <= val){
-                            newFiltered.add(new Integer(i));
-                        }
-                    }else{
-                        if (rowVal == val){
-                            newFiltered.add(new Integer(i));
-                        }
-                    }
-                }
-            }
-        }
-        filtered = newFiltered;
-    }
-
-    public void filterAll(String chr, long start, long end, double chisq, double pval){
+    public void filterAll(String chr, int start, int end, String column, String s, String value){
         resetFilters();
         int rows = getRowCount();
         Vector newFiltered = new Vector();
         boolean chromPass = false;
-        boolean chiPass = false;
-        boolean pvalPass = false;
+        boolean genericPass = false;
+        long realStart = start*1000;
+        long realEnd = end*1000;
+        int col = -1;
+
         for (int i = 0; i < rows; i++){
             if (!(chr.equals(""))){
                 if (((String)getValueAt(i,1)).equalsIgnoreCase(chr)){
-                    if ((((Long)getValueAt(i,3)).longValue() >= start) || (start == -1)){
-                        if ((((Long)getValueAt(i,3)).longValue() <= end) || (end == -1)){
+                    if ((((Long)getValueAt(i,3)).longValue() >= realStart) || (start == -1)){
+                        if ((((Long)getValueAt(i,3)).longValue() <= realEnd) || (end == -1)){
                             chromPass = true;
                         }
                     }
@@ -193,39 +140,66 @@ public class PlinkTableModel extends AbstractTableModel{
                 chromPass = true;
             }
 
-            if (CHI_COLUMN != -1){
-                if (chisq > 0){
-                    double chi = ((Double)getValueAt(i,CHI_COLUMN)).doubleValue();
-                    if (chi >= chisq){
-                        chiPass = true;
+            if (column != null && s != null && value != null){
+                double rowVal;
+                double val = 0;
+                String stringVal = null;
+
+                try{
+                    val = Double.parseDouble(value);
+                }catch (NumberFormatException nfe){
+                    stringVal = value;
+                }
+
+                if (col == -1){
+                    for (int j = 0; j < columnNames.size(); j++){
+                        if(column.equalsIgnoreCase((String)columnNames.get(j))){
+                            col = j;
+                            break;
+                        }
+                    }
+                }
+
+                if (getValueAt(i,col) != null){
+                    if (stringVal != null){
+                        if (((String)getValueAt(i,col)).equalsIgnoreCase(stringVal)){
+                            genericPass = true;
+                        }
+
+                    }else{
+                        try{
+                            rowVal = ((Double)getValueAt(i,col)).doubleValue();
+                        }catch (ClassCastException cce){
+                            rowVal = Double.NaN;
+                        }
+                        if (s.equals(">=")){
+                            if (rowVal >= val){
+                                genericPass = true;
+                            }
+                        }else if (s.equals("<=")){
+                            if (rowVal <= val){
+                                genericPass = true;
+                            }
+                        }else{
+                            if (rowVal == val){
+                                genericPass = true;
+                            }
+                        }
                     }
                 }else{
-                    chiPass = true;
+                    genericPass = true;
                 }
             }else{
-                chiPass = true;
+                genericPass = true;
             }
 
-            if (PVAL_COLUMN != -1){
-                if (pval != -1){
-                    double p = ((Double)getValueAt(i,PVAL_COLUMN)).doubleValue();
-                    if (p <= pval){
-                        pvalPass = true;
-                    }
-                }else{
-                    pvalPass = true;
-                }
-            }else{
-                pvalPass = true;
-            }
 
-            if (chromPass && chiPass && pvalPass){
+            if (chromPass && genericPass){
                 newFiltered.add(new Integer(i));
             }
 
             chromPass = false;
-            chiPass = false;
-            pvalPass = false;
+            genericPass = false;
         }
         filtered = newFiltered;
     }
@@ -238,6 +212,16 @@ public class PlinkTableModel extends AbstractTableModel{
         for (int i = 0; i < data.size(); i++){
             filtered.add(new Integer(i));
         }
+    }
+
+    public boolean pColExists(){
+        boolean pval;
+        if (PVAL_COLUMN == -1){
+            pval = false;
+        }else{
+            pval = true;
+        }
+        return pval;
     }
 
     class PvalComparator implements Comparator {

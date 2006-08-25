@@ -20,19 +20,18 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             "<html>10<sup>-5</sup>"};
     String[] chromNames = {"","1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X"};
-    String[] signs = {">=","<=","="};
-    private JComboBox chromChooser, pvalChooser, genericChooser, signChooser;
-    private NumberTextField chromStart, chromEnd, topField, chiField;
+    String[] signs = {"",">=","<=","="};
+    private JComboBox chromChooser, genericChooser, signChooser;
+    private NumberTextField chromStart, chromEnd, topField;
     private JTextField valueField;
 
-    private long startPos, endPos;
+    private int startPos, endPos;
     private int numResults;
-    private double chisq, pval;
     private String chromChoice, columnChoice, signChoice, value;
     private HaploView hv;
 
 
-    public PlinkResultsPanel(HaploView h, Vector results, Vector colNames){
+    public PlinkResultsPanel(HaploView h, Vector results, Vector colNames, Vector filters){
         hv = h;
 
         setLayout(new GridBagLayout());
@@ -76,40 +75,36 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         chromFilterPanel.add(new JLabel("End kb:"));
         chromEnd = new NumberTextField("",6,false);
         chromFilterPanel.add(chromEnd);
-        chromFilterPanel.add(new JLabel("Minimum chisq:"));
-        chiField = new NumberTextField("0.0",3,true);
-        chromFilterPanel.add(chiField);
-        chromFilterPanel.add(new JLabel("Maximum pval:"));
-        pvalChooser = new JComboBox(pvalues);
-        chromFilterPanel.add(pvalChooser);
+        chromFilterPanel.add(new JLabel("Other:"));
+        genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
+        genericChooser.setSelectedIndex(-1);
+        chromFilterPanel.add(genericChooser);
+        signChooser = new JComboBox(signs);
+        signChooser.setSelectedIndex(-1);
+        chromFilterPanel.add(signChooser);
+        valueField = new JTextField(8);
+        chromFilterPanel.add(valueField);
         JButton doFilter = new JButton("Filter");
         doFilter.addActionListener(this);
         chromFilterPanel.add(doFilter);
 
         JPanel topResultsFilterPanel = new JPanel();
-        topResultsFilterPanel.add(new JLabel("View top"));
+        JLabel topLabel = new JLabel("View top");
+        topResultsFilterPanel.add(topLabel);
         topField = new NumberTextField("100",6,false);
         topResultsFilterPanel.add(topField);
-        topResultsFilterPanel.add(new JLabel("results"));
-        JButton doTopFilter = new JButton("Filter");
+        JLabel resultsLabel = new JLabel("results");
+        topResultsFilterPanel.add(resultsLabel);
+        JButton doTopFilter = new JButton("Go");
         doTopFilter.setActionCommand("top filter");
         doTopFilter.addActionListener(this);
         topResultsFilterPanel.add(doTopFilter);
-
-        JPanel genericFilterPanel = new JPanel();
-        genericFilterPanel.add(new JLabel("Filter"));
-        genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
-        genericChooser.setSelectedIndex(-1);
-        genericFilterPanel.add(genericChooser);
-        signChooser = new JComboBox(signs);
-        signChooser.setSelectedIndex(-1);
-        genericFilterPanel.add(signChooser);
-        valueField = new JTextField(8);
-        genericFilterPanel.add(valueField);
-        JButton doGenericFilter = new JButton("Filter");
-        doGenericFilter.setActionCommand("generic filter");
-        doGenericFilter.addActionListener(this);
-        genericFilterPanel.add(doGenericFilter);
+        if (!plinkTableModel.pColExists()){
+            topLabel.setEnabled(false);
+            topField.setEnabled(false);
+            resultsLabel.setEnabled(false);
+            doTopFilter.setEnabled(false);
+        }
 
         JButton resetFilters = new JButton("Reset Filters");
         resetFilters.addActionListener(this);
@@ -129,8 +124,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         a.gridy = 1;
         filterPanel.add(topResultsFilterPanel,a);
         a.gridy = 2;
-        filterPanel.add(genericFilterPanel,a);
-        a.gridy = 3;
         //a.gridx = 0;
         a.gridwidth = 1;
         a.anchor = GridBagConstraints.SOUTHWEST;
@@ -159,6 +152,33 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         c.weighty = 0;
         add(goPanel,c);
 
+        if (filters != null){
+            if (((String)filters.get(0)).equals("")){
+                chromChooser.setSelectedIndex(0);
+            }else{
+                chromChooser.setSelectedIndex(new Integer((String)filters.get(0)).intValue());
+            }
+            
+
+            if (((String)filters.get(1)).equals("") || ((String)filters.get(2)).equals("")){
+                chromStart.setText("");
+                chromEnd.setText("");
+            }else if (new Integer((String)filters.get(1)).intValue() > 0 &&
+                    new Integer((String)filters.get(2)).intValue() > 0){
+                chromStart.setText((String)filters.get(1));
+                chromEnd.setText((String)filters.get(2));
+            }
+
+            if (!((String)filters.get(3)).equals("0")){
+                genericChooser.setSelectedIndex(new Integer((String)filters.get(3)).intValue());
+                signChooser.setSelectedIndex(new Integer((String)filters.get(4)).intValue());
+                valueField.setText((String)filters.get(5));
+            }
+
+
+            doFilters();
+        }
+
     }
 
     public void doTopFilter(){
@@ -168,14 +188,41 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void doFilters(){
-        clearSorting();
-        plinkTableModel.filterAll(chromChoice,startPos,endPos,chisq,pval);
-        repaint();
-    }
+        chromChoice = (String)chromChooser.getSelectedItem();
 
-    public void doGenericFilter(){
+        if (chromStart.getText().equals("")){
+            startPos = -1;
+        }else{
+            startPos = Integer.parseInt(chromStart.getText());
+        }
+
+        if (chromEnd.getText().equals("")){
+            endPos = -1;
+        }else{
+            endPos = Integer.parseInt(chromEnd.getText());
+        }
+        if (startPos > endPos){
+            JOptionPane.showMessageDialog(this.getParent(),
+                    "End position must be greater then start position.",
+                    "Invalid value",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (genericChooser.getSelectedIndex() > 0){
+            columnChoice = (String)genericChooser.getSelectedItem();
+
+            if (signChooser.getSelectedIndex() > 0){
+                signChoice = (String)signChooser.getSelectedItem();
+
+                if (!(valueField.getText().equals(""))){
+                    value = valueField.getText();
+                }
+            }
+        }
+
         clearSorting();
-        plinkTableModel.filterGeneric(columnChoice,signChoice,value);
+        plinkTableModel.filterAll(chromChoice,startPos,endPos,columnChoice,signChoice,value);
         repaint();
     }
 
@@ -183,14 +230,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         clearSorting();
         plinkTableModel.resetFilters();
         chromChooser.setSelectedIndex(0);
+        chromChoice = null;
         chromStart.setText("");
+        startPos = -1;
         chromEnd.setText("");
+        endPos = -1;
         topField.setText("100");
-        chiField.setText("0.0");
-        pvalChooser.setSelectedIndex(0);
-        genericChooser.setSelectedIndex(-1);
-        signChooser.setSelectedIndex(-1);
+        numResults = 0;
+        genericChooser.setSelectedIndex(0);
+        columnChoice = null;
+        signChooser.setSelectedIndex(0);
+        signChoice = null;
         valueField.setText("");
+        value = null;
         repaint();
     }
 
@@ -211,6 +263,29 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         String gotoChrom = (String)table.getValueAt(table.getSelectedRow(),1);
         String gotoMarker = (String)table.getValueAt(table.getSelectedRow(),2);
         long markerPosition = ((Long)(table.getValueAt(table.getSelectedRow(),3))).longValue();
+        Vector filters = new Vector();
+
+        if (chromChoice != null && !chromChoice.equals("")){
+            if(chromChoice.equals("X")){
+                filters.add("23");
+            }else{
+                filters.add(new Integer(chromChooser.getSelectedIndex()).toString());
+            }
+
+            filters.add(new Integer(startPos).toString());
+            filters.add(new Integer(endPos).toString());
+
+        }else{
+            filters.add("");
+            filters.add("0");
+            filters.add("0");
+        }
+
+        filters.add(new Integer(genericChooser.getSelectedIndex()).toString());
+        filters.add(new Integer(signChooser.getSelectedIndex()).toString());
+        filters.add(valueField.getText());
+
+        hv.setPlinkFilters(filters);
         RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,markerPosition,"Go to Region");
         rd.pack();
         rd.setVisible(true);
@@ -219,73 +294,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command.equals("Filter")){
-
-            chromChoice = (String)chromChooser.getSelectedItem();
-
-            if (chromStart.getText().equals("")){
-                startPos = -1;
-            }else{
-                startPos = (Long.parseLong(chromStart.getText()))*1000;
-            }
-
-            if (chromEnd.getText().equals("")){
-                endPos = -1;
-            }else{
-                endPos = (Long.parseLong(chromEnd.getText()))*1000;
-            }
-            if (startPos > endPos){
-                JOptionPane.showMessageDialog(this.getParent(),
-                        "End position must be greater then start position.",
-                        "Invalid value",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (chiField.getText().equals("")){
-                chisq = -1;
-            }else{
-                chisq = Double.parseDouble(chiField.getText());
-            }
-
-            if (pvalChooser.getSelectedIndex() == 0){
-                pval = -1;
-            }else if (pvalChooser.getSelectedIndex() == 1){
-                pval = .01;
-            }else if (pvalChooser.getSelectedIndex() == 2){
-                pval = .001;
-            }else if (pvalChooser.getSelectedIndex() == 3){
-                pval = .0001;
-            }else if (pvalChooser.getSelectedIndex() == 4){
-                pval = .00001;
-            }
             doFilters();
-        }else if (command.equals("generic filter")){
-            if (genericChooser.getSelectedIndex() == -1){
-                JOptionPane.showMessageDialog(this.getParent(),
-                        "Please select a column to filter on.",
-                        "Invalid value",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            columnChoice = (String)genericChooser.getSelectedItem();
-
-            if (signChooser.getSelectedIndex() == -1){
-                JOptionPane.showMessageDialog(this.getParent(),
-                        "Please choose >=, <=, or =.",
-                        "Invalid value",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            signChoice = (String)signChooser.getSelectedItem();
-
-            if (valueField.getText().equals("")){
-                JOptionPane.showMessageDialog(this.getParent(),
-                        "Please enter a value to filter on.",
-                        "Invalid value",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            value = valueField.getText();
-            doGenericFilter();
         }else if (command.equals("top filter")){
             numResults = Integer.parseInt(topField.getText());
             doTopFilter();

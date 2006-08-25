@@ -29,7 +29,7 @@ public class Plink implements Constants {
     hv = h;
     }
 
-    public void parseWGA(String wga, String map) throws PlinkException {
+    public void parseWGA(String wga, String map, boolean embed) throws PlinkException {
         markers = new Vector();
         results = new Vector();
         columns = new Vector();
@@ -46,46 +46,54 @@ public class Plink implements Constants {
             if (wgaFile.length() < 1){
                 throw new PlinkException("plink file is empty or nonexistent.");
             }
-            if (mapFile.length() < 1){
-                throw new PlinkException("Map file is empty or nonexistent.");
-            }
 
-            BufferedReader mapReader = new BufferedReader(new FileReader(mapFile));
-            String mapLine;
-            String unknownChrom = "0";
-
-            while((mapLine = mapReader.readLine())!=null) {
-                if (mapLine.length() == 0){
-                    //skip blank lines
-                    continue;
+            if (!embed){
+                if (mapFile.length() < 1){
+                    throw new PlinkException("Map file is empty or nonexistent.");
                 }
 
-                StringTokenizer st = new StringTokenizer(mapLine,"\t ");
+                BufferedReader mapReader = new BufferedReader(new FileReader(mapFile));
+                String mapLine;
+                String unknownChrom = "0";
 
-                String chrom = st.nextToken();
-                String chr;
-                if (chrom.equals("0")){
-                    chr = unknownChrom;
-                }else if (chrom.equalsIgnoreCase("x")){
-                    chr = CHROM_NAMES[22];
-                }
-                else{
-                    chr = CHROM_NAMES[Integer.parseInt(chrom)-1];
-                }
-                String marker = new String(st.nextToken());
-                long mDistance = Long.parseLong(st.nextToken());
-                long position = Long.parseLong(st.nextToken());
+                while((mapLine = mapReader.readLine())!=null) {
+                    if (mapLine.length() == 0){
+                        //skip blank lines
+                        continue;
+                    }
 
-                Marker mark = new Marker(chr, marker, mDistance, position);
-                markers.add(mark);
-                markerHash.put(mark.getMarkerID(), mark);
+                    StringTokenizer st = new StringTokenizer(mapLine,"\t ");
+
+                    String chrom = st.nextToken();
+                    String chr;
+                    if (chrom.equals("0")){
+                        chr = unknownChrom;
+                    }else if (chrom.equalsIgnoreCase("x")){
+                        chr = CHROM_NAMES[22];
+                    }
+                    else{
+                        chr = CHROM_NAMES[Integer.parseInt(chrom)-1];
+                    }
+                    String marker = new String(st.nextToken());
+                    long mDistance = Long.parseLong(st.nextToken());
+                    long position = Long.parseLong(st.nextToken());
+
+                    Marker mark = new Marker(chr, marker, mDistance, position);
+                    markers.add(mark);
+                    markerHash.put(mark.getMarkerID(), mark);
+                }
             }
 
             BufferedReader wgaReader = new BufferedReader(new FileReader(wgaFile));
             boolean snpColumn = false;
+            boolean chrColumn = false;
+            boolean posColumn = false;
+            boolean morgColumn = false;
             int numColumns = 0;
             int markerColumn = -1;
             int chromColumn = -1;
+            int positionColumn = -1;
+            int morganColumn = -1;
             String headerLine = wgaReader.readLine();
             StringTokenizer headerSt = new StringTokenizer(headerLine);
             while (headerSt.hasMoreTokens()){
@@ -95,9 +103,19 @@ public class Plink implements Constants {
                     markerColumn = numColumns;
                     numColumns++;
                 }else if (column.equals("CHR")){
+                    chrColumn = true;
                     chromColumn = numColumns;
                     numColumns++;
-                }else{
+                }else if (column.equals("POS")){
+                    posColumn = true;
+                    positionColumn = numColumns;
+                    numColumns++;
+                }else if (column.equals("MORGAN")){
+                    morgColumn = true;
+                    morganColumn = numColumns;
+                    numColumns++;
+                }
+                else{
                     columns.add(column);
                     numColumns++;
                 }
@@ -105,6 +123,12 @@ public class Plink implements Constants {
 
             if (!snpColumn){
                 throw new PlinkException("Results file must contain a SNP column.");
+            }
+
+            if (embed){
+                if (!chrColumn || !posColumn || !morgColumn){
+                    throw new PlinkException("Results files with embedded map files must contain CHR, POS, and MORGAN columns.");
+                }
             }
 
             String wgaLine;
@@ -120,16 +144,22 @@ public class Plink implements Constants {
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
                 String marker = null;
                 String chromosome = null;
+                long position = 0;
+                long morganDistance = 0;
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
                     if (tokenNumber == markerColumn){
                         marker = new String(tokenizer.nextToken());
-                    }else if(tokenNumber == chromColumn){
+                    }else if (tokenNumber == chromColumn){
                         chromosome = new String(tokenizer.nextToken());
                         //TODO: mess with this nonsense.
                         if(chromosome.equals("23")){
                             chromosome = "X";
                         }
+                    }else if (tokenNumber == positionColumn){
+                        position = (new Long(new String(tokenizer.nextToken()))).longValue();
+                    }else if (tokenNumber == morganColumn){
+                        morganDistance = (new Long(new String(tokenizer.nextToken()))).longValue();
                     }
                     else{
                         values.add(new String(tokenizer.nextToken()));
@@ -141,12 +171,17 @@ public class Plink implements Constants {
                     throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
                 }
 
-                Marker assocMarker = (Marker)markerHash.get(marker);
+                Marker assocMarker;
+                if (!embed){
+                    assocMarker = (Marker)markerHash.get(marker);
 
-                if (assocMarker == null){
-                    throw new PlinkException("Marker " + marker + " does not appear in the map file.");
-                }else if (!(assocMarker.getChromosome().equalsIgnoreCase(chromosome)) && chromosome != null){
-                    throw new PlinkException("Incompatible chromsomes.");  //TODO is this necessary?
+                    if (assocMarker == null){
+                        throw new PlinkException("Marker " + marker + " does not appear in the map file.");
+                    }else if (!(assocMarker.getChromosome().equalsIgnoreCase(chromosome)) && chromosome != null){
+                        throw new PlinkException("Incompatible chromsomes.");  //TODO is this necessary?
+                    }
+                }else{
+                    assocMarker = new Marker(chromosome,marker,morganDistance,position);
                 }
 
                 AssociationResult result = new AssociationResult(lineNumber,assocMarker,values);

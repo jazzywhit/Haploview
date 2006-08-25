@@ -64,6 +64,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     static HaploView window;
     private Vector plinkData, plinkColumns;
+    private Vector plinkFilters;
     private String chosenMarker;
     //private int plinkAssocType;
     public static JFileChooser fc;
@@ -741,7 +742,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 theData.getPedFile().setWhiteList(emptyHashSetB);
                 checkPanel = new CheckDataPanel(this);
                 if (plinkData != null){
-                        plinkPanel = new PlinkResultsPanel(this,plinkData,plinkColumns);
+                    Options.setShowGBrowse(true); //TODO: gbrowse by default for plink loads?
+                    plinkPanel = new PlinkResultsPanel(this,plinkData,plinkColumns,plinkFilters);
                 }
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
@@ -1001,18 +1003,20 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     void readWGA(String[] inputOptions) {
         String wgaFile = inputOptions[0];
         String mapFile = inputOptions[1];
-        String secondaryFile = inputOptions[2];
+        String embeddedMap = inputOptions[2];
+        boolean embed = false;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Plink plink = new Plink(this);
         try{
-            if (wgaFile != null){
-                plink.parseWGA(wgaFile,mapFile);
-            }
-            if (secondaryFile != null){
-                plink.parseMoreResults(secondaryFile);
+            if (embeddedMap != null){
+                embed = true;
             }
 
-            plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames());
+            if (wgaFile != null){
+                plink.parseWGA(wgaFile,mapFile,embed);
+            }
+
+            plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames(), plinkFilters);
             HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
             plinkTab.add(plinkPanel);
 
@@ -1146,6 +1150,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     public void setPlinkData(Vector data, Vector columns){
         plinkData = data;
         plinkColumns = columns;
+    }
+
+    public void setPlinkFilters(Vector filters){
+        plinkFilters = filters;
     }
 
     public Vector getPlinkData(){

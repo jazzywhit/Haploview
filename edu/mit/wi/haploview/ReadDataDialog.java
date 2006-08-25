@@ -28,15 +28,15 @@ public class ReadDataDialog extends JDialog
     private int fileType;
     private JTextField pedFileField, pedInfoField, hapsFileField, hapsInfoField, hmpFileField,
             phaseFileField, phaseSampleField, phaseLegendField, plinkFileField, plinkMapField, testFileField;
-    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip;
+    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip, embeddedMap;
     private JRadioButton trioButton, ccButton, standardTDT, parenTDT;
-    private JButton browseAssocButton;
+    private JButton browseAssocButton, browsePlinkMapButton;
     private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromEndField;
-    private JLabel testFileLabel;
+    private JLabel testFileLabel, mapLabel;
     private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox popChooser = new JComboBox(POP_NAMES);
-    private String chromChoice, popChoice;
+    private String chromChoice, popChoice, embed;
     private boolean isDownloaded = false;
 
     JTabbedPane dataFormatPane = new JTabbedPane(JTabbedPane.LEFT);
@@ -176,10 +176,14 @@ public class ReadDataDialog extends JDialog
         JButton browsePlinkFileButton = new JButton("Browse");
         browsePlinkFileButton.setActionCommand(BROWSE_WGA);
         browsePlinkFileButton.addActionListener(this);
+        mapLabel = new JLabel("Map File:");
         plinkMapField = new JTextField("",20);
-        JButton browsePlinkMapButton = new JButton("Browse");
+        browsePlinkMapButton = new JButton("Browse");
         browsePlinkMapButton.setActionCommand(BROWSE_MAP);
         browsePlinkMapButton.addActionListener(this);
+        embeddedMap = new JCheckBox("Integrated Map Info");
+        embeddedMap.addActionListener(this);
+        embeddedMap.setSelected(false);
 
         JPanel pedTab = new JPanel(new GridBagLayout());
         pedTab.setPreferredSize(new Dimension(375,200));
@@ -232,7 +236,7 @@ public class ReadDataDialog extends JDialog
         pedTab.add(new JLabel("Locus Information File:"),c);
         hapsTab.add(new JLabel("Locus Information File:"),c);
         phaseTab.add(new JLabel("Sample File:"),c);
-        plinkTab.add(new JLabel("Map File:"),c);
+        plinkTab.add(mapLabel,c);
         c.anchor = GridBagConstraints.CENTER;
         c.gridx = 1;
         c.insets = new Insets(0,0,0,0);
@@ -267,6 +271,7 @@ public class ReadDataDialog extends JDialog
         pedTab.add(assocPanel,c);
         hapsTab.add(hapsXChrom, c);
         hmpTab.add(doGB,c);
+        plinkTab.add(embeddedMap,c);
         c.gridy = 3;
         pedTab.add(tdtOptsPanel,c);
         phaseTab.add(phaseGzipPanel,c);
@@ -514,6 +519,12 @@ public class ReadDataDialog extends JDialog
 
             }
 
+            if (fileType == PLINK_FILE){
+                if (embeddedMap.isSelected()){
+                    embed = "Y";
+                }
+            }
+
             String[] returnStrings;
             if (fileType == HAPS_FILE){
                 returnStrings = new String[]{hapsFileField.getText(), hapsInfoField.getText(),null};
@@ -526,7 +537,7 @@ public class ReadDataDialog extends JDialog
                 returnStrings = new String[]{"Chr" + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice};
             }else if (fileType == PLINK_FILE){
-                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null};
+                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),embed};
             }
             else{
                 returnStrings = new String[]{pedFileField.getText(), pedInfoField.getText(), testFileField.getText()};
@@ -563,6 +574,19 @@ public class ReadDataDialog extends JDialog
             }else if (standardTDT.isEnabled()){
                 parenTDT.setEnabled(true);
             }
+        }else if (command.equals("Integrated Map Info")){
+            if (embeddedMap.isSelected()){
+                embeddedMap.setSelected(true);
+                mapLabel.setEnabled(false);
+                plinkMapField.setEnabled(false);
+                browsePlinkMapButton.setEnabled(false);
+            }else{
+                embeddedMap.setSelected(false);
+                mapLabel.setEnabled(true);
+                plinkMapField.setEnabled(true);
+                browsePlinkMapButton.setEnabled(true);
+            }
+
         }else if (command.equals("Proxy Settings")){
             ProxyDialog pd = new ProxyDialog(this,"Proxy Settings");
             pd.pack();

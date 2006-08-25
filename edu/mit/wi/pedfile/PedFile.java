@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.27 2006/08/15 17:11:23 djbender Exp $
+* $Id: PedFile.java,v 3.28 2006/08/25 20:33:31 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1003,13 +1003,13 @@ public class PedFile {
             populationChoice = info[1];
         }
         boolean pseudoChecked = false;
-        int startPos;
+        long startPos;
         if (info[2].equals("0")){
             startPos = 1;
         }else{
             startPos = (Integer.parseInt(info[2]))*1000;
         }
-        int stopPos = (Integer.parseInt(info[3]))*1000;
+        long stopPos = (Integer.parseInt(info[3]))*1000;
         int numSnps = 0;
         boolean infoDone = false;
         boolean hminfoDone = false;
