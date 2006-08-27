@@ -1444,7 +1444,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             //setup view object
             window.setTitle(TITLE_STRING);
-            window.setSize(800,600);
+            window.setSize(1024,768);
 
 
 
