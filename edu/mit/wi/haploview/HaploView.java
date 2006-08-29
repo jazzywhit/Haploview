@@ -742,7 +742,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 theData.getPedFile().setWhiteList(emptyHashSetB);
                 checkPanel = new CheckDataPanel(this);
                 if (plinkData != null){
-                    Options.setShowGBrowse(true); //TODO: gbrowse by default for plink loads?
                     plinkPanel = new PlinkResultsPanel(this,plinkData,plinkColumns,plinkFilters);
                 }
             }else{
@@ -1003,7 +1002,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     void readWGA(String[] inputOptions) {
         String wgaFile = inputOptions[0];
         String mapFile = inputOptions[1];
-        String embeddedMap = inputOptions[2];
+        String secondaryFile = inputOptions[2];
+        String embeddedMap = inputOptions[3];
         boolean embed = false;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         Plink plink = new Plink(this);
@@ -1014,6 +1014,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             if (wgaFile != null){
                 plink.parseWGA(wgaFile,mapFile,embed);
+            }
+            if (secondaryFile != null){
+                plink.parseMoreResults(secondaryFile);
             }
 
             plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames(), plinkFilters);

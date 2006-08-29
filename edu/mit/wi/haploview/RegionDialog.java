@@ -10,6 +10,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
     private HaploView hv;
 
     private JComboBox popChooser;
+    private JCheckBox gBrowse;
     private NumberTextField rangeInput;
     private String chrom, marker;
     private long markerPosition;
@@ -37,6 +38,11 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         chooserPanel.add(rangeInput);
         chooserPanel.add(new JLabel("kb"));
 
+        JPanel gBrowsePanel = new JPanel();
+        gBrowse = new JCheckBox("Show HapMap info track?");
+        gBrowse.setSelected(true);
+        gBrowsePanel.add(gBrowse);
+
         JPanel choicePanel = new JPanel();
         JButton goButton = new JButton("GO");
         goButton.addActionListener(this);
@@ -47,6 +53,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         choicePanel.add(cancelButton);
 
         contents.add(chooserPanel);
+        contents.add(gBrowsePanel);
         contents.add(choicePanel);
         setContentPane(contents);
 
@@ -81,6 +88,10 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             String gotoStart = new Long(start).toString();
             String gotoEnd = new Long(end).toString();
             hv.setChosenMarker(marker);
+
+            if (gBrowse.isSelected()){
+                Options.setShowGBrowse(true);
+            }
 
             String[] returnStrings;
             returnStrings = new String[]{"Chr " + chrom + ":" + pop + ":" + gotoStart + ".." +
