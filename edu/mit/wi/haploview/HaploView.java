@@ -734,6 +734,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 customAssocSet = null;
                 theData.getPedFile().setWhiteList(emptyHashSetB);
                 checkPanel = new CheckDataPanel(this);
+                Chromosome.doFilter(checkPanel.getMarkerResults());
             }else if (type == PHASEDHMPDL_FILE){
                 readMarkers(null, theData.getPedFile().getHMInfo());
                 HashSet emptyHashSetB = new HashSet();
@@ -744,6 +745,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 if (plinkData != null){
                     plinkPanel = new PlinkResultsPanel(this,plinkData,plinkColumns,plinkFilters);
                 }
+                Chromosome.doFilter(checkPanel.getMarkerResults());
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
                 //we read the file in first, so we can whitelist all the markers in the custom test set
@@ -1346,6 +1348,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                 }
             }
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
     }
 

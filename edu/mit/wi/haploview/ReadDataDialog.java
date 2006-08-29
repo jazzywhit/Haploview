@@ -36,7 +36,8 @@ public class ReadDataDialog extends JDialog
     private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox popChooser = new JComboBox(POP_NAMES);
-    private String chromChoice, popChoice, embed;
+    private JComboBox phaseChooser = new JComboBox(PHASE_NAMES);
+    private String chromChoice, popChoice, phaseChoice, embed;
     private boolean isDownloaded = false;
 
     JTabbedPane dataFormatPane = new JTabbedPane(JTabbedPane.LEFT);
@@ -166,6 +167,9 @@ public class ReadDataDialog extends JDialog
         downloadPositionPanel.add(chromStartField);
         downloadPositionPanel.add(new JLabel("End kb:"));
         downloadPositionPanel.add(chromEndField);
+        downloadPositionPanel.add(new JLabel("Phase"));
+        downloadPositionPanel.add(phaseChooser);
+        phaseChooser.setSelectedIndex(1);
         JPanel downloadBrowsePanel = new JPanel();
         downloadDoGB = new JCheckBox("Download and show HapMap info track? (requires internet connection)");
         downloadDoGB.setSelected(false);
@@ -516,6 +520,7 @@ public class ReadDataDialog extends JDialog
                 }
                 chromChoice = (String)chromChooser.getSelectedItem();
                 popChoice = (String)popChooser.getSelectedItem();
+                phaseChoice = (String)phaseChooser.getSelectedItem();
 
             }
 
@@ -535,7 +540,7 @@ public class ReadDataDialog extends JDialog
                 returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), phaseLegendField.getText(),"",chromChoice};
             }else if (fileType == PHASEDHMPDL_FILE){
                 returnStrings = new String[]{"Chr" + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
-                        chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice};
+                        chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice};
             }else if (fileType == PLINK_FILE){
                 returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null,embed};
             }

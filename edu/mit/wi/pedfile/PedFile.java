@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.28 2006/08/25 20:33:31 djbender Exp $
+* $Id: PedFile.java,v 3.29 2006/08/29 20:17:19 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -842,7 +842,7 @@ public class PedFile {
             while((legendLine = legendBuffReader.readLine())!=null){
                 StringTokenizer legendSt = new StringTokenizer(legendLine);
                 String markerid = legendSt.nextToken();
-                if (markerid.equals("rs")){ //skip header
+                if (markerid.equals("marker")){ //skip header
                     continue;
                 }
                 legendMarkers.add(markerid);
@@ -913,7 +913,11 @@ public class PedFile {
                     iterator++;
                 }else{   //Only set up a new individual every 2 lines.
                     ind = new Individual(columns, true);
-                    ind.setIndividualID((String)sampleData.get(iterator));
+                    try{
+                        ind.setIndividualID((String)sampleData.get(iterator));
+                    }catch (ArrayIndexOutOfBoundsException e){
+                        throw new PedFileException("File error: Sample file is missing individual IDs");
+                    }
                     if (columns != legendData.size()){
                         throw new PedFileException("File error: invalid number of markers on Individual " + ind.getIndividualID());
                     }
@@ -1010,11 +1014,12 @@ public class PedFile {
             startPos = (Integer.parseInt(info[2]))*1000;
         }
         long stopPos = (Integer.parseInt(info[3]))*1000;
-        int numSnps = 0;
+        String phaseChoice = info[5];
         boolean infoDone = false;
         boolean hminfoDone = false;
-        String urlHmp = "http://dev.hapmap.org/cgi-perl/phased2?chr=" + targetChrom + "&pop=" + populationChoice +
-                "&start=" + startPos + "&stop=" + stopPos + "&out=txt&dna=y";
+        String urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + populationChoice +
+                "&start=" + startPos + "&stop=" + stopPos + "&ds=p" + phaseChoice + "&out=txt&filter=cons+"
+                + populationChoice.toLowerCase();
 
         try{
             URL hmpUrl = new URL(urlHmp);
@@ -1031,20 +1036,33 @@ public class PedFile {
                 char token;
                 int columns;
                 while((hmpLine = hmpBuffReader.readLine())!=null){
-                    if (hmpLine.startsWith("#"+populationChoice) || hmpLine.startsWith("#JPT")){
+                    if (hmpLine.startsWith("---")){
                         //continue;
-                    }else if (hmpLine.startsWith("##snps")){
-                        StringTokenizer snpSt = new StringTokenizer(hmpLine);
-                        snpSt.nextToken();
-                        numSnps = Integer.parseInt(snpSt.nextToken());
-                    }else if (hmpLine.startsWith("##phased")){
+                    }else if (hmpLine.startsWith("pop:")){
+                        //continue;
+                    }else if (hmpLine.startsWith("build:")){
+                        StringTokenizer buildSt = new StringTokenizer(hmpLine);
+                        buildSt.nextToken();
+                        Chromosome.setDataBuild(new String(buildSt.nextToken()));
+                    }else if (hmpLine.startsWith("hapmap_release:")){
+                        //continue;
+                    }else if (hmpLine.startsWith("filters:")){
+                        //continue;
+                    }else if (hmpLine.startsWith("start:")){
+                        //continue;
+                    }else if (hmpLine.startsWith("stop:")){
+                        //continue;
+                    }else if (hmpLine.startsWith("snps:")){
+                        //continue;
+                    }else if (hmpLine.startsWith("phased_haplotypes:")){
                         infoDone = true;
                     }else if (hmpLine.startsWith("No")){
                         throw new PedFileException(hmpLine);
                     }else if (hmpLine.startsWith("Too many")){
                         throw new PedFileException(hmpLine);
                     }else if (!infoDone){
-                        StringTokenizer posSt = new StringTokenizer(hmpLine);
+                        StringTokenizer posSt = new StringTokenizer(hmpLine," \t:-");
+                        //posSt.nextToken(); //skip the -
                         legendMarkers.add(posSt.nextToken());
                         legendPositions.add(posSt.nextToken());
                     }else if (infoDone){
@@ -1064,16 +1082,17 @@ public class PedFile {
 
                 for (int i = 0; i < hmpVector.size(); i++){
                     StringTokenizer dataSt = new StringTokenizer((String)hmpVector.get(i));
+                    dataSt.nextToken(); //skip the -
                     String newid = dataSt.nextToken();  //individual ID with _c1/_c2
                     String data = dataSt.nextToken(); //alleles
                     columns = data.length();
-                    StringTokenizer filter = new StringTokenizer(newid,"_");
+                    StringTokenizer filter = new StringTokenizer(newid,"_:");
                     String id = filter.nextToken();
                     String strand = filter.nextToken();
                     if (strand.equals("c1")){   //Only set up a new individual on c1.
                         ind = new Individual(columns, true);
                         ind.setIndividualID(new String(id));
-                        if (columns != numSnps){
+                        if (columns != legendMarkers.size()){
                             throw new PedFileException("File error: invalid number of markers on Individual " + ind.getIndividualID());
                         }
                         String details = (String)hapMapTranslate.get(ind.getIndividualID());

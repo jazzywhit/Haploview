@@ -61,7 +61,7 @@ public class HaploText implements Constants{
     private Vector argHandlerMessages;
     private String chromosomeArg;
     private String[] phasedHapMapInfo;
-    private String populationArg, startPos, endPos;
+    private String populationArg, startPos, endPos, phase;
 
 
     public boolean isNogui() {
@@ -647,6 +647,10 @@ public class HaploText implements Constants{
                 i++;
                 endPos = args[i];
             }
+            else if(args[i].equalsIgnoreCase("-phase")){
+                i++;
+                phase = args[i];
+            }
             else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
             }
@@ -938,6 +942,17 @@ public class HaploText implements Constants{
             }catch(NumberFormatException nfe){
                 die("start and end positions must be integer values");
             }
+
+            if (phase == null){
+                phase = "2";
+            }
+            try{
+                if (Integer.parseInt(phase) != 1 && Integer.parseInt(phase) != 2){
+                    die("phase must be either 1 or 2");
+                }
+            }catch(NumberFormatException nfe){
+                die("phase must be an integer value");
+            }
         }
     }
 
@@ -1054,7 +1069,7 @@ public class HaploText implements Constants{
         else if (phasedhapmapDownload){
             fileName = "Chromosome" + chromosomeArg + populationArg;
             fileType = PHASEDHMPDL_FILE;
-            phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg};
+            phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg, phase};
         }else{
             fileName = hapmapFileName;
             fileType = HMP_FILE;

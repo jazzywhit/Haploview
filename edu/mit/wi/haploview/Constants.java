@@ -120,6 +120,7 @@ public interface Constants {
     static final String[] CHROM_NAMES = {"1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X"};
     static final String[] POP_NAMES = {"YRI", "CEU", "CHB+JPT"};
+    static final String[] PHASE_NAMES = {"I","II"};
 
     //GBrowse options
     static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "DNA"};
@@ -154,6 +155,7 @@ public interface Constants {
             "-population <CEU,YRI,CHB+JPT>   Specifies the population for this HapMap download\n" +
             "-startpos <integer>             Specifies the start position for this HapMap download\n" +
             "-endpos <integer>               Specifies the end position for this HapMap download\n" +
+            "-phase <1,2>                    Specifies the HapMap phase for this HapMap download\n" +
             "-dprime                         Outputs LD text to <inputfile>.LD\n" +
             "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
             "-compressedpng                  Outputs compressed LD display to <inputfile>.LD.PNG\n"+

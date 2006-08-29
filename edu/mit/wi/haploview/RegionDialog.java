@@ -9,7 +9,7 @@ import java.awt.event.ActionEvent;
 public class RegionDialog extends JDialog implements ActionListener, Constants {
     private HaploView hv;
 
-    private JComboBox popChooser;
+    private JComboBox popChooser, phaseChooser;
     private JCheckBox gBrowse;
     private NumberTextField rangeInput;
     private String chrom, marker;
@@ -27,6 +27,10 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
 
         JPanel chooserPanel = new JPanel();
+        chooserPanel.add(new JLabel("Phase"));
+        phaseChooser = new JComboBox(PHASE_NAMES);
+        chooserPanel.add(phaseChooser);
+        phaseChooser.setSelectedIndex(1);
         chooserPanel.add(new JLabel("Chr"+chr));
         popChooser = new JComboBox(POP_NAMES);
         popChooser.setSelectedIndex(-1);
@@ -87,6 +91,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             long end = (markerPosition/1000)+range;
             String gotoStart = new Long(start).toString();
             String gotoEnd = new Long(end).toString();
+            String phase = (String)phaseChooser.getSelectedItem();
             hv.setChosenMarker(marker);
 
             if (gBrowse.isSelected()){
@@ -95,7 +100,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
             String[] returnStrings;
             returnStrings = new String[]{"Chr " + chrom + ":" + pop + ":" + gotoStart + ".." +
-                    gotoEnd, pop, gotoStart, gotoEnd, chrom};
+                    gotoEnd, pop, gotoStart, gotoEnd, chrom, phase};
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
         }
