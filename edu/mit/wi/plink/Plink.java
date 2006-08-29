@@ -68,7 +68,7 @@ public class Plink implements Constants {
                     String chr;
                     if (chrom.equals("0")){
                         chr = unknownChrom;
-                    }else if (chrom.equalsIgnoreCase("x")){
+                    }else if (chrom.equalsIgnoreCase("x") || chrom.equalsIgnoreCase("xy")){
                         chr = CHROM_NAMES[22];
                     }
                     else{
@@ -85,10 +85,6 @@ public class Plink implements Constants {
             }
 
             BufferedReader wgaReader = new BufferedReader(new FileReader(wgaFile));
-            boolean snpColumn = false;
-            boolean chrColumn = false;
-            boolean posColumn = false;
-            boolean morgColumn = false;
             int numColumns = 0;
             int markerColumn = -1;
             int chromColumn = -1;
@@ -99,19 +95,15 @@ public class Plink implements Constants {
             while (headerSt.hasMoreTokens()){
                 String column = new String(headerSt.nextToken());
                 if (column.equals("SNP")){
-                    snpColumn = true;
                     markerColumn = numColumns;
                     numColumns++;
                 }else if (column.equals("CHR")){
-                    chrColumn = true;
                     chromColumn = numColumns;
                     numColumns++;
                 }else if (column.equals("POS")){
-                    posColumn = true;
                     positionColumn = numColumns;
                     numColumns++;
                 }else if (column.equals("MORGAN")){
-                    morgColumn = true;
                     morganColumn = numColumns;
                     numColumns++;
                 }
@@ -121,12 +113,12 @@ public class Plink implements Constants {
                 }
             }
 
-            if (!snpColumn){
+            if (markerColumn == -1){
                 throw new PlinkException("Results file must contain a SNP column.");
             }
 
             if (embed){
-                if (!chrColumn || !posColumn || !morgColumn){
+                if (chromColumn == -1 || positionColumn == -1 || morganColumn == -1){
                     throw new PlinkException("Results files with embedded map files must contain CHR, POS, and MORGAN columns.");
                 }
             }
@@ -212,7 +204,6 @@ public class Plink implements Constants {
 
             BufferedReader moreResultsReader = new BufferedReader(new FileReader(moreResultsFile));
             int numColumns = 0;
-            boolean snpColumn = false;
             int markerColumn = -1;
             int chromColumn = -1;
             String headerLine = moreResultsReader.readLine();
@@ -222,10 +213,9 @@ public class Plink implements Constants {
                 String column = new String(headerSt.nextToken());
 
                 if (column.equals("SNP")){
-                    if (snpColumn){
+                    if (markerColumn != -1){
                         throw new PlinkException("Results file contains more then one SNP column.");
                     }
-                    snpColumn = true;
                     markerColumn = numColumns;
                     numColumns++;
                 }else if (column.equals("CHR")){
@@ -247,7 +237,7 @@ public class Plink implements Constants {
                 }
             }
 
-            if (!snpColumn){
+            if (markerColumn == -1){
                 throw new PlinkException("Results file must contain a SNP column.");
             }
 
