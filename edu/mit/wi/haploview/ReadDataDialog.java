@@ -143,7 +143,6 @@ public class ReadDataDialog extends JDialog
         JPanel phaseChromPanel = new JPanel();
         phaseChromPanel.add(new JLabel("Chromosome (Required for Info Track):"));
         loadChromChooser.setSelectedIndex(-1);
-        //loadChromChooser.addActionListener(this);
         phaseChromPanel.add(loadChromChooser);
         JPanel phaseBrowsePanel = new JPanel();
         phaseDoGB = new JCheckBox("Download and show HapMap info track? (requires internet connection)");
@@ -152,9 +151,11 @@ public class ReadDataDialog extends JDialog
 
          //Download Panel...
         JPanel downloadChooserPanel = new JPanel();
+        downloadChooserPanel.add(new JLabel("Phase"));
+        downloadChooserPanel.add(phaseChooser);
+        phaseChooser.setSelectedIndex(1);
         downloadChooserPanel.add(new JLabel("Chromosome:"));
         chromChooser.setSelectedIndex(-1);
-        //chromChooser.addActionListener(this);
         downloadChooserPanel.add(chromChooser);
         downloadChooserPanel.add(new JLabel("Population:"));
         downloadChooserPanel.add(popChooser);
@@ -167,9 +168,6 @@ public class ReadDataDialog extends JDialog
         downloadPositionPanel.add(chromStartField);
         downloadPositionPanel.add(new JLabel("End kb:"));
         downloadPositionPanel.add(chromEndField);
-        downloadPositionPanel.add(new JLabel("Phase"));
-        downloadPositionPanel.add(phaseChooser);
-        phaseChooser.setSelectedIndex(1);
         JPanel downloadBrowsePanel = new JPanel();
         downloadDoGB = new JCheckBox("Download and show HapMap info track? (requires internet connection)");
         downloadDoGB.setSelected(false);
