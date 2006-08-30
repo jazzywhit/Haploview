@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.29 2006/08/29 20:17:19 djbender Exp $
+* $Id: PedFile.java,v 3.30 2006/08/30 15:43:36 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1112,7 +1112,7 @@ public class PedFile {
                             if (ind.getGender() == Individual.MALE){
                                 pseudoChecked = true;
                                 if (Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
-                                    StringTokenizer checkSt = new StringTokenizer((String)hmpVector.get(i+1));
+                                    StringTokenizer checkSt = new StringTokenizer((String)hmpVector.get(i+1),":- \t");
                                     String checkNewid = checkSt.nextToken();
                                     checkSt.nextToken(); //alleles
                                     StringTokenizer checkFilter = new StringTokenizer(checkNewid,"_");
