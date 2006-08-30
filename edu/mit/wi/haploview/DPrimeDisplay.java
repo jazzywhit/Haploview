@@ -1181,9 +1181,15 @@ public class DPrimeDisplay extends JComponent
                     gbright = maxpos+1;
                 }
                 String dataBuild = "_" + Chromosome.getDataBuild().substring(5).toUpperCase();
+                String gChrom;
+                if (Chromosome.getDataChrom().equalsIgnoreCase("chrp")){ //account for pseudoautosomal
+                    gChrom = "chrx";
+                }else{
+                    gChrom = Chromosome.getDataChrom();
+                }
 
                 URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
-                        Chromosome.getDataChrom() + ":" + gbleft + ".." + gbright + ";width=" + gblineSpan +
+                        gChrom + ":" + gbleft + ".." + gbright + ";width=" + gblineSpan +
                         ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
 
                 Toolkit toolkit = Toolkit.getDefaultToolkit();

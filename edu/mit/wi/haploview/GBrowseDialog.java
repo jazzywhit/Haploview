@@ -29,10 +29,14 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
         if (Chromosome.getDataChrom() != null){
             String which = Chromosome.getDataChrom().substring(3);
             for (int i = 0; i < c.length; i++){
-                if (which.equals(c[i])){
+                if (which.equalsIgnoreCase(c[i])){
                     cbox.setSelectedIndex(i);
                 }
             }
+        }
+
+        if (Chromosome.getDataChrom().equalsIgnoreCase("chrp")){
+            cbox.setSelectedIndex(22);
         }
         chromPanel.add(cbox);
         contents.add(chromPanel);
