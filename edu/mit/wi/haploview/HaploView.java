@@ -1021,6 +1021,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 plink.parseMoreResults(secondaryFile);
             }
 
+            plinkFilters = null;
+
             plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames(), plinkFilters);
             HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
             plinkTab.add(plinkPanel);

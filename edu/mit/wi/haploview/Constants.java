@@ -120,7 +120,7 @@ public interface Constants {
     static final String[] CHROM_NAMES = {"1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X"};
     static final String[] POP_NAMES = {"YRI", "CEU", "CHB+JPT"};
-    static final String[] PHASE_NAMES = {"I","II"};
+    static final String[] PHASE_NAMES = {"I","I+II"};
 
     //GBrowse options
     static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "DNA"};

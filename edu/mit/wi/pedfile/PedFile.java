@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.30 2006/08/30 15:43:36 djbender Exp $
+* $Id: PedFile.java,v 3.31 2006/08/31 16:52:40 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1014,7 +1014,12 @@ public class PedFile {
             startPos = (Integer.parseInt(info[2]))*1000;
         }
         long stopPos = (Integer.parseInt(info[3]))*1000;
-        String phaseChoice = info[5];
+        String phaseChoice;
+        if (info[5].equals("I+II")){
+            phaseChoice = "II";
+        }else{
+            phaseChoice = info[5];
+        }
         boolean infoDone = false;
         boolean hminfoDone = false;
         String urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + populationChoice +
@@ -1024,6 +1029,7 @@ public class PedFile {
         try{
             URL hmpUrl = new URL(urlHmp);
             HttpURLConnection hmpCon = (HttpURLConnection)hmpUrl.openConnection();
+            hmpCon.setRequestProperty("Accept-Encoding","gzip");
             hmpCon.connect();
 
             int response = hmpCon.getResponseCode();
@@ -1031,7 +1037,8 @@ public class PedFile {
             if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
                 throw new IOException("Could not connect to HapMap database.");
             }else {
-                BufferedReader hmpBuffReader = new BufferedReader(new InputStreamReader(hmpCon.getInputStream()));
+                GZIPInputStream g = new GZIPInputStream(hmpCon.getInputStream());
+                BufferedReader hmpBuffReader = new BufferedReader(new InputStreamReader(g));
                 String hmpLine;
                 char token;
                 int columns;
@@ -1193,7 +1200,7 @@ public class PedFile {
             }
             hmpCon.disconnect();
         }catch(IOException io){
-            throw new IOException("Could not connect to HapMap database.");
+            throw new IOException("Could not connect to HapMap database: \n" + io.getMessage());
         }
     }
 

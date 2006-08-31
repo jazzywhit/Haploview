@@ -244,11 +244,17 @@ public class Plink implements Constants {
             String wgaLine;
             int lineNumber = 0;
 
+            Hashtable resultsHash = new Hashtable(1,1);
+            for (int i = 0; i < results.size(); i++){
+                String markerID = ((AssociationResult)results.get(i)).getMarker().getMarkerID();
+                resultsHash.put(markerID,new Integer(i));
+            }
+
             while((wgaLine = moreResultsReader.readLine())!=null){
-               if (wgaLine.length() == 0){
+                if (wgaLine.length() == 0){
                     //skip blank lines
                     continue;
-               }
+                }
                 int tokenNumber = 0;
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
                 String marker = null;
@@ -276,19 +282,11 @@ public class Plink implements Constants {
                 }
 
                 AssociationResult currentResult;
-                boolean resultFound = false;
 
-                for (int i = 0; i < results.size(); i++){
-                    currentResult = (AssociationResult)results.get(i);
-                    if (currentResult.getMarker().getMarkerID().equals(marker)){
-                        resultFound = true;
-                        currentResult.addValues(values);
-                        break;
-                    }
-                }
-
-                if (resultFound){
+                if (resultsHash.containsKey(marker)){
                     addColumns = true;
+                    currentResult = (AssociationResult)results.get(((Integer)resultsHash.get(marker)).intValue());
+                    currentResult.addValues(values);
                 }else{
                     ignoredMarkers.add(marker);
                 }

@@ -186,8 +186,6 @@ public class PlinkTableModel extends AbstractTableModel{
                             }
                         }
                     }
-                }else{
-                    genericPass = true;
                 }
             }else{
                 genericPass = true;
