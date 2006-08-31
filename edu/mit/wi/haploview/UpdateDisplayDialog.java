@@ -19,8 +19,12 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
 
         JTextArea announceArea = new JTextArea();
         announceArea.setFont(bigguns);
-        announceArea.append("A newer version of Haploview is available: " + uc.getNewVersion() + "\n");
-        announceArea.append(WEBSITE_STRING + "\n");
+        if (BETA_VERSION > 0){
+            announceArea.append("A newer BETA version of Haploview is available: " + uc.getNewVersion() + "beta" + uc.getNewBetaVersion() + "\n");
+        }else{
+            announceArea.append("A newer version of Haploview is available: " + uc.getNewVersion() + "\n");
+        }
+        announceArea.append("\n" + WEBSITE_STRING + "\n");
         announceArea.setAlignmentX(Component.CENTER_ALIGNMENT);
         announceArea.setEditable(false);
         announceArea.setOpaque(false);
@@ -28,16 +32,18 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
         announcePanel.add(announceArea);
         JScrollPane changeScroller = null;
 
-        try {
-            JEditorPane changePane = new JEditorPane();
-            changePane.setEditable(false);
-            changePane.setPage(new URL("http://www.broad.mit.edu/mpg/haploview/uc/changes.html"));
-            changePane.setOpaque(false);
-            changeScroller = new JScrollPane(changePane);
-            changeScroller.setPreferredSize(new Dimension(250,150));
-        } catch(IOException ioe) {
-            //if were here then we were able to check for an update, so well just show them a dialog
-            //without listing the changes
+        if (BETA_VERSION == 0){
+            try {
+                JEditorPane changePane = new JEditorPane();
+                changePane.setEditable(false);
+                changePane.setPage(new URL("http://www.broad.mit.edu/mpg/haploview/uc/changes.html"));
+                changePane.setOpaque(false);
+                changeScroller = new JScrollPane(changePane);
+                changeScroller.setPreferredSize(new Dimension(250,150));
+            } catch(IOException ioe) {
+                //if were here then we were able to check for an update, so well just show them a dialog
+                //without listing the changes
+            }
         }
 
         contents.add(announcePanel);

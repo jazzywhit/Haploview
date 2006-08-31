@@ -5,6 +5,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.io.InputStream;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 /**
  * Created by IntelliJ IDEA.
@@ -16,6 +18,7 @@ import java.io.IOException;
 public class UpdateChecker {
     private boolean newVersionAvailable;
     private double newVersion;
+    private int newBetaVersion;
 
     public UpdateChecker() {
 
@@ -31,6 +34,10 @@ public class UpdateChecker {
 
     public double getNewVersion() {
         return newVersion;
+    }
+
+    public int getNewBetaVersion() {
+        return newBetaVersion;
     }
 
     public void setNewVersion(double newVersion) {
@@ -72,6 +79,37 @@ public class UpdateChecker {
                     if(newestVersion > Constants.VERSION) {
                         this.newVersion = newestVersion;
                         this.newVersionAvailable = true;
+                    }else if (Constants.BETA_VERSION > 0){
+                        if (newestVersion == Constants.VERSION){
+                            this.newVersion = newestVersion;
+                            this.newVersionAvailable = true;
+                        }else{
+                            URL betaUrl = new URL("http://wwwdev.broad.mit.edu/mpg/haploview/uc/betaversion.txt");
+                            HttpURLConnection betaCon = (HttpURLConnection)betaUrl.openConnection();
+                            betaCon.setRequestProperty("User-agent",Constants.USER_AGENT);
+                            betaCon.connect();
+
+                            int betaResponse = betaCon.getResponseCode();
+
+                            if ((betaResponse != HttpURLConnection.HTTP_ACCEPTED) && (betaResponse != HttpURLConnection.HTTP_OK)) {
+                                //if something went wrong
+                                throw new IOException("Could not connect to update server.");
+                            }
+                            else {
+                                //all is well
+                                BufferedReader betaReader = new BufferedReader(new InputStreamReader(betaCon.getInputStream()));
+                                String versionLine = betaReader.readLine();
+                                String betaLine = betaReader.readLine();
+                                double version = Double.parseDouble(versionLine);
+                                int betaVersion = Integer.parseInt(betaLine);
+
+                                if (Constants.VERSION < version || Constants.BETA_VERSION < betaVersion){
+                                    this.newVersionAvailable = true;
+                                    this.newVersion = version;
+                                    this.newBetaVersion = betaVersion;
+                                }
+                            }
+                        }
                     }
                     else {
                         this.newVersionAvailable = false;

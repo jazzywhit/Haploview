@@ -1519,36 +1519,42 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         final JLayeredPane jlp = window.getLayeredPane();
 
                         final JPanel udp = new JPanel();
-                        udp.setLayout(new BoxLayout(udp, BoxLayout.Y_AXIS));
-                        double version = uc.getNewVersion();
-                        Font detailsFont = new Font("Default", Font.PLAIN, 14);
-                        JLabel announceLabel = new JLabel("A newer version of Haploview (" +version+") is available.");
-                        announceLabel.setFont(detailsFont);
-                        JLabel detailsLabel = new JLabel("See \"Check for update\" in the file menu for details.");
-                        detailsLabel.setFont(detailsFont);
-                        udp.add(announceLabel);
-                        udp.add(detailsLabel);
 
-                        udp.setBorder(BorderFactory.createRaisedBevelBorder());
-                        int width = udp.getPreferredSize().width;
-                        int height = udp.getPreferredSize().height;
-                        int borderwidth = udp.getBorder().getBorderInsets(udp).right;
-                        int borderheight = udp.getBorder().getBorderInsets(udp).bottom;
-                        udp.setBounds(jlp.getWidth()-width-borderwidth, jlp.getHeight()-height-borderheight,
-                                udp.getPreferredSize().width, udp.getPreferredSize().height);
-                        udp.setOpaque(true);
+                        if (Constants.BETA_VERSION == 0){
+                            udp.setLayout(new BoxLayout(udp, BoxLayout.Y_AXIS));
+                            double version = uc.getNewVersion();
+                            Font detailsFont = new Font("Default", Font.PLAIN, 14);
+                            JLabel announceLabel = new JLabel("A newer version of Haploview (" +version+") is available.");
+                            announceLabel.setFont(detailsFont);
+                            JLabel detailsLabel = new JLabel("See \"Check for update\" in the file menu for details.");
+                            detailsLabel.setFont(detailsFont);
+                            udp.add(announceLabel);
+                            udp.add(detailsLabel);
 
-                        jlp.add(udp, JLayeredPane.POPUP_LAYER);
+                            udp.setBorder(BorderFactory.createRaisedBevelBorder());
+                            int width = udp.getPreferredSize().width;
+                            int height = udp.getPreferredSize().height;
+                            int borderwidth = udp.getBorder().getBorderInsets(udp).right;
+                            int borderheight = udp.getBorder().getBorderInsets(udp).bottom;
+                            udp.setBounds(jlp.getWidth()-width-borderwidth, jlp.getHeight()-height-borderheight,
+                                    udp.getPreferredSize().width, udp.getPreferredSize().height);
+                            udp.setOpaque(true);
 
-                        java.util.Timer updateTimer = new java.util.Timer();
-                        //show this update message for 6.5 seconds
-                        updateTimer.schedule(new TimerTask() {
-                            public void run() {
-                                jlp.remove(udp);
-                                jlp.repaint();
-                            }
-                        },6000);
+                            jlp.add(udp, JLayeredPane.POPUP_LAYER);
 
+                            java.util.Timer updateTimer = new java.util.Timer();
+                            //show this update message for 6.5 seconds
+                            updateTimer.schedule(new TimerTask() {
+                                public void run() {
+                                    jlp.remove(udp);
+                                    jlp.repaint();
+                                }
+                            },6000);
+                        }else{
+                            UpdateDisplayDialog betaUdp = new UpdateDisplayDialog(window,"Update Check",uc);
+                            betaUdp.pack();
+                            betaUdp.setVisible(true);
+                        }
                     }
                 }
             }
