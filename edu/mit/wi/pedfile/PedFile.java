@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.31 2006/08/31 16:52:40 djbender Exp $
+* $Id: PedFile.java,v 3.32 2006/09/01 03:29:50 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -15,6 +15,7 @@ package edu.mit.wi.pedfile;
 import edu.mit.wi.haploview.Chromosome;
 import edu.mit.wi.haploview.Options;
 import edu.mit.wi.haploview.SNP;
+import edu.mit.wi.haploview.Constants;
 import edu.mit.wi.pedparser.PedParser;
 import edu.mit.wi.pedparser.PedigreeException;
 
@@ -1029,6 +1030,7 @@ public class PedFile {
         try{
             URL hmpUrl = new URL(urlHmp);
             HttpURLConnection hmpCon = (HttpURLConnection)hmpUrl.openConnection();
+            hmpCon.setRequestProperty("User-agent", Constants.USER_AGENT);
             hmpCon.setRequestProperty("Accept-Encoding","gzip");
             hmpCon.connect();
 
