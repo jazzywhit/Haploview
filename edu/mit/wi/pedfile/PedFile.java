@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.32 2006/09/01 03:29:50 djbender Exp $
+* $Id: PedFile.java,v 3.33 2006/09/05 19:35:01 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -843,7 +843,7 @@ public class PedFile {
             while((legendLine = legendBuffReader.readLine())!=null){
                 StringTokenizer legendSt = new StringTokenizer(legendLine);
                 String markerid = legendSt.nextToken();
-                if (markerid.equals("marker")){ //skip header
+                if (markerid.equals("rs")){ //skip header
                     continue;
                 }
                 legendMarkers.add(markerid);
@@ -972,6 +972,8 @@ public class PedFile {
                             byteDataU[index] = ((byte[])legendData.get(index))[0];
                         }else if (token.equalsIgnoreCase("1")){
                             byteDataU[index] = ((byte[])legendData.get(index))[1];
+                        }else if (Chromosome.getDataChrom().equalsIgnoreCase("chrx") && ind.getGender() == Individual.MALE && token.equalsIgnoreCase("-")){
+                           //X male
                         }else {
                             throw new PedFileException("File format error: " + phasedFile.getName());
                         }
@@ -979,8 +981,14 @@ public class PedFile {
                     index++;
                 }
                 if (even){
-                    for(int i=0; i < columns; i++){
-                        ind.addMarker(byteDataT[i], byteDataU[i]);
+                    if (ind.getGender() == Individual.MALE && Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+                        for(int i=0; i < columns; i++){
+                            ind.addMarker(byteDataT[i], byteDataT[i]);
+                        }
+                    }else{
+                        for(int i=0; i < columns; i++){
+                            ind.addMarker(byteDataT[i], byteDataU[i]);
+                        }
                     }
                 }
                 even = !even;
