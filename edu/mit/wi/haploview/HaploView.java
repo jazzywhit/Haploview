@@ -66,7 +66,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private Vector plinkData, plinkColumns;
     private Vector plinkFilters;
     private String chosenMarker;
-    //private int plinkAssocType;
+    private Vector phasedSelection;
     public static JFileChooser fc;
     private JScrollPane hapScroller;
     HaploviewTabbedPane tabs;
@@ -652,8 +652,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         //type is 7 for phased hapmap downloads
         final File inFile = new File(inputOptions[0]);
         final AssociationTestSet customAssocSet;
+        final int progressType = type;
 
         try {
+            if (type == PHASEDHMPDL_FILE){
+                phasedSelection = new Vector();
+                phasedSelection.add(inputOptions[5]);
+                phasedSelection.add(inputOptions[4]);
+                phasedSelection.add(inputOptions[1]);
+                phasedSelection.add(inputOptions[2]);
+                phasedSelection.add(inputOptions[3]);
+            }
             if (type != PHASED_FILE && type != PHASEDHMPDL_FILE){
                 if (inputOptions[2] != null && inputOptions[1] == null){
                     throw new HaploViewException("A marker information file is required if a tests file is specified.");
@@ -780,7 +789,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     haploProgress.setForeground(new Color(40,40,255));
                     haploProgress.setPreferredSize(new Dimension(250,20));
                     progressPanel.setLayout(new BoxLayout(progressPanel,BoxLayout.Y_AXIS));
-                    JLabel progressLabel = new JLabel("Loading data...");
+                    JLabel progressLabel;
+                    if (progressType != PHASEDHMPDL_FILE){
+                        progressLabel = new JLabel("Loading data...");
+                    }else{
+                        progressLabel = new JLabel("Downloading HapMap data...");
+                    }
                     progressPanel.add(progressLabel);
                     progressLabel.setAlignmentX(CENTER_ALIGNMENT);
                     progressPanel.add(haploProgress);
@@ -1177,6 +1191,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     public String getChosenMarker(){
         return chosenMarker;
+    }
+
+    public Vector getPhasedSelection(){
+        return phasedSelection;
     }
 
     public void clearDisplays() {

@@ -344,6 +344,27 @@ public class ReadDataDialog extends JDialog
         a.gridx = 2;
         contents.add(proxyPanel,a);
 
+        if (h.getPhasedSelection() != null){
+            if (((String)h.getPhasedSelection().get(0)).equals("I")){
+                phaseChooser.setSelectedIndex(0);
+            }
+
+            if (((String)h.getPhasedSelection().get(1)).equals("X")){
+                chromChooser.setSelectedIndex(22);
+            }else{
+                chromChooser.setSelectedIndex(Integer.parseInt((String)h.getPhasedSelection().get(1))-1);
+            }
+
+            if (((String)h.getPhasedSelection().get(2)).equals("CEU")){
+                popChooser.setSelectedIndex(1);
+            }else if (((String)h.getPhasedSelection().get(2)).equals("CHB+JPT")){
+                popChooser.setSelectedIndex(2);
+            }
+
+            chromStartField.setText((String)h.getPhasedSelection().get(3));
+            chromEndField.setText((String)h.getPhasedSelection().get(4));
+        }
+
         //contents.setPreferredSize(new Dimension(700,700));
         this.setContentPane(contents);
         this.setLocation(this.getParent().getX() + 100,
