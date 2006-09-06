@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.33 2006/09/05 19:35:01 djbender Exp $
+* $Id: PedFile.java,v 3.34 2006/09/06 18:45:35 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1210,7 +1210,7 @@ public class PedFile {
             }
             hmpCon.disconnect();
         }catch(IOException io){
-            throw new IOException("Could not connect to HapMap database: \n" + io.getMessage());
+            throw new IOException("Could not connect to HapMap database.");
         }
     }
 
