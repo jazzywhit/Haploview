@@ -19,7 +19,7 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
 
         JTextArea announceArea = new JTextArea();
         announceArea.setFont(bigguns);
-        if (BETA_VERSION > 0){
+        if (BETA_VERSION > 0 && VERSION == uc.getNewVersion()){
             announceArea.append("A newer BETA version of Haploview is available: " + uc.getNewVersion() + "beta" + uc.getNewBetaVersion() + "\n");
         }else{
             announceArea.append("A newer version of Haploview is available: " + uc.getNewVersion() + "\n");
