@@ -48,7 +48,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         sorter.setTableHeader(table.getTableHeader());
         table.getColumnModel().getColumn(2).setPreferredWidth(100);
         table.getColumnModel().getColumn(3).setPreferredWidth(100);
-        table.getColumnModel().getColumn(8).setPreferredWidth(100);
 
         final PlinkCellRenderer renderer = new PlinkCellRenderer();
         try{
