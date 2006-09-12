@@ -84,7 +84,7 @@ public class UpdateChecker {
                             this.newVersion = newestVersion;
                             this.newVersionAvailable = true;
                         }else{
-                            URL betaUrl = new URL("http://wwwdev.broad.mit.edu/mpg/haploview/uc/betaversion.txt");
+                            URL betaUrl = new URL("http://www.broad.mit.edu/mpg/haploview/uc/betaversion.txt");
                             HttpURLConnection betaCon = (HttpURLConnection)betaUrl.openConnection();
                             betaCon.setRequestProperty("User-agent",Constants.USER_AGENT);
                             betaCon.connect();
