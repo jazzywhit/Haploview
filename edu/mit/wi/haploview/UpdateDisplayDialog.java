@@ -21,10 +21,11 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
         announceArea.setFont(bigguns);
         if (BETA_VERSION > 0 && VERSION == uc.getNewVersion()){
             announceArea.append("A newer BETA version of Haploview is available: " + uc.getNewVersion() + "beta" + uc.getNewBetaVersion() + "\n");
+            announceArea.append("\n" + BETA_WEBSITE_STRING + "\n");
         }else{
             announceArea.append("A newer version of Haploview is available: " + uc.getNewVersion() + "\n");
+            announceArea.append("\n" + WEBSITE_STRING + "\n");
         }
-        announceArea.append("\n" + WEBSITE_STRING + "\n");
         announceArea.setAlignmentX(Component.CENTER_ALIGNMENT);
         announceArea.setEditable(false);
         announceArea.setOpaque(false);
