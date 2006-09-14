@@ -23,6 +23,7 @@ import java.io.FileReader;
 public class TaggerConfigPanel extends HaploviewTab
         implements TableModelListener, ActionListener {
     private JTable table;
+    private TableSorter sorter;
     private TaggerController tagControl;
 
     private final static int NUM_COL = 0;
@@ -117,7 +118,9 @@ public class TaggerConfigPanel extends HaploviewTab
         }
         TagConfigTableModel tableModel = new TagConfigTableModel(columnNames,tableData);
         tableModel.addTableModelListener(this);
-        table = new JTable(tableModel);
+        sorter = new TableSorter(tableModel);
+        table = new JTable(sorter);
+        sorter.setTableHeader(table.getTableHeader());
         table.getColumnModel().getColumn(NUM_COL).setPreferredWidth(30);
         table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(100);
         table.getTableHeader().setReorderingAllowed(false);
@@ -235,6 +238,10 @@ public class TaggerConfigPanel extends HaploviewTab
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command.equals("Run Tagger")) {
+            for (int j = 0; j < table.getColumnCount(); j++){
+                sorter.setSortingStatus(j,TableSorter.NOT_SORTED);
+            }
+
             try{
                 double rsqCut = Double.parseDouble(rsqField.getText());
                 if (rsqCut > 1){
@@ -333,6 +340,10 @@ public class TaggerConfigPanel extends HaploviewTab
             }
 
         }else if (command.equals("Reset Table")){
+            for (int j = 0; j < table.getColumnCount(); j++){
+                sorter.setSortingStatus(j,TableSorter.NOT_SORTED);
+            }
+
             for (int i = 0; i < table.getRowCount(); i++){
                 table.setValueAt(new Boolean(false), i, EXCLUDE_COL);
                 table.setValueAt(new Boolean(false), i, INCLUDE_COL);
