@@ -277,8 +277,10 @@ public class CheckDataPanel extends JPanel
                 cell.setBackground(Color.yellow);
             }
 
-            if (((String)table.getValueAt(row,1)).equals(hv.getChosenMarker())){
-                cell.setBackground(Color.cyan);
+            if (hv.getChosenMarker() != null){
+                if (((String)table.getValueAt(row,1)).equals(hv.getChosenMarker())){
+                    cell.setBackground(Color.cyan);
+                }
             }
 
             //bitmasking to decode the status bits

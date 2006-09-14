@@ -573,6 +573,7 @@ public class ReadDataDialog extends JDialog
             //if a dataset was previously loaded during this session, discard the display panes for it.
             caller.clearDisplays();
             caller.setPlinkData(null,null);
+            caller.setChosenMarker(null);
             this.dispose();
             if (fileType != PLINK_FILE){
             caller.readGenotypes(returnStrings, fileType, isDownloaded);
