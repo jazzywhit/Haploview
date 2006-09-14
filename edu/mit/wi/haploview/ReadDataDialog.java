@@ -170,7 +170,7 @@ public class ReadDataDialog extends JDialog
         downloadPositionPanel.add(chromEndField);
         JPanel downloadBrowsePanel = new JPanel();
         downloadDoGB = new JCheckBox("Download and show HapMap info track? (requires internet connection)");
-        downloadDoGB.setSelected(false);
+        downloadDoGB.setSelected(true);
         downloadBrowsePanel.add(downloadDoGB);
 
         //Plink Panel...
