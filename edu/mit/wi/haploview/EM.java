@@ -33,10 +33,24 @@ public class EM implements Constants {
     private MapWrap fullProbMap;
     private boolean[] haploid;
 
-    EM(Vector chromosomes, int numTrios){
+    private int extraTrioCount;
+    private int updatedExtraTrioCount;
+
+
+    EM(Vector chromosomes, int numTrios, Vector extraInds){
 
         //we need to add extra copies of haploid chromosomes so we add a second copy
         this.chromosomes = new Vector();
+
+        for(int i=0;i<extraInds.size();i++){
+            this.chromosomes.add(extraInds.elementAt(i));
+            if(((Chromosome)this.chromosomes.lastElement()).isHaploid()){
+                this.chromosomes.add(extraInds.elementAt(i));
+            }
+        }
+
+        extraTrioCount = this.chromosomes.size()/4;
+
         for(int i=0;i<chromosomes.size();i++) {
             this.chromosomes.add(chromosomes.elementAt(i));
             if(((Chromosome)this.chromosomes.lastElement()).isHaploid()){
@@ -44,7 +58,7 @@ public class EM implements Constants {
             }
         }
 
-        this.numTrios = numTrios;
+        this.numTrios = numTrios + extraTrioCount;
 
     }
 
@@ -218,7 +232,7 @@ public class EM implements Constants {
         //3 indicates a person from a broken trio who is treated as a singleton
         //0 indicates none (too much missing data)
         int[] whichVector = new int[chromosomes.size()];
-
+        updatedExtraTrioCount = 0;
 
         for(int i=0;i<numTrios*4; i+=4) {
             Chromosome parentAFirst = (Chromosome) chromosomes.elementAt(i);
@@ -260,15 +274,21 @@ public class EM implements Constants {
                 whichVector[i+1] = 2;
                 whichVector[i+2] = 2;
                 whichVector[i+3] = 2;
+
+                if (i/4 < extraTrioCount){
+                    updatedExtraTrioCount++;
+                }
             }
-            else if(!tooManyMissingInASegmentA && totalMissingA <= 1+theBlock.length/3) {
+            else if((!tooManyMissingInASegmentA && totalMissingA <= 1+theBlock.length/3)
+                    && i/4 >=  extraTrioCount ) {
                 //first person good, so he's added as a singleton, other parent is dropped
                 whichVector[i] = 3;
                 whichVector[i+1] =3;
                 whichVector[i+2] =0;
                 whichVector[i+3]=0;
             }
-            else if(!tooManyMissingInASegmentB && totalMissingB <= 1+theBlock.length/3) {
+            else if(!tooManyMissingInASegmentB && totalMissingB <= 1+theBlock.length/3
+                    &&  i/4 >= extraTrioCount){
                 //second person good, so he's added as a singleton, other parent is dropped
                 whichVector[i] = 0;
                 whichVector[i+1] =0;
@@ -449,7 +469,7 @@ public class EM implements Constants {
             i.e., flat when nothing is known, close to phase known if a great deal is known */
 
             for (int i=0; i<num_indivs; i++) {
-                if (data[i].nposs==1) {
+                if (data[i].nposs==1 && i >= updatedExtraTrioCount*2) {
                     tempRec = (Recovery)data[i].poss.elementAt(0);
                     probMap.put(new Long(tempRec.h1), probMap.get(new Long(tempRec.h1)) + 1.0);
                     if (!haploid[i]){
@@ -498,14 +518,16 @@ public class EM implements Constants {
                 total=num_poss*1e-10;
 
                 for (int i=0; i<num_indivs; i++) {
-                    for (int k=0; k<data[i].nposs; k++) {
-                        tempRec = (Recovery) data[i].poss.elementAt(k);
-                        probMap.put(new Long(tempRec.h1),probMap.get(new Long(tempRec.h1)) + tempRec.p);
-                        if (!haploid[i]){
-                            probMap.put(new Long(tempRec.h2),probMap.get(new Long(tempRec.h2)) + tempRec.p);
-                            total+=(2.0*(tempRec.p));
-                        }else{
-                            total += tempRec.p;
+                    if(i >= updatedExtraTrioCount*2){
+                        for (int k=0; k<data[i].nposs; k++) {
+                            tempRec = (Recovery) data[i].poss.elementAt(k);
+                            probMap.put(new Long(tempRec.h1),probMap.get(new Long(tempRec.h1)) + tempRec.p);
+                            if (!haploid[i]){
+                                probMap.put(new Long(tempRec.h2),probMap.get(new Long(tempRec.h2)) + tempRec.p);
+                                total+=(2.0*(tempRec.p));
+                            }else{
+                                total += tempRec.p;
+                            }
                         }
                     }
                 }
@@ -555,7 +577,7 @@ public class EM implements Constants {
 
 
         for (int i=0; i<num_indivs; i++) {
-            if (superdata[i].nsuper==1) {
+            if (superdata[i].nsuper==1 && i >= updatedExtraTrioCount*2)  {
                 Long h1 = new Long(superdata[i].superposs[0].h1);
                 Long h2 = new Long(superdata[i].superposs[0].h2);
 
@@ -606,13 +628,15 @@ public class EM implements Constants {
             total=poss_full*1e-10;
 
             for (int i=0; i<num_indivs; i++) {
-                for (int k=0; k<superdata[i].nsuper; k++) {
-                    fullProbMap.put(new Long(superdata[i].superposs[k].h1),fullProbMap.get(new Long(superdata[i].superposs[k].h1)) + superdata[i].superposs[k].p);
-                    if(!haploid[i]){
-                        fullProbMap.put(new Long(superdata[i].superposs[k].h2),fullProbMap.get(new Long(superdata[i].superposs[k].h2)) + superdata[i].superposs[k].p);
-                        total+=(2.0*superdata[i].superposs[k].p);
-                    }else{
-                        total += superdata[i].superposs[k].p;
+                if(i >= updatedExtraTrioCount*2){
+                    for (int k=0; k<superdata[i].nsuper; k++) {
+                        fullProbMap.put(new Long(superdata[i].superposs[k].h1),fullProbMap.get(new Long(superdata[i].superposs[k].h1)) + superdata[i].superposs[k].p);
+                        if(!haploid[i]){
+                            fullProbMap.put(new Long(superdata[i].superposs[k].h2),fullProbMap.get(new Long(superdata[i].superposs[k].h2)) + superdata[i].superposs[k].p);
+                            total+=(2.0*superdata[i].superposs[k].p);
+                        }else{
+                            total += superdata[i].superposs[k].p;
+                        }
                     }
                 }
             }
@@ -671,28 +695,6 @@ public class EM implements Constants {
 
         this.haplotypes = (int[][])haplos_present.toArray(new int[0][0]);
         this.frequencies = freqs;
-
-        /*
-        if (dump_phased_haplos) {
-
-        if ((fpdump=fopen("emphased.haps","w"))!=NULL) {
-        for (i=0; i<num_indivs; i++) {
-        best=0;
-        for (k=0; k<superdata[i].nsuper; k++) {
-        if (superdata[i].superposs[k].p > superdata[i].superposs[best].p) {
-        best=k;
-        }
-        }
-        h1 = superdata[i].superposs[best].h1;
-        h2 = superdata[i].superposs[best].h2;
-        fprintf(fpdump,"%s\n",decode_haplo_str(h1,num_blocks,block_size,hlist,num_hlist));
-        fprintf(fpdump,"%s\n",decode_haplo_str(h2,num_blocks,block_size,hlist,num_hlist));
-        }
-        fclose(fpdump);
-        }
-        }
-        */
-        //return 0;
     }
 
     public void doAssociationTests(Vector affStatus, Vector permuteInd,Vector permuteDiscPar, Vector kidAffStatus) {

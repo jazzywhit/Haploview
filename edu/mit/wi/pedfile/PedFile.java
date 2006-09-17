@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.34 2006/09/06 18:45:35 djbender Exp $
+* $Id: PedFile.java,v 3.35 2006/09/17 16:51:40 jmaller Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -416,6 +416,13 @@ public class PedFile {
      */
     public Vector getAllIndividuals() {
         return allIndividuals;
+    }
+
+    public Vector getUnusedIndividuals(){
+        HashSet used = new HashSet(getUnrelatedIndividuals());
+        HashSet all = new HashSet(getAllIndividuals());
+        all.removeAll(used);
+        return new Vector(all);
     }
 
     public Vector getUnrelatedIndividuals() {
