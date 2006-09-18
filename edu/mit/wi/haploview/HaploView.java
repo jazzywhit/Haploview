@@ -28,29 +28,29 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     JMenuItem readMarkerItem, analysisItem, blocksItem, gbrowseItem, spacingItem, gbEditItem;
     String exportItems[] = {
-        EXPORT_TEXT, EXPORT_PNG, EXPORT_MALE_HETS, EXPORT_OPTIONS
+            EXPORT_TEXT, EXPORT_PNG, EXPORT_MALE_HETS, EXPORT_OPTIONS
     };
     JMenuItem exportMenuItems[];
     JMenu keyMenu, displayMenu, analysisMenu;
     JMenuItem clearBlocksItem;
 
     String viewItems[] = {
-        VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TAGGER, VIEW_PLINK, VIEW_ASSOC
+            VIEW_DPRIME, VIEW_HAPLOTYPES, VIEW_CHECK_PANEL, VIEW_TAGGER, VIEW_PLINK, VIEW_ASSOC
     };
     JRadioButtonMenuItem viewMenuItems[];
     String zoomItems[] = {
-        "Zoomed", "Medium", "Unzoomed"
+            "Zoomed", "Medium", "Unzoomed"
     };
     JRadioButtonMenuItem zoomMenuItems[];
     String colorItems[] = {
-        "Standard (D' / LOD)", "R-squared", "D' / LOD (alt)", "Confidence bounds", "4 Gamete", "GOLD heatmap"
+            "Standard (D' / LOD)", "R-squared", "D' / LOD (alt)", "Confidence bounds", "4 Gamete", "GOLD heatmap"
     };
     JRadioButtonMenuItem colorMenuItems[];
     JRadioButtonMenuItem blockMenuItems[];
     String blockItems[] = {"Confidence intervals (Gabriel et al)",
-                           "Four Gamete Rule",
-                           "Solid spine of LD",
-                           "Custom"};
+            "Four Gamete Rule",
+            "Solid spine of LD",
+            "Custom"};
     String printValueItems[] = {
             "D'","R-squared","None"
     };
@@ -534,28 +534,28 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             keyItem = new JMenuItem("High D' / Low LOD");
             keyItem.setBackground(new Color(255, 200, 200));
             keyMenu.add(keyItem);
-	} else if (scheme == RSQ_SCHEME){
+        } else if (scheme == RSQ_SCHEME){
             JMenuItem keyItem = new JMenuItem("High R-squared");
             Dimension size = keyItem.getPreferredSize();
             keyItem.setBackground(Color.black);
             keyItem.setForeground(Color.white);
             keyMenu.add(keyItem);
             keyItem = new JMenuItem("");
-	    keyItem.setPreferredSize(size);
+            keyItem.setPreferredSize(size);
             keyItem.setBackground(Color.darkGray);
             keyMenu.add(keyItem);
             keyItem = new JMenuItem("");
-	    keyItem.setPreferredSize(size);
+            keyItem.setPreferredSize(size);
             keyItem.setBackground(Color.gray);
             keyMenu.add(keyItem);
             keyItem = new JMenuItem("");
-	    keyItem.setPreferredSize(size);
+            keyItem.setPreferredSize(size);
             keyItem.setBackground(Color.lightGray);
             keyMenu.add(keyItem);
             keyItem = new JMenuItem("Low R-squared");
             keyItem.setBackground(Color.white);
             keyMenu.add(keyItem);
-	} else if (scheme == STD_SCHEME){
+        } else if (scheme == STD_SCHEME){
             JMenuItem keyItem = new JMenuItem("High D'");
             Dimension size = keyItem.getPreferredSize();
             keyItem.setBackground(Color.red);
@@ -896,11 +896,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                         metaAssoc.add("Single Marker", tdtPanel);
 
-                        if (!Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
-                            hapAssocPanel = new HaploAssocPanel(new AssociationTestSet(theData.getHaplotypes(), null));
-                        }else{
-                            hapAssocPanel = new HaploAssocPanel(new AssociationTestSet(null,null));
-                        }
+                        hapAssocPanel = new HaploAssocPanel(new AssociationTestSet(theData.getHaplotypes(), null));
                         metaAssoc.add("Haplotypes", hapAssocPanel);
 
                         //custom association tests
@@ -913,9 +909,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                                 metaAssoc.setSelectedComponent(custAssocPanel);
                             } catch (HaploViewException e) {
                                 JOptionPane.showMessageDialog(window,
-                                    e.getMessage(),
-                                    "Error",
-                                    JOptionPane.ERROR_MESSAGE);
+                                        e.getMessage(),
+                                        "Error",
+                                        JOptionPane.ERROR_MESSAGE);
                             }
                         }
 
@@ -939,10 +935,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }
 
                     if(plinkData != null){
-                            HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
-                            plinkTab.add(plinkPanel);
-                            tabs.addTab(VIEW_PLINK, plinkTab);
-                            viewMenuItems[VIEW_PLINK_NUM].setEnabled(true);
+                        HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
+                        plinkTab.add(plinkPanel);
+                        tabs.addTab(VIEW_PLINK, plinkTab);
+                        viewMenuItems[VIEW_PLINK_NUM].setEnabled(true);
                     }
 
 
@@ -1338,8 +1334,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 if (hapDisplay != null && theData.blocksChanged){
                     try{
                         hapDisplay.getHaps();
-                        if(Options.getAssocTest() != ASSOC_NONE &&
-                                !Chromosome.getDataChrom().equalsIgnoreCase("chrx")) {
+                        if(Options.getAssocTest() != ASSOC_NONE ){
                             //this is the haps ass tab inside the assoc super-tab
                             hapAssocPanel.makeTable(new AssociationTestSet(theData.getHaplotypes(), null));
 
