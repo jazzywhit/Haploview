@@ -42,10 +42,12 @@ public class EM implements Constants {
         //we need to add extra copies of haploid chromosomes so we add a second copy
         this.chromosomes = new Vector();
 
-        for(int i=0;i<extraInds.size();i++){
-            this.chromosomes.add(extraInds.elementAt(i));
-            if(((Chromosome)this.chromosomes.lastElement()).isHaploid()){
+        if(extraInds != null){
+            for(int i=0;i<extraInds.size();i++){
                 this.chromosomes.add(extraInds.elementAt(i));
+                if(((Chromosome)this.chromosomes.lastElement()).isHaploid()){
+                    this.chromosomes.add(extraInds.elementAt(i));
+                }
             }
         }
 
