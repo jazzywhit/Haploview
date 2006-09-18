@@ -282,7 +282,7 @@ public class AssociationTestSet implements Constants{
 
     private void buildParenTDTTrioSet(PedFile pf, Vector permuteInd, Vector permuteDiscPar, TreeSet snpsToBeTested) throws PedFileException{
         Vector results = new Vector();
-        //TODO: implement X chrom switching.
+        //TODO: implement for X chrom 
 
         Vector indList = pf.getAllIndividuals();
 
