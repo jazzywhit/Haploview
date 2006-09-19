@@ -145,7 +145,6 @@ public class Plink implements Constants {
                         marker = new String(tokenizer.nextToken());
                     }else if (tokenNumber == chromColumn){
                         chromosome = new String(tokenizer.nextToken());
-                        //TODO: mess with this nonsense.
                         if(chromosome.equals("23")){
                             chromosome = "X";
                         }
@@ -173,7 +172,7 @@ public class Plink implements Constants {
                         lineNumber++;
                         continue;
                     }else if (!(assocMarker.getChromosome().equalsIgnoreCase(chromosome)) && chromosome != null){
-                        throw new PlinkException("Incompatible chromsomes.");  //TODO is this necessary?
+                        throw new PlinkException("Incompatible chromsomes.");
                     }
                 }else{
                     assocMarker = new Marker(chromosome,marker,morganDistance,position);
@@ -274,7 +273,6 @@ public class Plink implements Constants {
                         marker = new String(tokenizer.nextToken());
                     }else if(tokenNumber == chromColumn){
                         chrom = new String(tokenizer.nextToken());
-                        //TODO: mess with this nonsense.
                         if(chrom.equals("23")){
                             chrom = "X";
                         }

@@ -125,7 +125,6 @@ public class TaggerConfigPanel extends HaploviewTab
         table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(100);
         table.getTableHeader().setReorderingAllowed(false);
 
-        //TODO DB: Gridbag all of this for a sensible layout.
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setPreferredSize(new Dimension(600, 700));
