@@ -41,6 +41,7 @@ public class Plink implements Constants {
         final File wgaFile = new File(wga);
         final File mapFile = new File(map);
         Hashtable markerHash = new Hashtable(1,1);
+        Vector ignoredMarkers = new Vector();
 
         try{
             if (wgaFile.length() < 1){
@@ -168,7 +169,9 @@ public class Plink implements Constants {
                     assocMarker = (Marker)markerHash.get(marker);
 
                     if (assocMarker == null){
-                        throw new PlinkException("Marker " + marker + " does not appear in the map file.");
+                        ignoredMarkers.add(marker);
+                        lineNumber++;
+                        continue;
                     }else if (!(assocMarker.getChromosome().equalsIgnoreCase(chromosome)) && chromosome != null){
                         throw new PlinkException("Incompatible chromsomes.");  //TODO is this necessary?
                     }
@@ -184,6 +187,12 @@ public class Plink implements Constants {
             throw new PlinkException("File error.");
         }catch(NumberFormatException nfe){
             throw new PlinkException("File formatting error.");
+        }
+
+        if (ignoredMarkers.size() != 0){
+            IgnoredMarkersDialog imd = new IgnoredMarkersDialog(hv,"Ignored Markers",ignoredMarkers,false);
+            imd.pack();
+            imd.setVisible(true);
         }
         hv.setPlinkData(results,columns);
     }
@@ -298,7 +307,7 @@ public class Plink implements Constants {
         }
 
         if (ignoredMarkers.size() != 0){
-            IgnoredMarkersDialog imd = new IgnoredMarkersDialog(hv,"Ignored Markers",ignoredMarkers);
+            IgnoredMarkersDialog imd = new IgnoredMarkersDialog(hv,"Ignored Markers",ignoredMarkers,true);
             imd.pack();
             imd.setVisible(true);
         }
@@ -326,7 +335,7 @@ public class Plink implements Constants {
 
     class IgnoredMarkersDialog extends JDialog implements ActionListener {
 
-        public IgnoredMarkersDialog (HaploView h, String title, Vector ignored){
+        public IgnoredMarkersDialog (HaploView h, String title, Vector ignored, boolean extra){
             super(h,title);
 
             JPanel contents = new JPanel();
@@ -356,8 +365,14 @@ public class Plink implements Constants {
             JScrollPane tableScroller = new JScrollPane(table);
             tableScroller.setPreferredSize(new Dimension(75,300));
 
-            JLabel label = new JLabel("<HTML><b>The following markers do not appear in the " +
-                    "loaded dataset and will therefore be ignored.</b>");
+            JLabel label;
+            if (extra){
+                label = new JLabel("<HTML><b>The following markers do not appear in the " +
+                        "loaded dataset and will therefore be ignored.</b>");
+            }else{
+                label = new JLabel("<HTML><b>The following markers do not appear in the " +
+                        "loaded mapfile and will therefore be ignored.</b>");
+            }
             label.setAlignmentX(Component.CENTER_ALIGNMENT);
             contents.add(label);
             tableScroller.setAlignmentX(Component.CENTER_ALIGNMENT);
