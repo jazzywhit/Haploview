@@ -33,7 +33,6 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         phaseChooser.setSelectedIndex(1);
         chooserPanel.add(new JLabel("Chr"+chr));
         popChooser = new JComboBox(POP_NAMES);
-        popChooser.setSelectedIndex(-1);
         chooserPanel.add(new JLabel("Pop:"));
         chooserPanel.add(popChooser);
         chooserPanel.add(new JLabel("Position: " + new Long(position/1000).toString()));
@@ -72,13 +71,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             this.dispose();
         }
         if (command.equals("GO")){
-            if (popChooser.getSelectedIndex() == -1){
-                JOptionPane.showMessageDialog(this,
-                        "Please select a population",
-                        "Invalid value",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }else if(rangeInput.getText().equals("")){
+            if(rangeInput.getText().equals("")){
                 JOptionPane.showMessageDialog(this,
                         "Please enter a range",
                         "Invalid value",
