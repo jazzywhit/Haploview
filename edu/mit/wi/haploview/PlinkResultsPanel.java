@@ -19,8 +19,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private PlinkTableModel plinkTableModel;
     private TableSorter sorter;
 
-    String[] pvalues = {"","<html>10<sup>-2</sup>","<html>10<sup>-3</sup>","<html>10<sup>-4</sup>",
-            "<html>10<sup>-5</sup>"};
     String[] chromNames = {"","1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X"};
     String[] signs = {"",">=","<=","="};
