@@ -1044,9 +1044,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             analysisItem.setEnabled(false);
             blocksItem.setEnabled(false);
             gbrowseItem.setEnabled(false);
-            for (int i = 0; i < exportItems.length; i++) {
-                exportMenuItems[i].setEnabled(false);
-            }
+            exportMenuItems[0].setEnabled(true);
             displayMenu.setEnabled(false);
             analysisMenu.setEnabled(false);
             keyMenu.setEnabled(false);
@@ -1219,7 +1217,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     exportMenuItems[1].setEnabled(false);
                     exportMenuItems[3].setEnabled(true);
                 }else if (title.equals(VIEW_PLINK)){
-                    exportMenuItems[0].setEnabled(false);
+                    exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(false);
                     exportMenuItems[3].setEnabled(false);
                 }else{
@@ -1427,6 +1425,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         custAssocPanel.getTestSet().saveResultsToText(outfile);
                     }else if (c.equals(taggerConfigPanel) || c.equals(taggerResultsPanel)){
                         taggerConfigPanel.export(outfile);
+                    }else if (c.equals(plinkPanel)){
+                        plinkPanel.exportTable(outfile);
                     }
                 }catch(IOException ioe){
                     JOptionPane.showMessageDialog(this,

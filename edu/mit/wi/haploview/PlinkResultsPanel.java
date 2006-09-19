@@ -10,6 +10,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
 
 public class PlinkResultsPanel extends JPanel implements ActionListener, Constants {
     private JTable table;
@@ -157,7 +160,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }else{
                 chromChooser.setSelectedIndex(new Integer((String)filters.get(0)).intValue());
             }
-            
+
 
             if (((String)filters.get(1)).equals("") || ((String)filters.get(2)).equals("")){
                 chromStart.setText("");
@@ -288,6 +291,26 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,markerPosition,"Go to Region");
         rd.pack();
         rd.setVisible(true);
+    }
+
+    public void exportTable(File outfile) throws IOException, HaploViewException{
+        BufferedWriter plinkWriter = new BufferedWriter(new FileWriter(outfile));
+        for (int i = 0; i < plinkTableModel.getColumnCount(); i++){
+            plinkWriter.write(plinkTableModel.getColumnName(i)+"\t");
+        }
+        plinkWriter.newLine();
+
+        for (int i = 0; i < plinkTableModel.getRowCount(); i++){
+            for (int j = 0; j < plinkTableModel.getColumnCount(); j++){
+                if (plinkTableModel.getValueAt(i,j) == null){
+                    plinkWriter.write("-"+"\t");
+                }else{
+                    plinkWriter.write(plinkTableModel.getValueAt(i,j)+"\t");
+                }
+            }
+            plinkWriter.newLine();
+        }
+        plinkWriter.close();
     }
 
     public void actionPerformed(ActionEvent e) {
