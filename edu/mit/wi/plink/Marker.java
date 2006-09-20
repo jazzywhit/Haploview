@@ -5,10 +5,10 @@ public class Marker {
 
     private String chromosome;
     private String markerID;
-    private long morganDistance;
+    private double morganDistance;
     private long position;
 
-    public Marker(String chrom, String marker, long md, long pos){
+    public Marker(String chrom, String marker, double md, long pos){
         chromosome = chrom;
         markerID = marker;
         morganDistance = md;
@@ -23,7 +23,7 @@ public class Marker {
         return markerID;
     }
 
-    public long getMorganDistance(){
+    public double getMorganDistance(){
         return morganDistance;
     }
 

@@ -76,7 +76,7 @@ public class Plink implements Constants {
                         chr = CHROM_NAMES[Integer.parseInt(chrom)-1];
                     }
                     String marker = new String(st.nextToken());
-                    long mDistance = Long.parseLong(st.nextToken());
+                    double mDistance = Double.parseDouble(st.nextToken());
                     long position = Long.parseLong(st.nextToken());
 
                     Marker mark = new Marker(chr, marker, mDistance, position);
@@ -138,7 +138,7 @@ public class Plink implements Constants {
                 String marker = null;
                 String chromosome = null;
                 long position = 0;
-                long morganDistance = 0;
+                double morganDistance = 0;
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
                     if (tokenNumber == markerColumn){
@@ -151,7 +151,7 @@ public class Plink implements Constants {
                     }else if (tokenNumber == positionColumn){
                         position = (new Long(new String(tokenizer.nextToken()))).longValue();
                     }else if (tokenNumber == morganColumn){
-                        morganDistance = (new Long(new String(tokenizer.nextToken()))).longValue();
+                        morganDistance = (new Double(new String(tokenizer.nextToken()))).doubleValue();
                     }
                     else{
                         values.add(new String(tokenizer.nextToken()));
