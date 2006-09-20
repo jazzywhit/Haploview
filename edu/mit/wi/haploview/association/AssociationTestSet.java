@@ -533,6 +533,12 @@ public class AssociationTestSet implements Constants{
             }else if (st.countTokens() == 1){
                 //this is just a list of markers
                 markerNames = st.nextToken();
+                //check to make sure somebody didn't try uploading a tests file with multimarker
+                //tests but no alleles:
+                StringTokenizer test = new StringTokenizer(markerNames,", ");
+                if (test.countTokens() > 1){
+                    throw new HaploViewException("Multi-marker tests in tests file appear to be missing alleles.");
+                }
                 alleles = null;
             }else if (st.countTokens() == 2){
                 //this has markers and alleles
