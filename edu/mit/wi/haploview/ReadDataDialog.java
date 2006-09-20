@@ -351,11 +351,13 @@ public class ReadDataDialog extends JDialog
 
             if (((String)h.getPhasedSelection().get(1)).equals("X")){
                 chromChooser.setSelectedIndex(22);
+            }else if (((String)h.getPhasedSelection().get(1)).equals("Y")){
+                chromChooser.setSelectedIndex(23);
             }else{
                 chromChooser.setSelectedIndex(Integer.parseInt((String)h.getPhasedSelection().get(1))-1);
             }
 
-            if (((String)h.getPhasedSelection().get(2)).equals("CEU")){
+            if (((String)h.getPhasedSelection().get(2)).equals("YRI")){
                 popChooser.setSelectedIndex(1);
             }else if (((String)h.getPhasedSelection().get(2)).equals("CHB+JPT")){
                 popChooser.setSelectedIndex(2);
