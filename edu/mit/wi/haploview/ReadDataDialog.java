@@ -201,8 +201,8 @@ public class ReadDataDialog extends JDialog
         c.insets = new Insets(5,5,5,5);
         pedTab.add(new JLabel("Data File:"),c);
         hapsTab.add(new JLabel("Data File:"),c);
-        phaseTab.add(new JLabel("Data File:"),c);
-        plinkTab.add(new JLabel("Data File:"),c);
+        phaseTab.add(new JLabel("Phase File:"),c);
+        plinkTab.add(new JLabel("Results File:"),c);
         c.weightx = 1;
         hmpTab.add(new JLabel("Data File:"),c);
         c.anchor = GridBagConstraints.CENTER;
