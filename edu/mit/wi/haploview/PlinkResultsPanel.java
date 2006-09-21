@@ -268,6 +268,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         if (chromChoice != null && !chromChoice.equals("")){
             if(chromChoice.equals("X")){
                 filters.add("23");
+            }else if (chromChoice.equals("Y")){
+                filters.add("24");
             }else{
                 filters.add(new Integer(chromChooser.getSelectedIndex()).toString());
             }

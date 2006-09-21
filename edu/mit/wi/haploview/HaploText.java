@@ -620,13 +620,13 @@ public class HaploText implements Constants{
                     die(args[i-1] + " requires a chromosome name");
                 }
 
-                if(!(chromosomeArg.equalsIgnoreCase("x"))){
+                if(!(chromosomeArg.equalsIgnoreCase("X")) && !(chromosomeArg.equalsIgnoreCase("Y"))){
                     try{
                         if (Integer.parseInt(chromosomeArg) > 22){
-                            die("-chromosome requires a chromsome name of 1-22 or X");
+                            die("-chromosome requires a chromsome name of 1-22, X, or Y");
                         }
                     }catch(NumberFormatException nfe){
-                        die("-chromosome requires a chromsome name of 1-22 or X");
+                        die("-chromosome requires a chromsome name of 1-22, X, or Y");
                     }
                 }
 
@@ -931,8 +931,8 @@ public class HaploText implements Constants{
             }
 
             if (Integer.parseInt(chromosomeArg) < 1 && Integer.parseInt(chromosomeArg) > 22){
-                if (!(chromosomeArg.equalsIgnoreCase("x"))){
-                    die("chromsome specification must be betweeen 1 and 22 or X");
+                if (!(chromosomeArg.equalsIgnoreCase("X")) && !(chromosomeArg.equalsIgnoreCase("Y"))){
+                    die("chromsome specification must be betweeen 1 and 22, X, or Y");
                 }
             }
             try{
