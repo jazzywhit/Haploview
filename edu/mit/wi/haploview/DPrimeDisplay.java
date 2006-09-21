@@ -1017,22 +1017,24 @@ public class DPrimeDisplay extends JComponent
         }
 
 
-       // draw the cached last right-click selection
-       // The purpose of testing for empty string is just to avoid an 2-unit empty white box
-        if ((zoomLevel == 0) && (!lastSelection.equals("")) && (!forExport))
-        {
-            g2.setFont(boxFont);
-            // a bit extra on all side
-            int last_descent = g2.getFontMetrics().getDescent();
-            int last_box_x = (visRect.x + LAST_SELECTION_LEFT) - 2;
-            int last_box_y = (visRect.y - g2.getFontMetrics().getHeight() + LAST_SELECTION_TOP + last_descent) - 1 ;
-            int last_box_width = g2.getFontMetrics().stringWidth(lastSelection) + 4;
-            int last_box_height = g2.getFontMetrics().getHeight() + 2;
-            g2.setColor(Color.white);
-            g2.fillRect(last_box_x, last_box_y, last_box_width, last_box_height);
-            g2.setColor(Color.black);
-            g2.drawRect(last_box_x, last_box_y, last_box_width, last_box_height);
-            g2.drawString(lastSelection, LAST_SELECTION_LEFT + visRect.x, LAST_SELECTION_TOP + visRect.y);
+        // draw the cached last right-click selection
+        // The purpose of testing for empty string is just to avoid an 2-unit empty white box
+        if (lastSelection != null){
+            if ((zoomLevel == 0) && (!lastSelection.equals("")) && (!forExport))
+            {
+                g2.setFont(boxFont);
+                // a bit extra on all side
+                int last_descent = g2.getFontMetrics().getDescent();
+                int last_box_x = (visRect.x + LAST_SELECTION_LEFT) - 2;
+                int last_box_y = (visRect.y - g2.getFontMetrics().getHeight() + LAST_SELECTION_TOP + last_descent) - 1 ;
+                int last_box_width = g2.getFontMetrics().stringWidth(lastSelection) + 4;
+                int last_box_height = g2.getFontMetrics().getHeight() + 2;
+                g2.setColor(Color.white);
+                g2.fillRect(last_box_x, last_box_y, last_box_width, last_box_height);
+                g2.setColor(Color.black);
+                g2.drawRect(last_box_x, last_box_y, last_box_width, last_box_height);
+                g2.drawString(lastSelection, LAST_SELECTION_LEFT + visRect.x, LAST_SELECTION_TOP + visRect.y);
+            }
         }
 
 
