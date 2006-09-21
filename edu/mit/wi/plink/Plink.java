@@ -67,7 +67,11 @@ public class Plink implements Constants {
                     String chrom = st.nextToken();
                     String marker = new String(st.nextToken());
                     double mDistance = Double.parseDouble(st.nextToken());
-                    long position = Long.parseLong(st.nextToken());
+                    String pos = st.nextToken();
+                    if (pos.startsWith("-")){
+                        continue;
+                    }
+                    long position = Long.parseLong(pos);
 
                     Marker mark = new Marker(chrom, marker, mDistance, position);
                     markers.add(mark);

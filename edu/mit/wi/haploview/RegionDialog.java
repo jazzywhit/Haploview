@@ -81,6 +81,9 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             String pop = (String)popChooser.getSelectedItem();
             int range = Integer.parseInt(rangeInput.getText());
             long start = (markerPosition/1000)-range;
+            if (start < 0){
+                start = 0;
+            }
             long end = (markerPosition/1000)+range;
             String gotoStart = new Long(start).toString();
             String gotoEnd = new Long(end).toString();
