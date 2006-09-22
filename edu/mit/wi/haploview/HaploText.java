@@ -61,7 +61,7 @@ public class HaploText implements Constants{
     private Vector argHandlerMessages;
     private String chromosomeArg;
     private String[] phasedHapMapInfo;
-    private String populationArg, startPos, endPos, phase;
+    private String populationArg, startPos, endPos, release;
 
 
     public boolean isNogui() {
@@ -647,9 +647,9 @@ public class HaploText implements Constants{
                 i++;
                 endPos = args[i];
             }
-            else if(args[i].equalsIgnoreCase("-phase")){
+            else if(args[i].equalsIgnoreCase("-release")){
                 i++;
-                phase = args[i];
+                release = args[i];
             }
             else if(args[i].equalsIgnoreCase("-q") || args[i].equalsIgnoreCase("-quiet")) {
                 quietMode = true;
@@ -932,26 +932,23 @@ public class HaploText implements Constants{
 
             if (Integer.parseInt(chromosomeArg) < 1 && Integer.parseInt(chromosomeArg) > 22){
                 if (!(chromosomeArg.equalsIgnoreCase("X")) && !(chromosomeArg.equalsIgnoreCase("Y"))){
-                    die("chromsome specification must be betweeen 1 and 22, X, or Y");
+                    die("-chromosome must be betweeen 1 and 22, X, or Y");
                 }
             }
             try{
                 if (Integer.parseInt(startPos) > Integer.parseInt(endPos)){
-                    die("end position must be greater then start position");
+                    die("-endpos must be greater then -startpos");
                 }
             }catch(NumberFormatException nfe){
-                die("start and end positions must be integer values");
+                die("-startpos and -endpos must be integer values");
             }
 
-            if (phase == null){
-                phase = "2";
+            if (release == null){
+                release = "21";
             }
-            try{
-                if (Integer.parseInt(phase) != 1 && Integer.parseInt(phase) != 2){
-                    die("phase must be either 1 or 2");
-                }
-            }catch(NumberFormatException nfe){
-                die("phase must be an integer value");
+
+            if (!(release.equals("21")) && !(release.startsWith("16"))){
+                die("release must be either 16a or 21");
             }
         }
     }
@@ -1069,7 +1066,7 @@ public class HaploText implements Constants{
         else if (phasedhapmapDownload){
             fileName = "Chromosome" + chromosomeArg + populationArg;
             fileType = PHASEDHMPDL_FILE;
-            phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg, phase};
+            phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg, release};
         }else{
             fileName = hapmapFileName;
             fileType = HMP_FILE;
@@ -1092,7 +1089,8 @@ public class HaploText implements Constants{
 
             if(!quietMode && fileName != null){
                 if (phasedhapmapDownload){
-                    System.out.println("Loading chromosome" + chromosomeArg + ", population " + populationArg + ".");
+                    System.out.println("Downloading chromosome " + chromosomeArg + ", population " + populationArg + ", " +
+                            startPos + ".." + endPos + " from HapMap release " + release + ".");
                 }else{
                     System.out.println("Using data file: " + fileName);
                 }

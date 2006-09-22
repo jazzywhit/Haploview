@@ -27,8 +27,8 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
 
         JPanel chooserPanel = new JPanel();
-        chooserPanel.add(new JLabel("Phase"));
-        phaseChooser = new JComboBox(PHASE_NAMES);
+        chooserPanel.add(new JLabel("Release"));
+        phaseChooser = new JComboBox(RELEASE_NAMES);
         chooserPanel.add(phaseChooser);
         phaseChooser.setSelectedIndex(1);
         chooserPanel.add(new JLabel("Chr"+chr));

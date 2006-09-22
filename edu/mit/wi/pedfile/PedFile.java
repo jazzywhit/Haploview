@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.35 2006/09/17 16:51:40 jmaller Exp $
+* $Id: PedFile.java,v 3.36 2006/09/22 13:57:03 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1031,10 +1031,10 @@ public class PedFile {
         }
         long stopPos = (Integer.parseInt(info[3]))*1000;
         String phaseChoice;
-        if (info[5].equals("I+II")){
-            phaseChoice = "II";
+        if (info[5].startsWith("16")){
+            phaseChoice = "I";
         }else{
-            phaseChoice = info[5];
+            phaseChoice = "II";
         }
         boolean infoDone = false;
         boolean hminfoDone = false;

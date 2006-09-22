@@ -36,7 +36,7 @@ public class ReadDataDialog extends JDialog
     private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox popChooser = new JComboBox(POP_NAMES);
-    private JComboBox phaseChooser = new JComboBox(PHASE_NAMES);
+    private JComboBox phaseChooser = new JComboBox(RELEASE_NAMES);
     private String chromChoice, popChoice, phaseChoice, embed;
     private boolean isDownloaded = false;
 
@@ -151,7 +151,7 @@ public class ReadDataDialog extends JDialog
 
          //Download Panel...
         JPanel downloadChooserPanel = new JPanel();
-        downloadChooserPanel.add(new JLabel("Phase"));
+        downloadChooserPanel.add(new JLabel("Release"));
         downloadChooserPanel.add(phaseChooser);
         phaseChooser.setSelectedIndex(1);
         downloadChooserPanel.add(new JLabel("Chromosome:"));
@@ -345,7 +345,7 @@ public class ReadDataDialog extends JDialog
         contents.add(proxyPanel,a);
 
         if (h.getPhasedSelection() != null){
-            if (((String)h.getPhasedSelection().get(0)).equals("I")){
+            if (((String)h.getPhasedSelection().get(0)).startsWith("16")){
                 phaseChooser.setSelectedIndex(0);
             }
 
