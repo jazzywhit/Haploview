@@ -56,7 +56,7 @@ public class ReadDataDialog extends JDialog
         browsePedInfoButton.setActionCommand(BROWSE_INFO);
         browsePedInfoButton.addActionListener(this);
         JPanel assocPanel = new JPanel();
-        doAssociation = new JCheckBox("Do association test?");
+        doAssociation = new JCheckBox("Do association test");
         doAssociation.setSelected(false);
         doAssociation.setEnabled(false);
         doAssociation.setActionCommand("association");
@@ -120,7 +120,7 @@ public class ReadDataDialog extends JDialog
         JButton browseHmpButton = new JButton("Browse");
         browseHmpButton.setActionCommand(BROWSE_HMP);
         browseHmpButton.addActionListener(this);
-        doGB = new JCheckBox("Download and show HapMap info track? (requires internet connection)");
+        doGB = new JCheckBox("Download and show HapMap info track (requires internet connection)");
         doGB.setSelected(false);
 
         //PHASE panel...
@@ -145,12 +145,13 @@ public class ReadDataDialog extends JDialog
         loadChromChooser.setSelectedIndex(-1);
         phaseChromPanel.add(loadChromChooser);
         JPanel phaseBrowsePanel = new JPanel();
-        phaseDoGB = new JCheckBox("Download and show HapMap info track? (requires internet connection)");
+        phaseDoGB = new JCheckBox("Download and show HapMap info track (requires internet connection)");
         phaseDoGB.setSelected(false);
         phaseBrowsePanel.add(phaseDoGB);
 
          //Download Panel...
         JPanel downloadChooserPanel = new JPanel();
+        JLabel downloadLabel = new JLabel("*Phased HapMap downloads require an active internet connection");
         downloadChooserPanel.add(new JLabel("Release"));
         downloadChooserPanel.add(phaseChooser);
         phaseChooser.setSelectedIndex(1);
@@ -169,7 +170,7 @@ public class ReadDataDialog extends JDialog
         downloadPositionPanel.add(new JLabel("End kb:"));
         downloadPositionPanel.add(chromEndField);
         JPanel downloadBrowsePanel = new JPanel();
-        downloadDoGB = new JCheckBox("Download and show HapMap info track? (requires internet connection)");
+        downloadDoGB = new JCheckBox("Show HapMap info track");
         downloadDoGB.setSelected(true);
         downloadBrowsePanel.add(downloadDoGB);
 
@@ -231,6 +232,8 @@ public class ReadDataDialog extends JDialog
         downloadTab.add(downloadPositionPanel,c);
         c.gridy = 2;
         downloadTab.add(downloadBrowsePanel,c);
+        c.gridy = 3;
+        downloadTab.add(downloadLabel,c);
         c.anchor = GridBagConstraints.EAST;
         c.gridx = 0;
         c.gridy = 1;
