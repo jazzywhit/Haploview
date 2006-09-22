@@ -22,7 +22,7 @@ public interface Constants {
             "David Bender\n" +
             EMAIL_STRING;
 
-    public static final String READ_GENOTYPES = "Open genotype data";
+    public static final String READ_GENOTYPES = "Open new data";
     public static final String READ_MARKERS = "Load marker data";
     public static final String READ_ANALYSIS_TRACK = "Load analysis track";
     public static final String READ_BLOCKS_FILE = "Load block definitions";

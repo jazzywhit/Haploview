@@ -61,11 +61,11 @@ public class PermutationTestPanel extends HaploviewTab
         singleOnlyButton.setActionCommand(String.valueOf(PermutationTestSet.SINGLE_ONLY));
         selectionPanel.add(singleOnlyButton);
         selectionGroup.add(singleOnlyButton);
+        singleOnlyButton.setSelected(true);
         JRadioButton singlesPlusBlocksButton = new JRadioButton("Single Markers and Haplotypes in Blocks");
         singlesPlusBlocksButton.setActionCommand(String.valueOf(PermutationTestSet.SINGLE_PLUS_BLOCKS));
         selectionPanel.add(singlesPlusBlocksButton);
         selectionGroup.add(singlesPlusBlocksButton);
-        singlesPlusBlocksButton.setSelected(true);
         JRadioButton blocksOnlyButton = new JRadioButton("Haplotypes in Blocks Only");
         blocksOnlyButton.setActionCommand(String.valueOf(PermutationTestSet.BLOCKS_ONLY));
         selectionPanel.add(blocksOnlyButton);
@@ -79,7 +79,7 @@ public class PermutationTestPanel extends HaploviewTab
         }
         permCountPanel.add(selectionPanel);
 
-        JLabel permCountTextLabel = new JLabel("Number of Permutations To Perform: ");
+        JLabel permCountTextLabel = new JLabel("Number of Permutations: ");
         permCountField = new NumberTextField("", 10, false);
         permCountPanel.add(permCountTextLabel);
         permCountPanel.add(permCountField);
