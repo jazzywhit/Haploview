@@ -163,15 +163,14 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             if (((String)filters.get(1)).equals("") || ((String)filters.get(2)).equals("")){
                 chromStart.setText("");
                 chromEnd.setText("");
-            }else if (new Integer((String)filters.get(1)).intValue() > 0 &&
-                    new Integer((String)filters.get(2)).intValue() > 0){
+            }else if (Integer.parseInt((String)filters.get(1)) >= 0 && Integer.parseInt((String)filters.get(2)) >= 0){
                 chromStart.setText((String)filters.get(1));
                 chromEnd.setText((String)filters.get(2));
             }
 
             if (!((String)filters.get(3)).equals("0")){
-                genericChooser.setSelectedIndex(new Integer((String)filters.get(3)).intValue());
-                signChooser.setSelectedIndex(new Integer((String)filters.get(4)).intValue());
+                genericChooser.setSelectedIndex(Integer.parseInt((String)filters.get(3)));
+                signChooser.setSelectedIndex(Integer.parseInt((String)filters.get(4)));
                 valueField.setText((String)filters.get(5));
             }
 

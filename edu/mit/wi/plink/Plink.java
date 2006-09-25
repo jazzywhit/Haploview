@@ -147,9 +147,9 @@ public class Plink implements Constants {
                             chromosome = "XY";
                         }
                     }else if (tokenNumber == positionColumn){
-                        position = (new Long(new String(tokenizer.nextToken()))).longValue();
+                        position = Long.parseLong(tokenizer.nextToken());
                     }else if (tokenNumber == morganColumn){
-                        morganDistance = (new Double(new String(tokenizer.nextToken()))).doubleValue();
+                        morganDistance = Double.parseDouble(tokenizer.nextToken());
                     }
                     else{
                         values.add(new String(tokenizer.nextToken()));
