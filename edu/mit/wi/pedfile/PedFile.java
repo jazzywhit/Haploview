@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.36 2006/09/22 13:57:03 djbender Exp $
+* $Id: PedFile.java,v 3.37 2006/09/27 15:13:05 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -850,7 +850,7 @@ public class PedFile {
             while((legendLine = legendBuffReader.readLine())!=null){
                 StringTokenizer legendSt = new StringTokenizer(legendLine);
                 String markerid = legendSt.nextToken();
-                if (markerid.equals("rs")){ //skip header
+                if (markerid.equalsIgnoreCase("rs") || markerid.equalsIgnoreCase("marker")){ //skip header
                     continue;
                 }
                 legendMarkers.add(markerid);
