@@ -54,10 +54,8 @@ public class MendelDialog extends JDialog implements ActionListener, Constants {
                     Vector tmpVec = new Vector();
                     tmpVec.add(error.getFamilyID());
                     tmpVec.add(error.getChildID());
-
-tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
-                    tmpVec.add(new
-Long(Chromosome.getUnfilteredMarker(i).getPosition()));
+                    tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
+                    tmpVec.add(new Long(Chromosome.getUnfilteredMarker(i).getPosition()));
                     data.add(tmpVec);
                 }
             }
@@ -70,8 +68,7 @@ Long(Chromosome.getUnfilteredMarker(i).getPosition()));
         table.getColumnModel().getColumn(2).setPreferredWidth(30);
 
         JScrollPane tableScroller = new JScrollPane(table);
-        int tableHeight =
-(table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+2);
+        int tableHeight = (table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+2);
         if (tableHeight > 300){
             tableScroller.setPreferredSize(new Dimension(400, 300));
         }else{
@@ -116,10 +113,8 @@ Long(Chromosome.getUnfilteredMarker(i).getPosition()));
                     MendelError error = (MendelError)mendelErrors.get(j);
                     tmpVec.add(error.getFamilyID());
                     tmpVec.add(error.getChildID());
-
-tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
-                    tmpVec.add(new
-Long(Chromosome.getUnfilteredMarker(i).getPosition()));
+                    tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
+                    tmpVec.add(new Long(Chromosome.getUnfilteredMarker(i).getPosition()));
                     data.add(tmpVec);
                 }
             }
@@ -171,8 +166,7 @@ Long(Chromosome.getUnfilteredMarker(i).getPosition()));
         }else if (command.equals("Export to File")){
             HaploView.fc.setSelectedFile(new File(""));
 
-            if (HaploView.fc.showSaveDialog(this) ==
-                    JFileChooser.APPROVE_OPTION){
+            if (HaploView.fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                 File file = HaploView.fc.getSelectedFile();
                 try{
                     printTable(file);
