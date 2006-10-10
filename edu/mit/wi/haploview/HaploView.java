@@ -65,6 +65,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     static HaploView window;
     private Vector plinkData, plinkColumns;
     private Vector plinkFilters;
+    private boolean plinkDups = false;
     private String chosenMarker;
     private Vector phasedSelection;
     public static JFileChooser fc;
@@ -957,7 +958,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             timer = new javax.swing.Timer(50, new ActionListener(){
                 public void actionPerformed(ActionEvent evt){
-                    if (isMaxSet == true){
+                    if (isMaxSet){
                         haploProgress.setValue(theData.dPrimeCount);
                     }
                     if (theData.finished){
@@ -981,7 +982,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
                     }
-                    if (theData.dPrimeTotalCount != -1 && isMaxSet == false){
+                    if (theData.dPrimeTotalCount != -1 && !isMaxSet){
                         haploProgress.setMaximum(theData.dPrimeTotalCount);
                         isMaxSet = true;
                     }
@@ -1167,16 +1168,24 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         plinkColumns = columns;
     }
 
-    public void setPlinkFilters(Vector filters){
-        plinkFilters = filters;
-    }
-
     public Vector getPlinkData(){
         return plinkData;
     }
 
     public Vector getPlinkColumns(){
         return plinkColumns;
+    }
+
+    public void setPlinkDups(boolean dups){
+        plinkDups = dups;
+    }
+
+    public boolean getPlinkDups(){
+        return plinkDups;
+    }
+
+    public void setPlinkFilters(Vector filters){
+        plinkFilters = filters;
     }
 
     public void setChosenMarker(String marker){

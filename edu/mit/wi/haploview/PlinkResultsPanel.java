@@ -110,6 +110,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         resetFilters.addActionListener(this);
         JButton moreResults = new JButton("Load Additional Results");
         moreResults.addActionListener(this);
+        if (hv.getPlinkDups()){
+            moreResults.setEnabled(false);
+        }
 
         JPanel filterPanel = new JPanel(new GridBagLayout());
         GridBagConstraints a = new GridBagConstraints();

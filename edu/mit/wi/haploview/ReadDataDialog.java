@@ -579,6 +579,7 @@ public class ReadDataDialog extends JDialog
             caller.clearDisplays();
             caller.setPlinkData(null,null);
             caller.setChosenMarker(null);
+            caller.setPlinkDups(false);
             this.dispose();
             if (fileType != PLINK_FILE){
             caller.readGenotypes(returnStrings, fileType, isDownloaded);

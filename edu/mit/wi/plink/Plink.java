@@ -120,6 +120,7 @@ public class Plink implements Constants {
 
             String wgaLine;
             int lineNumber = 0;
+            Hashtable markerDups = new Hashtable(1,1);
 
             while((wgaLine = wgaReader.readLine())!=null){
                if (wgaLine.length() == 0){
@@ -137,6 +138,11 @@ public class Plink implements Constants {
                 while(tokenizer.hasMoreTokens()){
                     if (tokenNumber == markerColumn){
                         marker = new String(tokenizer.nextToken());
+                        if (markerDups.containsKey(marker)){
+                            hv.setPlinkDups(true);
+                        }else{
+                            markerDups.put(marker,"");
+                        }
                     }else if (tokenNumber == chromColumn){
                         chromosome = new String(tokenizer.nextToken());
                         if(chromosome.equals("23")){
