@@ -31,7 +31,6 @@ public interface Constants {
 
     public static final String EXPORT_TEXT = "Export current tab to text";
     public static final String EXPORT_PNG = "Export current tab to PNG";
-    public static final String EXPORT_MALE_HETS = "Export heterozygous males";
     public static final String EXPORT_OPTIONS = "Export options";
 
     public static final String CLEAR_BLOCKS = "Clear all blocks";

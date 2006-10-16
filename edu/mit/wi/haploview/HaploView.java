@@ -28,7 +28,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     JMenuItem readMarkerItem, analysisItem, blocksItem, gbrowseItem, spacingItem, gbEditItem;
     String exportItems[] = {
-            EXPORT_TEXT, EXPORT_PNG, EXPORT_MALE_HETS, EXPORT_OPTIONS
+            EXPORT_TEXT, EXPORT_PNG, EXPORT_OPTIONS
     };
     JMenuItem exportMenuItems[];
     JMenu keyMenu, displayMenu, analysisMenu;
@@ -420,20 +420,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             export(tabs.getSelectedPrimary(), PNG_MODE, 0, Chromosome.getUnfilteredSize());
         }else if (command.equals(EXPORT_TEXT)){
             export(tabs.getSelectedPrimary(), TXT_MODE, 0, Chromosome.getUnfilteredSize());
-        }else if (command.equals(EXPORT_MALE_HETS)){
-            fc.setSelectedFile(new File(""));
-            if (fc.showSaveDialog(this) ==
-                    JFileChooser.APPROVE_OPTION){
-                File file = HaploView.fc.getSelectedFile();
-                try{
-                    theData.getPedFile().printHaploidHets(file);
-                }catch(IOException ioe){
-                    JOptionPane.showMessageDialog(this,
-                            ioe.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            }
         }else if (command.equals(EXPORT_OPTIONS)){
             ExportDialog exDialog = new ExportDialog(this);
             exDialog.pack();
@@ -969,12 +955,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         clearBlocksItem.setEnabled(true);
                         readMarkerItem.setEnabled(true);
                         blocksItem.setEnabled(true);
-                        if (theData.getPedFile().getHaploidHets() != null){
-                            exportMenuItems[2].setEnabled(true);
-                        }else{
-                            exportMenuItems[2].setEnabled(false);
-                        }
-                        exportMenuItems[3].setEnabled(true);
+                        exportMenuItems[2].setEnabled(true);
                         progressPanel.removeAll();
                         isMaxSet = false;
                         theData.dPrimeCount = 0;
@@ -1220,15 +1201,15 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 if (title.equals(VIEW_DPRIME) || title.equals(VIEW_HAPLOTYPES)){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(true);
-                    exportMenuItems[3].setEnabled(true);
+                    exportMenuItems[2].setEnabled(true);
                 }else if (title.equals(VIEW_ASSOC) || title.equals(VIEW_CHECK_PANEL) || title.equals(VIEW_TAGGER)){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(false);
-                    exportMenuItems[3].setEnabled(true);
+                    exportMenuItems[2].setEnabled(true);
                 }else if (title.equals(VIEW_PLINK)){
                     exportMenuItems[0].setEnabled(true);
                     exportMenuItems[1].setEnabled(false);
-                    exportMenuItems[3].setEnabled(false);
+                    exportMenuItems[2].setEnabled(false);
                 }else{
                     exportMenuItems[0].setEnabled(false);
                     exportMenuItems[1].setEnabled(false);

@@ -8,6 +8,8 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Vector;
+import java.io.File;
+import java.io.IOException;
 
 import edu.mit.wi.pedfile.MarkerResult;
 import edu.mit.wi.pedfile.PedFile;
@@ -40,23 +42,9 @@ public class CheckDataPanel extends JPanel
         }
         countsLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         missingPanel.add(countsLabel);
-        JButton missingButton = new JButton("Show Excluded Individuals");
-        JButton individualButton = new JButton("Individual Summary");
-        individualButton.setEnabled(true);
-        JButton mendelButton = new JButton("Mendel Errors");
-        if (hv.theData.getPedFile().getAxedPeople().size() == 0){
-            missingButton.setEnabled(false);
-        }
-        if (!hv.theData.getPedFile().getMendelsExist()){
-            mendelButton.setEnabled(false);
-        }
-
-        missingButton.addActionListener(this);
-        missingPanel.add(missingButton);
-        individualButton.addActionListener(this);
-        missingPanel.add(individualButton);
-        mendelButton.addActionListener(this);
-        missingPanel.add(mendelButton);
+        JButton advancedButton = new JButton("Advanced Views");
+        advancedButton.addActionListener(this);
+        missingPanel.add(advancedButton);
         missingPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         JPanel extraPanel = new JPanel();
         extraPanel.add(missingPanel);
@@ -183,21 +171,10 @@ public class CheckDataPanel extends JPanel
 
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        if (command.equals("Show Excluded Individuals")) {
-            //show details of individuals removed due to excessive missing data
-            FilteredIndividualsDialog fid = new FilteredIndividualsDialog(hv,"Filtered Individuals");
-            fid.pack();
-            fid.setVisible(true);
-        }
-        if (command.equals("Individual Summary")) {
-            IndividualDialog fd = new IndividualDialog(hv,"Individual Summary");
-            fd.pack();
-            fd.setVisible(true);
-        }
-        if (command.equals("Mendel Errors")) {
-            MendelDialog md = new MendelDialog(hv,"Mendel Errors");
-            md.pack();
-            md.setVisible(true);
+        if (command.equals("Advanced Views")) {
+            AdvancedDialog ad = new AdvancedDialog("Advanced Views");
+            ad.pack();
+            ad.setVisible(true);
         }
     }
 
@@ -328,6 +305,97 @@ public class CheckDataPanel extends JPanel
 
         public int getDupStatus(int row){
             return ((CheckDataPanel.CheckDataTableModel)tableModel).getDupStatus(modelIndex(row));
+        }
+    }
+
+    class AdvancedDialog extends JDialog implements ActionListener {
+
+        JFileChooser fc;
+        AdvancedDialog(String title){
+            super(hv, title);
+
+            JPanel contents = new JPanel();
+            contents.setPreferredSize(new Dimension(150,125));
+            contents.setLayout(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets(0,0,2,0);
+            int size = 0;
+
+
+            JButton individualButton = new JButton("Individual Summary");
+            individualButton.addActionListener(this);
+            contents.add(individualButton,c);
+            c.insets = new Insets(2,0,2,0);
+            if (hv.theData.getPedFile().getAxedPeople().size() != 0){
+                JButton missingButton = new JButton("Excluded Individuals");
+                missingButton.addActionListener(this);
+                c.gridy = 1;
+                contents.add(missingButton,c);
+                size++;
+            }
+            if (hv.theData.getPedFile().getMendelsExist()){
+                JButton mendelButton = new JButton("Mendel Errors");
+                mendelButton.addActionListener(this);
+                c.gridy = 2;
+                contents.add(mendelButton,c);
+            }
+            if (hv.theData.getPedFile().getHaploidHets() != null){
+                JButton maleHetsButton = new JButton("Male Heterozygotes");
+                maleHetsButton.addActionListener(this);
+                c.gridy = 3;
+                c.insets = new Insets(2,0,0,0);
+                contents.add(maleHetsButton,c);
+                size++;
+            }
+
+            if (size == 0){
+                contents.setPreferredSize(new Dimension(150,50));
+            }
+
+            setContentPane(contents);
+            this.setLocation(this.getParent().getX() + 100,
+                    this.getParent().getY() + 100);
+            this.setModal(true);
+
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+
+            if (command.equals("Excluded Individuals")) {
+                //show details of individuals removed due to excessive missing data
+                FilteredIndividualsDialog fid = new FilteredIndividualsDialog(hv,"Excluded Individuals");
+                fid.pack();
+                fid.setVisible(true);
+                this.dispose();
+            }else if (command.equals("Individual Summary")) {
+                IndividualDialog fd = new IndividualDialog(hv,"Individual Summary");
+                fd.pack();
+                fd.setVisible(true);
+                this.dispose();
+            }else if (command.equals("Mendel Errors")) {
+                MendelDialog md = new MendelDialog(hv,"Mendel Errors");
+                md.pack();
+                md.setVisible(true);
+                this.dispose();
+            }else if (command.equals("Male Heterozygotes")){
+                fc = new JFileChooser(System.getProperty("user.dir"));
+                fc.setSelectedFile(new File(""));
+                if (fc.showSaveDialog(this) ==
+                        JFileChooser.APPROVE_OPTION){
+                    File file = HaploView.fc.getSelectedFile();
+                    try{
+                        theData.getPedFile().printHaploidHets(file);
+                    }catch(IOException ioe){
+                        JOptionPane.showMessageDialog(this,
+                                ioe.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
         }
     }
 }
