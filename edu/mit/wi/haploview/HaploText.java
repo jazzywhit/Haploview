@@ -869,13 +869,19 @@ public class HaploText implements Constants{
                 try {
                     BufferedReader br = new BufferedReader(new FileReader(designFile));
                     String line;
+                    int lines = 0;
                     while((line = br.readLine()) != null) {
                         if(line.length() > 0 && line.charAt(0) != '#'){
                             StringTokenizer st = new StringTokenizer(line);
+                            int length = st.countTokens();
+                            if (length != 2){
+                                die("Invalid formatting on line " + lines);
+                            }
                             String marker = st.nextToken();
                             Double score = new Double(st.nextToken());
                             designScores.put(marker,score);
                         }
+                        lines++;
                     }
                 }catch(IOException ioe) {
                     die("An error occured while reading the file specified by -captureAlleles.");
