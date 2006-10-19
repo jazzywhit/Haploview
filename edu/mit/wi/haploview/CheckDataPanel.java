@@ -79,7 +79,7 @@ public class CheckDataPanel extends JPanel
         if (theData.dupsToBeFlagged){
             JOptionPane.showMessageDialog(hv,
                     "Two or more SNPs have identical position. They have been flagged in yellow\n"+
-                    "and the less completely genotyped duplicate has been deselected.",
+                            "and the less completely genotyped duplicate has been deselected.",
                     "Duplicate SNPs",
                     JOptionPane.INFORMATION_MESSAGE);
         }
@@ -87,7 +87,7 @@ public class CheckDataPanel extends JPanel
         if (theData.dupNames){
             JOptionPane.showMessageDialog(hv,
                     "Two or more SNPs have identical names. They have been renamed with\n"+
-                    ".X extensions where X is an integer unique to each duplicate.",
+                            ".X extensions where X is an integer unique to each duplicate.",
                     "Duplicate SNPs",
                     JOptionPane.INFORMATION_MESSAGE);
         }
@@ -147,7 +147,7 @@ public class CheckDataPanel extends JPanel
                 int curRating = cur.getRating();
                 int dupStatus = Chromosome.getUnfilteredMarker(i).getDupStatus();
                 if ((curRating > 0 && dupStatus != 2) ||
-                    theData.getPedFile().isWhiteListed(Chromosome.getUnfilteredMarker(i))){
+                        theData.getPedFile().isWhiteListed(Chromosome.getUnfilteredMarker(i))){
                     table.setValueAt(new Boolean(true),i,STATUS_COL);
                 }else{
                     table.setValueAt(new Boolean(false),i,STATUS_COL);
@@ -381,20 +381,10 @@ public class CheckDataPanel extends JPanel
                 md.setVisible(true);
                 this.dispose();
             }else if (command.equals("Male Heterozygotes")){
-                fc = new JFileChooser(System.getProperty("user.dir"));
-                fc.setSelectedFile(new File(""));
-                if (fc.showSaveDialog(this) ==
-                        JFileChooser.APPROVE_OPTION){
-                    File file = HaploView.fc.getSelectedFile();
-                    try{
-                        theData.getPedFile().printHaploidHets(file);
-                    }catch(IOException ioe){
-                        JOptionPane.showMessageDialog(this,
-                                ioe.getMessage(),
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                }
+                HetsDialog hd = new HetsDialog(hv,"Male Heterozygotes");
+                hd.pack();
+                hd.setVisible(true);
+                this.dispose();
             }
         }
     }

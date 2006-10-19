@@ -1,49 +1,62 @@
 package edu.mit.wi.haploview;
 
-import edu.mit.wi.pedfile.Individual;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
 import java.util.Vector;
+import java.util.StringTokenizer;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
 
 
-public class FilteredIndividualsDialog extends JDialog implements ActionListener, Constants{
+/**
+ * Custom Dialog showing Male Heterozygotes
+ *
+ * this class is not thread safe (untested).
+ * modified version of MendelDialog
+ * @author David Bender
+ */
+
+
+
+
+public class HetsDialog extends JDialog implements ActionListener, Constants {
     private BasicTableModel tableModel;
 
-    public FilteredIndividualsDialog(HaploView h, String title) {
+
+    public HetsDialog (HaploView h, String title) {
         super(h,title);
 
-        JTable table;
         JPanel contents = new JPanel();
+        JTable table;
 
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
 
-        Vector axedPeople = h.theData.getPedFile().getAxedPeople();
+        Vector results = h.theData.getPedFile().getHaploidHets();
 
         Vector colNames = new Vector();
         colNames.add("FamilyID");
         colNames.add("IndividualID");
-        colNames.add("Reason");
+        colNames.add("Marker");
         Vector data = new Vector();
 
-        for(int i=0;i<axedPeople.size();i++) {
+        for(int i=0;i<results.size();i++) {
+            StringTokenizer st = new StringTokenizer((String)results.get(i));
             Vector tmpVec = new Vector();
-            Individual currentInd = (Individual) axedPeople.get(i);
-            tmpVec.add(currentInd.getFamilyID());
-            tmpVec.add(currentInd.getIndividualID());
-            tmpVec.add(currentInd.getReasonImAxed());
+            tmpVec.add(st.nextToken());
+            tmpVec.add(st.nextToken());
+            tmpVec.add(Chromosome.getUnfilteredMarker(Integer.parseInt(st.nextToken())).getDisplayName());
             data.add(tmpVec);
+
         }
 
         tableModel = new BasicTableModel(colNames,data);
         TableSorter sorter = new TableSorter(tableModel);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
-        table.getColumnModel().getColumn(2).setPreferredWidth(300);
+        table.getColumnModel().getColumn(2).setPreferredWidth(30);
 
         JScrollPane tableScroller = new JScrollPane(table);
         int tableHeight = (table.getRowHeight()+table.getRowMargin())*(table.getRowCount()+2);
@@ -69,6 +82,29 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
         this.setModal(true);
+    }
+
+    public HetsDialog(HaploData hd){
+        Vector results = hd.getPedFile().getHaploidHets();
+
+        Vector colNames = new Vector();
+        colNames.add("FamilyID");
+        colNames.add("IndividualID");
+        colNames.add("Marker");
+        Vector data = new Vector();
+
+        for(int i=0;i<results.size();i++) {
+            StringTokenizer st = new StringTokenizer((String)results.get(i));
+            Vector tmpVec = new Vector();
+            tmpVec.add(st.nextToken());
+            tmpVec.add(st.nextToken());
+            tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
+            tmpVec.add(Chromosome.getUnfilteredMarker(Integer.parseInt(st.nextToken())).getDisplayName());
+            data.add(tmpVec);
+
+        }
+
+        tableModel = new BasicTableModel(colNames, data);
     }
 
     public void printTable(File outfile) throws IOException {
@@ -128,6 +164,4 @@ public class FilteredIndividualsDialog extends JDialog implements ActionListener
         }
     }
 }
-
-
 

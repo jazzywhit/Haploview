@@ -93,10 +93,14 @@ public class IndividualDialog extends JDialog implements ActionListener, Constan
 
         contents.add(tableScroller);
 
+        JPanel buttonPanel = new JPanel();
+        JButton exportButton = new JButton("Export to File");
+        exportButton.addActionListener(this);
         JButton okButton = new JButton("Close");
         okButton.addActionListener(this);
-        okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        contents.add(okButton);
+        buttonPanel.add(exportButton);
+        buttonPanel.add(okButton);
+        contents.add(buttonPanel);
         setContentPane(contents);
 
         this.setLocation(this.getParent().getX() + 100,
@@ -202,6 +206,20 @@ public class IndividualDialog extends JDialog implements ActionListener, Constan
         String command = e.getActionCommand();
         if(command.equals("Close")) {
             this.dispose();
+        }else if (command.equals("Export to File")){
+            HaploView.fc.setSelectedFile(new File(""));
+
+            if (HaploView.fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+                File file = HaploView.fc.getSelectedFile();
+                try{
+                    printTable(file);
+                }catch(IOException ioe){
+                    JOptionPane.showMessageDialog(this,
+                            ioe.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
         }
     }
 }

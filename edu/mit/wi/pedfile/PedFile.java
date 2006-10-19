@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.37 2006/09/27 15:13:05 djbender Exp $
+* $Id: PedFile.java,v 3.38 2006/10/19 16:28:55 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -762,8 +762,8 @@ public class PedFile {
                     ind = (Individual)allIndividuals.elementAt(index);
                     int[] checker1, checker2;
                     try{
-                    checker1 = checkGenotype(alleles.substring(0,1));
-                    checker2 = checkGenotype(alleles.substring(1,2));
+                        checker1 = checkGenotype(alleles.substring(0,1));
+                        checker2 = checkGenotype(alleles.substring(1,2));
                     }catch(NumberFormatException nfe){
                         throw new PedFileException("Invalid genotype on individual " + ind.getIndividualID() + ".");
                     }
@@ -980,7 +980,7 @@ public class PedFile {
                         }else if (token.equalsIgnoreCase("1")){
                             byteDataU[index] = ((byte[])legendData.get(index))[1];
                         }else if (Chromosome.getDataChrom().equalsIgnoreCase("chrx") && ind.getGender() == Individual.MALE && token.equalsIgnoreCase("-")){
-                           //X male
+                            //X male
                         }else {
                             throw new PedFileException("File format error: " + phasedFile.getName());
                         }
@@ -1623,30 +1623,6 @@ public class PedFile {
         }else{
             haploidHets = new Vector();
             haploidHets.add(haploid);
-        }
-    }
-
-    public void printHaploidHets(File outfile) throws IOException {
-        FileWriter checkWriter = null;
-        try{
-            if (outfile != null){
-                checkWriter = new FileWriter(outfile);
-            }
-
-            checkWriter.write("Family\tIndividual\tMarker\n");
-            for (int i = 0; i < haploidHets.size(); i++){
-                StringTokenizer st = new StringTokenizer((String)haploidHets.get(i));
-                checkWriter.write(st.nextToken());
-                checkWriter.write("\t"+st.nextToken());
-                int markerLoc = Integer.parseInt(st.nextToken());
-                checkWriter.write("\t"+Chromosome.getUnfilteredMarker(markerLoc).getDisplayName()+"\n");
-            }
-
-            if (outfile != null){
-                checkWriter.close();
-            }
-        }catch(IOException ioe){
-            throw new IOException(ioe.getMessage());
         }
     }
 

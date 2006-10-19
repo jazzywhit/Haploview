@@ -83,7 +83,6 @@ public class MendelDialog extends JDialog implements ActionListener, Constants {
         exportButton.addActionListener(this);
         JButton okButton = new JButton("Close");
         okButton.addActionListener(this);
-        //okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         buttonPanel.add(exportButton);
         buttonPanel.add(okButton);
         contents.add(buttonPanel);

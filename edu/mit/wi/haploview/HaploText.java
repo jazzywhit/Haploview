@@ -361,7 +361,7 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-track")){
                 i++;
                 if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
-                   trackFileName = args[i];
+                    trackFileName = args[i];
                 }else{
                     die("-track requires a filename");
                 }
@@ -398,7 +398,7 @@ public class HaploText implements Constants{
                 outputCheck = true;
             }
             else if (args[i].equalsIgnoreCase("-indcheck")){
-                 individualCheck = true;
+                individualCheck = true;
             }
             else if (args[i].equalsIgnoreCase("-mendel")){
                 mendel = true;
@@ -440,7 +440,7 @@ public class HaploText implements Constants{
                 minimumGenoPercent = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-hwcutoff")) {
-               i++;
+                i++;
                 hwCutoff = getDoubleArg(args,i,0,1);
             }
             else if(args[i].equalsIgnoreCase("-maxMendel") ) {
@@ -1223,12 +1223,15 @@ public class HaploText implements Constants{
                 id.printTable(validateOutputFile(fileName + ".INDCHECK"));
             }
             if(mendel && result != null){
-                MendelDialog md = new MendelDialog(textData);
-                md.printTable(validateOutputFile(fileName + ".MENDEL" ));
+                if (textData.getPedFile().getMendelsExist()){
+                    MendelDialog md = new MendelDialog(textData);
+                    md.printTable(validateOutputFile(fileName + ".MENDEL" ));
+                }
             }
             if(malehets && result != null){
-                if(textData.getPedFile().getHaploidHets() != null){
-                    textData.getPedFile().printHaploidHets(validateOutputFile(fileName + ".MALEHETS"));
+                if (textData.getPedFile().getHaploidHets() != null){
+                    HetsDialog hd = new HetsDialog(textData);
+                    hd.printTable(validateOutputFile(fileName + ".MALEHETS"));
                 }
             }
             Vector cust = new Vector();
