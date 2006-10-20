@@ -5,7 +5,7 @@ public interface Constants {
 
     //main jframe setup stuff & labels.
     public static final double VERSION = 4.0;
-    public static final int BETA_VERSION = 10;
+    public static final int BETA_VERSION = 11;
     public static final String EMAIL_STRING = "haploview@broad.mit.edu";
     public static final String TITLE_STRING = "Haploview "+VERSION+"beta"+BETA_VERSION;
     public static final String JAVA_VERSION = System.getProperty("java.version");
@@ -134,8 +134,9 @@ public interface Constants {
     static final String HELP_OUTPUT = TITLE_STRING + " Command line options\n" +
             "-h, -help                       Print this message\n" +
             "-memory <memsize>               allocates <memsize> megabytes of memory (default 512)\n"+
-            "-nogui                          Command line output only\n" +
+            "-n, -nogui                      Command line output only\n" +
             "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
+            "-l, -logfile <filename>         Specify a logfile name (defaults to haploview.log) \n" +
             "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
             "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
             "-phasedhmpdata <phasedfile>     Specify a phased HapMap data file\n" +
