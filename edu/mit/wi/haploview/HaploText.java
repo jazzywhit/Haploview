@@ -205,7 +205,7 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-n") || args[i].equalsIgnoreCase("-nogui")) {
                 nogui = true;
             }
-            else if(args[i].equalsIgnoreCase("-l") || args[i].equalsIgnoreCase("-logfile")){
+            else if(args[i].equalsIgnoreCase("-log")){
                 i++;
                 if (i >= args.length || args[i].charAt(0) == '-'){
                     logName = "haploview.log";
@@ -954,6 +954,8 @@ public class HaploText implements Constants{
         }
         if(chromosomeArg != null) {
             Chromosome.setDataChrom("chr" + chromosomeArg);
+        }else{
+            chromosomeArg = "";
         }
 
         if (phasedhapmapDownload){
@@ -1106,7 +1108,7 @@ public class HaploText implements Constants{
         else if (phasedhmpdataFileName != null){
             fileName = phasedhmpdataFileName;
             fileType = PHASED_FILE;
-            phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, "", ""};
+            phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, chromosomeArg, ""};
         }
         else if (phasedhapmapDownload){
             fileName = "Chromosome" + chromosomeArg + populationArg;

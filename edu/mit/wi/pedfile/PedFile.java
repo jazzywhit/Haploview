@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.38 2006/10/19 16:28:55 djbender Exp $
+* $Id: PedFile.java,v 3.39 2006/10/25 17:45:52 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -784,10 +784,10 @@ public class PedFile {
     }
 
     public void parsePhasedData(String[] info) throws IOException, PedFileException{
-        if (info[4].equals("")){
+        if (info[3].equals("")){
             Chromosome.setDataChrom("none");
         }else{
-            Chromosome.setDataChrom("chr" + info[4]);
+            Chromosome.setDataChrom("chr" + info[3]);
         }
         Chromosome.setDataBuild("ncbi_b35");
         Vector sampleData = new Vector();

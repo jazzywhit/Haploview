@@ -136,7 +136,7 @@ public interface Constants {
             "-memory <memsize>               allocates <memsize> megabytes of memory (default 512)\n"+
             "-n, -nogui                      Command line output only\n" +
             "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
-            "-l, -logfile <filename>         Specify a logfile name (defaults to haploview.log) \n" +
+            "-log <filename>                 Specify a logfile name (defaults to haploview.log) \n" +
             "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
             "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
             "-phasedhmpdata <phasedfile>     Specify a phased HapMap data file\n" +
