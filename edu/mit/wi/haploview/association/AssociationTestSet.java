@@ -87,6 +87,9 @@ public class AssociationTestSet implements Constants{
                 for (int j = 0; j < numInds; j++){
                     if(useable[j]) {
                         currentInd = (Individual)indList.get(j);
+                        if (currentInd.getZeroed(i)){
+                            continue;
+                        }
                         int cc = ((Integer)affectedStatus.get(j)).intValue();
 
                         if (cc == 0) continue;
