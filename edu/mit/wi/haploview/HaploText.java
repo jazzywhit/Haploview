@@ -263,7 +263,7 @@ public class HaploText implements Constants{
                     }
                 }
             }
-            else if(args[i].equalsIgnoreCase("-ha") || args[i].equalsIgnoreCase("-l") || args[i].equalsIgnoreCase("-haps")) {
+            else if(args[i].equalsIgnoreCase("-ha") || args[i].equalsIgnoreCase("-haps")) {
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
                     die(args[i-1] + " requires a filename");
