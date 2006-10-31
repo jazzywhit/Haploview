@@ -1229,8 +1229,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             custSet = custAssocPanel.getTestSet();
                         }
                         AssociationTestSet permSet = new AssociationTestSet();
-                        permSet.cat(tdtPanel.getTestSet());
-                        permSet.cat(hapAssocPanel.getTestSet());
+                        if (tdtPanel != null){
+                            permSet.cat(tdtPanel.getTestSet());
+                        }
+                        if (hapAssocPanel != null){
+                            permSet.cat(hapAssocPanel.getTestSet());
+                        }
                         permutationPanel.setTestSet(
                                 new PermutationTestSet(0,theData.getPedFile(),custSet,permSet));
                     }
@@ -1310,8 +1314,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             custSet = custAssocPanel.getTestSet();
                         }
                         AssociationTestSet permSet = new AssociationTestSet();
-                        permSet.cat(tdtPanel.getTestSet());
-                        permSet.cat(hapAssocPanel.getTestSet());
+                        if (tdtPanel != null){
+                            permSet.cat(tdtPanel.getTestSet());
+                        }
+                        if (hapAssocPanel != null){
+                            permSet.cat(hapAssocPanel.getTestSet());
+                        }
                         permutationPanel.setTestSet(
                                 new PermutationTestSet(0,theData.getPedFile(),custSet,permSet));
                     }
@@ -1332,8 +1340,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                                 custSet = custAssocPanel.getTestSet();
                             }
                             AssociationTestSet permSet = new AssociationTestSet();
-                            permSet.cat(tdtPanel.getTestSet());
-                            permSet.cat(hapAssocPanel.getTestSet());
+                            if (tdtPanel != null){
+                                permSet.cat(tdtPanel.getTestSet());
+                            }
+                            if (hapAssocPanel != null){
+                                permSet.cat(hapAssocPanel.getTestSet());
+                            }
                             permutationPanel.setTestSet(
                                     new PermutationTestSet(0,theData.getPedFile(),custSet,permSet));
                         }
