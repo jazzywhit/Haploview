@@ -355,7 +355,7 @@ public class HaploText implements Constants{
                     die(args[i-1] + " requires a filename");
                 }
                 else{
-                    if(plinkFileName != null){
+                    if(mapFileName != null){
                         argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last map file listed will be used");
                     }
                     mapFileName = args[i];

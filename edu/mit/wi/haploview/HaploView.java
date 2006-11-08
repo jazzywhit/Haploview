@@ -1518,9 +1518,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[2] = null;
                 window.readGenotypes(inputArray, HMP_FILE, false);
             }else if (argParser.getPlinkFileName() != null){
+                inputArray = new String[4];
                 inputArray[0] = argParser.getPlinkFileName();
                 inputArray[1] = argParser.getMapFileName();
                 inputArray[2] = null;
+                inputArray[3] = null;
                 window.readWGA(inputArray);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
