@@ -24,11 +24,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     String[] signs = {"",">=","<=","="};
     private JComboBox chromChooser, genericChooser, signChooser;
     private NumberTextField chromStart, chromEnd, topField;
-    private JTextField valueField;
+    private JTextField valueField, markerField;
 
     private int startPos, endPos;
     private int numResults;
-    private String chromChoice, columnChoice, signChoice, value;
+    private String chromChoice, columnChoice, signChoice, value, marker;
     private HaploView hv;
 
 
@@ -64,47 +64,54 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         //tableScroller.setMaximumSize(new Dimension(800,(int)tableScroller.getPreferredSize().getHeight()));
 
 
-        JPanel chromFilterPanel = new JPanel();
-        chromFilterPanel.setMinimumSize(new Dimension(700,40));
-        chromFilterPanel.add(new JLabel("Chromosome:"));
+        JPanel mainFilterPanel = new JPanel();
+        mainFilterPanel.setMinimumSize(new Dimension(700,40));
+        mainFilterPanel.add(new JLabel("Chromosome:"));
         chromChooser = new JComboBox(chromNames);
-        chromFilterPanel.add(chromChooser);
-        chromFilterPanel.add(new JLabel("Start kb:"));
+        mainFilterPanel.add(chromChooser);
+        mainFilterPanel.add(new JLabel("Start kb:"));
         chromStart = new NumberTextField("",6,false);
-        chromFilterPanel.add(chromStart);
-        chromFilterPanel.add(new JLabel("End kb:"));
+        mainFilterPanel.add(chromStart);
+        mainFilterPanel.add(new JLabel("End kb:"));
         chromEnd = new NumberTextField("",6,false);
-        chromFilterPanel.add(chromEnd);
-        chromFilterPanel.add(new JLabel("Other:"));
+        mainFilterPanel.add(chromEnd);
+        mainFilterPanel.add(new JLabel("Other:"));
         genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
         genericChooser.setSelectedIndex(-1);
-        chromFilterPanel.add(genericChooser);
+        mainFilterPanel.add(genericChooser);
         signChooser = new JComboBox(signs);
         signChooser.setSelectedIndex(-1);
-        chromFilterPanel.add(signChooser);
+        mainFilterPanel.add(signChooser);
         valueField = new JTextField(8);
-        chromFilterPanel.add(valueField);
+        mainFilterPanel.add(valueField);
         JButton doFilter = new JButton("Filter");
         doFilter.addActionListener(this);
-        chromFilterPanel.add(doFilter);
+        mainFilterPanel.add(doFilter);
 
-        JPanel topResultsFilterPanel = new JPanel();
+        JPanel extraFilterPanel = new JPanel();
         JLabel topLabel = new JLabel("View top");
-        topResultsFilterPanel.add(topLabel);
+        extraFilterPanel.add(topLabel);
         topField = new NumberTextField("100",6,false);
-        topResultsFilterPanel.add(topField);
+        extraFilterPanel.add(topField);
         JLabel resultsLabel = new JLabel("results");
-        topResultsFilterPanel.add(resultsLabel);
+        extraFilterPanel.add(resultsLabel);
         JButton doTopFilter = new JButton("Go");
         doTopFilter.setActionCommand("top filter");
         doTopFilter.addActionListener(this);
-        topResultsFilterPanel.add(doTopFilter);
+        extraFilterPanel.add(doTopFilter);
         if (!plinkTableModel.pColExists()){
             topLabel.setEnabled(false);
             topField.setEnabled(false);
             resultsLabel.setEnabled(false);
             doTopFilter.setEnabled(false);
         }
+        extraFilterPanel.add(new JLabel("Marker:"));
+        markerField = new JTextField(8);
+        extraFilterPanel.add(markerField);
+        JButton doMarkerFilter = new JButton("Go");
+        doMarkerFilter.setActionCommand("marker filter");
+        doMarkerFilter.addActionListener(this);
+        extraFilterPanel.add(doMarkerFilter);
 
         JButton resetFilters = new JButton("Reset Filters");
         resetFilters.addActionListener(this);
@@ -123,9 +130,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         a.gridwidth = 5;
         a.anchor = GridBagConstraints.CENTER;
         a.weightx = 1;
-        filterPanel.add(chromFilterPanel,a);
+        filterPanel.add(mainFilterPanel,a);
         a.gridy = 1;
-        filterPanel.add(topResultsFilterPanel,a);
+        filterPanel.add(extraFilterPanel,a);
         a.gridy = 2;
         //a.gridx = 0;
         a.gridwidth = 1;
@@ -189,6 +196,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         repaint();
     }
 
+    public void doMarkerFilter(){
+        clearSorting();
+        plinkTableModel.filterMarker(marker);
+        repaint();
+    }
+
     public void doFilters(){
         chromChoice = (String)chromChooser.getSelectedItem();
 
@@ -245,6 +258,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         signChoice = null;
         valueField.setText("");
         value = null;
+        markerField.setText("");
+        marker = null;
         repaint();
     }
 
@@ -322,7 +337,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }else if (command.equals("top filter")){
             numResults = Integer.parseInt(topField.getText());
             doTopFilter();
-        }else if (command.equals("Reset Filters")){
+        }else if (command.equals("marker filter")){
+            marker = markerField.getText();
+            if (!(marker.equals(""))){
+                doMarkerFilter();
+            }
+        }
+        else if (command.equals("Reset Filters")){
             clearFilters();
         }else if (command.equals("Load Additional Results")){
             HaploView.fc.setSelectedFile(new File(""));

@@ -117,6 +117,21 @@ public class PlinkTableModel extends AbstractTableModel{
         }
     }
 
+    public void filterMarker(String marker){
+        resetFilters();
+        int rows = getRowCount();
+        Vector newFiltered = new Vector();
+        for (int i = 0; i < rows; i++){
+            String currMarker = (String)getValueAt(i,MARKER_COLUMN);
+            if (currMarker.startsWith(marker)){
+                newFiltered.add(new Integer(i));
+            }else if (currMarker.equalsIgnoreCase(marker)){
+                newFiltered.add(new Integer(i));
+            }
+        }
+        filtered = newFiltered;
+    }
+
     public void filterAll(String chr, int start, int end, String column, String s, String value){
         resetFilters();
         int rows = getRowCount();
