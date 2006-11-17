@@ -1221,7 +1221,7 @@ public class HaploText implements Constants{
                 }
             }
 
-            if(captureAlleleTags != null) {
+            if(captureAllelesFileName != null) {  //TODO: This is causing alleles to now show up as BAD in the check output even though they fail thresholds
                 for(int i =0;i<captureAlleleTags.size();i++) {
                     if(snpsByName.containsKey(captureAlleleTags.get(i))) {
                         whiteListedCustomMarkers.add(snpsByName.get(captureAlleleTags.get(i)));
@@ -1569,8 +1569,16 @@ public class HaploText implements Constants{
                 }
 
                 Vector sitesToCapture = new Vector();
-                for(int i=0;i<Chromosome.getSize();i++) {
-                    sitesToCapture.add(Chromosome.getMarker(i));
+                if (captureAlleleTags == null){
+                    for(int i=0;i<Chromosome.getSize();i++) {
+                        sitesToCapture.add(Chromosome.getMarker(i));
+                    }
+                }else{
+                    for (int i = 0; i < captureAlleleTags.size(); i++){
+                        if (snpsByName.containsKey(captureAlleleTags.get(i))){
+                            sitesToCapture.add(snpsByName.get(captureAlleleTags.get(i)));
+                        }
+                    }
                 }
 
                 for (int i = 0; i < forceIncludeTags.size(); i++) {
