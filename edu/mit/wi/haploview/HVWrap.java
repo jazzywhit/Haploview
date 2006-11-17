@@ -65,6 +65,9 @@ public class HVWrap {
                 a++;
                 xmxArg = args[a];
             }else{
+                if (!(args[a].startsWith("-"))){
+                    args[a] = "\"" + args[a] + "\"";
+                }
                 argsToBePassed = argsToBePassed.concat(" " + args[a]);
             }
             if (args[a].equalsIgnoreCase("-n") || args[a].equalsIgnoreCase("-nogui")){
