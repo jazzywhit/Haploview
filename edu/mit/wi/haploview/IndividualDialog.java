@@ -68,7 +68,8 @@ public class IndividualDialog extends JDialog implements ActionListener, Constan
             data.add(tmpVec);
         }
 
-        TableSorter sorter = new TableSorter(new BasicTableModel(colNames, data));
+        tableModel = new BasicTableModel(colNames,data);
+        TableSorter sorter = new TableSorter(tableModel);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
 
