@@ -13,11 +13,12 @@ public class PlinkTableModel extends AbstractTableModel{
     private Vector filtered;
     private Vector unknownColumns;
 
-    private int NUM_COLUMN = 0;
-    private int CHROM_COLUMN = 1;
-    private int MARKER_COLUMN = 2;
-    private int POSITION_COLUMN = 3;
-    private int PVAL_COLUMN = -1;
+    private int CHROM_COLUMN = 0;
+    private int MARKER_COLUMN = 1;
+    private int POSITION_COLUMN = 2;
+    private int HAPLOTYPE_COLUMN = -1;
+    private int A1_COLUMN = -1;
+    private int A2_COLUMN = -1;
 
     public PlinkTableModel(Vector c, Vector d){
         columnNames=c;
@@ -25,15 +26,15 @@ public class PlinkTableModel extends AbstractTableModel{
         unknownColumns = new Vector();
         unknownColumns.add("");
 
-        for (int j = 4; j < columnNames.size(); j++){
+        for (int j = 3; j < columnNames.size(); j++){
             String column = (String)columnNames.get(j);
 
-            if (column.equalsIgnoreCase("P")){
-                PVAL_COLUMN = j;
-            }else if ((column.equalsIgnoreCase("TDT_P")) || (column.startsWith("P_"))){
-                if (PVAL_COLUMN == -1){
-                    PVAL_COLUMN = j;
-                }
+            if (column.equalsIgnoreCase("HAPLOTYPE")){
+                HAPLOTYPE_COLUMN = j;
+            }else if (column.equalsIgnoreCase("A1")){
+                A1_COLUMN = j;
+            }else if (column.equalsIgnoreCase("A2")){
+                A2_COLUMN = j;
             }
             unknownColumns.add(column);
         }
@@ -73,19 +74,19 @@ public class PlinkTableModel extends AbstractTableModel{
         AssociationResult result = (AssociationResult)data.get(realIndex);
         Marker marker = result.getMarker();
         Object value = null;
-        if (column == NUM_COLUMN){
-            value = new Integer(row+1);
-        }else if (column == CHROM_COLUMN){
+        if (column == CHROM_COLUMN){
             value = marker.getChromosome();
         }else if (column == MARKER_COLUMN){
             value = marker.getMarkerID();
         }else if (column == POSITION_COLUMN){
             value = new Long(marker.getPosition());
+        }else if (column == HAPLOTYPE_COLUMN || column == A1_COLUMN || column == A2_COLUMN){ //TODO: More of these
+            value = (String)(result.getValues().get(column-3));
         }else{
             try{
-                value = new Double((String)result.getValues().get(column-4));
+                value = new Double((String)result.getValues().get(column-3));
             }catch (NumberFormatException nfe){
-                value = result.getValues().get(column-4);
+                value = result.getValues().get(column-3);
                 if (((String)value).equals("NA")){
                     value = new Double(Double.NaN);
                 }
@@ -100,21 +101,6 @@ public class PlinkTableModel extends AbstractTableModel{
         //This method shouldn't get called...
         //((Vector)data.elementAt(row)).set(column,o);
         fireTableCellUpdated(row, column);
-    }
-
-    public void filterTop(int num){
-        if (PVAL_COLUMN != -1){
-            resetFilters();
-            Collections.sort(data,new PvalComparator());
-
-            Vector newFiltered = new Vector();
-
-            for (int i =0; i < num; i ++){
-                newFiltered.add(new Integer(i));
-            }
-
-            filtered = newFiltered;
-        }
     }
 
     public void filterMarker(String marker){
@@ -144,9 +130,9 @@ public class PlinkTableModel extends AbstractTableModel{
 
         for (int i = 0; i < rows; i++){
             if (!(chr.equals(""))){
-                if (((String)getValueAt(i,1)).equalsIgnoreCase(chr)){
-                    if ((((Long)getValueAt(i,3)).longValue() >= realStart) || (start == -1)){
-                        if ((((Long)getValueAt(i,3)).longValue() <= realEnd) || (end == -1)){
+                if (((String)getValueAt(i,CHROM_COLUMN)).equalsIgnoreCase(chr)){
+                    if ((((Long)getValueAt(i,POSITION_COLUMN)).longValue() >= realStart) || (start == -1)){
+                        if ((((Long)getValueAt(i,POSITION_COLUMN)).longValue() <= realEnd) || (end == -1)){
                             chromPass = true;
                         }
                     }
@@ -173,6 +159,10 @@ public class PlinkTableModel extends AbstractTableModel{
                             break;
                         }
                     }
+                }
+
+                if (col == HAPLOTYPE_COLUMN || col == A1_COLUMN || col == A2_COLUMN){ //TODO: More of these
+                    stringVal = value;
                 }
 
                 if (getValueAt(i,col) != null){
@@ -227,23 +217,6 @@ public class PlinkTableModel extends AbstractTableModel{
         }
     }
 
-    public boolean pColExists(){
-        boolean pval;
-        if (PVAL_COLUMN == -1){
-            pval = false;
-        }else{
-            pval = true;
-        }
-        return pval;
-    }
-
-    class PvalComparator implements Comparator {
-        public int compare(Object o1, Object o2) {
-            Double d1 = Double.valueOf((String)((AssociationResult)o1).getValues().get(PVAL_COLUMN-4));
-            Double d2 = Double.valueOf((String)((AssociationResult)o2).getValues().get(PVAL_COLUMN-4));
-            return d1.compareTo(d2);
-        }
-    }
 
     class IndexComparator implements Comparator {
         public int compare (Object o1, Object o2) {

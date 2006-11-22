@@ -306,7 +306,11 @@ public class TableSorter extends AbstractTableModel {
                     comparison = -1;
                 } else if (o2 == null) {
                     comparison = 1;
-                } else {
+                } else if (o1 instanceof Double && !(o2 instanceof Double)) {
+                    comparison = 1;
+                } else if (o2 instanceof Double && !(o1 instanceof Double)) {
+                    comparison = -1;
+                }else {
                     comparison = getComparator(column).compare(o1, o2);
                 }
                 if (comparison != 0) {

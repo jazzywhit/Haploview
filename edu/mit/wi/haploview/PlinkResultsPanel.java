@@ -23,11 +23,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"};
     String[] signs = {"",">=","<=","="};
     private JComboBox chromChooser, genericChooser, signChooser;
-    private NumberTextField chromStart, chromEnd, topField;
+    private NumberTextField chromStart, chromEnd;
     private JTextField valueField, markerField;
+    private JPanel filterPanel;
 
-    private int startPos, endPos;
-    private int numResults;
+    private int startPos, endPos, numResults;
     private String chromChoice, columnChoice, signChoice, value, marker;
     private HaploView hv;
 
@@ -39,6 +39,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         plinkTableModel = new PlinkTableModel(colNames,results);
         sorter = new TableSorter(plinkTableModel);
+        numResults = plinkTableModel.getRowCount();
 
 
         table = new JTable(sorter);
@@ -47,8 +48,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         //table.getModel().addTableModelListener(this);
 
         sorter.setTableHeader(table.getTableHeader());
-        table.getColumnModel().getColumn(2).setPreferredWidth(100);
-        table.getColumnModel().getColumn(3).setPreferredWidth(100);
+        table.getColumnModel().getColumn(0).setPreferredWidth(50);
+        //table.removeColumn(table.getColumnModel().getColumn(4));
 
         final PlinkCellRenderer renderer = new PlinkCellRenderer();
         try{
@@ -89,22 +90,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         mainFilterPanel.add(doFilter);
 
         JPanel extraFilterPanel = new JPanel();
-        JLabel topLabel = new JLabel("View top");
-        extraFilterPanel.add(topLabel);
-        topField = new NumberTextField("100",6,false);
-        extraFilterPanel.add(topField);
-        JLabel resultsLabel = new JLabel("results");
-        extraFilterPanel.add(resultsLabel);
-        JButton doTopFilter = new JButton("Go");
-        doTopFilter.setActionCommand("top filter");
-        doTopFilter.addActionListener(this);
-        extraFilterPanel.add(doTopFilter);
-        if (!plinkTableModel.pColExists()){
-            topLabel.setEnabled(false);
-            topField.setEnabled(false);
-            resultsLabel.setEnabled(false);
-            doTopFilter.setEnabled(false);
-        }
         extraFilterPanel.add(new JLabel("Marker:"));
         markerField = new JTextField(8);
         extraFilterPanel.add(markerField);
@@ -121,9 +106,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             moreResults.setEnabled(false);
         }
 
-        JPanel filterPanel = new JPanel(new GridBagLayout());
+        filterPanel = new JPanel(new GridBagLayout());
         GridBagConstraints a = new GridBagConstraints();
-        filterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Filters"));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Viewing " + numResults + " results"));
         ((TitledBorder)(filterPanel.getBorder())).setTitleColor(Color.black);
 
         //a.gridx = 1;
@@ -190,16 +175,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
     }
 
-    public void doTopFilter(){
-        clearSorting();
-        plinkTableModel.filterTop(numResults);
-        repaint();
-    }
-
     public void doMarkerFilter(){
         clearSorting();
         plinkTableModel.filterMarker(marker);
-        repaint();
+        countResults();
     }
 
     public void doFilters(){
@@ -238,7 +217,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         clearSorting();
         plinkTableModel.filterAll(chromChoice,startPos,endPos,columnChoice,signChoice,value);
-        repaint();
+        countResults();
     }
 
     public void clearFilters(){
@@ -250,8 +229,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         startPos = -1;
         chromEnd.setText("");
         endPos = -1;
-        topField.setText("100");
-        numResults = 0;
         genericChooser.setSelectedIndex(0);
         columnChoice = null;
         signChooser.setSelectedIndex(0);
@@ -260,13 +237,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         value = null;
         markerField.setText("");
         marker = null;
-        repaint();
+        countResults();
     }
 
     public void clearSorting(){
         for (int i = 0; i < table.getColumnCount(); i++){
             sorter.setSortingStatus(i,TableSorter.NOT_SORTED);
         }
+    }
+
+    public void countResults(){
+        numResults = plinkTableModel.getRowCount();
+        filterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Viewing " + numResults + " results"));
+        repaint();
     }
 
     public void gotoRegion(){
@@ -277,9 +260,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
-        String gotoChrom = (String)table.getValueAt(table.getSelectedRow(),1);
-        String gotoMarker = (String)table.getValueAt(table.getSelectedRow(),2);
-        long markerPosition = ((Long)(table.getValueAt(table.getSelectedRow(),3))).longValue();
+        String gotoChrom = (String)table.getValueAt(table.getSelectedRow(),0);
+        String gotoMarker = (String)table.getValueAt(table.getSelectedRow(),1);
+        long markerPosition = ((Long)(table.getValueAt(table.getSelectedRow(),2))).longValue();
         Vector filters = new Vector();
 
         if (chromChoice != null && !chromChoice.equals("")){
@@ -334,9 +317,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         String command = e.getActionCommand();
         if (command.equals("Filter")){
             doFilters();
-        }else if (command.equals("top filter")){
-            numResults = Integer.parseInt(topField.getText());
-            doTopFilter();
         }else if (command.equals("marker filter")){
             marker = markerField.getText();
             if (!(marker.equals(""))){
@@ -365,7 +345,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         {
             Component cell = super.getTableCellRendererComponent
                     (table, value, isSelected, hasFocus, row, column);
-            String thisMarker = (String)table.getValueAt(row,2);
+            String thisMarker = (String)table.getValueAt(row,1);
             cell.setForeground(Color.black);
             cell.setBackground(Color.white);
 

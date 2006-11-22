@@ -33,10 +33,9 @@ public class Plink implements Constants {
         markers = new Vector();
         results = new Vector();
         columns = new Vector();
-        columns.add("Result");
-        columns.add("Chrom");
-        columns.add("Marker");
-        columns.add("Position");
+        columns.add("CHROM");
+        columns.add("MARKER");
+        columns.add("POSITION");
 
         final File wgaFile = new File(wga);
         final File mapFile = new File(map);
