@@ -65,7 +65,8 @@ public class HVWrap {
                 a++;
                 xmxArg = args[a];
             }else{
-                if (!(args[a].startsWith("-"))){
+                //put quotes around the argument if it contains spaces
+                if (args[a].indexOf(" ") > 0){
                     args[a] = "\"" + args[a] + "\"";
                 }
                 argsToBePassed = argsToBePassed.concat(" " + args[a]);
