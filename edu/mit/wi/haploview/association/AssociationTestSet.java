@@ -889,7 +889,7 @@ public class AssociationTestSet implements Constants{
         if(Options.getAssocTest() == ASSOC_TRIO) {
             result.append("#\tName\tOvertransmitted\tT:U\tChi square\tP value\n");
         } else if(Options.getAssocTest() == ASSOC_CC) {
-            result.append("#\tName\tAssoc Allele\tCase,Control Ratios\tChi square\tP value\n");
+            result.append("#\tName\tAssoc Allele\tCase,Control Ratio Counts\tCase,Control Frequencies\tChi square\tP value\n");
         }
 
         //only output assoc results for markers which werent filtered
@@ -900,6 +900,9 @@ public class AssociationTestSet implements Constants{
                 result.append(currentResult.getName()).append("\t");
                 result.append(currentResult.getOverTransmittedAllele()).append("\t");
                 result.append(currentResult.getCountString()).append("\t");
+                if (Options.getAssocTest() == ASSOC_CC){
+                    result.append(currentResult.getFreqString()).append("\t");
+                }
                 result.append(currentResult.getChiSquare(0)).append("\t");
                 result.append(currentResult.getPValue(0)).append("\n");
             }
