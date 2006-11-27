@@ -556,7 +556,7 @@ public class DPrimeDisplay extends JComponent
         //See http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img
         //for more info on GBrowse img.
         int imgHeight = 0;
-        if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null){
+        if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null && !Chromosome.getDataChrom().equalsIgnoreCase("none")){
             g2.drawImage(gBrowseImage,H_BORDER-GBROWSE_MARGIN,V_BORDER,this);
             imgHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
         }
@@ -690,9 +690,11 @@ public class DPrimeDisplay extends JComponent
                         g2.setFont(markerNameFont);
                     }
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(green);
-                    if (Chromosome.getMarker(x).getDisplayName().equals(theHV.getChosenMarker())){
-                        g2.setColor(Color.blue);
-                        foundSNP = true;
+                    if (theHV != null){
+                        if (Chromosome.getMarker(x).getDisplayName().equals(theHV.getChosenMarker())){
+                            g2.setColor(Color.blue);
+                            foundSNP = true;
+                        }
                     }
                     g2.drawString(Chromosome.getMarker(x).getDisplayName(),(float)TEXT_GAP, (float)alignedPositions[x] + ascent/3);
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(Color.black);
@@ -1172,7 +1174,7 @@ public class DPrimeDisplay extends JComponent
 
         //generate gbrowse image if appropriate
         int gbImageHeight = 0;
-        if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null){
+        if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null && !Chromosome.getDataChrom().equalsIgnoreCase("none")){
             try{
                 long gbleft, gbright;
                 if (Options.getgBrowseLeft() != 0 || Options.getgBrowseRight() != 0){
@@ -1182,7 +1184,12 @@ public class DPrimeDisplay extends JComponent
                     gbleft = minpos;
                     gbright = maxpos+1;
                 }
-                String dataBuild = "_" + Chromosome.getDataBuild().substring(5).toUpperCase();
+                String dataBuild;
+                if (!Chromosome.getDataBuild().equalsIgnoreCase("none")){
+                    dataBuild = "_" + Chromosome.getDataBuild().substring(5).toUpperCase();
+                }else{
+                    dataBuild = "_B35";
+                }
                 String gChrom;
                 if (Chromosome.getDataChrom().equalsIgnoreCase("chrp")){ //account for pseudoautosomal
                     gChrom = "chrx";

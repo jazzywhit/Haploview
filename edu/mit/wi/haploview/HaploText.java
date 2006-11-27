@@ -42,6 +42,7 @@ public class HaploText implements Constants{
     private boolean outputDprime;
     private boolean outputPNG;
     private boolean outputCompressedPNG;
+    private boolean infoTrack;
     private boolean doPermutationTest;
     private boolean findTags;
     private boolean randomizeAffection = false;
@@ -375,6 +376,9 @@ public class HaploText implements Constants{
             }
             else if (args[i].equalsIgnoreCase("-smallpng") || args[i].equalsIgnoreCase("-compressedPNG")){
                 outputCompressedPNG = true;
+            }
+            else if (args[i].equalsIgnoreCase("-infoTrack")){
+                infoTrack = true;
             }
             else if (args[i].equalsIgnoreCase("-track")){
                 i++;
@@ -1448,6 +1452,9 @@ public class HaploText implements Constants{
                     if (logName != null){
                         logString = logString + "Using analysis track file " + trackFileName + "\n";
                     }
+                }
+                if (infoTrack){
+                    Options.setShowGBrowse(true);
                 }
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
                 BufferedImage i = dpd.export(0,Chromosome.getUnfilteredSize(),outputCompressedPNG);

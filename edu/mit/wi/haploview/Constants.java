@@ -161,6 +161,7 @@ public interface Constants {
             "-dprime                         Outputs LD text to <inputfile>.LD\n" +
             "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
             "-compressedpng                  Outputs compressed LD display to <inputfile>.LD.PNG\n"+
+            "-infoTrack                      Downloads and displays HapMap info track on PNG image output\n"+
             "-ldcolorscheme <argument>       Specify an LD color scheme. <argument> should be one of:\n" +
             "                                DEFAULT, RSQ, DPALT, GAB, GAM\n" +
             "-check                          Outputs marker checks to <inputfile>.CHECK\n" +
