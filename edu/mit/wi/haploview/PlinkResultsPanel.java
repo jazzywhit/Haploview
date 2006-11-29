@@ -4,8 +4,10 @@ import edu.mit.wi.plink.PlinkTableModel;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.border.TitledBorder;
 import java.util.Vector;
+import java.util.Hashtable;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,10 +24,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     String[] chromNames = {"","1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"};
     String[] signs = {"",">=","<=","="};
-    private JComboBox chromChooser, genericChooser, signChooser;
+    private JComboBox chromChooser, genericChooser, signChooser, removeChooser;
     private NumberTextField chromStart, chromEnd;
     private JTextField valueField, markerField;
     private JPanel filterPanel;
+    private Vector originalColumns;
+    private Hashtable removedColumns;
 
     private int startPos, endPos, numResults;
     private String chromChoice, columnChoice, signChoice, value, marker;
@@ -40,16 +44,21 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         plinkTableModel = new PlinkTableModel(colNames,results);
         sorter = new TableSorter(plinkTableModel);
         numResults = plinkTableModel.getRowCount();
+        removedColumns = new Hashtable(1,1);
+        originalColumns = (Vector)plinkTableModel.getUnknownColumns().clone();
 
 
         table = new JTable(sorter);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getTableHeader().setReorderingAllowed(false);
+        //due to an old JTable bug this is necessary to activate a horizontal scrollbar
+        if (table.getColumnCount() > 15 && table.getRowCount() > 60){
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        }
         //table.getModel().addTableModelListener(this);
 
         sorter.setTableHeader(table.getTableHeader());
-        table.getColumnModel().getColumn(0).setPreferredWidth(50);
-        //table.removeColumn(table.getColumnModel().getColumn(4));
+        table.getColumnModel().getColumn(0).setPreferredWidth(60);
 
         final PlinkCellRenderer renderer = new PlinkCellRenderer();
         try{
@@ -97,8 +106,14 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         doMarkerFilter.setActionCommand("marker filter");
         doMarkerFilter.addActionListener(this);
         extraFilterPanel.add(doMarkerFilter);
+        extraFilterPanel.add(new JLabel("Remove Column:"));
+        removeChooser = new JComboBox(plinkTableModel.getUnknownColumns());
+        extraFilterPanel.add(removeChooser);
+        JButton removeButton = new JButton("Remove");
+        removeButton.addActionListener(this);
+        extraFilterPanel.add(removeButton);
 
-        JButton resetFilters = new JButton("Reset Filters");
+        JButton resetFilters = new JButton("Reset");
         resetFilters.addActionListener(this);
         JButton moreResults = new JButton("Load Additional Results");
         moreResults.addActionListener(this);
@@ -144,7 +159,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         c.gridy = 1;
         add(filterPanel, c);
         c.gridy = 2;
-        c.weighty = 0;
         add(goPanel,c);
 
         if (filters != null){
@@ -221,6 +235,28 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void clearFilters(){
+        if (removedColumns.size() > 0){
+            for (int i = 1; i < removeChooser.getItemCount(); i++){
+                TableColumn deletedColumn = table.getColumn(removeChooser.getItemAt(i));
+                removedColumns.put(removeChooser.getItemAt(i),deletedColumn);
+                table.removeColumn(deletedColumn);
+            }
+
+            removeChooser.removeAllItems();
+            removeChooser.addItem("");
+
+            for (int i = 1; i < originalColumns.size(); i++){
+                TableColumn addedColumn = (TableColumn)removedColumns.get(originalColumns.get(i));
+                table.addColumn(addedColumn);
+                removeChooser.addItem(originalColumns.get(i));
+            }
+            removedColumns.clear();
+        }
+
+        if (table.getColumnCount() > 15 && table.getRowCount() > 60){
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        }
+
         clearSorting();
         plinkTableModel.resetFilters();
         chromChooser.setSelectedIndex(0);
@@ -230,6 +266,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         chromEnd.setText("");
         endPos = -1;
         genericChooser.setSelectedIndex(0);
+        genericChooser.updateUI();
         columnChoice = null;
         signChooser.setSelectedIndex(0);
         signChoice = null;
@@ -323,7 +360,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 doMarkerFilter();
             }
         }
-        else if (command.equals("Reset Filters")){
+        else if (command.equals("Reset")){
             clearFilters();
         }else if (command.equals("Load Additional Results")){
             HaploView.fc.setSelectedFile(new File(""));
@@ -333,6 +370,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             String fullName = file.getParent()+File.separator+file.getName();
             String[] inputs = {null,null,fullName,null};
             hv.readWGA(inputs);
+        }else if (command.equals("Remove")){
+            if (removeChooser.getSelectedIndex() > 0){
+                TableColumn deletedColumn = table.getColumn(removeChooser.getSelectedItem());
+                removedColumns.put(removeChooser.getSelectedItem(),deletedColumn);
+                table.removeColumn(deletedColumn);
+                removeChooser.removeItemAt(removeChooser.getSelectedIndex());
+                removeChooser.setSelectedIndex(removeChooser.getItemCount()-1);
+                genericChooser.setSelectedIndex(0);
+                if (table.getColumnCount() < 18){
+                    table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+                }
+                repaint();
+            }
         }else if (command.equals("Go to Selected Region")){
             gotoRegion();
         }

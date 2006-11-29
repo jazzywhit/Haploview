@@ -80,7 +80,7 @@ public class PlinkTableModel extends AbstractTableModel{
             value = marker.getMarkerID();
         }else if (column == POSITION_COLUMN){
             value = new Long(marker.getPosition());
-        }else if (column == HAPLOTYPE_COLUMN || column == A1_COLUMN || column == A2_COLUMN){ //TODO: More of these
+        }else if (column == HAPLOTYPE_COLUMN || column == A1_COLUMN || column == A2_COLUMN){
             value = (String)(result.getValues().get(column-3));
         }else{
             try{
@@ -161,7 +161,7 @@ public class PlinkTableModel extends AbstractTableModel{
                     }
                 }
 
-                if (col == HAPLOTYPE_COLUMN || col == A1_COLUMN || col == A2_COLUMN){ //TODO: More of these
+                if (col == HAPLOTYPE_COLUMN || col == A1_COLUMN || col == A2_COLUMN){
                     stringVal = value;
                 }
 
