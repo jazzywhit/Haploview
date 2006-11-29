@@ -64,6 +64,13 @@ public class Plink implements Constants {
                     StringTokenizer st = new StringTokenizer(mapLine,"\t ");
 
                     String chrom = st.nextToken();
+                    if (chrom.equals("23")){
+                        chrom = "X";
+                    }else if (chrom.equals("24")){
+                        chrom = "Y";
+                    }else if (chrom.equals("25")){
+                        chrom = "XY";
+                    }
                     String marker = new String(st.nextToken());
                     double mDistance = Double.parseDouble(st.nextToken());
                     String pos = st.nextToken();
@@ -175,7 +182,7 @@ public class Plink implements Constants {
                         lineNumber++;
                         continue;
                     }else if (!(assocMarker.getChromosome().equalsIgnoreCase(chromosome)) && chromosome != null){
-                        throw new PlinkException("Incompatible chromsomes for marker " + marker +
+                        throw new PlinkException("Incompatible chromosomes for marker " + marker +
                                 "\non line " + lineNumber);
                     }
                 }else{
