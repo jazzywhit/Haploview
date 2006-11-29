@@ -22,7 +22,7 @@ import java.net.URL;
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 
-public class HaploView extends JFrame implements ActionListener, Constants{
+public class HaploView extends JFrame implements ActionListener, ComponentListener, Constants{
 
     boolean DEBUG = false;
 
@@ -87,6 +87,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     boolean isMaxSet = false;
     JPanel progressPanel = new JPanel();
     LayoutManager defaultLayout = new GridBagLayout();
+    private Dimension LastGoodSize = new Dimension(1024,768);
 
     public HaploView(){
         try{
@@ -347,6 +348,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 quit();
             }
         });
+        addComponentListener(this);
     }
 
 
@@ -1190,6 +1192,34 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             checkPanel = null;
             plinkPanel = null;
         }
+    }
+
+    public void componentResized(ComponentEvent e) {
+
+        Dimension new_size = getSize();
+
+        int mh = getMinimumSize().height;
+        int mw = getMinimumSize().width;
+        if (new_size.height<mh || new_size.width<mw) {
+            if (new_size.height<mh) LastGoodSize.height=mh;
+            else LastGoodSize.height=new_size.height;
+            if (new_size.width<mw) LastGoodSize.width=mw;
+            else LastGoodSize.width=new_size.width;
+            setSize(LastGoodSize);
+        } else {
+            LastGoodSize = new_size;
+        }
+
+    }
+
+    public void componentMoved(ComponentEvent e) {}
+
+    public void componentShown(ComponentEvent e) {}
+
+    public void componentHidden(ComponentEvent e) {}
+
+    public Dimension getMinimumSize() {
+        return new Dimension(800,400);
     }
 
     class TabChangeListener implements ChangeListener{
