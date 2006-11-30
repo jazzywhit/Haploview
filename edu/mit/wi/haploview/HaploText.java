@@ -645,10 +645,10 @@ public class HaploText implements Constants{
                 if(!(chromosomeArg.equalsIgnoreCase("X")) && !(chromosomeArg.equalsIgnoreCase("Y"))){
                     try{
                         if (Integer.parseInt(chromosomeArg) > 22){
-                            die("-chromosome requires a chromsome name of 1-22, X, or Y");
+                            die("-chromosome requires a chromosome name of 1-22, X, or Y");
                         }
                     }catch(NumberFormatException nfe){
-                        die("-chromosome requires a chromsome name of 1-22, X, or Y");
+                        die("-chromosome requires a chromosome name of 1-22, X, or Y");
                     }
                 }
 
