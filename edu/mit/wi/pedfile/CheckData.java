@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.18 2006/08/15 17:11:23 djbender Exp $
+* $Id: CheckData.java,v 3.19 2006/12/06 19:46:26 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -70,11 +70,12 @@ public class CheckData {
         int[] founderHomCount = new int[5];
         Vector mendels = new Vector();
 
-        int[] count = new int[5];
+        int[] count = new int[6];
         for(int i=0;i<5;i++) {
             founderHomCount[i] =0;
             count[i]=0;
         }
+        count[5] = 0;
 
         //loop through each family, check data for marker loc
         Enumeration famList = pedFile.getFamList();
@@ -264,6 +265,8 @@ public class CheckData {
 
                         if (allele1 != 9){  //value of 9 means an 'h' allele for haps files...
                             count[allele1]++;
+                        }else{
+                            count[5]++;
                         }
                         if (!Chromosome.getDataChrom().equalsIgnoreCase("chrx") || currentInd.getGender() != 1) {
                             if(allele1 != allele2 || allele1 == 9 || allele2 == 9) {
@@ -273,6 +276,8 @@ public class CheckData {
                             }
                             if(allele2 != 9){
                                 count[allele2]++;
+                            }else{
+                                count[5]++;
                             }
                         }
                     }else{
@@ -286,7 +291,7 @@ public class CheckData {
                     }
 
                     if (!Chromosome.getDataChrom().equalsIgnoreCase("chrx") || currentInd.getGender() != 1) {
-                        if(allele1 == allele2) {
+                        if(allele1 == allele2 && allele1 != 9 && allele2 != 9) {
                             hom++;
                         }else {
                             het++;
@@ -303,6 +308,39 @@ public class CheckData {
         }
         double obsHET = getObsHET(het, hom);
         double freqStuff[] = null;
+        int numHets = count[5];
+        count[5] = 0;
+        if (numHets > 0){
+            int numAlleles = 0;
+            for (int i = 1; i < count.length-1; i++){
+                if (count[i] > 0){
+                    numAlleles++;
+                }
+            }
+
+            if (numAlleles == 0){
+                count[1] += numHets/2;
+                count[3] += numHets/2;
+            }else if (numAlleles ==  1){
+                for (int i = 1; i < count.length-1; i++){
+                    if (count[i] > 0){
+                        count[i] += numHets/2;
+                        if (i == 4){
+                            count[3] += numHets/2;
+                        }else{
+                            count[i+1] += numHets/2;
+                        }
+                        break;
+                    }
+                }
+            }else if (numAlleles == 2){
+                for (int i = 1; i < count.length -1; i++){
+                    if (count[i] > 0){
+                        count[i] += numHets/2;
+                    }
+                }
+            }
+        }
         try{
             freqStuff = getFreqStuff(count);
         }catch (PedFileException pfe){
