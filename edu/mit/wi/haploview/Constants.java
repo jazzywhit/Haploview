@@ -123,6 +123,9 @@ public interface Constants {
     static final String[] POP_NAMES = {"CEU", "YRI", "CHB+JPT"};
     static final String[] RELEASE_NAMES = {"16a","21"};
 
+    //plot types
+    static final String[] PLOT_TYPES = {"-log10"};
+
     //GBrowse options
     static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "DNA"};
     static final String[] GB_OPTS = {"gtsh%201", "mRNA%203", "", "", ""};
