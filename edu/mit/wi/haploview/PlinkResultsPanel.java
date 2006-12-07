@@ -19,10 +19,12 @@ import java.io.BufferedWriter;
 
 import org.jfree.data.xy.*;
 import org.jfree.chart.*;
+import org.jfree.chart.entity.EntityCollection;
+import org.jfree.chart.entity.XYItemEntity;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.axis.ValueAxis;
-//import org.jfree.chart.axis.SymbolAxis;
-import org.jfree.chart.renderer.xy.XYDotRenderer;
 import org.jfree.chart.renderer.xy.XYItemRendererState;
+import org.jfree.chart.renderer.xy.XYDotRenderer;
 import org.jfree.chart.plot.*;
 import org.jfree.ui.RefineryUtilities;
 import org.jfree.ui.RectangleEdge;
@@ -41,7 +43,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private JPanel filterPanel;
     private Vector originalColumns;
     private Hashtable removedColumns;
-    private XYSeriesCollection dataset;
+    private Hashtable[] info;
 
     private int startPos, endPos, numResults;
     private double significant, suggestive;
@@ -133,7 +135,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         if (hv.getPlinkDups()){
             moreResults.setEnabled(false);
         }
-        JButton plotButton = new JButton("Plot Selected Column");
+        JButton plotButton = new JButton("Plot");
         plotButton.addActionListener(this);
 
         filterPanel = new JPanel(new GridBagLayout());
@@ -308,7 +310,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
     public XYSeriesCollection makeDataSet(int col){
         int numRows = table.getRowCount();
-        long[] maxPositions = new long[23];
+        long[] maxPositions = new long[25];
 
         for (int i = 0; i < numRows; i++){
             String chrom = (String)table.getValueAt(i,0);
@@ -331,22 +333,37 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }
         }
 
-        long[] addValues = new long[23];
+        long[] addValues = new long[25];
         long addValue = 0;
         addValues[0] = 0;
 
-        for (int i = 1; i < 23; i++){
+        for (int i = 1; i < 25; i++){
             addValue += maxPositions[i-1];
             addValues[i] = addValue;
         }
 
-        XYSeries xys = new XYSeries("Data");
+        XYSeries[] xyArray = new XYSeries[26];
+        for(int i = 1; i < 23; i++){
+            xyArray[i] = new XYSeries("Chr" + i);
+        }
+        xyArray[23] = new XYSeries("ChrX");
+        xyArray[24] = new XYSeries("ChrY");
+        xyArray[25] = new XYSeries("ChrXY");
+
+        info = new Hashtable[25];
+        for (int i = 0; i < 24; i++){
+            info[i] = new Hashtable();
+        }
 
         for (int i = 0; i < numRows; i++){
             String chrom = (String)table.getValueAt(i,0);
             int chr;
             if (chrom.equalsIgnoreCase("X")){
                 chr = 23;
+            }else if (chrom.equalsIgnoreCase("Y")){
+                chr = 24;
+            }else if (chrom.equalsIgnoreCase("XY")){
+                chr = 25;
             }else{
                 chr = Integer.parseInt(chrom);
             }
@@ -367,6 +384,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                         "Invalid column",
                         JOptionPane.ERROR_MESSAGE);
                 return null;
+            }catch (NullPointerException npe){ //this can happen with blank table values from additional results
+                continue;
             }
 
             if (f < 0 || f > 1){
@@ -377,12 +396,20 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                         JOptionPane.ERROR_MESSAGE);
                 return null;
             }
-            f = (Math.log(f)/Math.log(10))*-1; //other
-            xys.add(c,f);
+            f = (Math.log(f)/Math.log(10))*-1;
+            long kbPos = Long.parseLong(String.valueOf(table.getValueAt(i,2)))/1000;
+            String infoString = table.getValueAt(i,1) + ", Chr" + chrom + ":" + kbPos + ", " + table.getValueAt(i,col);
+            info[chr-1].put(new Double(c),infoString);
+            xyArray[chr].add(c,f);
         }
 
-        dataset = new XYSeriesCollection();
-        dataset.addSeries(xys);
+        XYSeriesCollection dataset = new XYSeriesCollection();
+
+        for (int i = 1; i < 25; i++){
+            if (xyArray[i].getItemCount() > 0){
+                dataset.addSeries(xyArray[i]);
+            }
+        }
         return dataset;
     }
 
@@ -391,23 +418,42 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         if (dataSet == null){
             return;
         }
+
         significant = sig;
         suggestive = sug;
 
-        JFreeChart chart = ChartFactory.createScatterPlot("",
-                "Genomic Region (MB)", PLOT_TYPES[plotType] + "(" + table.getColumnName(col) + ")", dataset, PlotOrientation.VERTICAL, false, false, false);
+        JFreeChart chart = ChartFactory.createScatterPlot(null,
+                null, PLOT_TYPES[plotType] + "(" + table.getColumnName(col) + ")", dataSet, PlotOrientation.VERTICAL, true, true, false);
+        BasicStroke stroke = new BasicStroke();
+        ValueMarker sugMarker = new ValueMarker(sug,Color.blue,stroke);
+        chart.getXYPlot().addRangeMarker(sugMarker);
+        ValueMarker sigMarker = new ValueMarker(sig,Color.red,stroke);
+        chart.getXYPlot().addRangeMarker(sigMarker);
+        chart.getXYPlot().setDomainGridlinesVisible(false);
+        chart.getXYPlot().getDomainAxis().setTickMarksVisible(false);
+        chart.getXYPlot().getDomainAxis().setTickLabelsVisible(false);
         PlinkScatterPlotRenderer xyd = new PlinkScatterPlotRenderer();
         chart.getXYPlot().setRenderer(xyd);
-        //SymbolAxis domainAxis = new SymbolAxis("Genomic Region (MB)",CHROM_NAMES);
-        //chart.getXYPlot().setDomainAxis(domainAxis);
+        Shape[] shapes = new Shape[1];
+        shapes[0] = new Rectangle2D.Double(-2,-3,20,5);
+        DrawingSupplier supplier = new DefaultDrawingSupplier(
+            DefaultDrawingSupplier.DEFAULT_PAINT_SEQUENCE,
+            DefaultDrawingSupplier.DEFAULT_OUTLINE_PAINT_SEQUENCE,
+            DefaultDrawingSupplier.DEFAULT_STROKE_SEQUENCE,
+            DefaultDrawingSupplier.DEFAULT_OUTLINE_STROKE_SEQUENCE,
+            shapes
+        );
+        chart.getXYPlot().setDrawingSupplier(supplier);
+        PlinkToolTipGenerator xyt = new PlinkToolTipGenerator();
+        xyd.setToolTipGenerator(xyt);
         chart.setAntiAlias(false);
         ChartPanel panel = new ChartPanel(chart, true);
-        panel.setPreferredSize(new java.awt.Dimension(500, 270));
+        panel.setPreferredSize(new Dimension(700,270));
         panel.setMinimumDrawHeight(10);
         panel.setMaximumDrawHeight(2000);
         panel.setMinimumDrawWidth(20);
         panel.setMaximumDrawWidth(2000);
-        JFrame plotFrame = new JFrame();
+        JFrame plotFrame = new JFrame(table.getColumnName(col));
         plotFrame.setContentPane(panel);
         plotFrame.pack();
         RefineryUtilities.centerFrameOnScreen(plotFrame);
@@ -508,16 +554,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 }
                 repaint();
             }
-        }else if (command.equals("Plot Selected Column")){
-            if (table.getSelectedColumn() == -1){
-                JOptionPane.showMessageDialog(this,
-                        "Please select a column.",
-                        "Invalid value",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            int selection = table.getSelectedColumn();
-            PlotOptionDialog pod = new PlotOptionDialog(hv,this,"Plot Options",selection);
+        }else if (command.equals("Plot")){
+            PlotOptionDialog pod = new PlotOptionDialog(hv,this,"Plot Options",plinkTableModel.getUnknownColumns());
             pod.pack();
             pod.setVisible(true);
         }
@@ -552,29 +590,32 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
     }
 
-    class PlinkScatterPlotRenderer extends XYDotRenderer{
+    class PlinkScatterPlotRenderer extends XYDotRenderer {
 
         public PlinkScatterPlotRenderer(){
             super();
         }
 
-        public void drawItem(Graphics2D graphics2D, XYItemRendererState xyItemRendererState, Rectangle2D rectangle2D, PlotRenderingInfo plotRenderingInfo, XYPlot xyPlot, ValueAxis valueAxis, ValueAxis valueAxis1, XYDataset xyDataset, int i, int i1, CrosshairState crosshairState, int i2) {
-            double x = xyDataset.getXValue(i, i1);
-            double y = xyDataset.getYValue(i, i1);
+        public void drawItem(Graphics2D graphics2D, XYItemRendererState xyItemRendererState, Rectangle2D rectangle2D, PlotRenderingInfo plotRenderingInfo, XYPlot xyPlot, ValueAxis valueAxis, ValueAxis valueAxis1, XYDataset xyDataset, int series, int item, CrosshairState crosshairState, int pass) {
+            EntityCollection entities = null;
+            Shape entityArea = null;
+            if (plotRenderingInfo != null) {
+                entities = plotRenderingInfo.getOwner().getEntityCollection();
+            }
+            double x = xyDataset.getXValue(series, item);
+            double y = xyDataset.getYValue(series, item);
             if (y != Double.NaN) {
                 RectangleEdge xAxisLocation = xyPlot.getDomainAxisEdge();
                 RectangleEdge yAxisLocation = xyPlot.getRangeAxisEdge();
                 double transX = valueAxis.valueToJava2D(x, rectangle2D, xAxisLocation);
                 double transY = valueAxis1.valueToJava2D(y, rectangle2D,yAxisLocation);
 
-                graphics2D.setPaint(this.getItemPaint(i, i1));
+                graphics2D.setPaint(this.getItemPaint(series, item));
                 PlotOrientation orientation = xyPlot.getOrientation();
                 if (orientation == PlotOrientation.HORIZONTAL) {
                     if (y > suggestive && y <= significant && suggestive != -1){
-                        graphics2D.setPaint(Color.blue);
                         graphics2D.fillRect((int) transY, (int) transX, 4, 4);
                     }else if (y > significant && significant != -1){
-                        graphics2D.setPaint(Color.red);
                         graphics2D.fillRect((int) transY, (int) transX, 6, 6);
                     }else{
                         graphics2D.fillRect((int) transY, (int) transX, 2, 2);
@@ -582,14 +623,29 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 }
                 else if (orientation == PlotOrientation.VERTICAL) {
                     if (y > suggestive && y <= significant && suggestive != -1){
-                        graphics2D.setPaint(Color.blue);
                         graphics2D.fillRect((int) transX, (int) transY, 4, 4);
                     }else if (y > significant && significant != -1){
-                        graphics2D.setPaint(Color.red);
                         graphics2D.fillRect((int) transX, (int) transY, 6, 6);
                     }else{
                         graphics2D.fillRect((int) transX, (int) transY, 2, 2);
                     }
+                }
+
+                // add an entity for the item...
+                if (entities != null && y > suggestive) {
+                    if (entityArea == null) {
+                        entityArea = new Rectangle2D.Double(transX - 2, transY - 2, 20, 20);
+                    }
+                    String tip = "";
+                    if (getToolTipGenerator(series,item) != null) {
+                        tip = getToolTipGenerator(series,item).generateToolTip(xyDataset, series, item);
+                    }
+                    String url = null;
+                    if (getURLGenerator() != null) {
+                        url = getURLGenerator().generateURL(xyDataset, series, item);
+                    }
+                    XYItemEntity entity = new XYItemEntity(entityArea, xyDataset, series, item, tip, url);
+                    entities.add(entity);
                 }
 
                 // do we need to update the crosshair values?
@@ -611,10 +667,16 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 }
             }
         }
-
-        public Paint getItemPaint(int row, int column){
-            return Color.lightGray;
-        }
     }
 
+    class PlinkToolTipGenerator extends StandardXYToolTipGenerator{
+
+        public PlinkToolTipGenerator(){
+            super();
+        }
+
+        public String generateToolTip(XYDataset dataset, int series, int item){
+            return (String)info[series].get(new Double(dataset.getXValue(series,item)));
+        }
+    }
 }

@@ -4,24 +4,27 @@ package edu.mit.wi.haploview;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Vector;
 
 
 public class PlotOptionDialog extends JDialog implements ActionListener, Constants {
     private PlinkResultsPanel panel;
 
-    private JComboBox plotChooser;
-    private int column;
+    private JComboBox columnChooser, plotChooser;
     private NumberTextField sigThresh,sugThresh;
 
-    public PlotOptionDialog (HaploView h, PlinkResultsPanel p, String title, int col) {
+    public PlotOptionDialog (HaploView h, PlinkResultsPanel p, String title, Vector columns) {
        super(h,title);
 
         panel = p;
-        column = col;
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
 
+        JPanel columnPanel = new JPanel();
+        columnPanel.add(new JLabel("Column:"));
+        columnChooser = new JComboBox(columns);
+        columnPanel.add(columnChooser);
         JPanel plotPanel = new JPanel();
         plotPanel.add(new JLabel("Plot Type:"));
         plotChooser = new JComboBox(PLOT_TYPES);
@@ -44,6 +47,7 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
         cancelButton.addActionListener(this);
         choicePanel.add(cancelButton);
 
+        contents.add(columnPanel);
         contents.add(plotPanel);
         contents.add(sugPanel);
         contents.add(sigPanel);
@@ -61,6 +65,14 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
             this.dispose();
         }
         if (command.equals("OK")){
+            if (columnChooser.getSelectedIndex() == 0){
+                JOptionPane.showMessageDialog(this,
+                        "Please select a column to plot.",
+                        "Invalid value",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            int column = columnChooser.getSelectedIndex() + 2;
             int plotType = plotChooser.getSelectedIndex();
             double suggestive, significant;
 
