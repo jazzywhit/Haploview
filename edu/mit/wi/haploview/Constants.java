@@ -5,12 +5,12 @@ public interface Constants {
 
     //main jframe setup stuff & labels.
     public static final double VERSION = 4.0;
-    public static final int BETA_VERSION = 11;
+    public static final int BETA_VERSION = 12;
     public static final String EMAIL_STRING = "haploview@broad.mit.edu";
     public static final String TITLE_STRING = "Haploview "+VERSION+"beta"+BETA_VERSION;
     public static final String JAVA_VERSION = System.getProperty("java.version");
     public static final String USER_AGENT = "Haploview/" + VERSION + " Java/" + JAVA_VERSION;
-    public static final String RELEASE_DATE = "17 November, 2006";
+    public static final String RELEASE_DATE = "7 December, 2006";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
     public static final String BETA_WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/beta.php";
     public static final String ABOUT_STRING = TITLE_STRING + "\n" + RELEASE_DATE + "\n" +
