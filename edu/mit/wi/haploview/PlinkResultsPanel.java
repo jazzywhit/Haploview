@@ -448,7 +448,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         xyd.setToolTipGenerator(xyt);
         chart.setAntiAlias(false);
         ChartPanel panel = new ChartPanel(chart, true);
-        panel.setPreferredSize(new Dimension(700,270));
+        panel.setPreferredSize(new Dimension(750,300));
         panel.setMinimumDrawHeight(10);
         panel.setMaximumDrawHeight(2000);
         panel.setMinimumDrawWidth(20);
