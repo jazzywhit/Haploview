@@ -389,16 +389,15 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }
 
             if (type == LOG10_PLOT){
-            if (f < 0 || f > 1){
-                JOptionPane.showMessageDialog(this,
-                        "The selected column is not formatted correctly \n" +
-                                "for a -log10 plot.",
-                        "Invalid column",
-                        JOptionPane.ERROR_MESSAGE);
-                return null;
-            }
-
-            f = (Math.log(f)/Math.log(10))*-1;
+                if (f < 0 || f > 1){
+                    JOptionPane.showMessageDialog(this,
+                            "The selected column is not formatted correctly \n" +
+                                    "for a -log10 plot.",
+                            "Invalid column",
+                            JOptionPane.ERROR_MESSAGE);
+                    return null;
+                }
+                f = (Math.log(f)/Math.log(10))*-1;
             }
             long kbPos = Long.parseLong(String.valueOf(table.getValueAt(i,2)))/1000;
             String infoString = table.getValueAt(i,1) + ", Chr" + chrom + ":" + kbPos + ", " + table.getValueAt(i,col);
@@ -451,11 +450,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         Shape[] shapes = new Shape[1];
         shapes[0] = new Rectangle2D.Double(-2,-3,20,5);
         DrawingSupplier supplier = new DefaultDrawingSupplier(
-            DefaultDrawingSupplier.DEFAULT_PAINT_SEQUENCE,
-            DefaultDrawingSupplier.DEFAULT_OUTLINE_PAINT_SEQUENCE,
-            DefaultDrawingSupplier.DEFAULT_STROKE_SEQUENCE,
-            DefaultDrawingSupplier.DEFAULT_OUTLINE_STROKE_SEQUENCE,
-            shapes
+                DefaultDrawingSupplier.DEFAULT_PAINT_SEQUENCE,
+                DefaultDrawingSupplier.DEFAULT_OUTLINE_PAINT_SEQUENCE,
+                DefaultDrawingSupplier.DEFAULT_STROKE_SEQUENCE,
+                DefaultDrawingSupplier.DEFAULT_OUTLINE_STROKE_SEQUENCE,
+                shapes
         );
         thePlot.setDrawingSupplier(supplier);
 
@@ -515,17 +514,17 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
     public void exportTable(File outfile) throws IOException, HaploViewException{
         BufferedWriter plinkWriter = new BufferedWriter(new FileWriter(outfile));
-        for (int i = 0; i < plinkTableModel.getColumnCount(); i++){
-            plinkWriter.write(plinkTableModel.getColumnName(i)+"\t");
+        for (int i = 0; i < table.getColumnCount(); i++){
+            plinkWriter.write(table.getColumnName(i)+"\t");
         }
         plinkWriter.newLine();
 
-        for (int i = 0; i < plinkTableModel.getRowCount(); i++){
-            for (int j = 0; j < plinkTableModel.getColumnCount(); j++){
-                if (plinkTableModel.getValueAt(i,j) == null){
+        for (int i = 0; i < table.getRowCount(); i++){
+            for (int j = 0; j < table.getColumnCount(); j++){
+                if (table.getValueAt(i,j) == null){
                     plinkWriter.write("-"+"\t");
                 }else{
-                    plinkWriter.write(plinkTableModel.getValueAt(i,j)+"\t");
+                    plinkWriter.write(table.getValueAt(i,j)+"\t");
                 }
             }
             plinkWriter.newLine();
