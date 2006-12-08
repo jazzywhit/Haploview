@@ -1446,7 +1446,7 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
                     }else if (c.equals(hapDisplay)){
                         theData.saveHapsToText(hapDisplay.filteredHaplos,hapDisplay.multidprimeArray, outfile);
                     }else if (c.equals(checkPanel)){
-                        theData.getPedFile().saveCheckDataToText(outfile);
+                        checkPanel.saveTableToText(outfile);
                     }else if (c.equals(tdtPanel)){
                         tdtPanel.getTestSet().saveSNPsToText(outfile);
                     }else if (c.equals(hapAssocPanel)){

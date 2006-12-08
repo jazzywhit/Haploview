@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.39 2006/10/25 17:45:52 djbender Exp $
+* $Id: PedFile.java,v 3.40 2006/12/08 15:51:54 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1603,7 +1603,6 @@ public class PedFile {
 
         checkWriter.close();
     }
-
 
     public void setWhiteList(HashSet whiteListedCustomMarkers) {
         whitelist = whiteListedCustomMarkers;
