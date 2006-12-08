@@ -309,7 +309,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         repaint();
     }
 
-    public XYSeriesCollection makeDataSet(int col){
+    public XYSeriesCollection makeDataSet(int col, int type){
         int numRows = table.getRowCount();
         long[] maxPositions = new long[25];
 
@@ -380,8 +380,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 f = ((Double)table.getValueAt(i,col)).doubleValue();
             }catch (ClassCastException cce){
                 JOptionPane.showMessageDialog(this,
-                        "The selected column is not formatted correctly \n" +
-                                "for a -log10 plot.",
+                        "The selected column is not numerical",
                         "Invalid column",
                         JOptionPane.ERROR_MESSAGE);
                 return null;
@@ -389,6 +388,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 continue;
             }
 
+            if (type == LOG10_PLOT){
             if (f < 0 || f > 1){
                 JOptionPane.showMessageDialog(this,
                         "The selected column is not formatted correctly \n" +
@@ -397,7 +397,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                         JOptionPane.ERROR_MESSAGE);
                 return null;
             }
+
             f = (Math.log(f)/Math.log(10))*-1;
+            }
             long kbPos = Long.parseLong(String.valueOf(table.getValueAt(i,2)))/1000;
             String infoString = table.getValueAt(i,1) + ", Chr" + chrom + ":" + kbPos + ", " + table.getValueAt(i,col);
             info[chr-1].put(new Double(c),infoString);
@@ -419,7 +421,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void makeChart(int plotType, int col, double sig, double sug){
-        XYSeriesCollection dataSet = makeDataSet(col);
+        XYSeriesCollection dataSet = makeDataSet(col, plotType);
         if (dataSet == null){
             return;
         }
@@ -427,18 +429,25 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         significant = sig;
         suggestive = sug;
 
-        JFreeChart chart = ChartFactory.createScatterPlot(null,
-                null, PLOT_TYPES[plotType] + "(" + table.getColumnName(col) + ")", dataSet, PlotOrientation.VERTICAL, true, true, false);
-        BasicStroke stroke = new BasicStroke();
-        ValueMarker sugMarker = new ValueMarker(sug,Color.blue,stroke);
-        chart.getXYPlot().addRangeMarker(sugMarker);
-        ValueMarker sigMarker = new ValueMarker(sig,Color.red,stroke);
-        chart.getXYPlot().addRangeMarker(sigMarker);
-        chart.getXYPlot().setDomainGridlinesVisible(false);
-        chart.getXYPlot().getDomainAxis().setTickMarksVisible(false);
-        chart.getXYPlot().getDomainAxis().setTickLabelsVisible(false);
-        PlinkScatterPlotRenderer xyd = new PlinkScatterPlotRenderer();
-        chart.getXYPlot().setRenderer(xyd);
+        String rangeAxisName;
+        if (plotType == STANDARD_PLOT){
+            rangeAxisName = table.getColumnName(col);
+        }else{
+            rangeAxisName = PLOT_TYPES[plotType] + "(" + table.getColumnName(col) + ")";
+        }
+
+        JFreeChart chart = ChartFactory.createScatterPlot(null,null,rangeAxisName,dataSet,PlotOrientation.VERTICAL,true,true,false);
+
+        XYPlot thePlot = chart.getXYPlot();
+        thePlot.addRangeMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
+        thePlot.addRangeMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
+        thePlot.setDomainGridlinesVisible(false);
+        thePlot.getDomainAxis().setTickMarksVisible(false);
+        thePlot.getDomainAxis().setTickLabelsVisible(false);
+        thePlot.setRenderer(new PlinkScatterPlotRenderer());
+        thePlot.getRenderer().setToolTipGenerator(new PlinkToolTipGenerator());
+        chart.setAntiAlias(false);
+
         Shape[] shapes = new Shape[1];
         shapes[0] = new Rectangle2D.Double(-2,-3,20,5);
         DrawingSupplier supplier = new DefaultDrawingSupplier(
@@ -448,10 +457,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             DefaultDrawingSupplier.DEFAULT_OUTLINE_STROKE_SEQUENCE,
             shapes
         );
-        chart.getXYPlot().setDrawingSupplier(supplier);
-        PlinkToolTipGenerator xyt = new PlinkToolTipGenerator();
-        xyd.setToolTipGenerator(xyt);
-        chart.setAntiAlias(false);
+        thePlot.setDrawingSupplier(supplier);
+
         ChartPanel panel = new ChartPanel(chart, true);
         panel.setPreferredSize(new Dimension(750,300));
         panel.setMinimumDrawHeight(10);
