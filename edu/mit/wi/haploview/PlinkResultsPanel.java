@@ -44,6 +44,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private Vector originalColumns;
     private Hashtable removedColumns;
     private Hashtable[] info;
+    private int[] seriesKeys;
 
     private int startPos, endPos, numResults;
     private double significant, suggestive;
@@ -405,8 +406,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         XYSeriesCollection dataset = new XYSeriesCollection();
 
+        seriesKeys = new int[26];
+        int seriesIndex = 0;
         for (int i = 1; i < 25; i++){
             if (xyArray[i].getItemCount() > 0){
+                seriesKeys[seriesIndex] = i;
+                seriesIndex++;
                 dataset.addSeries(xyArray[i]);
             }
         }
@@ -676,7 +681,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
 
         public String generateToolTip(XYDataset dataset, int series, int item){
-            return (String)info[series].get(new Double(dataset.getXValue(series,item)));
+            return (String)info[seriesKeys[series]-1].get(new Double(dataset.getXValue(series,item)));
         }
     }
 }
