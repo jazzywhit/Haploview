@@ -46,9 +46,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private Hashtable[] info;
     private int[] seriesKeys;
 
-    private int startPos, endPos;
     private double significant, suggestive;
-    private String chromChoice, columnChoice, signChoice, value, marker;
     private HaploView hv;
 
 
@@ -85,8 +83,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
 
         JScrollPane tableScroller = new JScrollPane(table);
-        //tableScroller.setMinimumSize(new Dimension(800,600));
-        //tableScroller.setMaximumSize(new Dimension(800,(int)tableScroller.getPreferredSize().getHeight()));
 
 
         JPanel mainFilterPanel = new JPanel();
@@ -114,7 +110,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         mainFilterPanel.add(doFilter);
 
         JPanel extraFilterPanel = new JPanel();
-        extraFilterPanel.add(new JLabel("Marker:"));
+        extraFilterPanel.add(new JLabel("Goto Marker:"));
         markerField = new JTextField(8);
         extraFilterPanel.add(markerField);
         JButton doMarkerFilter = new JButton("Go");
@@ -182,14 +178,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         add(goPanel,c);
     }
 
-    public void doMarkerFilter(){
-        clearSorting();
-        plinkTableModel.filterMarker(marker);
-        countResults();
+    public void jumpToMarker(String marker){
+        for (int i = 0; i < table.getRowCount(); i++){
+            String currMarker = (String) table.getValueAt(i,1);
+            if (currMarker.equalsIgnoreCase(marker)){
+                table.changeSelection(i,1,false,false);
+                break;
+            }
+        }
     }
 
     public void doFilters(){
-        chromChoice = (String)chromChooser.getSelectedItem();
+        String chromChoice = (String)chromChooser.getSelectedItem();
+        int startPos, endPos;
 
         if (chromStart.getText().equals("")){
             startPos = -1;
@@ -210,6 +211,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             return;
         }
 
+        String columnChoice = null;
+        String signChoice = null;
+        String value = null;
+
         if (genericChooser.getSelectedIndex() > 0){
             columnChoice = (String)genericChooser.getSelectedItem();
 
@@ -222,7 +227,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }
         }
 
-        clearSorting();
+        table.updateUI();
         plinkTableModel.filterAll(chromChoice,startPos,endPos,columnChoice,signChoice,value);
         countResults();
     }
@@ -250,30 +255,17 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         }
 
-        clearSorting();
         plinkTableModel.resetFilters();
         chromChooser.setSelectedIndex(0);
-        chromChoice = null;
         chromStart.setText("");
-        startPos = -1;
         chromEnd.setText("");
-        endPos = -1;
         genericChooser.setSelectedIndex(0);
         genericChooser.updateUI();
-        columnChoice = null;
         signChooser.setSelectedIndex(0);
-        signChoice = null;
         valueField.setText("");
-        value = null;
         markerField.setText("");
-        marker = null;
+        table.updateUI();
         countResults();
-    }
-
-    public void clearSorting(){
-        for (int i = 0; i < table.getColumnCount(); i++){
-            sorter.setSortingStatus(i,TableSorter.NOT_SORTED);
-        }
     }
 
     public void countResults(){
@@ -455,29 +447,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         String gotoChrom = (String)table.getValueAt(table.getSelectedRow(),0);
         String gotoMarker = (String)table.getValueAt(table.getSelectedRow(),1);
         long markerPosition = ((Long)(table.getValueAt(table.getSelectedRow(),2))).longValue();
-        Vector filters = new Vector();
-
-        if (chromChoice != null && !chromChoice.equals("")){
-            if(chromChoice.equals("X")){
-                filters.add("23");
-            }else if (chromChoice.equals("Y")){
-                filters.add("24");
-            }else{
-                filters.add(new Integer(chromChooser.getSelectedIndex()).toString());
-            }
-
-            filters.add(new Integer(startPos).toString());
-            filters.add(new Integer(endPos).toString());
-
-        }else{
-            filters.add("");
-            filters.add("0");
-            filters.add("0");
-        }
-
-        filters.add(new Integer(genericChooser.getSelectedIndex()).toString());
-        filters.add(new Integer(signChooser.getSelectedIndex()).toString());
-        filters.add(valueField.getText());
 
         RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,markerPosition,"Go to Region");
         rd.pack();
@@ -509,9 +478,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         if (command.equals("Filter")){
             doFilters();
         }else if (command.equals("marker filter")){
-            marker = markerField.getText();
+            String marker = markerField.getText();
             if (!(marker.equals(""))){
-                doMarkerFilter();
+                jumpToMarker(marker);
             }
         }
         else if (command.equals("Reset")){
