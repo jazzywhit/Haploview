@@ -18,6 +18,7 @@ public class Chromosome{
     private String origin;
 
     private static String dataChrom = "none";
+    //todo: why aren't these null by default? there's some reason but I can't remember
     private static String dataBuild = "none";
     public static int[] realIndex;
     public static int[] filterIndex;
