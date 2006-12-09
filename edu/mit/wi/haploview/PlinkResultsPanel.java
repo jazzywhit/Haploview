@@ -46,20 +46,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private Hashtable[] info;
     private int[] seriesKeys;
 
-    private int startPos, endPos, numResults;
+    private int startPos, endPos;
     private double significant, suggestive;
     private String chromChoice, columnChoice, signChoice, value, marker;
     private HaploView hv;
 
 
-    public PlinkResultsPanel(HaploView h, Vector results, Vector colNames, Vector filters){
+    public PlinkResultsPanel(HaploView h, Vector results, Vector colNames){
         hv = h;
 
         setLayout(new GridBagLayout());
 
         plinkTableModel = new PlinkTableModel(colNames,results);
         sorter = new TableSorter(plinkTableModel);
-        numResults = plinkTableModel.getRowCount();
         removedColumns = new Hashtable(1,1);
         originalColumns = (Vector)plinkTableModel.getUnknownColumns().clone();
 
@@ -141,7 +140,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         filterPanel = new JPanel(new GridBagLayout());
         GridBagConstraints a = new GridBagConstraints();
-        filterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Viewing " + numResults + " results"));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
+                "Viewing " + plinkTableModel.getRowCount() + " results"));
         ((TitledBorder)(filterPanel.getBorder())).setTitleColor(Color.black);
 
         a.gridwidth = 5;
@@ -180,33 +180,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         add(filterPanel, c);
         c.gridy = 2;
         add(goPanel,c);
-
-        if (filters != null){
-            if (((String)filters.get(0)).equals("")){
-                chromChooser.setSelectedIndex(0);
-            }else{
-                chromChooser.setSelectedIndex(new Integer((String)filters.get(0)).intValue());
-            }
-
-
-            if (((String)filters.get(1)).equals("") || ((String)filters.get(2)).equals("")){
-                chromStart.setText("");
-                chromEnd.setText("");
-            }else if (Integer.parseInt((String)filters.get(1)) >= 0 && Integer.parseInt((String)filters.get(2)) >= 0){
-                chromStart.setText((String)filters.get(1));
-                chromEnd.setText((String)filters.get(2));
-            }
-
-            if (!((String)filters.get(3)).equals("0")){
-                genericChooser.setSelectedIndex(Integer.parseInt((String)filters.get(3)));
-                signChooser.setSelectedIndex(Integer.parseInt((String)filters.get(4)));
-                valueField.setText((String)filters.get(5));
-            }
-
-
-            doFilters();
-        }
-
     }
 
     public void doMarkerFilter(){
@@ -304,8 +277,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void countResults(){
-        numResults = plinkTableModel.getRowCount();
-        filterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), "Viewing " + numResults + " results"));
+        filterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
+                "Viewing " + plinkTableModel.getRowCount() + " results"));
         repaint();
     }
 
@@ -506,7 +479,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         filters.add(new Integer(signChooser.getSelectedIndex()).toString());
         filters.add(valueField.getText());
 
-        hv.setPlinkFilters(filters);
         RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,markerPosition,"Go to Region");
         rd.pack();
         rd.setVisible(true);
