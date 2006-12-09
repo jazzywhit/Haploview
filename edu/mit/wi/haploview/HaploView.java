@@ -64,7 +64,6 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
 
     static HaploView window;
     private Vector plinkData, plinkColumns;
-    private Vector plinkFilters;
     private boolean plinkDups = false;
     private String chosenMarker;
     private Vector phasedSelection;
@@ -683,7 +682,7 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
                 theData.linkageToChrom(inFile, type);
             }
 
-            if (type != PHASED_FILE & type != PHASEDHMPDL_FILE){
+            if (type != PHASED_FILE && type != PHASEDHMPDL_FILE){
                 if(theData.getPedFile().isBogusParents()) {
                     JOptionPane.showMessageDialog(this,
                             "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
@@ -718,31 +717,17 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
 
             if (type == HAPS_FILE){
                 readMarkers(markerFile, null);
-                HashSet emptyHashSet = new HashSet();
-
                 //initialize realIndex
                 Chromosome.doFilter(Chromosome.getUnfilteredSize());
                 customAssocSet = null;
-                theData.getPedFile().setWhiteList(emptyHashSet);
+                theData.getPedFile().setWhiteList(new HashSet());
                 checkPanel = new CheckDataPanel(this);
-            }else if (type == PHASED_FILE){
+            }else if (type == PHASED_FILE || type == PHASEDHMPDL_FILE){
                 readMarkers(null, theData.getPedFile().getHMInfo());
-                HashSet emptyHashSetB = new HashSet();
                 Chromosome.doFilter(Chromosome.getUnfilteredSize());
                 customAssocSet = null;
-                theData.getPedFile().setWhiteList(emptyHashSetB);
+                theData.getPedFile().setWhiteList(new HashSet());
                 checkPanel = new CheckDataPanel(this);
-                Chromosome.doFilter(checkPanel.getMarkerResults());
-            }else if (type == PHASEDHMPDL_FILE){
-                readMarkers(null, theData.getPedFile().getHMInfo());
-                HashSet emptyHashSetB = new HashSet();
-                Chromosome.doFilter(Chromosome.getUnfilteredSize());
-                customAssocSet = null;
-                theData.getPedFile().setWhiteList(emptyHashSetB);
-                checkPanel = new CheckDataPanel(this);
-                if (plinkData != null){
-                    plinkPanel = new PlinkResultsPanel(this,plinkData,plinkColumns,plinkFilters);
-                }
                 Chromosome.doFilter(checkPanel.getMarkerResults());
             }else{
                 readMarkers(markerFile, theData.getPedFile().getHMInfo());
@@ -1015,9 +1000,7 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
                 plink.parseMoreResults(secondaryFile);
             }
 
-            plinkFilters = null;
-
-            plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames(), plinkFilters);
+            plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames());
             HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
             plinkTab.add(plinkPanel);
 
@@ -1165,10 +1148,6 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
 
     public boolean getPlinkDups(){
         return plinkDups;
-    }
-
-    public void setPlinkFilters(Vector filters){
-        plinkFilters = filters;
     }
 
     public void setChosenMarker(String marker){
