@@ -227,7 +227,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }
         }
 
-        table.updateUI();
+        reSort();
         plinkTableModel.filterAll(chromChoice,startPos,endPos,columnChoice,signChoice,value);
         countResults();
     }
@@ -264,8 +264,14 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         signChooser.setSelectedIndex(0);
         valueField.setText("");
         markerField.setText("");
-        table.updateUI();
+        reSort();
         countResults();
+    }
+
+    public void reSort(){
+        for (int i = 0; i < table.getColumnCount(); i++){
+            sorter.setSortingStatus(i,sorter.getSortingStatus(i));
+        }
     }
 
     public void countResults(){
