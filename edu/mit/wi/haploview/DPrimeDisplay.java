@@ -785,9 +785,10 @@ public class DPrimeDisplay extends JComponent
                     }else{
                         val = 100;
                     }
-                    g2.setColor((val < 50) ? Color.gray : Color.black);
-                    if (boxColor.getGreen() < 100 && boxColor.getBlue() < 100 && boxColor.getRed() < 100){
+                    if (boxColor.getGreen() < 175 && boxColor.getBlue() < 175 && boxColor.getRed() < 175){
                         g2.setColor(Color.white);
+                    }else{
+                        g2.setColor((val < 50) ? Color.gray : Color.black);
                     }
                     if (val != 100) {
                         String valu = String.valueOf(val);
