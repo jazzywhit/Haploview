@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.19 2006/12/06 19:46:26 djbender Exp $
+* $Id: CheckData.java,v 3.20 2006/12/10 14:33:33 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -498,7 +498,8 @@ public class CheckData {
         }
 
         //start at midpoint
-        int mid = rare * (2 * diplotypes - rare) / (2 * diplotypes);
+        //all the casting is to make sure we don't overflow ints if there are 10's of 1000's of inds
+        int mid = (int)((double)rare * (double)(2 * diplotypes - rare) / (double)(2 * diplotypes));
 
         //check to ensure that midpoint and rare alleles have same parity
         if (((rare & 1) ^ (mid & 1)) != 0){
