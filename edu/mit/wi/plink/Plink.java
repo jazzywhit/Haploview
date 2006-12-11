@@ -63,6 +63,10 @@ public class Plink implements Constants {
 
                     StringTokenizer st = new StringTokenizer(mapLine,"\t ");
 
+                    if (st.countTokens() < 4){
+                        throw new PlinkException("Map file is not correctly formatted.");
+                    }
+
                     String chrom = st.nextToken();
                     if (chrom.equals("23")){
                         chrom = "X";
