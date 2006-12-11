@@ -590,7 +590,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 }
 
                 // add an entity for the item...
-                if (entities != null && y > suggestive) {
+                if (entities != null) {
                     if (entityArea == null) {
                         entityArea = new Rectangle2D.Double(transX - 2, transY - 2, 20, 20);
                     }
