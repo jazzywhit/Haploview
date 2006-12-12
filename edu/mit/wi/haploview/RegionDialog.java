@@ -4,6 +4,7 @@ package edu.mit.wi.haploview;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Vector;
 
 
 public class RegionDialog extends JDialog implements ActionListener, Constants {
@@ -14,14 +15,16 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
     private NumberTextField rangeInput;
     private String chrom, marker;
     private long markerPosition;
+    private Vector chipSNPs;
 
-    public RegionDialog (HaploView h, String chr, String mark, long position, String title) {
+    public RegionDialog (HaploView h, String chr, String mark, Vector others,long position, String title) {
         super(h,title);
 
         hv = h;
         chrom = chr;
         markerPosition = position;
         marker = mark;
+        chipSNPs = others;
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
@@ -47,7 +50,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         gBrowsePanel.add(gBrowse);
 
         JPanel choicePanel = new JPanel();
-        JButton goButton = new JButton("GO");
+        JButton goButton = new JButton("Go");
         goButton.addActionListener(this);
         this.getRootPane().setDefaultButton(goButton);
         choicePanel.add(goButton);
@@ -70,7 +73,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         if(command.equals("Cancel")) {
             this.dispose();
         }
-        if (command.equals("GO")){
+        if (command.equals("Go")){
             if(rangeInput.getText().equals("")){
                 JOptionPane.showMessageDialog(this,
                         "Please enter a range",
@@ -99,6 +102,11 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                     gotoEnd, pop, gotoStart, gotoEnd, chrom, phase};
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
+            for (int i = 0; i < Chromosome.getSize(); i++){
+                if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
+                    Chromosome.getMarker(i).setExtra("chip");
+                }
+            }
         }
     }
 }

@@ -51,6 +51,10 @@ public class SNP implements Comparable{
         return extra;
     }
 
+    public void setExtra(String extra) {
+        this.extra = extra;
+    }
+
     public byte getMinor(){
         return minor;
     }

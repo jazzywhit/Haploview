@@ -656,19 +656,47 @@ public class DPrimeDisplay extends JComponent
                 // if we're zoomed, use the line color to indicate whether there is extra data available
                 // (since the marker names are not displayed when zoomed)
 
-                if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(green);
+                if (Chromosome.getMarker(i).getExtra() != null) g2.setColor(green);
 
                 //draw tick
                 g2.setStroke(thickerStroke);
                 g2.draw(new Line2D.Double(xx, top, xx, top + TICK_HEIGHT));
 
-                if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setStroke(thickerStroke);
+                if (Chromosome.getMarker(i).getExtra() != null) g2.setStroke(thickerStroke);
                 else g2.setStroke(thinnerStroke);
                 //draw connecting line
                 g2.draw(new Line2D.Double(xx, top + TICK_HEIGHT,
                         left + alignedPositions[i], top+TICK_BOTTOM));
 
-                if (Chromosome.getMarker(i).getExtra() != null && zoomLevel != 0) g2.setColor(Color.black);
+                if (theHV != null){
+                    //draw a star with funny numbers which conform to the golden ratio and make a nice pentagram
+                    if (Chromosome.getMarker(i).getDisplayName().equals(theHV.getChosenMarker())){
+                        float cornerx = (float)xx-12.0f;
+                        float cornery = top-2;
+                        float xpoints[] = {cornerx,cornerx+24.0f,cornerx+4.6f,cornerx+12.0f,cornerx+19.4f};
+                        float ypoints[] = {cornery,cornery,cornery+14.1f,cornery-8.7f,cornery+14.1f};
+                        GeneralPath star = new GeneralPath(GeneralPath.WIND_NON_ZERO,xpoints.length);
+                        star.moveTo(xpoints[0],ypoints[0]);
+                        for (int index = 1; index < xpoints.length; index++){
+                            star.lineTo(xpoints[index],ypoints[index]);
+                        }
+                        star.closePath();
+                        g2.fill(star);
+
+                        cornerx = (float)alignedPositions[i] + left - 12;
+                        cornery = top + TICK_BOTTOM - 5;
+                        float xpoints1[] = {cornerx,cornerx+24.0f,cornerx+4.6f,cornerx+12.0f,cornerx+19.4f};
+                        float ypoints1[] = {cornery,cornery,cornery+14.1f,cornery-8.7f,cornery+14.1f};
+                        star.moveTo(xpoints1[0],ypoints1[0]);
+                        for (int index = 1; index < xpoints1.length; index++){
+                            star.lineTo(xpoints1[index],ypoints1[index]);
+                        }
+                        star.closePath();
+                        g2.fill(star);
+                    }
+                }
+
+                g2.setColor(Color.black);
             }
 
             top += TICK_BOTTOM + TICK_HEIGHT;
@@ -683,7 +711,6 @@ public class DPrimeDisplay extends JComponent
 
                 g2.translate(left, top + widestMarkerName);
                 g2.rotate(-Math.PI / 2.0);
-                boolean foundSNP = false;
                 for (int x = 0; x < Chromosome.getSize(); x++) {
                     if (theData.isInBlock[x]){
                         g2.setFont(boldMarkerNameFont);
@@ -691,18 +718,9 @@ public class DPrimeDisplay extends JComponent
                         g2.setFont(markerNameFont);
                     }
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(green);
-                    if (theHV != null){
-                        if (Chromosome.getMarker(x).getDisplayName().equals(theHV.getChosenMarker())){
-                            g2.setColor(Color.blue);
-                            foundSNP = true;
-                        }
-                    }
+
                     g2.drawString(Chromosome.getMarker(x).getDisplayName(),(float)TEXT_GAP, (float)alignedPositions[x] + ascent/3);
-                    if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(Color.black);
-                    if (foundSNP){
-                        g2.setColor(Color.BLACK);
-                        foundSNP = false;
-                    }
+                    g2.setColor(Color.black);
                 }
 
                 g2.rotate(Math.PI / 2.0);
@@ -1231,7 +1249,6 @@ public class DPrimeDisplay extends JComponent
                     URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
                             gChrom + ":" + chunkLefts[i] + ".." + chunkRights[i] + ";width=" + chunkSpans[i] +
                             ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
-                    System.out.println("imageUrl = " + imageUrl);
 
                     Toolkit toolkit = Toolkit.getDefaultToolkit();
                     HttpURLConnection con = (HttpURLConnection)imageUrl.openConnection();
