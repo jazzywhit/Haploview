@@ -77,7 +77,7 @@ public class Plink implements Constants {
                     }
                     String marker = new String(st.nextToken());
                     //useless morgan distance
-                    double mDistance = Double.parseDouble(st.nextToken());
+                    st.nextToken();
                     String pos = st.nextToken();
                     if (pos.startsWith("-")){
                         continue;
