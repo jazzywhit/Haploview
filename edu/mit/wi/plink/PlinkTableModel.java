@@ -81,7 +81,11 @@ public class PlinkTableModel extends AbstractTableModel{
         }else if (column == POSITION_COLUMN){
             value = new Long(marker.getPosition());
         }else if (column == HAPLOTYPE_COLUMN || column == A1_COLUMN || column == A2_COLUMN){
-            value = (String)(result.getValues().get(column-3));
+            try{
+                value = (String)(result.getValues().get(column-3));
+            }catch (ArrayIndexOutOfBoundsException a){
+                value = null;
+            }
         }else{
             try{
                 value = new Double((String)result.getValues().get(column-3));
