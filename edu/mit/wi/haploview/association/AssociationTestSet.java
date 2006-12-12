@@ -852,7 +852,7 @@ public class AssociationTestSet implements Constants{
         if(Options.getAssocTest() == ASSOC_TRIO) {
             result.append("Block\tHaplotype\tFreq.\tT:U\tChi Square\tP Value\n");
         } else if(Options.getAssocTest() == ASSOC_CC) {
-            result.append("Block\tHaplotype\tFreq.\tCase, Control Ratios\tChi Square\tP Value\n");
+            result.append("Block\tHaplotype\tFreq.\tCase, Control Ratio Counts\tCase,Control Frequencies\tChi Square\tP Value\n");
         }
 
         for (int i = 0; i < results.size(); i++){
@@ -863,6 +863,9 @@ public class AssociationTestSet implements Constants{
                     result.append(ar.getAlleleName(j)).append("\t");
                     result.append(ar.getFreq(j)).append("\t");
                     result.append(ar.getCountString(j)).append("\t");
+                    if (Options.getAssocTest() == ASSOC_CC){
+                        result.append(ar.getFreqString(j)).append("\t");
+                    }
                     result.append(ar.getChiSquare(j)).append("\t");
                     result.append(ar.getPValue(j)).append("\n");
                 }
