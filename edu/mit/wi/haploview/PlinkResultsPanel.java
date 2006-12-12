@@ -8,6 +8,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.border.TitledBorder;
 import java.util.Vector;
 import java.util.Hashtable;
+import java.util.StringTokenizer;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.event.ActionEvent;
@@ -21,6 +22,7 @@ import org.jfree.data.xy.*;
 import org.jfree.chart.*;
 import org.jfree.chart.entity.EntityCollection;
 import org.jfree.chart.entity.XYItemEntity;
+import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.renderer.xy.XYItemRendererState;
@@ -29,7 +31,7 @@ import org.jfree.chart.plot.*;
 import org.jfree.ui.RefineryUtilities;
 import org.jfree.ui.RectangleEdge;
 
-public class PlinkResultsPanel extends JPanel implements ActionListener, Constants {
+public class PlinkResultsPanel extends JPanel implements ActionListener, Constants, ChartMouseListener {
     private JTable table;
     private PlinkTableModel plinkTableModel;
     private TableSorter sorter;
@@ -435,6 +437,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         panel.setMaximumDrawHeight(2000);
         panel.setMinimumDrawWidth(20);
         panel.setMaximumDrawWidth(2000);
+        panel.addChartMouseListener(this);
         JFrame plotFrame = new JFrame(table.getColumnName(col));
         plotFrame.setContentPane(panel);
         plotFrame.pack();
@@ -520,6 +523,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         else if (command.equals("Go to Selected Region")){
             gotoRegion();
         }
+    }
+
+    public void chartMouseClicked(ChartMouseEvent chartMouseEvent) {
+        ChartEntity ce = chartMouseEvent.getEntity();
+        if (ce != null){
+            StringTokenizer st = new StringTokenizer(ce.getToolTipText(),",");
+            jumpToMarker(st.nextToken());
+            hv.requestFocus();
+            hv.toFront();
+        }
+    }
+
+    public void chartMouseMoved(ChartMouseEvent chartMouseEvent) {
     }
 
     class PlinkCellRenderer extends DefaultTableCellRenderer {
