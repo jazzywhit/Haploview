@@ -30,6 +30,7 @@ public class DPrimeDisplay extends JComponent
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;
     private static final int GBROWSE_MARGIN = 25;
+    private static final int MAX_GBROWSE_WIDTH = 30000;
     private static final int LAST_SELECTION_LEFT = 7;
     private static final int LAST_SELECTION_TOP  = 18;
 
@@ -1191,6 +1192,7 @@ public class DPrimeDisplay extends JComponent
                 }else{
                     dataBuild = "_B35";
                 }
+
                 String gChrom;
                 if (Chromosome.getDataChrom().equalsIgnoreCase("chrp")){ //account for pseudoautosomal
                     gChrom = "chrx";
@@ -1198,46 +1200,88 @@ public class DPrimeDisplay extends JComponent
                     gChrom = Chromosome.getDataChrom();
                 }
 
-                URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
-                        gChrom + ":" + gbleft + ".." + gbright + ";width=" + gblineSpan +
-                        ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
+                //A NOTE ON VERY WIDE IMAGES:
+                //hapmap.org freaks out if image request is > 32717 pixels wide, because it adds 50
+                //for a margin, and evidently can't draw something wider than the max value of a short
+                //so if we really want something that big, we break the request into several
+                //adjacent chunks below. If the image size is < 30K then the code below
+                //should reduce to doing what it used to, i.e. get just one image
+                //interestingly, java has a similar problem with images of type INT_RGB, despite
+                //the "INT" in the name, so we use type INT_ARGB which doesn't have this issue.
+                // --jcb
 
-                Toolkit toolkit = Toolkit.getDefaultToolkit();
-                HttpURLConnection con = (HttpURLConnection)imageUrl.openConnection();
-                con.setRequestProperty("User-agent",Constants.USER_AGENT);
-                //todo: make it timeout quicker
-                con.connect();
+                Vector imageVector = new Vector();
+                int numChunks = (int)(Math.ceil(gblineSpan/MAX_GBROWSE_WIDTH));
+                long chunkSize = (long)((MAX_GBROWSE_WIDTH/gblineSpan) * (gbright - gbleft));
+                long[] chunkLefts = new long[numChunks];
+                long[] chunkRights = new long[numChunks];
+                double[] chunkSpans = new double[numChunks];
+                for (int i = 0; i < numChunks; i++){
+                    chunkLefts[i] = gbleft + i*chunkSize;
+                    chunkRights[i] = chunkLefts[i] + chunkSize;
+                    chunkSpans[i] = MAX_GBROWSE_WIDTH;
+                }
+                //remainder, or cases when width is less than max allowed
+                chunkRights[numChunks-1] = gbright;
+                chunkSpans[numChunks-1] = gblineSpan - MAX_GBROWSE_WIDTH*(numChunks-1);
 
-                int response = con.getResponseCode();
+                int totalHeight = 0;
+                int totalWidth = 0;
+                for (int i = 0; i < numChunks; i++){
+                    URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
+                            gChrom + ":" + chunkLefts[i] + ".." + chunkRights[i] + ";width=" + chunkSpans[i] +
+                            ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
+                    System.out.println("imageUrl = " + imageUrl);
 
-                if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
-                    //if something went wrong
-                    throw new IOException("Could not connect to HapMap server.");
+                    Toolkit toolkit = Toolkit.getDefaultToolkit();
+                    HttpURLConnection con = (HttpURLConnection)imageUrl.openConnection();
+                    con.setRequestProperty("User-agent",Constants.USER_AGENT);
+                    con.connect();
+
+                    int response = con.getResponseCode();
+
+                    if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
+                        //if something went wrong
+                        throw new IOException("Could not connect to HapMap server.");
+                    }
+
+                    InputStream inputStream = con.getInputStream();
+                    BufferedInputStream bis = new BufferedInputStream(inputStream);
+                    byte[] buf = new byte[2048];
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    BufferedOutputStream bos = new BufferedOutputStream(baos);
+                    int bytesRead;
+                    while ((bytesRead = bis.read(buf,0,buf.length)) != -1){
+                        bos.write(buf,0,bytesRead);
+                    }
+                    bos.flush();
+                    bos.close();
+                    bis.close();
+
+                    Image img = toolkit.createImage(baos.toByteArray());
+                    MediaTracker mt = new MediaTracker(this);
+                    mt.addImage(img,0);
+                    setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                    mt.waitForID(0);
+                    setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                    imageVector.add(img);
+
+                    if (img.getHeight(this) > totalHeight){
+                        totalHeight = img.getHeight(this);
+                    }
+                    totalWidth += img.getWidth(this);
                 }
 
-                InputStream inputStream = con.getInputStream();
-                BufferedInputStream bis = new BufferedInputStream(inputStream);
-                byte[] buf = new byte[2048];
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                BufferedOutputStream bos = new BufferedOutputStream(baos);
-                int bytesRead;
-                while ((bytesRead = bis.read(buf,0,buf.length)) != -1){
-                    bos.write(buf,0,bytesRead);
-                }
-                bos.flush();
-                bos.close();
-                bis.close();
-
-                Image i = toolkit.createImage(baos.toByteArray());
-
-                MediaTracker mt = new MediaTracker(this);
-                mt.addImage(i,0);
-                setCursor(new Cursor(Cursor.WAIT_CURSOR));
-                mt.waitForID(0);
-                setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-                if (i.getWidth(this) > 0 && i.getHeight(this) > 0){
-                    gBrowseImage = new BufferedImage(i.getWidth(this), i.getHeight(this), BufferedImage.TYPE_INT_RGB);
-                    gBrowseImage.getGraphics().drawImage(i,0,0, this);
+                if (totalWidth > 0 && totalHeight > 0){
+                    gBrowseImage = new BufferedImage(totalWidth,totalHeight,BufferedImage.TYPE_INT_ARGB);
+                    gBrowseImage.getGraphics().setColor(Color.white);
+                    gBrowseImage.getGraphics().fillRect(0,0,gBrowseImage.getWidth(),gBrowseImage.getHeight());
+                    int bumper = 0;
+                    for (int j = 0; j < imageVector.size(); j++){
+                        Image img = (Image)imageVector.get(j);
+                        gBrowseImage.getGraphics().drawImage(img,bumper,0, this);
+                        bumper += chunkSpans[j];
+                    }
                     gbImageHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
                 }else{
                     //couldn't get the image for whatever reason.
