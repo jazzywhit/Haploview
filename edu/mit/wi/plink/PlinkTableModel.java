@@ -166,8 +166,16 @@ public class PlinkTableModel extends AbstractTableModel{
                             if (rowVal >= val){
                                 genericPass = true;
                             }
+                        }else if (s.equals(">")){
+                            if (rowVal > val){
+                                genericPass = true;
+                            }
                         }else if (s.equals("<=")){
                             if (rowVal <= val){
+                                genericPass = true;
+                            }
+                        }else if (s.equals("<")){
+                            if (rowVal < val){
                                 genericPass = true;
                             }
                         }else{
