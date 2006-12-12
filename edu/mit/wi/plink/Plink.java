@@ -76,6 +76,7 @@ public class Plink implements Constants {
                         chrom = "XY";
                     }
                     String marker = new String(st.nextToken());
+                    //useless morgan distance
                     double mDistance = Double.parseDouble(st.nextToken());
                     String pos = st.nextToken();
                     if (pos.startsWith("-")){
@@ -83,7 +84,7 @@ public class Plink implements Constants {
                     }
                     long position = Long.parseLong(pos);
 
-                    Marker mark = new Marker(chrom, marker, mDistance, position);
+                    Marker mark = new Marker(chrom, marker, position);
                     markers.add(mark);
                     markerHash.put(mark.getMarkerID(), mark);
                 }
@@ -94,11 +95,10 @@ public class Plink implements Constants {
             int markerColumn = -1;
             int chromColumn = -1;
             int positionColumn = -1;
-            int morganColumn = -1;
             String headerLine = wgaReader.readLine();
             StringTokenizer headerSt = new StringTokenizer(headerLine);
             while (headerSt.hasMoreTokens()){
-                String column = new String(headerSt.nextToken());
+                String column = headerSt.nextToken();
                 if (column.equals("SNP")){
                     markerColumn = numColumns;
                     numColumns++;
@@ -108,11 +108,7 @@ public class Plink implements Constants {
                 }else if (column.equals("POS")){
                     positionColumn = numColumns;
                     numColumns++;
-                }else if (column.equals("MORGAN")){
-                    morganColumn = numColumns;
-                    numColumns++;
-                }
-                else{
+                }else{
                     columns.add(column);
                     numColumns++;
                 }
@@ -123,8 +119,8 @@ public class Plink implements Constants {
             }
 
             if (embed){
-                if (chromColumn == -1 || positionColumn == -1 || morganColumn == -1){
-                    throw new PlinkException("Results files with embedded map files must contain CHR, POS, and MORGAN columns.");
+                if (chromColumn == -1 || positionColumn == -1){
+                    throw new PlinkException("Results files with embedded map files must contain CHR and POS columns.");
                 }
             }
 
@@ -143,7 +139,6 @@ public class Plink implements Constants {
                 String marker = null;
                 String chromosome = null;
                 long position = 0;
-                double morganDistance = 0;
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
                     if (tokenNumber == markerColumn){
@@ -164,10 +159,7 @@ public class Plink implements Constants {
                         }
                     }else if (tokenNumber == positionColumn){
                         position = Long.parseLong(tokenizer.nextToken());
-                    }else if (tokenNumber == morganColumn){
-                        morganDistance = Double.parseDouble(tokenizer.nextToken());
-                    }
-                    else{
+                    }else{
                         values.add(new String(tokenizer.nextToken()));
                     }
                     tokenNumber++;
@@ -190,7 +182,7 @@ public class Plink implements Constants {
                                 "\non line " + lineNumber);
                     }
                 }else{
-                    assocMarker = new Marker(chromosome,marker,morganDistance,position);
+                    assocMarker = new Marker(chromosome,marker,position);
                 }
 
                 AssociationResult result = new AssociationResult(lineNumber,assocMarker,values);
@@ -281,22 +273,14 @@ public class Plink implements Constants {
                 int tokenNumber = 0;
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
                 String marker = null;
-                String chrom = null;
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
                     if (tokenNumber == markerColumn){
                         marker = new String(tokenizer.nextToken());
                     }else if(tokenNumber == chromColumn){
-                        chrom = new String(tokenizer.nextToken());
-                        if(chrom.equals("23")){
-                            chrom = "X";
-                        }else if(chrom.equals("24")){
-                            chrom = "Y";
-                        }else if(chrom.equals("25")){
-                            chrom = "XY";
-                        }
-                    }
-                    else{
+                        //we don't give a toss for the chromosome...
+                        tokenizer.nextToken();
+                    }else{
                         String value = tokenizer.nextToken();
                         values.add(value);
                     }
