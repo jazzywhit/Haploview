@@ -80,7 +80,7 @@ public class PermutationTestPanel extends HaploviewTab
         permCountPanel.add(selectionPanel);
 
         JLabel permCountTextLabel = new JLabel("Number of Permutations: ");
-        permCountField = new NumberTextField("", 10, false);
+        permCountField = new NumberTextField("", 10, false, false);
         permCountPanel.add(permCountTextLabel);
         permCountPanel.add(permCountField);
 

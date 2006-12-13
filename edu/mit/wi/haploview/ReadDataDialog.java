@@ -161,9 +161,9 @@ public class ReadDataDialog extends JDialog
         downloadChooserPanel.add(new JLabel("Population:"));
         downloadChooserPanel.add(popChooser);
         JPanel downloadPositionPanel = new JPanel();
-        chromStartField = new NumberTextField("",6,false);
+        chromStartField = new NumberTextField("",6,false,false);
         chromStartField.setEnabled(true);
-        chromEndField = new NumberTextField("",6,false);
+        chromEndField = new NumberTextField("",6,false,false);
         chromEndField.setEnabled(true);
         downloadPositionPanel.add(new JLabel("Start kb:"));
         downloadPositionPanel.add(chromStartField);
@@ -328,14 +328,14 @@ public class ReadDataDialog extends JDialog
 
         JPanel compDistPanel = new JPanel();
         compDistPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
-        maxComparisonDistField = new NumberTextField(String.valueOf(Options.getMaxDistance()/1000),6, false);
+        maxComparisonDistField = new NumberTextField(String.valueOf(Options.getMaxDistance()/1000),6, false,false);
         compDistPanel.add(maxComparisonDistField);
         compDistPanel.add(new JLabel("kb apart."));
         a.gridy = 1;
         contents.add(compDistPanel,a);
 
         JPanel missingCutoffPanel = new JPanel();
-        missingCutoffField = new NumberTextField(String.valueOf(Options.getMissingThreshold()*100),3, false);
+        missingCutoffField = new NumberTextField(String.valueOf(Options.getMissingThreshold()*100),3, false,false);
         missingCutoffPanel.add(new JLabel("Exclude individuals with >"));
         missingCutoffPanel.add(missingCutoffField);
         missingCutoffPanel.add(new JLabel("% missing genotypes."));

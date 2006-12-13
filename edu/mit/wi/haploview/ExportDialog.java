@@ -137,10 +137,10 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
         someButton.addActionListener(this);
         rangePanel.add(someButton);
         g3.add(someButton);
-        lowRange = new NumberTextField("",5,false);
+        lowRange = new NumberTextField("",5,false,false);
         rangePanel.add(lowRange);
         rangePanel.add(new JLabel(" to "));
-        upperRange = new NumberTextField("",5,false);
+        upperRange = new NumberTextField("",5,false,false);
         rangePanel.add(upperRange);
         upperRange.setEnabled(false);
         lowRange.setEnabled(false);

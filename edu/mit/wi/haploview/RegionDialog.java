@@ -17,7 +17,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
     private long markerPosition;
     private Vector chipSNPs;
 
-    public RegionDialog (HaploView h, String chr, String mark, Vector others,long position, String title) {
+    public RegionDialog (HaploView h, String chr, String mark, Vector others, long position, String title) {
         super(h,title);
 
         hv = h;
@@ -40,7 +40,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         chooserPanel.add(popChooser);
         chooserPanel.add(new JLabel("Position: " + new Long(position/1000).toString()));
         chooserPanel.add(new JLabel("+/-"));
-        rangeInput = new NumberTextField("100",6,false);
+        rangeInput = new NumberTextField("100",6,false,false);
         chooserPanel.add(rangeInput);
         chooserPanel.add(new JLabel("kb"));
 

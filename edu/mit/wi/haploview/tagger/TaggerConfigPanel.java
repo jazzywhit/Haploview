@@ -167,23 +167,23 @@ public class TaggerConfigPanel extends HaploviewTab
         JPanel rsqPanel = new JPanel();
         JLabel rsqLabel = new JLabel("r\u00b2 threshold");
         rsqPanel.add(rsqLabel);
-        rsqField = new NumberTextField(String.valueOf(Options.getTaggerRsqCutoff()),5,true);
+        rsqField = new NumberTextField(String.valueOf(Options.getTaggerRsqCutoff()),5,true,false);
         rsqPanel.add(rsqField);
         optsRightPanel.add(rsqPanel);
 
         JPanel lodPanel = new JPanel();
         JLabel lodLabel = new JLabel("LOD threshold for multi-marker tests");
         lodPanel.add(lodLabel);
-        lodField = new NumberTextField(String.valueOf(Options.getTaggerLODCutoff()),5,true);
+        lodField = new NumberTextField(String.valueOf(Options.getTaggerLODCutoff()),5,true,false);
         lodPanel.add(lodField);
         optsRightPanel.add(lodPanel);
 
         JPanel maxNumPanel = new JPanel();
         maxNumPanel.add(new JLabel("Max tags"));
-        maxNumTagsField = new NumberTextField("",5,false);
+        maxNumTagsField = new NumberTextField("",5,false,false);
         maxNumPanel.add(maxNumTagsField);
         maxNumPanel.add(new JLabel("Min distance between tags"));
-        minDistField = new NumberTextField("",5,false);
+        minDistField = new NumberTextField("",5,false,false);
         maxNumPanel.add(minDistField);
 
         optsRightPanel.add(maxNumPanel);

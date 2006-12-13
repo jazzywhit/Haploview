@@ -12,11 +12,13 @@ public class NumberTextField extends JTextField {
 
     int size;
     boolean decimal;
+    boolean negative;
 
-    public NumberTextField(String str, int s, boolean allowDecimal){
+    public NumberTextField(String str, int s, boolean allowDecimal, boolean allowNegative){
         super(s);
         size = s;
         decimal = allowDecimal;
+        negative = allowNegative;
         this.setText(str);
     }
 
@@ -42,7 +44,7 @@ public class NumberTextField extends JTextField {
                     super.insertString(offs, to_insert, a);
                     return;
                 }
-                if (Character.isDigit(source[i]) || (String.valueOf(source[i]).equals(".") && decimal)){
+                if (Character.isDigit(source[i]) || (String.valueOf(source[i]).equals(".") && decimal) || (String.valueOf(source[i]).equals("-") && negative)){
                     to_insert+=source[i];
                 }else{
                     Toolkit.getDefaultToolkit().beep();

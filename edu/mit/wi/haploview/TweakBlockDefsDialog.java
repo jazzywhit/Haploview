@@ -26,12 +26,12 @@ public class TweakBlockDefsDialog extends JDialog implements ActionListener {
         JPanel fieldPanel = new JPanel();
         fieldPanel.setLayout(new BoxLayout(fieldPanel, BoxLayout.Y_AXIS));
         JPanel top = new JPanel();
-        highLD = new NumberTextField(String.valueOf(FindBlocks.cutHighCI),4, true);
+        highLD = new NumberTextField(String.valueOf(FindBlocks.cutHighCI),4, true, false);
         top.add(new JLabel("Upper:"));
         top.add(highLD);
         fieldPanel.add(top);
         JPanel bottom = new JPanel();
-        lowLD = new NumberTextField(String.valueOf(FindBlocks.cutLowCI),4, true);
+        lowLD = new NumberTextField(String.valueOf(FindBlocks.cutLowCI),4, true, false);
         bottom.add(new JLabel("Lower:"));
         bottom.add(lowLD);
         fieldPanel.add(bottom);
@@ -39,17 +39,17 @@ public class TweakBlockDefsDialog extends JDialog implements ActionListener {
         sfsPanel.add(holdPanel);
         holdPanel = new JPanel();
         holdPanel.add(new JLabel("Upper confidence interval maximum for strong recombination:"));
-        highRec = new NumberTextField(String.valueOf(FindBlocks.recHighCI),4,true);
+        highRec = new NumberTextField(String.valueOf(FindBlocks.recHighCI),4,true,false);
         holdPanel.add(highRec);
         sfsPanel.add(holdPanel);
         holdPanel = new JPanel();
         holdPanel.add(new JLabel("Fraction of strong LD in informative comparisons must be at least "));
-        informFrac = new NumberTextField(String.valueOf(FindBlocks.informFrac),4,true);
+        informFrac = new NumberTextField(String.valueOf(FindBlocks.informFrac),4,true,false);
         holdPanel.add(informFrac);
         sfsPanel.add(holdPanel);
         holdPanel = new JPanel();
         holdPanel.add(new JLabel("Exclude markers below "));
-        mafCut = new NumberTextField(String.valueOf(FindBlocks.mafThresh),4,true);
+        mafCut = new NumberTextField(String.valueOf(FindBlocks.mafThresh),4,true,false);
         holdPanel.add(mafCut);
         holdPanel.add(new JLabel(" MAF."));
         sfsPanel.add(holdPanel);
@@ -57,13 +57,13 @@ public class TweakBlockDefsDialog extends JDialog implements ActionListener {
         JPanel gamPanel = new JPanel();
         gamPanel.setBorder(new TitledBorder("4 Gamete Rule"));
         gamPanel.add(new JLabel("4th gamete must be observed at frequency > "));
-        gamThresh = new NumberTextField(String.valueOf(FindBlocks.fourGameteCutoff), 5, true);
+        gamThresh = new NumberTextField(String.valueOf(FindBlocks.fourGameteCutoff), 5, true,false);
         gamPanel.add(gamThresh);
 
         JPanel spinePanel = new JPanel();
         spinePanel.setBorder(new TitledBorder("Strong LD Spine"));
         spinePanel.add(new JLabel("Extend spine if D' > "));
-        spinedp = new NumberTextField(String.valueOf(FindBlocks.spineDP), 4, true);
+        spinedp = new NumberTextField(String.valueOf(FindBlocks.spineDP), 4, true,false);
         spinePanel.add(spinedp);
 
         JPanel butPanel = new JPanel();

@@ -32,7 +32,7 @@ public class HaplotypeDisplayController extends JPanel {
         JPanel hapPercentPanel = new JPanel();
         hapPercentPanel.add(new JLabel("Examine haplotypes above "));
             hapPercentPanel.add(minDisplayField =
-                    new NumberTextField(String.valueOf(Options.getHaplotypeDisplayThreshold()*100), 5, true));
+                    new NumberTextField(String.valueOf(Options.getHaplotypeDisplayThreshold()*100), 5, true, false));
 
         hapPercentPanel.add(new JLabel("%"));
         leftPanel.add(hapPercentPanel);
@@ -40,14 +40,14 @@ public class HaplotypeDisplayController extends JPanel {
         JPanel thinPanel = new JPanel();
         thinPanel.add(new JLabel("Connect with thin lines if > "));
         thinPanel.add(minThinField =
-                new NumberTextField(String.valueOf(parent.thinThresh*100), 5, true));
+                new NumberTextField(String.valueOf(parent.thinThresh*100), 5, true, false));
         thinPanel.add(new JLabel("%"));
         leftPanel.add(thinPanel);
 
         JPanel thickPanel = new JPanel();
         thickPanel.add(new JLabel("Connect with thick lines if > "));
         thickPanel.add(minThickField =
-                new NumberTextField(String.valueOf(parent.thickThresh*100), 5, true));
+                new NumberTextField(String.valueOf(parent.thickThresh*100), 5, true, false));
         thickPanel.add(new JLabel("%"));
         leftPanel.add(thickPanel);
 
