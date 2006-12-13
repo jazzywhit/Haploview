@@ -124,9 +124,10 @@ public interface Constants {
     static final String[] RELEASE_NAMES = {"16a","21"};
 
     //plot types
-    static final String[] PLOT_TYPES = {"-log10", "Standard"};
-    static final int LOG10_PLOT = 0;
-    static final int STANDARD_PLOT = 1;
+    static final String[] PLOT_TYPES = {"Standard", "-log10", "log"};
+    static final int STANDARD_PLOT = 0;
+    static final int LOG10_PLOT = 1;
+    static final int LOG_PLOT = 2;
 
     //GBrowse options
     static final String[] GB_TYPES = {"gtsh", "mRNA", "recomb", "NT", "DNA"};

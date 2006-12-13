@@ -26,7 +26,7 @@ public class Plink implements Constants {
     private HaploView hv;
 
     public Plink(HaploView h){
-    hv = h;
+        hv = h;
     }
 
     public void parseWGA(String wga, String map, boolean embed) throws PlinkException {

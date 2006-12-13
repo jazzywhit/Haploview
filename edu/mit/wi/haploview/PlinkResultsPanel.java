@@ -48,9 +48,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private Vector snps;
     private Hashtable removedColumns;
     private Hashtable[] info;
-    private int[] seriesKeys;
+    private int[] seriesKeys, thresholdSigns;
 
-    private double significant, suggestive;
+    private int plotType;
+    private double suggestive, significant;
+    private boolean threeSizes;
     private HaploView hv;
 
 
@@ -100,10 +102,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         chromChooser = new JComboBox(chromNames);
         mainFilterPanel.add(chromChooser);
         mainFilterPanel.add(new JLabel("Start kb:"));
-        chromStart = new NumberTextField("",6,false);
+        chromStart = new NumberTextField("",6,false, false);
         mainFilterPanel.add(chromStart);
         mainFilterPanel.add(new JLabel("End kb:"));
-        chromEnd = new NumberTextField("",6,false);
+        chromEnd = new NumberTextField("",6,false, false);
         mainFilterPanel.add(chromEnd);
         mainFilterPanel.add(new JLabel("Other:"));
         genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
@@ -289,7 +291,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         repaint();
     }
 
-    public XYSeriesCollection makeDataSet(int col, int type){
+    public XYSeriesCollection makeDataSet(int col){
         int numRows = table.getRowCount();
         long[] maxPositions = new long[25];
 
@@ -368,7 +370,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 continue;
             }
 
-            if (type == LOG10_PLOT){
+            if (plotType == LOG10_PLOT){
                 if (f < 0 || f > 1){
                     JOptionPane.showMessageDialog(this,
                             "The selected column is not formatted correctly \n" +
@@ -378,6 +380,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     return null;
                 }
                 f = (Math.log(f)/Math.log(10))*-1;
+            }else if (plotType == LOG_PLOT){
+                f = Math.log(f);
             }
             long kbPos = Long.parseLong(String.valueOf(table.getValueAt(i,2)))/1000;
             String infoString = table.getValueAt(i,1) + ", Chr" + chrom + ":" + kbPos + ", " + table.getValueAt(i,col);
@@ -399,8 +403,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         return dataset;
     }
 
-    public void makeChart(int plotType, int col, double sig, double sug){
-        XYSeriesCollection dataSet = makeDataSet(col, plotType);
+    public void makeChart(int type, int col, double sug, double sig, int[] signs){
+        plotType = type;
+        threeSizes = signs[0] == signs[1];
+        thresholdSigns = signs;
+
+        XYSeriesCollection dataSet = makeDataSet(col);
         if (dataSet == null){
             return;
         }
@@ -594,19 +602,79 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 graphics2D.setPaint(this.getItemPaint(series, item));
                 PlotOrientation orientation = xyPlot.getOrientation();
                 if (orientation == PlotOrientation.HORIZONTAL) {
-                    if (y > suggestive && y <= significant && suggestive != -1){
-                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                    }else if (y > significant && significant != -1){
-                        graphics2D.fillRect((int) transY, (int) transX, 6, 6);
+                    if (suggestive != -1 || significant != -1){
+                        if (threeSizes){
+                            if (thresholdSigns[0] == 0){  //>
+                                if (y > suggestive && y <= significant && suggestive != -1){
+                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                }else if (y > significant && significant != -1){
+                                    graphics2D.fillRect((int) transY, (int) transX, 6, 6);
+                                }else{
+                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                }
+                            }else{  //<
+                                if (y < suggestive && y >= significant && suggestive != -1){
+                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                }else if (y < significant && significant != -1){
+                                    graphics2D.fillRect((int) transY, (int) transX, 6, 6);
+                                }else{
+                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                }
+                            }
+                        }else{
+                            if (thresholdSigns[0] == 0){  //suggestive is >, significant is <
+                                if (y > suggestive || y < significant){
+                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                }else{
+                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                }
+                            }else{
+                                if (y < suggestive || y > significant){
+                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                }else{
+                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                }
+                            }
+                        }
                     }else{
                         graphics2D.fillRect((int) transY, (int) transX, 2, 2);
                     }
                 }
                 else if (orientation == PlotOrientation.VERTICAL) {
-                    if (y > suggestive && y <= significant && suggestive != -1){
-                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                    }else if (y > significant && significant != -1){
-                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
+                    if (suggestive != -1 || significant != -1){
+                        if (threeSizes){
+                            if (thresholdSigns[0] == 0){  //>
+                                if (y > suggestive && y <= significant && suggestive != -1){
+                                    graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                }else if (y > significant && significant != -1){
+                                    graphics2D.fillRect((int) transX, (int) transY, 6, 6);
+                                }else{
+                                    graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                }
+                            }else{  //<
+                                if (y < suggestive && y >= significant && suggestive != -1){
+                                    graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                }else if (y < significant && significant != -1){
+                                    graphics2D.fillRect((int) transX, (int) transY, 6, 6);
+                                }else{
+                                    graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                }
+                            }
+                        }else{
+                            if (thresholdSigns[0] == 0){  //suggestive is >, significant is <
+                                if (y > suggestive || y < significant){
+                                    graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                }else{
+                                    graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                }
+                            }else{
+                                if (y < suggestive || y > significant){
+                                    graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                }else{
+                                    graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                }
+                            }
+                        }
                     }else{
                         graphics2D.fillRect((int) transX, (int) transY, 2, 2);
                     }

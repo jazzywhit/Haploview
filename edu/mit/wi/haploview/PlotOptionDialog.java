@@ -10,8 +10,10 @@ import java.util.Vector;
 public class PlotOptionDialog extends JDialog implements ActionListener, Constants {
     private PlinkResultsPanel panel;
 
-    private JComboBox columnChooser, plotChooser;
-    private NumberTextField sigThresh,sugThresh;
+    private JComboBox columnChooser, plotChooser, signChooser1, signChooser2;
+    private JLabel label1, label2;
+    private NumberTextField sigThresh, sugThresh;
+    private String[] signs = {">","<"};
 
     public PlotOptionDialog (HaploView h, PlinkResultsPanel p, String title, Vector columns) {
        super(h,title);
@@ -25,17 +27,23 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
         columnPanel.add(new JLabel("Column:"));
         columnChooser = new JComboBox(columns);
         columnPanel.add(columnChooser);
-        JPanel plotPanel = new JPanel();
-        plotPanel.add(new JLabel("Plot Type:"));
+        columnPanel.add(new JLabel("Plot Type:"));
         plotChooser = new JComboBox(PLOT_TYPES);
-        plotPanel.add(plotChooser);
+        plotChooser.addActionListener(this);
+        columnPanel.add(plotChooser);
         JPanel sugPanel = new JPanel();
-        sugPanel.add(new JLabel("Suggestive Threshold:"));
-        sugThresh = new NumberTextField("3",6,true);
+        label1 = new JLabel("Threshold 1");
+        sugPanel.add(label1);
+        signChooser1 = new JComboBox(signs);
+        sugPanel.add(signChooser1);
+        sugThresh = new NumberTextField("",6,true,true);
         sugPanel.add(sugThresh);
         JPanel sigPanel = new JPanel();
-        sigPanel.add(new JLabel("Significant Threshold:"));
-        sigThresh = new NumberTextField("5",6,true);
+        label2 = new JLabel("Threshold 2");
+        sigPanel.add(label2);
+        signChooser2 = new JComboBox(signs);
+        sigPanel.add(signChooser2);
+        sigThresh = new NumberTextField("",6,true,true);
         sigPanel.add(sigThresh);
 
         JPanel choicePanel = new JPanel();
@@ -48,7 +56,6 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
         choicePanel.add(cancelButton);
 
         contents.add(columnPanel);
-        contents.add(plotPanel);
         contents.add(sugPanel);
         contents.add(sigPanel);
         contents.add(choicePanel);
@@ -63,8 +70,7 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
         String command = e.getActionCommand();
         if(command.equals("Cancel")) {
             this.dispose();
-        }
-        if (command.equals("OK")){
+        }else if (command.equals("OK")){
             if (columnChooser.getSelectedIndex() == 0){
                 JOptionPane.showMessageDialog(this,
                         "Please select a column to plot.",
@@ -87,8 +93,20 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
                 significant = Double.parseDouble(sigThresh.getText());
             }
 
+            int[] signs = new int[2];
+            signs[0] = signChooser1.getSelectedIndex();
+            signs[1] = signChooser2.getSelectedIndex();
+
             this.dispose();
-            panel.makeChart(plotType,column,significant,suggestive);
+            panel.makeChart(plotType,column,suggestive,significant,signs);
+        }else if (e.getSource() instanceof JComboBox){
+            if (plotChooser.getSelectedItem().equals("-log10")){
+                label1.setText("Suggestive");
+                label2.setText("Significant");
+            }else{
+                label1.setText("Threshold 1");
+                label2.setText("Threshold 2");
+            }
         }
     }
 }
