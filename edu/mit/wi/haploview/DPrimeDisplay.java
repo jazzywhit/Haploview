@@ -635,7 +635,7 @@ public class DPrimeDisplay extends JComponent
         }
 
         if (theData.infoKnown) {
-	    Color green = new Color(0, 127, 0);
+	    Color green = new Color(0, 170, 0);
 
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
@@ -669,30 +669,18 @@ public class DPrimeDisplay extends JComponent
                         left + alignedPositions[i], top+TICK_BOTTOM));
 
                 if (theHV != null){
-                    //draw a star with funny numbers which conform to the golden ratio and make a nice pentagram
                     if (Chromosome.getMarker(i).getDisplayName().equals(theHV.getChosenMarker())){
-                        float cornerx = (float)xx-12.0f;
-                        float cornery = top-2;
-                        float xpoints[] = {cornerx,cornerx+24.0f,cornerx+4.6f,cornerx+12.0f,cornerx+19.4f};
-                        float ypoints[] = {cornery,cornery,cornery+14.1f,cornery-8.7f,cornery+14.1f};
-                        GeneralPath star = new GeneralPath(GeneralPath.WIND_NON_ZERO,xpoints.length);
-                        star.moveTo(xpoints[0],ypoints[0]);
+                        float cornerx = (float)xx-10;
+                        float cornery = top;
+                        float xpoints[] = {cornerx,cornerx+20,cornerx+10};
+                        float ypoints[] = {cornery,cornery,cornery-10};
+                        GeneralPath triangle = new GeneralPath(GeneralPath.WIND_NON_ZERO,xpoints.length);
+                        triangle.moveTo(xpoints[0],ypoints[0]);
                         for (int index = 1; index < xpoints.length; index++){
-                            star.lineTo(xpoints[index],ypoints[index]);
+                            triangle.lineTo(xpoints[index],ypoints[index]);
                         }
-                        star.closePath();
-                        g2.fill(star);
-
-                        cornerx = (float)alignedPositions[i] + left - 12;
-                        cornery = top + TICK_BOTTOM - 5;
-                        float xpoints1[] = {cornerx,cornerx+24.0f,cornerx+4.6f,cornerx+12.0f,cornerx+19.4f};
-                        float ypoints1[] = {cornery,cornery,cornery+14.1f,cornery-8.7f,cornery+14.1f};
-                        star.moveTo(xpoints1[0],ypoints1[0]);
-                        for (int index = 1; index < xpoints1.length; index++){
-                            star.lineTo(xpoints1[index],ypoints1[index]);
-                        }
-                        star.closePath();
-                        g2.fill(star);
+                        triangle.closePath();
+                        g2.fill(triangle);
                     }
                 }
 
@@ -717,7 +705,18 @@ public class DPrimeDisplay extends JComponent
                     }else{
                         g2.setFont(markerNameFont);
                     }
+                    if (theHV != null){
+                        if (Chromosome.getMarker(x).getDisplayName().equals(theHV.getChosenMarker())){
+                            g2.setColor(Color.white);
+                            g2.fillRect(TEXT_GAP,(int)alignedPositions[x] - ascent/2,
+                                    metrics.stringWidth(Chromosome.getMarker(x).getDisplayName()),ascent);
+                            g2.setColor(green);
+                            g2.drawRect(TEXT_GAP-1,(int)alignedPositions[x] - ascent/2 - 1,
+                                    metrics.stringWidth(Chromosome.getMarker(x).getDisplayName())+1,ascent+1);
+                        }
+                    }
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(green);
+
 
                     g2.drawString(Chromosome.getMarker(x).getDisplayName(),(float)TEXT_GAP, (float)alignedPositions[x] + ascent/3);
                     g2.setColor(Color.black);
@@ -1433,7 +1432,8 @@ public class DPrimeDisplay extends JComponent
             }else if (Math.abs(pos - alignedPositions[left]) < boxRadius){
                 return left;
             } else{
-                return -left;
+                //out of bounds
+                return -1;
             }
         }
     }
@@ -1577,21 +1577,22 @@ public class DPrimeDisplay extends JComponent
                 }
             } else if (blockselector.contains(clickX, clickY)){
                 int marker = getPreciseMarkerAt(clickX - clickXShift);
+                if (marker >= 0){
+                    displayStrings = new Vector();
+                    currentSelection = new String ("Last Selection: "); // update the cached value
 
-                displayStrings = new Vector();
-                currentSelection = new String ("Last Selection: "); // update the cached value
-
-                if (theData.infoKnown){
-                    displayStrings.add(new String (Chromosome.getMarker(marker).getDisplayName()));
-                    currentSelection += Chromosome.getMarker(marker).getName();
-                }else{
-                    displayStrings.add(new String("Marker " + (Chromosome.realIndex[marker]+1)));
-                    currentSelection += new String("Marker " + (Chromosome.realIndex[marker]+1));
+                    if (theData.infoKnown){
+                        displayStrings.add(new String (Chromosome.getMarker(marker).getDisplayName()));
+                        currentSelection += Chromosome.getMarker(marker).getName();
+                    }else{
+                        displayStrings.add(new String("Marker " + (Chromosome.realIndex[marker]+1)));
+                        currentSelection += new String("Marker " + (Chromosome.realIndex[marker]+1));
+                    }
+                    displayStrings.add(new String ("MAF: " + Chromosome.getMarker(marker).getMAF()));
+                    if (Chromosome.getMarker(marker).getExtra() != null)
+                        displayStrings.add(new String (Chromosome.getMarker(marker).getExtra()));
+                    currentSelection += new String (", MAF: " + Chromosome.getMarker(marker).getMAF());
                 }
-                displayStrings.add(new String ("MAF: " + Chromosome.getMarker(marker).getMAF()));
-                if (Chromosome.getMarker(marker).getExtra() != null)
-                    displayStrings.add(new String (Chromosome.getMarker(marker).getExtra()));
-                currentSelection += new String (", MAF: " + Chromosome.getMarker(marker).getMAF());
             }
             if (displayStrings != null){
                 int strlen = 0;
@@ -1643,6 +1644,7 @@ public class DPrimeDisplay extends JComponent
 
             //cache last selection.
             lastSelection = currentSelection;
+            currentSelection = null;
 
             repaint();
         } else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
