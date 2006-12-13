@@ -44,9 +44,11 @@ public class TaggerConfigPanel extends HaploviewTab
     private JPanel taggerProgressPanel = new JPanel();
     JProgressBar taggerProgress = new JProgressBar();
     private JLabel taggerProgressLabel = new JLabel("Tagging...");
+    private boolean plinkExists = false;
 
-    public TaggerConfigPanel(HaploData hd)  {
+    public TaggerConfigPanel(HaploData hd, boolean plink)  {
         theData = hd;
+        plinkExists = plink;
         refreshTable();
         try{
             fc = new JFileChooser(System.getProperty("user.dir"));
@@ -135,6 +137,8 @@ public class TaggerConfigPanel extends HaploviewTab
         runTaggerButton = new JButton("<html><b>Run Tagger</b>");
         runTaggerButton.addActionListener(this);
         runTaggerButton.setActionCommand("Run Tagger");
+        JButton includeResultsButton = new JButton("Force in PLINK SNPs");
+        includeResultsButton.addActionListener(this);
         JButton resetTableButton = new JButton("Reset Table");
         resetTableButton.addActionListener(this);
         JButton forceIncludeButton = new JButton("Load Includes");
@@ -213,6 +217,9 @@ public class TaggerConfigPanel extends HaploviewTab
         //bottomButtonPanel.
         //bottomButtonPanel.setBorder(BorderFactory.createLineBorder(Color.black));
         bottomButtonPanel.add(runTaggerButton);
+        if (plinkExists){
+            bottomButtonPanel.add(includeResultsButton);
+        }
         bottomButtonPanel.add(forceIncludeButton);
         bottomButtonPanel.add(forceExcludeButton);
         bottomButtonPanel.add(allelesCapturedButton);
@@ -467,6 +474,20 @@ public class TaggerConfigPanel extends HaploviewTab
                         table.setValueAt(new Boolean(false),j,INCLUDE_COL);
                         table.setValueAt(new Boolean(false),j,EXCLUDE_COL);
                     }
+                }
+            }
+        }else if (command.equals("Force in PLINK SNPs")){
+            Hashtable forceIncludes = new Hashtable(1,1);
+            for (int i = 0; i < Chromosome.getSize(); i++){
+                if (Chromosome.getMarker(i).getExtra() != null){
+                    forceIncludes.put(Chromosome.getMarker(i).getDisplayName(),"");
+                }
+            }
+
+            for (int i = 0; i < table.getRowCount(); i++){
+                if (forceIncludes.containsKey(table.getValueAt(i,NAME_COL))){
+                    table.setValueAt(new Boolean(true),i,INCLUDE_COL);
+                    table.setValueAt(new Boolean(true),i,CAPTURE_COL);
                 }
             }
         }

@@ -841,7 +841,11 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
                     //only show tagger if we have a .info file
                     if (theData.infoKnown){
                         //tagger display
-                        taggerConfigPanel = new TaggerConfigPanel(theData);
+                        boolean plink = false;
+                        if (getPlinkData() != null){
+                            plink = true;
+                        }
+                        taggerConfigPanel = new TaggerConfigPanel(theData,plink);
                         HaploviewTabbedPane tagTabs = new HaploviewTabbedPane();
                         tagTabs.add("Configuration",taggerConfigPanel);
 
