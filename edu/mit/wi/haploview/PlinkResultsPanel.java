@@ -403,7 +403,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         return dataset;
     }
 
-    public void makeChart(int type, int col, double sug, double sig, int[] signs){
+    public void makeChart(String title, int type, int col, double sug, double sig, int[] signs){
         plotType = type;
         threeSizes = signs[0] == signs[1];
         thresholdSigns = signs;
@@ -423,7 +423,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             rangeAxisName = PLOT_TYPES[plotType] + "(" + table.getColumnName(col) + ")";
         }
 
-        JFreeChart chart = ChartFactory.createScatterPlot(null,null,rangeAxisName,dataSet,PlotOrientation.VERTICAL,true,true,false);
+        JFreeChart chart = ChartFactory.createScatterPlot(title,null,rangeAxisName,dataSet,PlotOrientation.VERTICAL,true,true,false);
 
         XYPlot thePlot = chart.getXYPlot();
         thePlot.addRangeMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));

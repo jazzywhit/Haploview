@@ -13,6 +13,7 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
     private JComboBox columnChooser, plotChooser, signChooser1, signChooser2;
     private JLabel label1, label2;
     private NumberTextField sigThresh, sugThresh;
+    private JTextField titleField;
     private String[] signs = {">","<"};
 
     public PlotOptionDialog (HaploView h, PlinkResultsPanel p, String title, Vector columns) {
@@ -23,6 +24,10 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
 
+        JPanel titlePanel = new JPanel();
+        titlePanel.add(new JLabel("Title:"));
+        titleField = new JTextField(15);
+        titlePanel.add(titleField);
         JPanel columnPanel = new JPanel();
         columnPanel.add(new JLabel("Column:"));
         columnChooser = new JComboBox(columns);
@@ -55,6 +60,7 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
         cancelButton.addActionListener(this);
         choicePanel.add(cancelButton);
 
+        contents.add(titlePanel);
         contents.add(columnPanel);
         contents.add(sugPanel);
         contents.add(sigPanel);
@@ -64,6 +70,7 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
         this.setModal(true);
+        this.setResizable(false);
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -85,12 +92,28 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
             if (sugThresh.getText().equals("")){
                 suggestive = -1;
             }else{
-                suggestive = Double.parseDouble(sugThresh.getText());
+                try{
+                    suggestive = Double.parseDouble(sugThresh.getText());
+                }catch (NumberFormatException nfe){
+                    JOptionPane.showMessageDialog(this,
+                            "Thresholds must be numerical.",
+                            "Invalid value",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
             if (sigThresh.getText().equals("")){
                 significant = -1;
             }else{
-                significant = Double.parseDouble(sigThresh.getText());
+                try{
+                    significant = Double.parseDouble(sigThresh.getText());
+                }catch(NumberFormatException nfe){
+                    JOptionPane.showMessageDialog(this,
+                            "Thresholds must be numerical.",
+                            "Invalid value",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
             }
 
             int[] signs = new int[2];
@@ -98,7 +121,7 @@ public class PlotOptionDialog extends JDialog implements ActionListener, Constan
             signs[1] = signChooser2.getSelectedIndex();
 
             this.dispose();
-            panel.makeChart(plotType,column,suggestive,significant,signs);
+            panel.makeChart(titleField.getText(),plotType,column,suggestive,significant,signs);
         }else if (e.getSource() instanceof JComboBox){
             if (plotChooser.getSelectedItem().equals("-log10")){
                 label1.setText("Suggestive");
