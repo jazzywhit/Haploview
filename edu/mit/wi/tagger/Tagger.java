@@ -2,6 +2,7 @@ package edu.mit.wi.tagger;
 
 import edu.mit.wi.haploview.Util;
 import edu.mit.wi.haploview.Options;
+import edu.mit.wi.haploview.Chromosome;
 
 import java.util.*;
 import java.io.*;
@@ -32,7 +33,7 @@ public class Tagger {
 
     private AlleleCorrelator alleleCorrelator;
     private double meanRSq;
-    private int percentOver8;
+    private int percentCapped;
     private double minRSquared;
     private int aggression;
     private int maxNumTags;
@@ -337,25 +338,20 @@ public class Tagger {
 
 
         int count = 0;
-        double numOver8 = 0;
         meanRSq = 0;
         Iterator itr = snps.iterator();
         while (itr.hasNext()){
             SNP s = (SNP) itr.next();
             TagSequence ts = s.getBestTag();
             if (ts != null){
-                double d = getPairwiseComp(s, ts.getSequence()).getRsq();
-                meanRSq += d;
+                meanRSq += getPairwiseComp(s, ts.getSequence()).getRsq();
                 count++;
-                if (d >= 0.8){
-                    numOver8++;
-                }
             }
         }
         //apparently some people think untagged SNPS should be averaged in as zeroes...leaving commented out for now.
         //count += untagged.size();
         meanRSq /= count;
-        percentOver8 = (int) Math.rint((100*numOver8) / count);
+        percentCapped = (int)(((double)taggedSoFar/(double)Chromosome.getSize())*100);
 
         return new Vector(tags);
     }
@@ -700,11 +696,9 @@ public class Tagger {
     public void saveResultToFile(File outFile) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
 
-        bw.write("#tagging with r^2 cutoff: " + minRSquared);
+        bw.write("#captured " + taggedSoFar + " of " + snps.size() +" alleles at r^2 >= " + minRSquared);
         bw.newLine();
-        bw.write("#captured " + taggedSoFar + " of " + snps.size() +" alleles with mean r^2 of " + Util.roundDouble(meanRSq, 3));
-        bw.newLine();
-        bw.write("#captured " + percentOver8 + " percent of alleles with r^2 > 0.8");
+        bw.write("#captured " + percentCapped + " percent of alleles with mean r^2 of " + Util.roundDouble(meanRSq, 3));
         bw.newLine();
         bw.write("#using " + getTagSNPs().size() + " Tag SNPs in " + tags.size() + " tests.");
         bw.newLine();
@@ -799,7 +793,7 @@ public class Tagger {
         return meanRSq;
     }
 
-    public int getFracOver8() {
-        return percentOver8;
+    public int getPercentCaptured() {
+        return percentCapped;
     }
 }

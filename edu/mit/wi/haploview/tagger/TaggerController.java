@@ -11,7 +11,6 @@ import java.io.IOException;
 
 
 public class TaggerController {
-    private HaploData theData;
     private Tagger tagger;
     private Vector results;
     private boolean taggingCompleted;
@@ -20,7 +19,6 @@ public class TaggerController {
     public TaggerController(HaploData hd, Vector included, Vector excluded,
                             Vector sitesToCapture, Hashtable designScores, int aggressionLevel, int maxNumTags,boolean findTags)
             throws TaggerException{
-        theData = hd;
         Vector taggerSNPs = new Vector();
 
         snpHash = new Hashtable();
@@ -53,8 +51,8 @@ public class TaggerController {
             SNP tempSNP = (SNP) sitesToCapture.get(i);
             edu.mit.wi.tagger.SNP taggerSNP = (edu.mit.wi.tagger.SNP) snpHash.get(tempSNP.getDisplayName());
             int p = ((Integer)indicesByVarSeq.get(taggerSNP)).intValue();
-            for (int j = 1; j < theData.dpTable.getLength(p); j++){
-                PairwiseLinkage pl = theData.dpTable.getLDStats(p,j+p);
+            for (int j = 1; j < hd.dpTable.getLength(p); j++){
+                PairwiseLinkage pl = hd.dpTable.getLDStats(p,j+p);
                 if (pl != null && pl.getLOD() >= Options.getTaggerLODCutoff()){
                     if (indicesByVarSeq.containsValue(new Integer(j+p))){
                         edu.mit.wi.tagger.SNP ldsnp =
@@ -66,7 +64,7 @@ public class TaggerController {
             }
         }
 
-        HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq,theData);
+        HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq, hd);
         tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, designScores, hac, Options.getTaggerRsqCutoff(),
                 aggressionLevel, Options.getMaxDistance(), maxNumTags,findTags,Options.isPrintAllTags());
     }
@@ -158,7 +156,7 @@ public class TaggerController {
         return tagger.getMeanRSq();
     }
 
-    public int getFracOver8(){
-        return tagger.getFracOver8();
+    public int getPercentCaptured(){
+        return tagger.getPercentCaptured();
     }
 }

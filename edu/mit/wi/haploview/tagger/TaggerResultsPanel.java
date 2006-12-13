@@ -108,14 +108,10 @@ public class TaggerResultsPanel extends HaploviewTab
 
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
 
-        JLabel capLabel = new JLabel("Captured " + t.getTaggedSoFar() + " of " + Chromosome.getSize() +
-                " alleles with mean r\u00b2 of " + Util.roundDouble(t.getMeanRSq(),3));
-        listsPanel.add(capLabel);
 
-        listsPanel.add(new JLabel(t.getFracOver8() + " percent of captured alleles with r\u00b2 > 0.8"));
-
-        JLabel useLabel = new JLabel("Using " +t.getNumTagSNPs() + " SNPs in " + t.getResults().size() + " tests.");
-        listsPanel.add(useLabel);
+        listsPanel.add(new JLabel(t.getNumTagSNPs() + " SNPs in " + t.getResults().size() +  " tests captured " + t.getTaggedSoFar() + " of " + Chromosome.getSize() +
+                " (" + t.getPercentCaptured() + "%)" + " alleles at r\u00b2 >= " + Util.roundDouble(Options.getTaggerRsqCutoff(),3)));
+        listsPanel.add(new JLabel("Mean max r\u00b2 is " + Util.roundDouble(t.getMeanRSq(),3)));
 
         if(t.getUntaggableCount() > 0) {
             String cantTag = "Unable to capture " + t.getUntaggableCount() + " alleles (shown in red).";
