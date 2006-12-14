@@ -380,7 +380,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     return null;
                 }
                 f = (Math.log(f)/Math.log(10))*-1;
-            }else if (plotType == LOG_PLOT){
+            }else if (plotType == LN_PLOT){
                 f = Math.log(f);
             }
             long kbPos = Long.parseLong(String.valueOf(table.getValueAt(i,2)))/1000;
