@@ -1,6 +1,7 @@
 package edu.mit.wi.haploview;
 
 
+import edu.mit.wi.plink.PlinkTableModel;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -10,21 +11,21 @@ import java.util.Vector;
 public class RegionDialog extends JDialog implements ActionListener, Constants {
     private HaploView hv;
 
-    private JComboBox popChooser, phaseChooser;
+    private JComboBox popChooser, phaseChooser, colChooser;
     private JCheckBox gBrowse;
     private NumberTextField rangeInput;
     private String chrom, marker;
     private long markerPosition;
-    private Vector chipSNPs;
+    private PlinkTableModel ptm;
 
-    public RegionDialog (HaploView h, String chr, String mark, Vector others, long position, String title) {
+    public RegionDialog (HaploView h, String chr, String mark, PlinkTableModel ptm, long position, String title) {
         super(h,title);
 
         hv = h;
         chrom = chr;
         markerPosition = position;
         marker = mark;
-        chipSNPs = others;
+        this.ptm = ptm;
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
@@ -45,6 +46,9 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         chooserPanel.add(new JLabel("kb"));
 
         JPanel gBrowsePanel = new JPanel();
+        gBrowsePanel.add(new JLabel("Annotate:"));
+        colChooser = new JComboBox(ptm.getUnknownColumns());
+        gBrowsePanel.add(colChooser);
         gBrowse = new JCheckBox("Show HapMap info track?");
         gBrowse.setSelected(true);
         gBrowsePanel.add(gBrowse);
@@ -102,9 +106,19 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                     gotoEnd, pop, gotoStart, gotoEnd, chrom, phase};
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
-            for (int i = 0; i < Chromosome.getSize(); i++){
-                if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
-                    Chromosome.getMarker(i).setExtra("chip");
+            Vector chipSNPs = ptm.getSNPs();
+            if (!colChooser.getSelectedItem().equals("")){
+                for (int i = 0; i < Chromosome.getSize(); i++){
+                    if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
+                        Chromosome.getMarker(i).setExtra(String.valueOf(ptm.getValueAt(
+                                chipSNPs.indexOf(Chromosome.getMarker(i).getName()),colChooser.getSelectedIndex()+2)));
+                    }
+                }
+            }else{
+                for (int i = 0; i < Chromosome.getSize(); i++){
+                    if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
+                        Chromosome.getMarker(i).setExtra("PLINK");
+                    }
                 }
             }
         }

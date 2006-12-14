@@ -12,6 +12,7 @@ public class PlinkTableModel extends AbstractTableModel{
     private Vector data;
     private Vector filtered;
     private Vector unknownColumns;
+    private Vector snps;
 
     private int CHROM_COLUMN = 0;
     private int MARKER_COLUMN = 1;
@@ -25,6 +26,11 @@ public class PlinkTableModel extends AbstractTableModel{
         data=d;
         unknownColumns = new Vector();
         unknownColumns.add("");
+
+        snps = new Vector();
+        for (int i = 0; i < d.size(); i++){
+            snps.add(((AssociationResult)d.get(i)).getMarker().getMarkerID());
+        }
 
         for (int j = 3; j < columnNames.size(); j++){
             String column = (String)columnNames.get(j);
@@ -212,6 +218,10 @@ public class PlinkTableModel extends AbstractTableModel{
         for (int i = 0; i < data.size(); i++){
             filtered.add(new Integer(i));
         }
+    }
+
+    public Vector getSNPs(){
+        return snps;
     }
 
 

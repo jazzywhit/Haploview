@@ -45,7 +45,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private JTextField valueField, markerField;
     private JPanel filterPanel;
     private Vector originalColumns;
-    private Vector snps;
     private Hashtable removedColumns;
     private Hashtable[] info;
     private int[] seriesKeys, thresholdSigns;
@@ -58,11 +57,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
     public PlinkResultsPanel(HaploView h, Vector results, Vector colNames){
         hv = h;
-
-        snps = new Vector();
-        for (int i = 0; i < results.size(); i++){
-            snps.add(((AssociationResult)results.get(i)).getMarker().getMarkerID());
-        }
 
         setLayout(new GridBagLayout());
 
@@ -472,7 +466,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         String gotoMarker = (String)table.getValueAt(table.getSelectedRow(),1);
         long markerPosition = ((Long)(table.getValueAt(table.getSelectedRow(),2))).longValue();
 
-        RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,snps,markerPosition,"Go to Region");
+        RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,
+                plinkTableModel,markerPosition,"Go to Region");
         rd.pack();
         rd.setVisible(true);
     }
