@@ -23,6 +23,7 @@ public class Plink implements Constants {
     private Vector markers = null;
     private Vector results = null;
     private Vector columns = null;
+    private Vector ignoredMarkers;
     private HaploView hv;
 
     public Plink(HaploView h){
@@ -40,7 +41,7 @@ public class Plink implements Constants {
         final File wgaFile = new File(wga);
         final File mapFile = new File(map);
         Hashtable markerHash = new Hashtable(1,1);
-        Vector ignoredMarkers = new Vector();
+        ignoredMarkers = new Vector();
 
         try{
             if (wgaFile.length() < 1){
@@ -134,7 +135,6 @@ public class Plink implements Constants {
                     continue;
                }
                 int tokenNumber = 0;
-                //StringTokenizer tokenizer = new StringTokenizer(wgaLine,"\t :");
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
                 String marker = null;
                 String chromosome = null;
@@ -144,12 +144,13 @@ public class Plink implements Constants {
                     if (tokenNumber == markerColumn){
                         marker = new String(tokenizer.nextToken());
                         if (markerDups.containsKey(marker)){
-                            hv.setPlinkDups(true);
+                            throw new PlinkException("Marker: " + marker +
+                            " appears more than once.");
                         }else{
                             markerDups.put(marker,"");
                         }
                     }else if (tokenNumber == chromColumn){
-                        chromosome = new String(tokenizer.nextToken());
+                        chromosome = tokenizer.nextToken();
                         if(chromosome.equals("23")){
                             chromosome = "X";
                         }else if(chromosome.equals("24")){
@@ -160,7 +161,7 @@ public class Plink implements Constants {
                     }else if (tokenNumber == positionColumn){
                         position = Long.parseLong(tokenizer.nextToken());
                     }else{
-                        values.add(new String(tokenizer.nextToken()));
+                        values.add(tokenizer.nextToken());
                     }
                     tokenNumber++;
                 }
@@ -195,12 +196,11 @@ public class Plink implements Constants {
             throw new PlinkException("File formatting error.");
         }
 
-        if (ignoredMarkers.size() != 0){
-            IgnoredMarkersDialog imd = new IgnoredMarkersDialog(hv,"Ignored Markers",ignoredMarkers,false);
-            imd.pack();
-            imd.setVisible(true);
-        }
         hv.setPlinkData(results,columns);
+    }
+
+    public Vector getIgnoredMarkers() {
+        return ignoredMarkers;
     }
 
     public void parseMoreResults(String wga) throws PlinkException {

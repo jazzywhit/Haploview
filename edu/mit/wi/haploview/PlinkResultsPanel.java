@@ -133,9 +133,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         resetFilters.addActionListener(this);
         JButton moreResults = new JButton("Load Additional Results");
         moreResults.addActionListener(this);
-        if (hv.getPlinkDups()){
-            moreResults.setEnabled(false);
-        }
+
         JButton plotButton = new JButton("Plot");
         plotButton.addActionListener(this);
 

@@ -64,7 +64,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     static HaploView window;
     private Vector plinkData, plinkColumns;
-    private boolean plinkDups = false;
     private String chosenMarker;
     private Vector phasedSelection;
     public static JFileChooser fc;
@@ -1142,14 +1141,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     public Vector getPlinkColumns(){
         return plinkColumns;
-    }
-
-    public void setPlinkDups(boolean dups){
-        plinkDups = dups;
-    }
-
-    public boolean getPlinkDups(){
-        return plinkDups;
     }
 
     public void setChosenMarker(String marker){
