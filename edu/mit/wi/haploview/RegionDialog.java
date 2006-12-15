@@ -1,7 +1,6 @@
 package edu.mit.wi.haploview;
 
 
-import edu.mit.wi.plink.PlinkTableModel;
 import javax.swing.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -16,16 +15,16 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
     private NumberTextField rangeInput;
     private String chrom, marker;
     private long markerPosition;
-    private PlinkTableModel ptm;
+    private PlinkResultsPanel prp;
 
-    public RegionDialog (HaploView h, String chr, String mark, PlinkTableModel ptm, long position, String title) {
+    public RegionDialog (HaploView h, String chr, String mark, PlinkResultsPanel prp, long position, String title) {
         super(h,title);
 
         hv = h;
         chrom = chr;
         markerPosition = position;
         marker = mark;
-        this.ptm = ptm;
+        this.prp = prp;
 
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
@@ -47,7 +46,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
         JPanel gBrowsePanel = new JPanel();
         gBrowsePanel.add(new JLabel("Annotate:"));
-        colChooser = new JComboBox(ptm.getUnknownColumns());
+        colChooser = new JComboBox(prp.getUnknownColumns());
         gBrowsePanel.add(colChooser);
         gBrowse = new JCheckBox("Show HapMap info track?");
         gBrowse.setSelected(true);
@@ -95,7 +94,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             String gotoStart = new Long(start).toString();
             String gotoEnd = new Long(end).toString();
             String phase = (String)phaseChooser.getSelectedItem();
-            hv.setChosenMarker(marker);
+            prp.setChosenMarker(marker);
 
             if (gBrowse.isSelected()){
                 Options.setShowGBrowse(true);
@@ -106,11 +105,11 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                     gotoEnd, pop, gotoStart, gotoEnd, chrom, phase};
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
-            Vector chipSNPs = ptm.getSNPs();
+            Vector chipSNPs = prp.getSNPs();
             if (!colChooser.getSelectedItem().equals("")){
                 for (int i = 0; i < Chromosome.getSize(); i++){
                     if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
-                        Chromosome.getMarker(i).setExtra(String.valueOf(ptm.getValueAt(
+                        Chromosome.getMarker(i).setExtra(String.valueOf(prp.getValueAt(
                                 chipSNPs.indexOf(Chromosome.getMarker(i).getName()),colChooser.getSelectedIndex()+2)));
                     }
                 }

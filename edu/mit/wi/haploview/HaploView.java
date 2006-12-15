@@ -63,8 +63,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     private javax.swing.Timer timer;
 
     static HaploView window;
-    private Vector plinkData, plinkColumns;
-    private String chosenMarker;
+    private Plink plink;
+    //private String chosenMarker;
     private Vector phasedSelection;
     public static JFileChooser fc;
     private JScrollPane hapScroller;
@@ -78,7 +78,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     HaploAssocPanel hapAssocPanel;
     PermutationTestPanel permutationPanel;
     TaggerResultsPanel taggerResultsPanel;
-    private TaggerConfigPanel taggerConfigPanel;
+    TaggerConfigPanel taggerConfigPanel;
     PlinkResultsPanel plinkPanel;
 
     JProgressBar haploProgress;
@@ -838,11 +838,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     //only show tagger if we have a .info file
                     if (theData.infoKnown){
                         //tagger display
-                        boolean plink = false;
-                        if (getPlinkData() != null){
-                            plink = true;
-                        }
-                        taggerConfigPanel = new TaggerConfigPanel(theData,plink);
+
+                        taggerConfigPanel = new TaggerConfigPanel(theData,plink != null);
                         HaploviewTabbedPane tagTabs = new HaploviewTabbedPane();
                         tagTabs.add("Configuration",taggerConfigPanel);
 
@@ -909,7 +906,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     }
 
-                    if(plinkData != null){
+                    if(plinkPanel != null){
                         HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
                         plinkTab.add(plinkPanel);
                         tabs.addTab(VIEW_PLINK, plinkTab);
@@ -988,7 +985,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         String embeddedMap = inputOptions[3];
         boolean embed = false;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Plink plink = new Plink(this);
+        if (plink == null){
+            plink = new Plink();
+        }
         try{
             if (embeddedMap != null){
                 embed = true;
@@ -998,7 +997,22 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 plink.parseWGA(wgaFile,mapFile,embed);
             }
             if (secondaryFile != null){
-                plink.parseMoreResults(secondaryFile);
+                Vector v = plink.parseMoreResults(secondaryFile);
+                Vector im = plink.getIgnoredMarkers();
+                if (im != null){
+                    if (im.size() != 0){
+                        IgnoredMarkersDialog imd = new IgnoredMarkersDialog(this,"Ignored Markers",im,true);
+                        imd.pack();
+                        imd.setVisible(true);
+                    }
+                }
+                for (int i = 0; i < v.size(); i++){
+                    JOptionPane.showMessageDialog(this,
+                            "A column already appears in the dataset.\n" +
+                                    "The new column is marked as " + v.get(i),
+                            "Duplicate value",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
 
             plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames());
@@ -1066,7 +1080,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 gbrowseItem.setEnabled(false);
                 spacingItem.setEnabled(false);
             }
-            if (checkPanel != null && plinkData == null){
+            if (checkPanel != null && plink == null){
                 //this is triggered when loading markers after already loading genotypes
                 //it is dumb and sucks, but at least it works. bah.
                 checkPanel = new CheckDataPanel(this);
@@ -1130,25 +1144,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         hapScroller.setViewportView(hapDisplay);
     }
 
-    public void setPlinkData(Vector data, Vector columns){
-        plinkData = data;
-        plinkColumns = columns;
-    }
-
-    public Vector getPlinkData(){
-        return plinkData;
-    }
-
-    public Vector getPlinkColumns(){
-        return plinkColumns;
-    }
-
-    public void setChosenMarker(String marker){
-        chosenMarker = marker;
-    }
-
     public String getChosenMarker(){
-        return chosenMarker;
+        if (plinkPanel != null){
+            return plinkPanel.getChosenMarker();
+        }else{
+            return null;
+        }
     }
 
     public Vector getPhasedSelection(){
@@ -1577,6 +1578,70 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
         }
 
+    }
+
+        class IgnoredMarkersDialog extends JDialog implements ActionListener {
+
+        public IgnoredMarkersDialog (HaploView h, String title, Vector ignored, boolean extra){
+            super(h,title);
+
+            JPanel contents = new JPanel();
+            contents.setPreferredSize(new Dimension(200,200));
+            contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
+            JTable table;
+
+            Vector colNames = new Vector();
+            colNames.add("#");
+            colNames.add("SNP");
+
+            Vector data = new Vector();
+
+            for (int i = 0; i < ignored.size(); i++){
+                Vector tmpVec = new Vector();
+                tmpVec.add(new Integer(i+1));
+                tmpVec.add((String)ignored.get(i));
+                data.add(tmpVec);
+            }
+
+            TableSorter sorter = new TableSorter(new BasicTableModel(colNames, data));
+            table = new JTable(sorter);
+            sorter.setTableHeader(table.getTableHeader());
+            table.getColumnModel().getColumn(0).setPreferredWidth(30);
+            table.getColumnModel().getColumn(1).setPreferredWidth(75);
+
+            JScrollPane tableScroller = new JScrollPane(table);
+            tableScroller.setPreferredSize(new Dimension(75,300));
+
+            JLabel label;
+            if (extra){
+                label = new JLabel("<HTML><b>The following markers do not appear in the " +
+                        "loaded dataset and will therefore be ignored.</b>");
+            }else{
+                label = new JLabel("<HTML><b>The following markers do not appear in the " +
+                        "loaded mapfile and will therefore be ignored.</b>");
+            }
+            label.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(label);
+            tableScroller.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(tableScroller);
+            JButton okButton = new JButton("Close");
+            okButton.addActionListener(this);
+            okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(okButton);
+            setContentPane(contents);
+
+            this.setLocation(this.getParent().getX() + 100,
+                    this.getParent().getY() + 100);
+            this.setModal(true);
+            //this.setResizable(false);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+            if(command.equals("Close")) {
+                this.dispose();
+            }
+        }
     }
 }
 

@@ -52,6 +52,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private int plotType;
     private double suggestive, significant;
     private boolean threeSizes;
+    private String chosenMarker;
     private HaploView hv;
 
 
@@ -189,6 +190,22 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 break;
             }
         }
+    }
+
+    public void setChosenMarker(String chosenMarker) {
+        this.chosenMarker = chosenMarker;
+    }
+
+    public String getChosenMarker() {
+        return chosenMarker;
+    }
+
+    public Vector getSNPs(){
+        return plinkTableModel.getSNPs();
+    }
+
+    public Object getValueAt(int row, int col){
+        return plinkTableModel.getValueAt(row,col);
     }
 
     public void doFilters(){
@@ -465,9 +482,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         long markerPosition = ((Long)(table.getValueAt(table.getSelectedRow(),2))).longValue();
 
         RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,
-                plinkTableModel,markerPosition,"Go to Region");
+                this,markerPosition,"Go to Region");
         rd.pack();
         rd.setVisible(true);
+    }
+
+    public Vector getUnknownColumns(){
+        return plinkTableModel.getUnknownColumns();
     }
 
     public void exportTable(File outfile) throws IOException, HaploViewException{
