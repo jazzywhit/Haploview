@@ -22,7 +22,7 @@ import java.net.URL;
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 
-public class HaploView extends JFrame implements ActionListener, ComponentListener, Constants{
+public class HaploView extends JFrame implements ActionListener, Constants{
 
     boolean DEBUG = false;
 
@@ -86,7 +86,6 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
     boolean isMaxSet = false;
     JPanel progressPanel = new JPanel();
     LayoutManager defaultLayout = new GridBagLayout();
-    private Dimension LastGoodSize = new Dimension(1024,768);
 
     public HaploView(){
         try{
@@ -347,7 +346,6 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
                 quit();
             }
         });
-        addComponentListener(this);
     }
 
 
@@ -1177,34 +1175,6 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
         }
     }
 
-    public void componentResized(ComponentEvent e) {
-
-        Dimension new_size = getSize();
-
-        int mh = getMinimumSize().height;
-        int mw = getMinimumSize().width;
-        if (new_size.height<mh || new_size.width<mw) {
-            if (new_size.height<mh) LastGoodSize.height=mh;
-            else LastGoodSize.height=new_size.height;
-            if (new_size.width<mw) LastGoodSize.width=mw;
-            else LastGoodSize.width=new_size.width;
-            setSize(LastGoodSize);
-        } else {
-            LastGoodSize = new_size;
-        }
-
-    }
-
-    public void componentMoved(ComponentEvent e) {}
-
-    public void componentShown(ComponentEvent e) {}
-
-    public void componentHidden(ComponentEvent e) {}
-
-    public Dimension getMinimumSize() {
-        return new Dimension(800,400);
-    }
-
     class TabChangeListener implements ChangeListener{
         public void stateChanged(ChangeEvent e) {
             if (tabs.getSelectedIndex() != -1){
@@ -1480,14 +1450,15 @@ public class HaploView extends JFrame implements ActionListener, ComponentListen
 
             //setup view object
             window.setTitle(TITLE_STRING);
-            window.setSize(1024,768);
-
-
-
-
 
             //center the window on the screen
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+            if (screen.getWidth() < 1024 || screen.getHeight() < 768){
+                window.setSize(screen);
+            }else{
+                window.setSize(1024,768);
+            }
+
             window.setLocation((screen.width - window.getWidth()) / 2,
                     (screen.height - window.getHeight()) / 2);
 
