@@ -64,7 +64,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     static HaploView window;
     private Plink plink;
-    //private String chosenMarker;
     private Vector phasedSelection;
     public static JFileChooser fc;
     private JScrollPane hapScroller;
@@ -1445,16 +1444,22 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             //center the window on the screen
             Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-            if (screen.getWidth() < 1024 || screen.getHeight() < 768){
-                window.setSize(screen);
-            }else{
-                window.setSize(1024,768);
-            }
+            window.setSize(1024,768);
 
             window.setLocation((screen.width - window.getWidth()) / 2,
                     (screen.height - window.getHeight()) / 2);
 
             window.setVisible(true);
+            //if the screen isn't big enough jigger it to max allowable size
+            if (screen.getWidth() <= 1024){
+                window.setExtendedState(JFrame.MAXIMIZED_HORIZ);
+                if (screen.getHeight() <= 768){
+                    window.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                }
+            }else if (screen.getHeight() <= 768){
+                window.setExtendedState(JFrame.MAXIMIZED_VERT);
+            }
+
 
             if (Constants.BETA_VERSION > 0){
                 UpdateChecker betaUc;
@@ -1580,7 +1585,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     }
 
-        class IgnoredMarkersDialog extends JDialog implements ActionListener {
+    class IgnoredMarkersDialog extends JDialog implements ActionListener {
 
         public IgnoredMarkersDialog (HaploView h, String title, Vector ignored, boolean extra){
             super(h,title);
