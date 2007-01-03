@@ -161,8 +161,8 @@ public interface Constants {
             "-skipcheck                      Skips the various genotype file checks\n" +
             "-chromosome <1-22,X,Y>          Specifies the chromosome for this file or download\n" +
             "-population <CEU,YRI,CHB+JPT>   Specifies the population for this HapMap download\n" +
-            "-startpos <integer>             Specifies the start position for this HapMap download\n" +
-            "-endpos <integer>               Specifies the end position for this HapMap download\n" +
+            "-startpos <integer>             Specifies the start position in kb for this HapMap download\n" +
+            "-endpos <integer>               Specifies the end position in kb for this HapMap download\n" +
             "-release <16a,21>               Specifies the HapMap phase for this HapMap download (defaults to 21)\n" +
             "-dprime                         Outputs LD text to <inputfile>.LD\n" +
             "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
