@@ -65,6 +65,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     static HaploView window;
     private Plink plink;
     private Vector phasedSelection;
+    private Hashtable removedCols;
     public static JFileChooser fc;
     private JScrollPane hapScroller;
     HaploviewTabbedPane tabs;
@@ -982,12 +983,22 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         String mapFile = inputOptions[1];
         String secondaryFile = inputOptions[2];
         String embeddedMap = inputOptions[3];
+        String fisherColumn = inputOptions[4];
         boolean embed = false;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (plink == null){
             plink = new Plink();
         }
         try{
+            if (fisherColumn != null){
+                Vector columns = new Vector();
+                StringTokenizer st = new StringTokenizer(fisherColumn);
+                while (st.hasMoreTokens()){
+                    columns.add(new Integer(st.nextToken()));
+                }
+                plink.doFisherCombined(columns);
+            }
+
             if (embeddedMap != null){
                 embed = true;
             }
@@ -1014,7 +1025,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 }
             }
 
-            plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames());
+            plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames(),plink.getPlinkDups(),removedCols);
+            if (removedCols != null){
+                removedCols.clear();
+            }
             HaploviewTab plinkTab = new HaploviewTab(plinkPanel);
             plinkTab.add(plinkPanel);
 
@@ -1153,6 +1167,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     public Vector getPhasedSelection(){
         return phasedSelection;
+    }
+
+    public void setRemovedColumns(Hashtable removed){
+        removedCols = removed;
     }
 
     public void clearDisplays() {
@@ -1482,7 +1500,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
             //parse command line stuff for input files or prompt data dialog
-            String[] inputArray = new String[3];
+            String[] inputArray = new String[5];
             if (argParser.getHapsFileName() != null){
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
@@ -1504,6 +1522,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[1] = argParser.getMapFileName();
                 inputArray[2] = null;
                 inputArray[3] = null;
+                inputArray[4] = null;
                 window.readWGA(inputArray);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);

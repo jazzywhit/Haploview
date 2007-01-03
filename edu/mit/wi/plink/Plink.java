@@ -1,5 +1,8 @@
 package edu.mit.wi.plink;
 
+import edu.mit.wi.haploview.StatFunctions;
+import edu.mit.wi.haploview.Util;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -9,13 +12,13 @@ import java.util.StringTokenizer;
 import java.util.Hashtable;
 
 
-
 public class Plink {
 
     private Vector markers = null;
     private Vector results = null;
     private Vector columns = null;
     private Vector ignoredMarkers;
+    private boolean dupMarkers = false;
 
     public void parseWGA(String wga, String map, boolean embed) throws PlinkException {
         markers = new Vector();
@@ -131,13 +134,13 @@ public class Plink {
                     if (tokenNumber == markerColumn){
                         marker = new String(tokenizer.nextToken());
                         if (markerDups.containsKey(marker)){
-                            throw new PlinkException("Marker: " + marker +
-                            " appears more than once.");
+                            dupMarkers = true;
                         }else{
                             markerDups.put(marker,"");
                         }
                     }else if (tokenNumber == chromColumn){
-                        chromosome = tokenizer.nextToken();
+                        //new String() stops StringTokenizer from wasting memory
+                        chromosome = new String(tokenizer.nextToken());
                         if(chromosome.equals("23")){
                             chromosome = "X";
                         }else if(chromosome.equals("24")){
@@ -148,7 +151,7 @@ public class Plink {
                     }else if (tokenNumber == positionColumn){
                         position = Long.parseLong(tokenizer.nextToken());
                     }else{
-                        values.add(tokenizer.nextToken());
+                        values.add(new String(tokenizer.nextToken()));
                     }
                     tokenNumber++;
                 }
@@ -194,6 +197,7 @@ public class Plink {
         ignoredMarkers = new Vector();
         Vector duplicateColumns = new Vector();
         boolean addColumns = false;
+        int numValues = columns.size()-3;
 
 
         try{
@@ -226,7 +230,12 @@ public class Plink {
                     numColumns++;
                 }else{
                     if(columns.contains(column)){
-                        String dupColumn = column + "*";
+                        int counter = 1;
+                        String dupColumn = column + "-" + counter;
+                        while (columns.contains(dupColumn)){
+                            counter++;
+                            dupColumn = column + "-" + counter;
+                        }
                         duplicateColumns.add(dupColumn);
                         newColumns.add(dupColumn);
                     }else{
@@ -242,6 +251,7 @@ public class Plink {
 
             String wgaLine;
             int lineNumber = 0;
+            Hashtable markerDups = new Hashtable(1,1);
 
             Hashtable resultsHash = new Hashtable(1,1);
             for (int i = 0; i < results.size(); i++){
@@ -261,6 +271,12 @@ public class Plink {
                 while(tokenizer.hasMoreTokens()){
                     if (tokenNumber == markerColumn){
                         marker = new String(tokenizer.nextToken());
+                        if (markerDups.containsKey(marker)){
+                            throw new PlinkException("Marker: " + marker +
+                                    " appears more than once.");
+                        }else{
+                            markerDups.put(marker,"");
+                        }
                     }else if(tokenNumber == chromColumn || tokenNumber == posColumn){
                         //we don't give a toss for the chromosome or position...
                         tokenizer.nextToken();
@@ -280,6 +296,14 @@ public class Plink {
                 if (resultsHash.containsKey(marker)){
                     addColumns = true;
                     currentResult = (AssociationResult)results.get(((Integer)resultsHash.get(marker)).intValue());
+                    if (currentResult.getValues().size() < numValues){
+                        int nullsToAdd = numValues - currentResult.getValues().size();
+                        Vector nullPads = new Vector();
+                        for (int i = 0; i < nullsToAdd; i++){
+                            nullPads.add(null);
+                        }
+                        currentResult.addValues(nullPads);
+                    }
                     currentResult.addValues(values);
                 }else{
                     ignoredMarkers.add(marker);
@@ -295,8 +319,68 @@ public class Plink {
             for (int i = 0; i < newColumns.size(); i++){
                 columns.add(newColumns.get(i));
             }
+        }else{
+            duplicateColumns = new Vector();
         }
         return duplicateColumns;
+    }
+
+    public void doFisherCombined(Vector cols) throws PlinkException{
+        int numValues = columns.size()-3;
+
+        for (int i = 0; i < results.size(); i ++){
+            AssociationResult currentResult = (AssociationResult)results.get(i);
+            Vector values = currentResult.getValues();
+            Vector pValues = new Vector();
+            Vector valuesToAdd = new Vector();
+            for (int j = 0; j < cols.size(); j++){
+                int value = ((Integer)cols.get(j)).intValue();
+                Double pv;
+                try{
+                    if (values.size() <= value){
+                        pv = null;
+                    }else if(values.get(value) == null){
+                        pv = null;
+                    }else{
+                        pv = new Double((String)values.get(value));
+                    }
+                    pValues.add(pv);
+                }catch(NumberFormatException nfe){
+                    throw new PlinkException("One or more of the selected columns does not contain\n" +
+                            "properly formatted P-values.");
+                }
+            }
+            int numPvals = pValues.size();
+            double sumLns = 0;
+            for (int j = 0; j < numPvals; j++){
+                if (pValues.get(j) != null){
+                    sumLns += Math.log(((Double)pValues.get(j)).doubleValue());
+                }
+            }
+            double chisq = -2*sumLns;
+            if (chisq == 0){
+                valuesToAdd.add("1");
+            }else{
+                double df = 2*numPvals;
+                try{
+                    String p = Util.formatPValue(1-StatFunctions.pchisq(chisq,df));
+                    valuesToAdd.add(p);
+                }catch(IllegalArgumentException iae){
+                    throw new PlinkException("One or more of the selected columns does not contain\n" +
+                            "properly formatted P-values.");
+                }
+            }
+            if (currentResult.getValues().size() < numValues){
+                int nullsToAdd = numValues - currentResult.getValues().size();
+                Vector nullPads = new Vector();
+                for (int j = 0; j < nullsToAdd; j++){
+                    nullPads.add(null);
+                }
+                currentResult.addValues(nullPads);
+            }
+            currentResult.addValues(valuesToAdd);
+        }
+        columns.add("P_COMBINED");
     }
 
     public Vector getMarkers(){
@@ -309,6 +393,10 @@ public class Plink {
 
     public Vector getColumnNames(){
         return columns;
+    }
+
+    public boolean getPlinkDups(){
+        return dupMarkers;
     }
 
 }

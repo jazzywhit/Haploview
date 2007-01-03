@@ -1,7 +1,6 @@
 package edu.mit.wi.haploview;
 
 import edu.mit.wi.plink.PlinkTableModel;
-import edu.mit.wi.plink.AssociationResult;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -56,7 +55,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private HaploView hv;
 
 
-    public PlinkResultsPanel(HaploView h, Vector results, Vector colNames){
+    public PlinkResultsPanel(HaploView h, Vector results, Vector colNames, boolean dups, Hashtable remove){
         hv = h;
 
         setLayout(new GridBagLayout());
@@ -69,9 +68,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         table = new JTable(sorter);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setSelectionBackground(Color.lightGray);
         table.getTableHeader().setReorderingAllowed(false);
         //due to an old JTable bug this is necessary to activate a horizontal scrollbar
-        if (table.getColumnCount() > 15 && table.getRowCount() > 60){
+        if (table.getColumnCount() >= 20 && table.getRowCount() > 60){
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         }
         //table.getModel().addTableModelListener(this);
@@ -134,6 +134,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         resetFilters.addActionListener(this);
         JButton moreResults = new JButton("Load Additional Results");
         moreResults.addActionListener(this);
+        if (dups){
+            moreResults.setEnabled(false);
+        }
+        JButton fisherButton = new JButton("Combine P-Values");
+        fisherButton.addActionListener(this);
 
         JButton plotButton = new JButton("Plot");
         plotButton.addActionListener(this);
@@ -156,9 +161,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         a.insets = new Insets(5,0,0,0);
         filterPanel.add(moreResults,a);
         a.gridx = 1;
+        filterPanel.add(fisherButton,a);
+        a.gridx = 2;
         a.anchor = GridBagConstraints.SOUTH;
         filterPanel.add(plotButton,a);
-        a.gridx = 2;
+        a.gridx = 3;
         a.anchor = GridBagConstraints.SOUTHEAST;
         filterPanel.add(resetFilters,a);
 
@@ -180,6 +187,14 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         add(filterPanel, c);
         c.gridy = 2;
         add(goPanel,c);
+
+        if (remove != null){
+            for (int i = 1; i < plinkTableModel.getUnknownColumns().size(); i++){
+                if (remove.containsKey(plinkTableModel.getUnknownColumns().get(i))){
+                    removeColumn((String)plinkTableModel.getUnknownColumns().get(i),i);
+                }
+            }
+        }
     }
 
     public void jumpToMarker(String marker){
@@ -252,6 +267,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         countResults();
     }
 
+    public void removeColumn(String col, int index){
+        TableColumn deletedColumn = table.getColumn(col);
+        removedColumns.put(col,deletedColumn);
+        table.removeColumn(deletedColumn);
+        removeChooser.removeItemAt(index);
+        removeChooser.setSelectedIndex(removeChooser.getItemCount()-1);
+        genericChooser.setSelectedIndex(0);
+        if (table.getColumnCount() < 20){
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        }
+        repaint();
+    }
+
     public void clearFilters(){
         if (removedColumns.size() > 0){
             for (int i = 1; i < removeChooser.getItemCount(); i++){
@@ -271,7 +299,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             removedColumns.clear();
         }
 
-        if (table.getColumnCount() > 15 && table.getRowCount() > 60){
+        if (table.getColumnCount() >= 20 && table.getRowCount() > 60){
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         }
 
@@ -529,20 +557,18 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             if (returned != JFileChooser.APPROVE_OPTION) return;
             File file = HaploView.fc.getSelectedFile();
             String fullName = file.getParent()+File.separator+file.getName();
-            String[] inputs = {null,null,fullName,null};
+            String[] inputs = {null,null,fullName,null,null};
+            if (removedColumns.size() > 0){
+                hv.setRemovedColumns(removedColumns);
+            }
             hv.readWGA(inputs);
+        }else if (command.equals("Combine P-Values")){
+            FisherCombinedDialog fcd = new FisherCombinedDialog("Fisher Combine");
+            fcd.pack();
+            fcd.setVisible(true);
         }else if (command.equals("Remove")){
             if (removeChooser.getSelectedIndex() > 0){
-                TableColumn deletedColumn = table.getColumn(removeChooser.getSelectedItem());
-                removedColumns.put(removeChooser.getSelectedItem(),deletedColumn);
-                table.removeColumn(deletedColumn);
-                removeChooser.removeItemAt(removeChooser.getSelectedIndex());
-                removeChooser.setSelectedIndex(removeChooser.getItemCount()-1);
-                genericChooser.setSelectedIndex(0);
-                if (table.getColumnCount() < 18){
-                    table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-                }
-                repaint();
+                removeColumn((String)removeChooser.getSelectedItem(),removeChooser.getSelectedIndex());
             }
         }else if (command.equals("Plot")){
             PlotOptionDialog pod = new PlotOptionDialog(hv,this,"Plot Options",plinkTableModel.getUnknownColumns());
@@ -565,6 +591,129 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void chartMouseMoved(ChartMouseEvent chartMouseEvent) {
+    }
+
+    class FisherCombinedDialog extends JDialog implements ActionListener{
+        private JComboBox pval1, pval2, pval3, pval4, pval5;
+        private Vector columnIndeces;
+        FisherCombinedDialog(String title){
+            super(hv,title);
+
+            JPanel contents = new JPanel();
+            contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
+            contents.setPreferredSize(new Dimension(150,200));
+
+            Vector doubleColumns = new Vector();
+            columnIndeces = new Vector();
+            doubleColumns.add("");
+            for (int i = 1; i < plinkTableModel.getUnknownColumns().size(); i++){
+                for (int j = 0; j < 50; j++){
+                    if (table.getValueAt(j,i+2) != null){
+                        if (table.getValueAt(j,i+2) instanceof Double){
+                            doubleColumns.add(plinkTableModel.getUnknownColumns().get(i));
+                            columnIndeces.add(new Integer(i-1));
+                        }
+                        break;
+                    }else if (j == 49){
+                        doubleColumns.add(plinkTableModel.getUnknownColumns().get(i));
+                        columnIndeces.add(new Integer(i-1));
+                    }
+                }
+            }
+
+            JPanel pval1Panel = new JPanel();
+            pval1Panel.add(new JLabel("Pval 1:"));
+            pval1 = new JComboBox(doubleColumns);
+            pval1Panel.add(pval1);
+            JPanel pval2Panel = new JPanel();
+            pval2Panel.add(new JLabel("Pval 2:"));
+            pval2 = new JComboBox(doubleColumns);
+            pval2Panel.add(pval2);
+            JPanel pval3Panel = new JPanel();
+            pval3Panel.add(new JLabel("Pval 3:"));
+            pval3 = new JComboBox(doubleColumns);
+            pval3Panel.add(pval3);
+            JPanel pval4Panel = new JPanel();
+            pval4Panel.add(new JLabel("Pval 4:"));
+            pval4 = new JComboBox(doubleColumns);
+            pval4Panel.add(pval4);
+            JPanel pval5Panel = new JPanel();
+            pval5Panel.add(new JLabel("Pval 5:"));
+            pval5 = new JComboBox(doubleColumns);
+            pval5Panel.add(pval5);
+
+            JPanel choicePanel = new JPanel();
+            JButton goButton = new JButton("Go");
+            goButton.addActionListener(this);
+            choicePanel.add(goButton);
+            JButton cancelButton = new JButton("Cancel");
+            cancelButton.addActionListener(this);
+            choicePanel.add(cancelButton);
+
+            contents.add(pval1Panel);
+            contents.add(pval2Panel);
+            contents.add(pval3Panel);
+            contents.add(pval4Panel);
+            contents.add(pval5Panel);
+            contents.add(choicePanel);
+
+            setContentPane(contents);
+            this.setLocation(this.getParent().getX() + 100,
+                    this.getParent().getY() + 100);
+            this.setModal(true);
+            this.getRootPane().setDefaultButton(goButton);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+
+            if (command.equals("Cancel")){
+                this.dispose();
+            }else if (command.equals("Go")){
+                int[] pCols = new int[5];
+                int numPvals = 0;
+
+                if (pval1.getSelectedIndex() > 0){
+                    numPvals++;
+                    pCols[0] = ((Integer)columnIndeces.get(pval1.getSelectedIndex()-1)).intValue();
+                }
+                if (pval2.getSelectedIndex() > 0){
+                    numPvals++;
+                    pCols[1] = ((Integer)columnIndeces.get(pval2.getSelectedIndex()-1)).intValue();
+                }
+                if (pval3.getSelectedIndex() > 0){
+                    numPvals++;
+                    pCols[2] = ((Integer)columnIndeces.get(pval3.getSelectedIndex()-1)).intValue();
+                }
+                if (pval4.getSelectedIndex() > 0){
+                    numPvals++;
+                    pCols[3] = ((Integer)columnIndeces.get(pval4.getSelectedIndex()-1)).intValue();
+                }
+                if (pval5.getSelectedIndex() > 0){
+                    numPvals++;
+                    pCols[4] = ((Integer)columnIndeces.get(pval5.getSelectedIndex()-1)).intValue();
+                }
+
+                if (numPvals < 2){
+                    JOptionPane.showMessageDialog(this,
+                            "Please choose at least 2 pvalue columns.",
+                            "Invalid selection",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                String cols = "";
+                for (int i = 0; i < pCols.length; i++){
+                    if (pCols[i] > 0){
+                        cols = cols + pCols[i] + " ";
+                    }
+                }
+
+                String[] inputs = {null,null,null,null,cols};
+                this.dispose();
+                hv.readWGA(inputs);
+            }
+        }
     }
 
     class PlinkCellRenderer extends DefaultTableCellRenderer {
