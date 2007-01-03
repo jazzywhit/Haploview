@@ -66,6 +66,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         contents.add(choicePanel);
         setContentPane(contents);
 
+        this.getRootPane().setDefaultButton(goButton);
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
         this.setModal(true);
