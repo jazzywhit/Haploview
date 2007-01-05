@@ -337,14 +337,12 @@ public class Plink {
                 int value = ((Integer)cols.get(j)).intValue();
                 Double pv;
                 try{
-                    if (values.size() <= value){
-                        pv = null;
-                    }else if(values.get(value) == null){
-                        pv = null;
-                    }else{
-                        pv = new Double((String)values.get(value));
+                    if (values.size() >= value){
+                        if (values.get(value) != null){
+                            pv = new Double((String)values.get(value));
+                            pValues.add(pv);
+                        }
                     }
-                    pValues.add(pv);
                 }catch(NumberFormatException nfe){
                     throw new PlinkException("One or more of the selected columns does not contain\n" +
                             "properly formatted P-values.");
