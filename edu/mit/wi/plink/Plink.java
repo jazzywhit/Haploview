@@ -33,8 +33,10 @@ public class Plink {
         Hashtable markerHash = new Hashtable(1,1);
         ignoredMarkers = new Vector();
 
-        if (chromFilter.equals("")){
-            chromFilter = null;
+        if (chromFilter != null){
+            if (chromFilter.equals("")){
+                chromFilter = null;
+            }
         }
 
         try{
