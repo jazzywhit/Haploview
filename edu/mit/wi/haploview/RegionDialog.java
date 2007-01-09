@@ -103,7 +103,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
             String[] returnStrings;
             returnStrings = new String[]{"Chr " + chrom + ":" + pop + ":" + gotoStart + ".." +
-                    gotoEnd, pop, gotoStart, gotoEnd, chrom, phase};
+                    gotoEnd, pop, gotoStart, gotoEnd, chrom, phase, "txt"};
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
             Vector chipSNPs = prp.getSNPs();

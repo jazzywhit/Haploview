@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.40 2006/12/08 15:51:54 djbender Exp $
+* $Id: PedFile.java,v 3.41 2007/01/09 19:31:18 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1036,10 +1036,11 @@ public class PedFile {
         }else{
             phaseChoice = "II";
         }
+        String output = info[6];  //todo: max or txt
         boolean infoDone = false;
         boolean hminfoDone = false;
         String urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + populationChoice +
-                "&start=" + startPos + "&stop=" + stopPos + "&ds=p" + phaseChoice + "&out=txt&filter=cons+"
+                "&start=" + startPos + "&stop=" + stopPos + "&ds=p" + phaseChoice + "&out=" + output + "&filter=cons+"
                 + populationChoice.toLowerCase();
 
         try{

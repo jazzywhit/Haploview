@@ -584,7 +584,7 @@ public class ReadDataDialog extends JDialog
             }else if (fileType == HMP_FILE){
                 returnStrings = new String[]{hmpFileField.getText(),null,null};
             }else if (fileType == PHASED_FILE ){
-                returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), phaseLegendField.getText(),"",chromChoice};
+                returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), phaseLegendField.getText(), chromChoice};
             }else if (fileType == PHASEDHMPDL_FILE){
                 returnStrings = new String[]{"Chr" + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice, "txt"};

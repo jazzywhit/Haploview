@@ -1501,7 +1501,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
             //parse command line stuff for input files or prompt data dialog
-            String[] inputArray = new String[6];
+            String[] inputArray = new String[7];
             if (argParser.getHapsFileName() != null){
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
@@ -1517,6 +1517,26 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[1] = null;
                 inputArray[2] = null;
                 window.readGenotypes(inputArray, HMP_FILE, false);
+            }else if (argParser.getPhasedHmpDataName() != null){
+                if (!argParser.getChromosome().equals("")){
+                    Options.setShowGBrowse(true);
+                }
+                inputArray[0] = argParser.getPhasedHmpDataName();
+                inputArray[1] = argParser.getPhasedHmpSampleName();
+                inputArray[2] = argParser.getPhasedHmpLegendName();
+                inputArray[3] = argParser.getChromosome();
+                window.readGenotypes(inputArray, PHASED_FILE, false);
+            }else if (argParser.getPhasedHmpDownload()){
+                Options.setShowGBrowse(true);
+                inputArray[0] = "Chr" + argParser.getChromosome() + ":" + argParser.getPopulation() + ":" +
+                        argParser.getStartPos() + ".." + argParser.getEndPos();
+                inputArray[1] = argParser.getPopulation();
+                inputArray[2] = argParser.getStartPos();
+                inputArray[3] = argParser.getEndPos();
+                inputArray[4] = argParser.getChromosome();
+                inputArray[5] = argParser.getRelease();
+                inputArray[6] = "txt";
+                window.readGenotypes(inputArray, PHASEDHMPDL_FILE, true);
             }else if (argParser.getPlinkFileName() != null){
                 inputArray[0] = argParser.getPlinkFileName();
                 inputArray[1] = argParser.getMapFileName();

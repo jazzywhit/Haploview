@@ -90,6 +90,42 @@ public class HaploText implements Constants{
         return hapmapFileName;
     }
 
+    public String getPhasedHmpDataName(){
+        return phasedhmpdataFileName;
+    }
+
+    public String getPhasedHmpSampleName(){
+        return phasedhmpsampleFileName;
+    }
+
+    public String getPhasedHmpLegendName(){
+        return phasedhmplegendFileName;
+    }
+
+    public boolean getPhasedHmpDownload(){
+        return phasedhapmapDownload;
+    }
+
+    public String getChromosome(){
+        return chromosomeArg;
+    }
+
+    public String getPopulation(){
+        return populationArg;
+    }
+
+    public String getStartPos(){
+        return startPos;
+    }
+
+    public String getEndPos(){
+        return endPos;
+    }
+
+    public String getRelease(){
+        return release;
+    }
+
     public String getPlinkFileName(){
         return plinkFileName;
     }
@@ -1112,12 +1148,12 @@ public class HaploText implements Constants{
         else if (phasedhmpdataFileName != null){
             fileName = phasedhmpdataFileName;
             fileType = PHASED_FILE;
-            phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, chromosomeArg, ""};
+            phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, chromosomeArg};
         }
         else if (phasedhapmapDownload){
             fileName = "Chromosome" + chromosomeArg + populationArg;
             fileType = PHASEDHMPDL_FILE;
-            phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg, release};
+            phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg, release, "max"};
         }else{
             fileName = hapmapFileName;
             fileType = HMP_FILE;
