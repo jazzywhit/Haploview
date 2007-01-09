@@ -1543,7 +1543,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[2] = null;
                 inputArray[3] = null;
                 inputArray[4] = null;
-                inputArray[5] = null;
+                inputArray[5] = argParser.getChromosome();
                 window.readWGA(inputArray);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);

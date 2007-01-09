@@ -33,6 +33,10 @@ public class Plink {
         Hashtable markerHash = new Hashtable(1,1);
         ignoredMarkers = new Vector();
 
+        if (chromFilter.equals("")){
+            chromFilter = null;
+        }
+
         try{
             if (wgaFile.length() < 1){
                 throw new PlinkException("plink file is empty or nonexistent.");

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.41 2007/01/09 19:31:18 djbender Exp $
+* $Id: PedFile.java,v 3.42 2007/01/09 20:15:59 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1036,7 +1036,7 @@ public class PedFile {
         }else{
             phaseChoice = "II";
         }
-        String output = info[6];  //todo: max or txt
+        String output = info[6];
         boolean infoDone = false;
         boolean hminfoDone = false;
         String urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + populationChoice +
