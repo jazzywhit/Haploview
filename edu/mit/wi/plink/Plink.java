@@ -148,7 +148,7 @@ public class Plink {
                         }else if(chromosome.equals("25")){
                             chromosome = "XY";
                         }
-                    }else if (tokenNumber == positionColumn){
+                    }else if (tokenNumber == positionColumn && embed){
                         position = Long.parseLong(tokenizer.nextToken());
                     }else{
                         values.add(new String(tokenizer.nextToken()));
@@ -361,7 +361,12 @@ public class Plink {
             }else{
                 double df = 2*numPvals;
                 try{
-                    String p = Util.formatPValue(1-StatFunctions.pchisq(chisq,df));
+                    String p;
+                    if (1-StatFunctions.pchisq(chisq,df) == 0){
+                        p = "1.0E-16";
+                    }else{
+                        p = Util.formatPValue(1-StatFunctions.pchisq(chisq,df));
+                    }
                     valuesToAdd.add(p);
                 }catch(IllegalArgumentException iae){
                     throw new PlinkException("One or more of the selected columns does not contain\n" +

@@ -737,6 +737,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 cell.setBackground(Color.cyan);
             }
 
+            if (table.getColumnName(column).startsWith("P_COMBINED")){
+                if (((Double)table.getValueAt(row,column)).doubleValue() == 1.0E-16){
+                    cell.setForeground(Color.red);
+                }
+            }
+
 
             return cell;
         }
