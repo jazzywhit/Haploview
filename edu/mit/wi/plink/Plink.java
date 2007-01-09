@@ -20,7 +20,7 @@ public class Plink {
     private Vector ignoredMarkers;
     private boolean dupMarkers = false;
 
-    public void parseWGA(String wga, String map, boolean embed) throws PlinkException {
+    public void parseWGA(String wga, String map, boolean embed, String chromFilter) throws PlinkException {
         markers = new Vector();
         results = new Vector();
         columns = new Vector();
@@ -65,6 +65,11 @@ public class Plink {
                         chrom = "Y";
                     }else if (chrom.equals("25")){
                         chrom = "XY";
+                    }
+                    if (chromFilter != null){
+                        if (!(chrom.equalsIgnoreCase(chromFilter))){
+                            continue;
+                        }
                     }
                     String marker = new String(st.nextToken());
                     //useless morgan distance
@@ -154,6 +159,12 @@ public class Plink {
                         values.add(new String(tokenizer.nextToken()));
                     }
                     tokenNumber++;
+                }
+
+                if (chromFilter != null){
+                    if (!(chromosome.equalsIgnoreCase(chromFilter))){
+                        continue;
+                    }
                 }
 
                 if (tokenNumber != numColumns){

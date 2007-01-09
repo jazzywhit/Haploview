@@ -984,6 +984,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         String secondaryFile = inputOptions[2];
         String embeddedMap = inputOptions[3];
         String fisherColumn = inputOptions[4];
+        String chrom = inputOptions[5];
         boolean embed = false;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (plink == null){
@@ -1004,7 +1005,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
 
             if (wgaFile != null){
-                plink.parseWGA(wgaFile,mapFile,embed);
+                plink.parseWGA(wgaFile,mapFile,embed,chrom);
             }
             if (secondaryFile != null){
                 Vector v = plink.parseMoreResults(secondaryFile);
@@ -1500,7 +1501,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
 
             //parse command line stuff for input files or prompt data dialog
-            String[] inputArray = new String[5];
+            String[] inputArray = new String[6];
             if (argParser.getHapsFileName() != null){
                 inputArray[0] = argParser.getHapsFileName();
                 inputArray[1] = argParser.getInfoFileName();
@@ -1517,12 +1518,12 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[2] = null;
                 window.readGenotypes(inputArray, HMP_FILE, false);
             }else if (argParser.getPlinkFileName() != null){
-                inputArray = new String[4];
                 inputArray[0] = argParser.getPlinkFileName();
                 inputArray[1] = argParser.getMapFileName();
                 inputArray[2] = null;
                 inputArray[3] = null;
                 inputArray[4] = null;
+                inputArray[5] = null;
                 window.readWGA(inputArray);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);

@@ -28,13 +28,14 @@ public class ReadDataDialog extends JDialog
     private int fileType;
     private JTextField pedFileField, pedInfoField, hapsFileField, hapsInfoField, hmpFileField,
             phaseFileField, phaseSampleField, phaseLegendField, plinkFileField, plinkMapField, testFileField;
-    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip, embeddedMap;
+    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip, embeddedMap, plinkChrom;
     private JRadioButton trioButton, ccButton, standardTDT, parenTDT;
     private JButton browseAssocButton, browsePlinkMapButton;
     private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromEndField;
     private JLabel testFileLabel, mapLabel;
     private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
+    private JComboBox plinkChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox popChooser = new JComboBox(POP_NAMES);
     private JComboBox phaseChooser = new JComboBox(RELEASE_NAMES);
     private String chromChoice, popChoice, phaseChoice, embed;
@@ -184,9 +185,18 @@ public class ReadDataDialog extends JDialog
         browsePlinkMapButton = new JButton("Browse");
         browsePlinkMapButton.setActionCommand(BROWSE_MAP);
         browsePlinkMapButton.addActionListener(this);
+        JPanel inputPanel = new JPanel();
         embeddedMap = new JCheckBox("Integrated Map Info");
         embeddedMap.addActionListener(this);
         embeddedMap.setSelected(false);
+        inputPanel.add(embeddedMap);
+        JPanel plinkChromPanel = new JPanel();
+        plinkChrom = new JCheckBox("Only load results from Chromosome");
+        plinkChrom.addActionListener(this);
+        plinkChromPanel.add(plinkChrom);
+        plinkChromChooser.setSelectedIndex(-1);
+        plinkChromPanel.add(plinkChromChooser);
+        plinkChromChooser.setEnabled(false);
 
         JPanel pedTab = new JPanel(new GridBagLayout());
         pedTab.setPreferredSize(new Dimension(375,200));
@@ -276,10 +286,11 @@ public class ReadDataDialog extends JDialog
         pedTab.add(assocPanel,c);
         hapsTab.add(hapsXChrom, c);
         hmpTab.add(doGB,c);
-        plinkTab.add(embeddedMap,c);
+        plinkTab.add(inputPanel,c);
         c.gridy = 3;
         pedTab.add(tdtOptsPanel,c);
         phaseTab.add(phaseGzipPanel,c);
+        plinkTab.add(plinkChromPanel,c);
         c.gridy = 4;
         pedTab.add(tdtTypePanel,c);
         phaseTab.add(phaseChromPanel,c);
@@ -552,6 +563,18 @@ public class ReadDataDialog extends JDialog
                 if (embeddedMap.isSelected()){
                     embed = "Y";
                 }
+                if (plinkChrom.isSelected()){
+                    if (plinkChromChooser.getSelectedIndex() == -1){
+                        JOptionPane.showMessageDialog(caller,
+                                "Please select a chromosome to load.",
+                                "Invalid value",
+                                JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    chromChoice = (String)plinkChromChooser.getSelectedItem();
+                }else{
+                    chromChoice = null;
+                }
             }
 
             String[] returnStrings;
@@ -564,9 +587,9 @@ public class ReadDataDialog extends JDialog
                 returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), phaseLegendField.getText(),"",chromChoice};
             }else if (fileType == PHASEDHMPDL_FILE){
                 returnStrings = new String[]{"Chr" + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
-                        chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice};
+                        chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice, "txt"};
             }else if (fileType == PLINK_FILE){
-                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null,embed,null};
+                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null,embed,null,chromChoice};
             }
             else{
                 returnStrings = new String[]{pedFileField.getText(), pedInfoField.getText(), testFileField.getText()};
@@ -579,7 +602,7 @@ public class ReadDataDialog extends JDialog
             caller.clearDisplays();
             this.dispose();
             if (fileType != PLINK_FILE){
-            caller.readGenotypes(returnStrings, fileType, isDownloaded);
+                caller.readGenotypes(returnStrings, fileType, isDownloaded);
             }else{
                 caller.readWGA(returnStrings);
             }
@@ -615,6 +638,14 @@ public class ReadDataDialog extends JDialog
                 browsePlinkMapButton.setEnabled(true);
             }
 
+        }else if (command.equals("Only load results from Chromosome")){
+          if (plinkChrom.isSelected()){
+              plinkChrom.setSelected(true);
+              plinkChromChooser.setEnabled(true);
+          }else{
+              plinkChrom.setSelected(false);
+              plinkChromChooser.setEnabled(false);
+          }
         }else if (command.equals("Proxy Settings")){
             ProxyDialog pd = new ProxyDialog(this,"Proxy Settings");
             pd.pack();
