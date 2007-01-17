@@ -68,9 +68,9 @@ public class Plink {
                     short chr;
                     if (chrom.equalsIgnoreCase("X")){
                         chr = 23;
-                    }else if (chrom.equals("24")){
+                    }else if (chrom.equals("Y")){
                         chr = 24;
-                    }else if (chrom.equals("25")){
+                    }else if (chrom.equals("XY")){
                         chr = 25;
                     }else{
                         chr = Short.parseShort(chrom);
@@ -140,6 +140,9 @@ public class Plink {
                }
                 int tokenNumber = 0;
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
+                if (tokenizer.countTokens() != numColumns){
+                    throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
+                }
                 String marker = null;
                 String chromosome = null;
                 short chr = 0;
@@ -168,20 +171,22 @@ public class Plink {
                     }else if (tokenNumber == positionColumn && embed){
                         position = Long.parseLong(tokenizer.nextToken());
                     }else{
-                        values.add(new String(tokenizer.nextToken()));
+                        String val = new String(tokenizer.nextToken());
+                        try{
+                            values.add(new Double(val));
+                        }catch (NumberFormatException n){
+                            values.add(val);
+                        }
                     }
                     tokenNumber++;
                 }
 
                 if (chrFilter > 0){
-                    if (!(chromosome.equalsIgnoreCase(chromFilter))){
+                    if (chr != chrFilter){
                         continue;
                     }
                 }
 
-                if (tokenNumber != numColumns){
-                    throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
-                }
 
                 Marker assocMarker;
                 if (!embed){
@@ -191,9 +196,9 @@ public class Plink {
                         ignoredMarkers.add(marker);
                         lineNumber++;
                         continue;
-                    }else if (assocMarker.getChromosomeIndex() != chr){
+                    }else if (assocMarker.getChromosomeIndex() != chr && chromColumn != -1){
                         throw new PlinkException("Incompatible chromosomes for marker " + marker +
-                                "\non line " + lineNumber);
+                                "\non line " + lineNumber + " " + assocMarker.getChromosomeIndex() + " " + chr);
                     }
                 }else{
                     assocMarker = new Marker(chr,marker,position);
@@ -205,7 +210,7 @@ public class Plink {
             }
         }catch(IOException ioe){
             throw new PlinkException("File error.");
-        }catch(NumberFormatException nfe){
+        }catch(NumberFormatException nfe){         //TODO: remove?
             throw new PlinkException("File formatting error.");
         }
     }

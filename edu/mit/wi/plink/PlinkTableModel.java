@@ -91,7 +91,11 @@ public class PlinkTableModel extends AbstractTableModel{
                 value = null;
             }else{
                 if(result.getValues().get(column-3) != null){
-                    value = (String)(result.getValues().get(column-3));
+                    if (result.getValues().get(column-3) instanceof String){
+                        value = result.getValues().get(column-3);
+                    }else{
+                        value = String.valueOf(((Double)(result.getValues().get(column-3))).intValue());
+                    }
                 }else{
                     value = null;
                 }
@@ -102,7 +106,11 @@ public class PlinkTableModel extends AbstractTableModel{
                     value = null;
                 }else{
                     if(result.getValues().get(column-3) != null){
-                        value = new Double((String)result.getValues().get(column-3));
+                        if (result.getValues().get(column-3) instanceof String){
+                            value = result.getValues().get(column-3);
+                        }else{
+                            value = (Double)result.getValues().get(column-3);
+                        }
                     }else{
                         value = null;
                     }
