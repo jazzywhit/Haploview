@@ -168,11 +168,11 @@ public class Plink {
                     }else if (tokenNumber == positionColumn && embed){
                         position = Long.parseLong(tokenizer.nextToken());
                     }else{
-                        String val = new String(tokenizer.nextToken());
+                        String val = tokenizer.nextToken();
                         try{
                             values.add(new Double(val));
                         }catch (NumberFormatException n){
-                            values.add(val);
+                            values.add(new String(val));
                         }
                     }
                     tokenNumber++;
