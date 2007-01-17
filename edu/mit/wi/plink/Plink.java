@@ -14,14 +14,12 @@ import java.util.Hashtable;
 
 public class Plink {
 
-    private Vector markers = null;
     private Vector results = null;
     private Vector columns = null;
     private Vector ignoredMarkers;
     private boolean dupMarkers = false;
 
     public void parseWGA(String wga, String map, boolean embed, String chromFilter) throws PlinkException {
-        markers = new Vector();
         results = new Vector();
         columns = new Vector();
         columns.add("CHROM");
@@ -90,7 +88,6 @@ public class Plink {
                     long position = Long.parseLong(pos);
 
                     Marker mark = new Marker(chr, marker, position);
-                    markers.add(mark);
                     markerHash.put(mark.getMarkerID(), mark);
                 }
             }
@@ -187,7 +184,6 @@ public class Plink {
                     }
                 }
 
-
                 Marker assocMarker;
                 if (!embed){
                     assocMarker = (Marker)markerHash.get(marker);
@@ -210,9 +206,9 @@ public class Plink {
             }
         }catch(IOException ioe){
             throw new PlinkException("File error.");
-        }catch(NumberFormatException nfe){         //TODO: remove?
+        }/*catch(NumberFormatException nfe){         //TODO: remove?
             throw new PlinkException("File formatting error.");
-        }
+        }*/
     }
 
     public Vector getIgnoredMarkers() {
@@ -412,10 +408,6 @@ public class Plink {
             currentResult.addValues(valuesToAdd);
         }
         columns.add("P_COMBINED");
-    }
-
-    public Vector getMarkers(){
-        return markers;
     }
 
     public Vector getResults(){
