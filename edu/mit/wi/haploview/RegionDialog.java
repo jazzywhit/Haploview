@@ -107,17 +107,19 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
             Vector chipSNPs = prp.getSNPs();
-            if (!colChooser.getSelectedItem().equals("")){
-                for (int i = 0; i < Chromosome.getSize(); i++){
-                    if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
-                        Chromosome.getMarker(i).setExtra(String.valueOf(prp.getValueAt(
-                                chipSNPs.indexOf(Chromosome.getMarker(i).getName()),colChooser.getSelectedIndex()+2)));
+            if (Chromosome.getUnfilteredSize() > 0){
+                if (!colChooser.getSelectedItem().equals("")){
+                    for (int i = 0; i < Chromosome.getSize(); i++){
+                        if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
+                            Chromosome.getMarker(i).setExtra(String.valueOf(prp.getValueAt(
+                                    chipSNPs.indexOf(Chromosome.getMarker(i).getName()),colChooser.getSelectedIndex()+2)));
+                        }
                     }
-                }
-            }else{
-                for (int i = 0; i < Chromosome.getSize(); i++){
-                    if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
-                        Chromosome.getMarker(i).setExtra("PLINK");
+                }else{
+                    for (int i = 0; i < Chromosome.getSize(); i++){
+                        if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
+                            Chromosome.getMarker(i).setExtra("PLINK");
+                        }
                     }
                 }
             }
