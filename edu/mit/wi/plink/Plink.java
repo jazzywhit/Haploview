@@ -32,11 +32,11 @@ public class Plink {
         final File mapFile = new File(map);
         Hashtable markerHash = new Hashtable(1,1);
         ignoredMarkers = new Vector();
+        short chrFilter = 0;
+
 
         if (chromFilter != null){
-            if (chromFilter.equals("")){
-                chromFilter = null;
-            }
+            chrFilter = Short.parseShort(chromFilter);
         }
 
         try{
@@ -65,15 +65,18 @@ public class Plink {
                     }
 
                     String chrom = st.nextToken();
-                    if (chrom.equals("23")){
-                        chrom = "X";
+                    short chr;
+                    if (chrom.equalsIgnoreCase("X")){
+                        chr = 23;
                     }else if (chrom.equals("24")){
-                        chrom = "Y";
+                        chr = 24;
                     }else if (chrom.equals("25")){
-                        chrom = "XY";
+                        chr = 25;
+                    }else{
+                        chr = Short.parseShort(chrom);
                     }
-                    if (chromFilter != null){
-                        if (!(chrom.equalsIgnoreCase(chromFilter))){
+                    if (chrFilter > 0){
+                        if (chr != chrFilter){
                             continue;
                         }
                     }
@@ -86,7 +89,7 @@ public class Plink {
                     }
                     long position = Long.parseLong(pos);
 
-                    Marker mark = new Marker(chrom, marker, position);
+                    Marker mark = new Marker(chr, marker, position);
                     markers.add(mark);
                     markerHash.put(mark.getMarkerID(), mark);
                 }
@@ -139,6 +142,7 @@ public class Plink {
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
                 String marker = null;
                 String chromosome = null;
+                short chr = 0;
                 long position = 0;
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
@@ -152,12 +156,14 @@ public class Plink {
                     }else if (tokenNumber == chromColumn){
                         //new String() stops StringTokenizer from wasting memory
                         chromosome = new String(tokenizer.nextToken());
-                        if(chromosome.equals("23")){
-                            chromosome = "X";
-                        }else if(chromosome.equals("24")){
-                            chromosome = "Y";
-                        }else if(chromosome.equals("25")){
-                            chromosome = "XY";
+                        if(chromosome.equals("X")){
+                            chr = 23;
+                        }else if(chromosome.equals("Y")){
+                            chr = 24;
+                        }else if(chromosome.equals("XY")){
+                            chr = 25;
+                        }else{
+                            chr = Short.parseShort(chromosome);
                         }
                     }else if (tokenNumber == positionColumn && embed){
                         position = Long.parseLong(tokenizer.nextToken());
@@ -167,7 +173,7 @@ public class Plink {
                     tokenNumber++;
                 }
 
-                if (chromFilter != null){
+                if (chrFilter > 0){
                     if (!(chromosome.equalsIgnoreCase(chromFilter))){
                         continue;
                     }
@@ -185,12 +191,12 @@ public class Plink {
                         ignoredMarkers.add(marker);
                         lineNumber++;
                         continue;
-                    }else if (!(assocMarker.getChromosome().equalsIgnoreCase(chromosome)) && chromosome != null){
+                    }else if (assocMarker.getChromosomeIndex() != chr){
                         throw new PlinkException("Incompatible chromosomes for marker " + marker +
                                 "\non line " + lineNumber);
                     }
                 }else{
-                    assocMarker = new Marker(chromosome,marker,position);
+                    assocMarker = new Marker(chr,marker,position);
                 }
 
                 AssociationResult result = new AssociationResult(lineNumber,assocMarker,values);

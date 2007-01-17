@@ -571,7 +571,7 @@ public class ReadDataDialog extends JDialog
                                 JOptionPane.ERROR_MESSAGE);
                         return;
                     }
-                    chromChoice = (String)plinkChromChooser.getSelectedItem();
+                    chromChoice = new Integer((plinkChromChooser.getSelectedIndex()+1)).toString();
                 }else{
                     chromChoice = null;
                 }
