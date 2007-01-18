@@ -141,7 +141,7 @@ public class Plink {
                     throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
                 }
                 String marker = null;
-                String chromosome = null;
+                String chromosome;
                 short chr = 0;
                 long position = 0;
                 Vector values = new Vector();
@@ -169,10 +169,14 @@ public class Plink {
                         position = Long.parseLong(tokenizer.nextToken());
                     }else{
                         String val = tokenizer.nextToken();
-                        try{
-                            values.add(new Double(val));
-                        }catch (NumberFormatException n){
-                            values.add(new String(val));
+                        if (val.equalsIgnoreCase("NA")){
+                            values.add(new Double(Double.NaN));
+                        }else{
+                            try{
+                                values.add(new Double(val));
+                            }catch (NumberFormatException n){
+                                values.add(new String(val));
+                            }
                         }
                     }
                     tokenNumber++;
