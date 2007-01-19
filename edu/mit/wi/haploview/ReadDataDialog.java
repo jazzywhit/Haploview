@@ -28,7 +28,7 @@ public class ReadDataDialog extends JDialog
     private int fileType;
     private JTextField pedFileField, pedInfoField, hapsFileField, hapsInfoField, hmpFileField,
             phaseFileField, phaseSampleField, phaseLegendField, plinkFileField, plinkMapField, testFileField;
-    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip, embeddedMap, plinkChrom;
+    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip, embeddedMap, plinkChrom, selectColumns;
     private JRadioButton trioButton, ccButton, standardTDT, parenTDT;
     private JButton browseAssocButton, browsePlinkMapButton;
     private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromEndField;
@@ -38,7 +38,7 @@ public class ReadDataDialog extends JDialog
     private JComboBox plinkChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox popChooser = new JComboBox(POP_NAMES);
     private JComboBox phaseChooser = new JComboBox(RELEASE_NAMES);
-    private String chromChoice, popChoice, phaseChoice, embed;
+    private String chromChoice, popChoice, phaseChoice, embed, selectCols;
     private boolean isDownloaded = false;
 
     JTabbedPane dataFormatPane = new JTabbedPane(JTabbedPane.LEFT);
@@ -197,6 +197,8 @@ public class ReadDataDialog extends JDialog
         plinkChromChooser.setSelectedIndex(-1);
         plinkChromPanel.add(plinkChromChooser);
         plinkChromChooser.setEnabled(false);
+        selectColumns = new JCheckBox("Select Columns");
+        plinkChromPanel.add(selectColumns);
 
         JPanel pedTab = new JPanel(new GridBagLayout());
         pedTab.setPreferredSize(new Dimension(375,200));
@@ -575,6 +577,9 @@ public class ReadDataDialog extends JDialog
                 }else{
                     chromChoice = null;
                 }
+                if (selectColumns.isSelected()){
+                    selectCols = "Y";
+                }
             }
 
             String[] returnStrings;
@@ -589,7 +594,7 @@ public class ReadDataDialog extends JDialog
                 returnStrings = new String[]{"Chr" + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice, "txt"};
             }else if (fileType == PLINK_FILE){
-                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null,embed,null,chromChoice};
+                returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null,embed,null,chromChoice,selectCols};
             }
             else{
                 returnStrings = new String[]{pedFileField.getText(), pedInfoField.getText(), testFileField.getText()};

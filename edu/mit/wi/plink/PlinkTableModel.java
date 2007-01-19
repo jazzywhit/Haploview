@@ -79,7 +79,7 @@ public class PlinkTableModel extends AbstractTableModel{
         //AssociationResult result = (AssociationResult)data.get(row);
         AssociationResult result = (AssociationResult)data.get(realIndex);
         Marker marker = result.getMarker();
-        Object value = null;
+        Object value;
         if (column == CHROM_COLUMN){
             value = marker.getChromosome();
         }else if (column == MARKER_COLUMN){
@@ -109,7 +109,7 @@ public class PlinkTableModel extends AbstractTableModel{
                         if (result.getValues().get(column-3) instanceof String){
                             value = result.getValues().get(column-3);
                         }else{
-                            value = (Double)result.getValues().get(column-3);
+                            value = result.getValues().get(column-3);
                         }
                     }else{
                         value = null;
@@ -117,7 +117,7 @@ public class PlinkTableModel extends AbstractTableModel{
                 }
             }catch (NumberFormatException nfe){
                 value = result.getValues().get(column-3);
-                if (((String)value).equals("NA")){
+                if ((value).equals("NA")){
                     value = new Double(Double.NaN);
                 }
             }
@@ -179,11 +179,10 @@ public class PlinkTableModel extends AbstractTableModel{
                 }
 
                 if (getValueAt(i,col) != null){
-                    if (stringVal != null){
+                    if (stringVal != null && getValueAt(i,col) instanceof String){
                         if (((String)getValueAt(i,col)).equalsIgnoreCase(stringVal)){
                             genericPass = true;
                         }
-
                     }else{
                         try{
                             rowVal = ((Double)getValueAt(i,col)).doubleValue();

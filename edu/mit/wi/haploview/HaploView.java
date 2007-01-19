@@ -64,7 +64,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     static HaploView window;
     private Plink plink;
-    private Vector phasedSelection;
+    private Vector phasedSelection, colsToRemove;
     private Hashtable removedCols;
     public static JFileChooser fc;
     private JScrollPane hapScroller;
@@ -1004,8 +1004,36 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 embed = true;
             }
 
+            if (inputOptions[6] != null && wgaFile != null){
+                try{
+                    File columnFile = new File(wgaFile);
+                    BufferedReader wgaReader = new BufferedReader(new FileReader(columnFile));
+                    String columnLine = wgaReader.readLine();
+                    wgaReader.close();
+                    Vector colChoices = new Vector();
+                    StringTokenizer ct = new StringTokenizer(columnLine);
+                    while (ct.hasMoreTokens()){
+                        String currentCol = ct.nextToken();
+                        if (!currentCol.equalsIgnoreCase("SNP") && !currentCol.equalsIgnoreCase("CHR") && !currentCol.equalsIgnoreCase("POS")){
+                            colChoices.add(currentCol);
+                        }
+                    }
+                    ColumnChooser colChooser = new ColumnChooser(this,"Select Columns",colChoices);
+                    colChooser.pack();
+                    colChooser.setVisible(true);
+                }catch(IOException ioe){
+                    JOptionPane.showMessageDialog(this,
+                            "Error reading file.",
+                            "File Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+
             if (wgaFile != null){
-                plink.parseWGA(wgaFile,mapFile,embed,chrom);
+                plink.parseWGA(wgaFile,mapFile,embed,chrom,colsToRemove);
+            }
+            if (colsToRemove != null){
+                colsToRemove.clear();
             }
             if (secondaryFile != null){
                 Vector v = plink.parseMoreResults(secondaryFile);
@@ -1544,6 +1572,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[3] = null;
                 inputArray[4] = null;
                 inputArray[5] = argParser.getChromosome();
+                inputArray[6] = null;
                 window.readWGA(inputArray);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
@@ -1644,7 +1673,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             for (int i = 0; i < ignored.size(); i++){
                 Vector tmpVec = new Vector();
                 tmpVec.add(new Integer(i+1));
-                tmpVec.add((String)ignored.get(i));
+                tmpVec.add(ignored.get(i));
                 data.add(tmpVec);
             }
 
@@ -1678,12 +1707,66 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             this.setLocation(this.getParent().getX() + 100,
                     this.getParent().getY() + 100);
             this.setModal(true);
-            //this.setResizable(false);
         }
 
         public void actionPerformed(ActionEvent e) {
             String command = e.getActionCommand();
             if(command.equals("Close")) {
+                this.dispose();
+            }
+        }
+    }
+
+    class ColumnChooser extends JDialog implements ActionListener {
+
+        JCheckBox[] checks;
+
+        public ColumnChooser (HaploView h, String title, Vector columns){
+            super(h,title);
+
+            JPanel contents = new JPanel();
+            contents.setPreferredSize(new Dimension(150,400));
+            contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
+            checks = new JCheckBox[columns.size()];
+            for (int i = 0; i < columns.size(); i++){
+                checks[i] = new JCheckBox((String)columns.get(i));
+                checks[i].setSelected(true);
+            }
+
+            JPanel chPanel = new JPanel();
+            chPanel.setLayout(new BoxLayout(chPanel,BoxLayout.Y_AXIS));
+            for (int i = 0; i < checks.length; i++){
+                chPanel.add(checks[i]);
+            }
+            JScrollPane listPane = new JScrollPane(chPanel);
+
+            JLabel label = new JLabel("Select which columns to load:");
+            label.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(label);
+            contents.add(listPane);
+            JButton okButton = new JButton("Ok");
+            okButton.addActionListener(this);
+            okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(okButton);
+            setContentPane(contents);
+
+            this.setLocation(this.getParent().getX() + 100,
+                    this.getParent().getY() + 100);
+            this.setModal(true);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+            if(command.equals("Ok")) {
+                colsToRemove = new Vector();
+                for (int i = 0; i < checks.length; i++){
+                    if (!checks[i].isSelected()){
+                        colsToRemove.add(checks[i].getText());
+                    }
+                }
+                if (colsToRemove.size() == 0){
+                    colsToRemove = null;    //todo: reset?
+                }
                 this.dispose();
             }
         }

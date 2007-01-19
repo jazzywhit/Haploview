@@ -13,6 +13,8 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+/*import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;*/
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
@@ -334,7 +336,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         for (int i = 0; i < numRows; i++){
             String chrom = (String)table.getValueAt(i,0);
-            int chr = 0;
+            int chr;
             if (chrom.equalsIgnoreCase("X")){
                 chr = 23;
             }else if (chrom.equalsIgnoreCase("Y")){
@@ -399,7 +401,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 f = ((Double)table.getValueAt(i,col)).doubleValue();
             }catch (ClassCastException cce){
                 JOptionPane.showMessageDialog(this,
-                        "The selected column is not numerical",
+                        "The selected column does not appear to be numerical.",
                         "Invalid column",
                         JOptionPane.ERROR_MESSAGE);
                 return null;
@@ -491,6 +493,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         panel.setMaximumDrawWidth(2000);
         panel.addChartMouseListener(this);
         JFrame plotFrame = new JFrame(table.getColumnName(col));
+        /*plotFrame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+            }
+        });*/
         plotFrame.setContentPane(panel);
         plotFrame.pack();
         RefineryUtilities.centerFrameOnScreen(plotFrame);
@@ -557,7 +564,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             if (returned != JFileChooser.APPROVE_OPTION) return;
             File file = HaploView.fc.getSelectedFile();
             String fullName = file.getParent()+File.separator+file.getName();
-            String[] inputs = {null,null,fullName,null,null,null};
+            String[] inputs = {null,null,fullName,null,null,null,null};
             if (removedColumns.size() > 0){
                 hv.setRemovedColumns(removedColumns);
             }
@@ -592,6 +599,20 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
     public void chartMouseMoved(ChartMouseEvent chartMouseEvent) {
     }
+
+    /*class PlotFrame extends JFrame { //TODO: Plotting memory issues
+        PlotFrame(String title){
+            this.setTitle(title);
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e){
+                    panel = null;
+                    chart = null;
+                    info = null;
+                    dispose();
+                }
+            });
+        }
+    }*/
 
     class FisherCombinedDialog extends JDialog implements ActionListener{
         private JComboBox pval1, pval2, pval3, pval4, pval5;
@@ -709,7 +730,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     }
                 }
 
-                String[] inputs = {null,null,null,null,cols,null};
+                String[] inputs = {null,null,null,null,cols,null,null};
                 this.dispose();
                 hv.readWGA(inputs);
             }
@@ -742,8 +763,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     cell.setForeground(Color.red);
                 }
             }
-
-
             return cell;
         }
     }

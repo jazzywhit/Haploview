@@ -19,7 +19,7 @@ public class Plink {
     private Vector ignoredMarkers;
     private boolean dupMarkers = false;
 
-    public void parseWGA(String wga, String map, boolean embed, String chromFilter) throws PlinkException {
+    public void parseWGA(String wga, String map, boolean embed, String chromFilter, Vector columnFilter) throws PlinkException {
         results = new Vector();
         columns = new Vector();
         columns.add("CHROM");
@@ -93,26 +93,37 @@ public class Plink {
             }
 
             BufferedReader wgaReader = new BufferedReader(new FileReader(wgaFile));
-            int numColumns = 0;
+            int colIndex = 0;
             int markerColumn = -1;
             int chromColumn = -1;
             int positionColumn = -1;
             String headerLine = wgaReader.readLine();
             StringTokenizer headerSt = new StringTokenizer(headerLine);
+            boolean[] filteredColIndex = new boolean[headerSt.countTokens()];
             while (headerSt.hasMoreTokens()){
                 String column = headerSt.nextToken();
                 if (column.equalsIgnoreCase("SNP")){
-                    markerColumn = numColumns;
-                    numColumns++;
+                    markerColumn = colIndex;
+                    colIndex++;
                 }else if (column.equalsIgnoreCase("CHR")){
-                    chromColumn = numColumns;
-                    numColumns++;
+                    chromColumn = colIndex;
+                    colIndex++;
                 }else if (column.equalsIgnoreCase("POS")||column.equalsIgnoreCase("POSITION")){
-                    positionColumn = numColumns;
-                    numColumns++;
+                    positionColumn = colIndex;
+                    colIndex++;
                 }else{
-                    columns.add(column);
-                    numColumns++;
+                    if (columnFilter != null){
+                        if (columnFilter.contains(column)){
+                            filteredColIndex[colIndex] = true;
+                            colIndex++;
+                        }else{
+                            columns.add(column);
+                            colIndex++;
+                        }
+                    }else{
+                        columns.add(column);
+                        colIndex++;
+                    }
                 }
             }
 
@@ -137,7 +148,7 @@ public class Plink {
                }
                 int tokenNumber = 0;
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
-                if (tokenizer.countTokens() != numColumns){
+                if (tokenizer.countTokens() != colIndex){
                     throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
                 }
                 String marker = null;
@@ -168,14 +179,18 @@ public class Plink {
                     }else if (tokenNumber == positionColumn && embed){
                         position = Long.parseLong(tokenizer.nextToken());
                     }else{
-                        String val = tokenizer.nextToken();
-                        if (val.equalsIgnoreCase("NA")){
-                            values.add(new Double(Double.NaN));
+                        if (filteredColIndex[tokenNumber]){
+                            tokenizer.nextToken();
                         }else{
-                            try{
-                                values.add(new Double(val));
-                            }catch (NumberFormatException n){
-                                values.add(new String(val));
+                            String val = tokenizer.nextToken();
+                            if (val.equalsIgnoreCase("NA")){
+                                values.add(new Double(Double.NaN));
+                            }else{
+                                try{
+                                    values.add(new Double(val));
+                                }catch (NumberFormatException n){
+                                    values.add(new String(val));
+                                }
                             }
                         }
                     }
@@ -210,9 +225,9 @@ public class Plink {
             }
         }catch(IOException ioe){
             throw new PlinkException("File error.");
-        }/*catch(NumberFormatException nfe){         //TODO: remove?
+        }catch(NumberFormatException nfe){
             throw new PlinkException("File formatting error.");
-        }*/
+        }
     }
 
     public Vector getIgnoredMarkers() {
@@ -309,8 +324,16 @@ public class Plink {
                         //we don't give a toss for the chromosome or position...
                         tokenizer.nextToken();
                     }else{
-                        String value = tokenizer.nextToken();
-                        values.add(value);
+                        String val = tokenizer.nextToken();  //TODO: Check this out
+                        if (val.equalsIgnoreCase("NA")){
+                            values.add(new Double(Double.NaN));
+                        }else{
+                            try{
+                                values.add(new Double(val));
+                            }catch (NumberFormatException n){
+                                values.add(new String(val));
+                            }
+                        }
                     }
                     tokenNumber++;
                 }
@@ -366,8 +389,8 @@ public class Plink {
                 Double pv;
                 try{
                     if (values.size() >= value){
-                        if (values.get(value) != null){
-                            pv = new Double((String)values.get(value));
+                        if (values.get(value) != null && !(((Double)values.get(value)).equals(new Double(Double.NaN)))){
+                            pv = (Double)values.get(value);
                             pValues.add(pv);
                         }
                     }
@@ -385,15 +408,15 @@ public class Plink {
             }
             double chisq = -2*sumLns;
             if (chisq == 0){
-                valuesToAdd.add("1");
+                valuesToAdd.add(new Double(1));
             }else{
                 double df = 2*numPvals;
                 try{
-                    String p;
+                    Double p;
                     if (1-StatFunctions.pchisq(chisq,df) == 0){
-                        p = "1.0E-16";
+                        p = new Double("1.0E-16");
                     }else{
-                        p = Util.formatPValue(1-StatFunctions.pchisq(chisq,df));
+                        p = new Double(Util.formatPValue(1-StatFunctions.pchisq(chisq,df)));
                     }
                     valuesToAdd.add(p);
                 }catch(IllegalArgumentException iae){
