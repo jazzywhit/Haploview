@@ -34,7 +34,9 @@ public class Plink {
 
 
         if (chromFilter != null){
-            chrFilter = Short.parseShort(chromFilter);
+            if (!chromFilter.equals("")){
+                chrFilter = Short.parseShort(chromFilter);
+            }
         }
 
         try{
