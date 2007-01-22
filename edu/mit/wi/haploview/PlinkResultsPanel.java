@@ -11,10 +11,7 @@ import java.util.Hashtable;
 import java.util.StringTokenizer;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-/*import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;*/
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
@@ -397,16 +394,17 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             c = c/1000;
             double f = -1;
 
-            try{
-                f = ((Double)table.getValueAt(i,col)).doubleValue();
-            }catch (ClassCastException cce){
-                JOptionPane.showMessageDialog(this,
-                        "The selected column does not appear to be numerical.",
-                        "Invalid column",
-                        JOptionPane.ERROR_MESSAGE);
-                return null;
-            }catch (NullPointerException npe){ //this can happen with blank table values from additional results
+            if (table.getValueAt(i,col) == null){
                 continue;
+            }else{
+                if (table.getValueAt(i,col) instanceof Double){
+                    f = ((Double)table.getValueAt(i,col)).doubleValue();
+                }else{
+                    JOptionPane.showMessageDialog(this,
+                            "The selected column does not appear to be numerical.",
+                            "Invalid column",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
 
             if (plotType == LOG10_PLOT){
@@ -493,11 +491,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         panel.setMaximumDrawWidth(2000);
         panel.addChartMouseListener(this);
         JFrame plotFrame = new JFrame(table.getColumnName(col));
-        /*plotFrame.addWindowListener(new WindowAdapter() {
+        plotFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        plotFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                System.exit(0);
+                info = null;
             }
-        });*/
+        });
         plotFrame.setContentPane(panel);
         plotFrame.pack();
         RefineryUtilities.centerFrameOnScreen(plotFrame);
@@ -599,20 +598,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
     public void chartMouseMoved(ChartMouseEvent chartMouseEvent) {
     }
-
-    /*class PlotFrame extends JFrame { //TODO: Plotting memory issues
-        PlotFrame(String title){
-            this.setTitle(title);
-            addWindowListener(new WindowAdapter() {
-                public void windowClosing(WindowEvent e){
-                    panel = null;
-                    chart = null;
-                    info = null;
-                    dispose();
-                }
-            });
-        }
-    }*/
 
     class FisherCombinedDialog extends JDialog implements ActionListener{
         private JComboBox pval1, pval2, pval3, pval4, pval5;

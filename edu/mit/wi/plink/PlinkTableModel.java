@@ -184,9 +184,9 @@ public class PlinkTableModel extends AbstractTableModel{
                             genericPass = true;
                         }
                     }else{
-                        try{
+                        if (getValueAt(i,col) instanceof Double){
                             rowVal = ((Double)getValueAt(i,col)).doubleValue();
-                        }catch (ClassCastException cce){
+                        }else{
                             rowVal = Double.NaN;
                         }
                         if (s.equals(">=")){
