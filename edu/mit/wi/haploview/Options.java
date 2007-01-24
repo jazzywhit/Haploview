@@ -21,7 +21,7 @@ public class Options implements Constants{
     private static int printWhat = D_PRIME;
     private static boolean showBlockTags = false;
     private static boolean printAllTags = false;
-    private static boolean gZip;
+    private static boolean gZip, SNPBased;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -183,6 +183,14 @@ public class Options implements Constants{
 
     public static void setGzip(boolean gZip){
         Options.gZip = gZip;
+    }
+
+    public static boolean getSNPBased(){
+        return SNPBased;
+    }
+
+    public static void setSNPBased(boolean snp){
+        SNPBased = snp;
     }
 
     public static void setProxy(String host, String port){

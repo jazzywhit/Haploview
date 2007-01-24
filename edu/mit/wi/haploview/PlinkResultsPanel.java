@@ -43,13 +43,15 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private JTextField valueField, markerField;
     private JPanel filterPanel;
     private Vector originalColumns;
-    private Hashtable removedColumns;
-    private Hashtable[] info;
-    private int[] seriesKeys, thresholdSigns;
+    private Hashtable removedColumns, nonChrInfo;
+    private Hashtable[] chrInfo;
+    private int[] seriesKeys, thresholdSigns, thresholdAxes;
 
-    private int plotType;
+    //private JFrame plotFrame;
+    private int yPlotType, xPlotType;
     private double suggestive, significant;
-    private boolean threeSizes;
+    private boolean threeSizes, chroms, useSig, useSug;
+
     private String chosenMarker;
     private HaploView hv;
 
@@ -78,29 +80,41 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         sorter.setTableHeader(table.getTableHeader());
         table.getColumnModel().getColumn(0).setPreferredWidth(60);
 
-        final PlinkCellRenderer renderer = new PlinkCellRenderer();
-        try{
-            table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
-            table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
-            table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
-            table.setDefaultRenderer(Class.forName("java.lang.String"),renderer);
-        }catch (Exception e){
+        if (Options.getSNPBased()){
+            final PlinkCellRenderer renderer = new PlinkCellRenderer();
+            try{
+                table.setDefaultRenderer(Class.forName("java.lang.Double"), renderer);
+                table.setDefaultRenderer(Class.forName("java.lang.Integer"), renderer);
+                table.setDefaultRenderer(Class.forName("java.lang.Long"), renderer);
+                table.setDefaultRenderer(Class.forName("java.lang.String"),renderer);
+            }catch (Exception e){
+            }
         }
 
         JScrollPane tableScroller = new JScrollPane(table);
 
 
         JPanel mainFilterPanel = new JPanel();
+        JPanel extraFilterPanel = new JPanel();
         mainFilterPanel.setMinimumSize(new Dimension(700,40));
-        mainFilterPanel.add(new JLabel("Chromosome:"));
-        chromChooser = new JComboBox(chromNames);
-        mainFilterPanel.add(chromChooser);
-        mainFilterPanel.add(new JLabel("Start kb:"));
-        chromStart = new NumberTextField("",6,false, false);
-        mainFilterPanel.add(chromStart);
-        mainFilterPanel.add(new JLabel("End kb:"));
-        chromEnd = new NumberTextField("",6,false, false);
-        mainFilterPanel.add(chromEnd);
+        if (Options.getSNPBased()){
+            mainFilterPanel.add(new JLabel("Chromosome:"));
+            chromChooser = new JComboBox(chromNames);
+            mainFilterPanel.add(chromChooser);
+            mainFilterPanel.add(new JLabel("Start kb:"));
+            chromStart = new NumberTextField("",6,false, false);
+            mainFilterPanel.add(chromStart);
+            mainFilterPanel.add(new JLabel("End kb:"));
+            chromEnd = new NumberTextField("",6,false, false);
+            mainFilterPanel.add(chromEnd);
+            extraFilterPanel.add(new JLabel("Goto Marker:"));
+            markerField = new JTextField(8);
+            extraFilterPanel.add(markerField);
+            JButton doMarkerFilter = new JButton("Go");
+            doMarkerFilter.setActionCommand("marker filter");
+            doMarkerFilter.addActionListener(this);
+            extraFilterPanel.add(doMarkerFilter);
+        }
         mainFilterPanel.add(new JLabel("Other:"));
         genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
         genericChooser.setSelectedIndex(-1);
@@ -114,14 +128,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         doFilter.addActionListener(this);
         mainFilterPanel.add(doFilter);
 
-        JPanel extraFilterPanel = new JPanel();
-        extraFilterPanel.add(new JLabel("Goto Marker:"));
-        markerField = new JTextField(8);
-        extraFilterPanel.add(markerField);
-        JButton doMarkerFilter = new JButton("Go");
-        doMarkerFilter.setActionCommand("marker filter");
-        doMarkerFilter.addActionListener(this);
-        extraFilterPanel.add(doMarkerFilter);
         extraFilterPanel.add(new JLabel("Remove Column:"));
         removeChooser = new JComboBox(plinkTableModel.getUnknownColumns());
         extraFilterPanel.add(removeChooser);
@@ -158,11 +164,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         a.gridwidth = 1;
         a.anchor = GridBagConstraints.SOUTHWEST;
         a.insets = new Insets(5,0,0,0);
-        filterPanel.add(moreResults,a);
-        a.gridx = 1;
-        filterPanel.add(fisherButton,a);
-        a.gridx = 2;
-        a.anchor = GridBagConstraints.SOUTH;
+        if (Options.getSNPBased()){
+            filterPanel.add(moreResults,a);
+            a.gridx = 1;
+            filterPanel.add(fisherButton,a);
+            a.gridx = 2;
+            a.anchor = GridBagConstraints.SOUTH;
+        }
         filterPanel.add(plotButton,a);
         a.gridx = 3;
         a.anchor = GridBagConstraints.SOUTHEAST;
@@ -184,8 +192,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         c.weighty = 0;
         c.gridy = 1;
         add(filterPanel, c);
-        c.gridy = 2;
-        add(goPanel,c);
+        if (Options.getSNPBased()){
+            c.gridy = 2;
+            add(goPanel,c);
+        }
 
         if (remove != null){
             for (int i = 1; i < plinkTableModel.getUnknownColumns().size(); i++){
@@ -202,6 +212,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             if (currMarker.equalsIgnoreCase(marker)){
                 table.changeSelection(i,1,false,false);
                 break;
+            }
+        }
+    }
+
+    public void jumpToNonSNP(String fid, String iid){
+        if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
+            for (int i = 0; i < table.getRowCount(); i++){
+                String currentFid = (String)table.getValueAt(i,plinkTableModel.getFIDColumn());
+                String currentIid = (String)table.getValueAt(i,plinkTableModel.getIIDColumn());
+                if (currentFid.equals(fid) && currentIid.equals(iid)){
+                    table.changeSelection(i,1,false,false);
+                    break;
+                }
             }
         }
     }
@@ -223,26 +246,30 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void doFilters(){
-        String chromChoice = (String)chromChooser.getSelectedItem();
-        int startPos, endPos;
+        String chromChoice = "";
+        int startPos = -1;
+        int endPos = -1;
+        if (Options.getSNPBased()){
+            chromChoice = (String)chromChooser.getSelectedItem();
 
-        if (chromStart.getText().equals("")){
-            startPos = -1;
-        }else{
-            startPos = Integer.parseInt(chromStart.getText());
-        }
+            if (chromStart.getText().equals("")){
+                startPos = -1;
+            }else{
+                startPos = Integer.parseInt(chromStart.getText());
+            }
 
-        if (chromEnd.getText().equals("")){
-            endPos = -1;
-        }else{
-            endPos = Integer.parseInt(chromEnd.getText());
-        }
-        if (startPos > endPos){
-            JOptionPane.showMessageDialog(this.getParent(),
-                    "End position must be greater then start position.",
-                    "Invalid value",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
+            if (chromEnd.getText().equals("")){
+                endPos = -1;
+            }else{
+                endPos = Integer.parseInt(chromEnd.getText());
+            }
+            if (startPos > endPos){
+                JOptionPane.showMessageDialog(this.getParent(),
+                        "End position must be greater then start position.",
+                        "Invalid value",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
         }
 
         String columnChoice = null;
@@ -303,14 +330,16 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
 
         plinkTableModel.resetFilters();
-        chromChooser.setSelectedIndex(0);
-        chromStart.setText("");
-        chromEnd.setText("");
+        if (Options.getSNPBased()){
+            chromChooser.setSelectedIndex(0);
+            chromStart.setText("");
+            chromEnd.setText("");
+            markerField.setText("");
+        }
         genericChooser.setSelectedIndex(0);
         genericChooser.updateUI();
         signChooser.setSelectedIndex(0);
         valueField.setText("");
-        markerField.setText("");
         reSort();
         countResults();
     }
@@ -327,12 +356,15 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         repaint();
     }
 
-    public XYSeriesCollection makeDataSet(int col){
+    public XYSeriesCollection makeChrDataSet(int col){
         int numRows = table.getRowCount();
         long[] maxPositions = new long[25];
 
         for (int i = 0; i < numRows; i++){
             String chrom = (String)table.getValueAt(i,0);
+            if (chrom.equals("")){
+                continue;
+            }
             int chr;
             if (chrom.equalsIgnoreCase("X")){
                 chr = 23;
@@ -369,9 +401,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         xyArray[24] = new XYSeries("ChrY");
         xyArray[25] = new XYSeries("ChrXY");
 
-        info = new Hashtable[25];
+        chrInfo = new Hashtable[25];
         for (int i = 0; i < 24; i++){
-            info[i] = new Hashtable();
+            chrInfo[i] = new Hashtable();
         }
 
         for (int i = 0; i < numRows; i++){
@@ -407,7 +439,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 }
             }
 
-            if (plotType == LOG10_PLOT){
+            if (yPlotType == LOG10_PLOT){
                 if (f < 0 || f > 1){
                     JOptionPane.showMessageDialog(this,
                             "The selected column is not formatted correctly \n" +
@@ -417,12 +449,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     return null;
                 }
                 f = (Math.log(f)/Math.log(10))*-1;
-            }else if (plotType == LN_PLOT){
+            }else if (yPlotType == LN_PLOT){
                 f = Math.log(f);
             }
             long kbPos = Long.parseLong(String.valueOf(table.getValueAt(i,2)))/1000;
             String infoString = table.getValueAt(i,1) + ", Chr" + chrom + ":" + kbPos + ", " + table.getValueAt(i,col);
-            info[chr-1].put(new Double(c),infoString);
+            chrInfo[chr-1].put(new Double(c),infoString);
             xyArray[chr].add(c,f);
         }
 
@@ -440,13 +472,112 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         return dataset;
     }
 
-    public void makeChart(String title, int type, int col, double sug, double sig, int[] signs){
-        plotType = type;
-        threeSizes = signs[0] == signs[1];
-        thresholdSigns = signs;
+    public XYSeriesCollection makeDataSet(int yCol, int xCol){
+        int numRows = table.getRowCount();
+        XYSeries xys = new XYSeries("Data");
+        nonChrInfo = new Hashtable();
+        for (int i = 0; i < numRows; i++){
 
-        XYSeriesCollection dataSet = makeDataSet(col);
+            double y = -1;
+            if (table.getValueAt(i,yCol) == null){
+                continue;
+            }else{
+                if (table.getValueAt(i,yCol) instanceof Double){
+                    y = ((Double)table.getValueAt(i,yCol)).doubleValue();
+                }else{
+                    JOptionPane.showMessageDialog(this,
+                            "The selected column does not appear to be numerical.",
+                            "Invalid column",
+                            JOptionPane.ERROR_MESSAGE);
+                    return null;
+                }
+            }
+
+            if (yPlotType == LOG10_PLOT){
+                if (y < 0 || y > 1){
+                    JOptionPane.showMessageDialog(this,
+                            "The selected column is not formatted correctly \n" +
+                                    "for a -log10 plot.",
+                            "Invalid column",
+                            JOptionPane.ERROR_MESSAGE);
+                    return null;
+                }
+                y = (Math.log(y)/Math.log(10))*-1;
+            }else if (yPlotType == LN_PLOT){
+                y = Math.log(y);
+            }
+
+
+            double x = -1;
+            if (table.getValueAt(i,xCol) == null){
+                continue;
+            }else{
+                if (table.getValueAt(i,xCol) instanceof Double){
+                    x = ((Double)table.getValueAt(i,xCol)).doubleValue();
+                }else{
+                    JOptionPane.showMessageDialog(this,
+                            "The selected column does not appear to be numerical.",
+                            "Invalid column",
+                            JOptionPane.ERROR_MESSAGE);
+                    return null;
+                }
+            }
+
+            if (xPlotType == LOG10_PLOT){
+                if (x < 0 || x > 1){
+                    JOptionPane.showMessageDialog(this,
+                            "The selected column is not formatted correctly \n" +
+                                    "for a -log10 plot.",
+                            "Invalid column",
+                            JOptionPane.ERROR_MESSAGE);
+                    return null;
+                }
+                x = (Math.log(x)/Math.log(10))*-1;
+            }else if (xPlotType == LN_PLOT){
+                x = Math.log(x);
+            }
+            xys.add(x,y);
+
+            String key = String.valueOf(x) + " " +  String.valueOf(y);
+            String value;
+            if (Options.getSNPBased()){
+                value = table.getValueAt(i,1) + ", Chr" + table.getValueAt(i,0) + ":" + table.getValueAt(i,2);
+                nonChrInfo.put(key,value);
+            }else{
+                if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
+                    value = "FID: " + table.getValueAt(i,plinkTableModel.getFIDColumn()) + ", IID: " + table.getValueAt(i,plinkTableModel.getIIDColumn());
+                    nonChrInfo.put(key,value);
+                }
+            }
+        }
+
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        dataset.addSeries(xys);
+
+        return dataset;
+    }
+
+    public void makeChart(String title, int yType, int yCol, int xType, int xCol, double sug, double sig, int[] signs, int[] thresholds){
+        hv.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        yPlotType = yType;
+        xPlotType = xType;
+        //threeSizes = (signs[0] == signs[1]) && (thresholds[0] == thresholds [1]) && useSug && useSig;
+        if ((signs[0] == signs[1]) && (thresholds[0] == thresholds [1]) && useSug && useSig){
+           threeSizes = true;
+        }
+        thresholdSigns = signs;
+        thresholdAxes = thresholds;
+        chroms = Options.getSNPBased() && xCol == 2;
+
+        XYSeriesCollection dataSet = null;
+        if (chroms){
+            dataSet = makeChrDataSet(yCol);
+        }else{
+            dataSet = makeDataSet(yCol,xCol);
+        }
+
         if (dataSet == null){
+            hv.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             return;
         }
 
@@ -454,20 +585,46 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         suggestive = sug;
 
         String rangeAxisName;
-        if (plotType == STANDARD_PLOT){
-            rangeAxisName = table.getColumnName(col);
+        if (yPlotType == UNTRANSFORMED_PLOT){
+            rangeAxisName = table.getColumnName(yCol);
         }else{
-            rangeAxisName = PLOT_TYPES[plotType] + "(" + table.getColumnName(col) + ")";
+            rangeAxisName = PLOT_TYPES[yPlotType] + "(" + table.getColumnName(yCol) + ")";
         }
 
-        JFreeChart chart = ChartFactory.createScatterPlot(title,null,rangeAxisName,dataSet,PlotOrientation.VERTICAL,true,true,false);
+        String domainAxisName;
+        if (!chroms){
+            if (xPlotType == UNTRANSFORMED_PLOT){
+                domainAxisName = table.getColumnName(xCol);
+            }else{
+                domainAxisName = PLOT_TYPES[xPlotType] + "(" + table.getColumnName(xCol) + ")";
+            }
+        }else{
+            domainAxisName = null;
+        }
+
+        boolean legend = false;
+        if (chroms){
+            legend = true;
+        }
+
+        JFreeChart chart = ChartFactory.createScatterPlot(title,domainAxisName,rangeAxisName,dataSet,PlotOrientation.VERTICAL,legend,true,false);
 
         XYPlot thePlot = chart.getXYPlot();
-        thePlot.addRangeMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
-        thePlot.addRangeMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
-        thePlot.setDomainGridlinesVisible(false);
-        thePlot.getDomainAxis().setTickMarksVisible(false);
-        thePlot.getDomainAxis().setTickLabelsVisible(false);
+        if (thresholds[0] == 0){
+            thePlot.addRangeMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
+        }else{
+            thePlot.addDomainMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
+        }
+        if (thresholds[1] == 0){
+            thePlot.addRangeMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
+        }else{
+            thePlot.addDomainMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
+        }
+        if (chroms){
+            thePlot.setDomainGridlinesVisible(false);
+            thePlot.getDomainAxis().setTickMarksVisible(false);
+            thePlot.getDomainAxis().setTickLabelsVisible(false);
+        }
         thePlot.setRenderer(new PlinkScatterPlotRenderer());
         thePlot.getRenderer().setToolTipGenerator(new PlinkToolTipGenerator());
         chart.setAntiAlias(false);
@@ -489,18 +646,25 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         panel.setMaximumDrawHeight(2000);
         panel.setMinimumDrawWidth(20);
         panel.setMaximumDrawWidth(2000);
-        panel.addChartMouseListener(this);
-        JFrame plotFrame = new JFrame(table.getColumnName(col));
+            panel.addChartMouseListener(this);
+        JFrame plotFrame = new JFrame("Plot");
         plotFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         plotFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                info = null;
+                chrInfo = null;
+                nonChrInfo = null;
+                seriesKeys = null;
+                thresholdSigns = null;
+                thresholdAxes = null;
             }
         });
         plotFrame.setContentPane(panel);
         plotFrame.pack();
         RefineryUtilities.centerFrameOnScreen(plotFrame);
         plotFrame.setVisible(true);
+        plotFrame.requestFocus();
+        plotFrame.toFront();
+        hv.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
     public void gotoRegion(){
@@ -545,6 +709,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         plinkWriter.close();
     }
 
+   /* public void disposePlot(){
+       //TODO: use this to kill the plot on file loads with Haploview.clearDisplays();
+    }*/
+
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command.equals("Filter")){
@@ -554,8 +722,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             if (!(marker.equals(""))){
                 jumpToMarker(marker);
             }
-        }
-        else if (command.equals("Reset")){
+        }else if (command.equals("Reset")){
             clearFilters();
         }else if (command.equals("Load Additional Results")){
             HaploView.fc.setSelectedFile(new File(""));
@@ -577,11 +744,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 removeColumn((String)removeChooser.getSelectedItem(),removeChooser.getSelectedIndex());
             }
         }else if (command.equals("Plot")){
-            PlotOptionDialog pod = new PlotOptionDialog(hv,this,"Plot Options",plinkTableModel.getUnknownColumns());
+            PlotOptionDialog pod = new PlotOptionDialog("Plot Options");
             pod.pack();
             pod.setVisible(true);
-        }
-        else if (command.equals("Go to Selected Region")){
+        }else if (command.equals("Go to Selected Region")){
             gotoRegion();
         }
     }
@@ -589,14 +755,217 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     public void chartMouseClicked(ChartMouseEvent chartMouseEvent) {
         ChartEntity ce = chartMouseEvent.getEntity();
         if (ce != null){
-            StringTokenizer st = new StringTokenizer(ce.getToolTipText(),",");
-            jumpToMarker(st.nextToken());
-            hv.requestFocus();
-            hv.toFront();
+            if (Options.getSNPBased()){
+                StringTokenizer st = new StringTokenizer(ce.getToolTipText(),",");
+                jumpToMarker(st.nextToken());
+                hv.requestFocus();
+                hv.toFront();
+            }else{
+                StringTokenizer st = new StringTokenizer(ce.getToolTipText(),", ");
+                st.nextToken(); //FID:
+                String fid = st.nextToken();
+                st.nextToken(); //IID:
+                String iid = st.nextToken();
+                jumpToNonSNP(fid,iid);
+                hv.requestFocus();
+                hv.toFront();
+            }
         }
     }
 
     public void chartMouseMoved(ChartMouseEvent chartMouseEvent) {
+    }
+
+    class PlotOptionDialog extends JDialog implements ActionListener {
+        private JComboBox yColumnChooser, xColumnChooser, yPlotChooser, xPlotChooser, signChooser1, signChooser2, thresholdChooser1, thresholdChooser2;
+        private JLabel label1, label2;
+        private NumberTextField sigThresh, sugThresh;
+        private JTextField titleField;
+        private String[] signs = {">","<"};
+        private String[] thresholds = {"Y-Axis","X-Axis"};
+
+        public PlotOptionDialog (String title) {
+            super(hv,title);
+
+            Vector columns = plinkTableModel.getUnknownColumns();
+
+            Vector xCols = new Vector();
+            if (Options.getSNPBased()){
+                xCols.add("Chromosomes");
+                for (int i = 1; i < columns.size(); i++){
+                    xCols.add(columns.get(i));
+                }
+            }else{
+                for (int i = 0; i < columns.size(); i++){
+                    xCols.add(columns.get(i));
+                }
+            }
+
+            JPanel contents = new JPanel();
+            contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));  //TODO: GridBag
+
+            JPanel titlePanel = new JPanel();
+            titlePanel.add(new JLabel("Title:"));
+            titleField = new JTextField(15);
+            titlePanel.add(titleField);
+            JPanel xPanel = new JPanel();
+            xPanel.add(new JLabel("X-Axis:"));
+            xColumnChooser = new JComboBox(xCols);
+            xColumnChooser.addActionListener(this);
+            xPanel.add(xColumnChooser);
+            xPanel.add(new JLabel("Scale:"));
+            xPlotChooser = new JComboBox(PLOT_TYPES);
+            xPanel.add(xPlotChooser);
+            JPanel yPanel = new JPanel();
+            yPanel.add(new JLabel("Y-Axis:"));
+            yColumnChooser = new JComboBox(columns);
+            yPanel.add(yColumnChooser);
+            yPanel.add(new JLabel("Scale:"));
+            yPlotChooser = new JComboBox(PLOT_TYPES);
+            yPlotChooser.addActionListener(this);
+            yPanel.add(yPlotChooser);
+            JPanel sugPanel = new JPanel();
+            thresholdChooser1 = new JComboBox(thresholds);
+            sugPanel.add(thresholdChooser1);
+            label1 = new JLabel("Threshold 1 (Blue Line)");
+            sugPanel.add(label1);
+            signChooser1 = new JComboBox(signs);
+            sugPanel.add(signChooser1);
+            sugThresh = new NumberTextField("",6,true,true);
+            sugPanel.add(sugThresh);
+            JPanel sigPanel = new JPanel();
+            thresholdChooser2 = new JComboBox(thresholds);
+            sigPanel.add(thresholdChooser2);
+            label2 = new JLabel("Threshold 2 (Red Line) ");
+            sigPanel.add(label2);
+            signChooser2 = new JComboBox(signs);
+            sigPanel.add(signChooser2);
+            sigThresh = new NumberTextField("",6,true,true);
+            sigPanel.add(sigThresh);
+
+            if (Options.getSNPBased()){
+                yColumnChooser.setSize(xColumnChooser.getSize());
+                xPlotChooser.setEnabled(false);
+                thresholdChooser1.setEnabled(false);
+                thresholdChooser2.setEnabled(false);
+            }
+
+            JPanel choicePanel = new JPanel();
+            JButton okButton = new JButton("OK");
+            okButton.addActionListener(this);
+            this.getRootPane().setDefaultButton(okButton);
+            choicePanel.add(okButton);
+            JButton cancelButton = new JButton("Cancel");
+            cancelButton.addActionListener(this);
+            choicePanel.add(cancelButton);
+
+            contents.add(titlePanel);
+            contents.add(xPanel);
+            contents.add(yPanel);
+            contents.add(sugPanel);
+            contents.add(sigPanel);
+            contents.add(choicePanel);
+            setContentPane(contents);
+
+            this.setLocation(this.getParent().getX() + 100,
+                    this.getParent().getY() + 100);
+            this.setModal(true);
+            this.setResizable(false);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String command = e.getActionCommand();
+            if(command.equals("Cancel")) {
+                this.dispose();
+            }else if (command.equals("OK")){
+                if (xColumnChooser.getSelectedIndex() == 0 && !Options.getSNPBased()){
+                    JOptionPane.showMessageDialog(this,
+                            "Please select a column to plot on the X-Axis.",
+                            "Invalid value",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (yColumnChooser.getSelectedIndex() == 0){
+                    JOptionPane.showMessageDialog(this,
+                            "Please select a column to plot on the Y-Axis.",
+                            "Invalid value",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int yColumn = yColumnChooser.getSelectedIndex()-1; //accounts for ""
+                int yPlotType = yPlotChooser.getSelectedIndex();
+                int xColumn = xColumnChooser.getSelectedIndex();
+                int xPlotType = xPlotChooser.getSelectedIndex();
+                if (Options.getSNPBased()){
+                    yColumn += 3; //accounts for 3 known columns (chrom,marker,position)
+                    xColumn += 2;
+                }else{
+                    xColumn -= 1;
+                    if (plinkTableModel.getFIDColumn() != -1){
+                        yColumn += 1;
+                        xColumn += 1;
+                    }
+                    if (plinkTableModel.getIIDColumn() != -1){
+                        yColumn += 1;
+                        xColumn += 1;
+                    }
+                }
+                double suggestive, significant;
+                try{
+                    if (sugThresh.getText().equals("")){
+                        useSug = false;
+                        suggestive = -1;
+                    }else{
+                        suggestive = Double.parseDouble(sugThresh.getText());
+                        useSug = true;
+                    }
+
+                    if (sigThresh.getText().equals("")){
+                        useSig = false;
+                        significant = -1;
+                    }else{
+                        significant = Double.parseDouble(sigThresh.getText());
+                        useSig = true;
+                    }
+                }catch(NumberFormatException nfe){
+                    JOptionPane.showMessageDialog(this,
+                            "Thresholds must be numerical.",
+                            "Invalid value",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                int[] signs = new int[2];
+                signs[0] = signChooser1.getSelectedIndex();
+                signs[1] = signChooser2.getSelectedIndex();
+                int[] thresholds = new int[2];
+                thresholds[0] = thresholdChooser1.getSelectedIndex();
+                thresholds[1] = thresholdChooser2.getSelectedIndex();
+
+                this.dispose();
+                makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds);
+            }else if (e.getSource() instanceof JComboBox){
+                if (xColumnChooser.getSelectedItem().equals("Chromosomes")){
+                    xPlotChooser.setSelectedIndex(0);
+                    xPlotChooser.setEnabled(false);
+                    thresholdChooser1.setSelectedIndex(0);
+                    thresholdChooser1.setEnabled(false);
+                    thresholdChooser2.setSelectedIndex(0);
+                    thresholdChooser2.setEnabled(false);
+                }else{
+                    xPlotChooser.setEnabled(true);
+                    thresholdChooser1.setEnabled(true);
+                    thresholdChooser2.setEnabled(true);
+                }
+                if (yPlotChooser.getSelectedItem().equals("-log10")){
+                    label1.setText("Suggestive (Blue Line)");
+                    label2.setText("Significant (Red Line) ");
+                }else{
+                    label1.setText("Threshold 1 (Blue Line)");
+                    label2.setText("Threshold 2 (Red Line) ");
+                }
+            }
+        }
     }
 
     class FisherCombinedDialog extends JDialog implements ActionListener{
@@ -766,7 +1135,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }
             double x = xyDataset.getXValue(series, item);
             double y = xyDataset.getYValue(series, item);
-            if (y != Double.NaN) {
+            if (!(new Double(y).equals(new Double(Double.NaN))) && !(new Double(x).equals(new Double(Double.NaN)))) {
                 RectangleEdge xAxisLocation = xyPlot.getDomainAxisEdge();
                 RectangleEdge yAxisLocation = xyPlot.getRangeAxisEdge();
                 double transX = valueAxis.valueToJava2D(x, rectangle2D, xAxisLocation);
@@ -774,82 +1143,355 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
                 graphics2D.setPaint(this.getItemPaint(series, item));
                 PlotOrientation orientation = xyPlot.getOrientation();
-                if (orientation == PlotOrientation.HORIZONTAL) {
-                    if (suggestive != -1 || significant != -1){
-                        if (threeSizes){
-                            if (thresholdSigns[0] == 0){  //>
-                                if (y > suggestive && y <= significant && suggestive != -1){
-                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                }else if (y > significant && significant != -1){
-                                    graphics2D.fillRect((int) transY, (int) transX, 6, 6);
-                                }else{
-                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                if (orientation == PlotOrientation.VERTICAL) {
+                    if (useSug || useSig){
+                        if (threeSizes){ //this means that both signs must be equivalent and both suggestive & significant are not -1
+                            if (thresholdAxes[0] == 0){ //both are for y axis
+                                if (thresholdSigns[0] == 0){  //>
+                                    if (y > suggestive && y <= significant){
+                                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                    }else if (y > significant){
+                                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
+                                    }else{
+                                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                    }
+                                }else{  //<
+                                    if (y < suggestive && y >= significant){
+                                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                    }else if (y < significant){
+                                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
+                                    }else{
+                                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                    }
                                 }
-                            }else{  //<
-                                if (y < suggestive && y >= significant && suggestive != -1){
-                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                }else if (y < significant && significant != -1){
-                                    graphics2D.fillRect((int) transY, (int) transX, 6, 6);
-                                }else{
-                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
-                                }
-                            }
-                        }else{
-                            if (thresholdSigns[0] == 0){  //suggestive is >, significant is <
-                                if (y > suggestive || y < significant){
-                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                }else{
-                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
-                                }
-                            }else{
-                                if (y < suggestive || y > significant){
-                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                }else{
-                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
-                                }
-                            }
-                        }
-                    }else{
-                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
-                    }
-                }
-                else if (orientation == PlotOrientation.VERTICAL) {
-                    if (suggestive != -1 || significant != -1){
-                        if (threeSizes){
-                            if (thresholdSigns[0] == 0){  //>
-                                if (y > suggestive && y <= significant && suggestive != -1){
-                                    graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                }else if (y > significant && significant != -1){
-                                    graphics2D.fillRect((int) transX, (int) transY, 6, 6);
-                                }else{
-                                    graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                }
-                            }else{  //<
-                                if (y < suggestive && y >= significant && suggestive != -1){
-                                    graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                }else if (y < significant && significant != -1){
-                                    graphics2D.fillRect((int) transX, (int) transY, 6, 6);
-                                }else{
-                                    graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                            }else{ //both are for x axis
+                                if (thresholdSigns[0] == 0){  //>
+                                    if (x > suggestive && x <= significant){
+                                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                    }else if (x > significant){
+                                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
+                                    }else{
+                                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                    }
+                                }else{  //<
+                                    if (x < suggestive && x >= significant){
+                                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                    }else if (x < significant){
+                                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
+                                    }else{
+                                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                    }
                                 }
                             }
                         }else{
-                            if (thresholdSigns[0] == 0){  //suggestive is >, significant is <
-                                if (y > suggestive || y < significant){
-                                    graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                }else{
-                                    graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                            if (thresholdAxes[0] == 0 && thresholdAxes[1] == 0){ //both y
+                                if (!useSig){  //only use suggestive
+                                    if (thresholdSigns[0] == 0){  //>
+                                        if (y > suggestive){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else { //<
+                                        if (y < suggestive){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }else if (!useSug){ //only use significant
+                                    if (thresholdSigns[1] == 0){ //>
+                                        if (y > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else { //<
+                                        if (y < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }else{ //use both
+                                    if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
+                                        if (y > suggestive || y < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
+                                        if (y < suggestive || y > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else if (thresholdSigns[0] == 0){ //both >
+                                        if (y > suggestive || y > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else{  //both <
+                                        if (y < suggestive || y < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
                                 }
-                            }else{
-                                if (y < suggestive || y > significant){
-                                    graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                }else{
-                                    graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                            }else if (thresholdAxes[0] == 1 && thresholdAxes[1] == 1){ //both x
+                                if (!useSig){  //only use suggestive
+                                    if (thresholdSigns[0] == 0){  //>
+                                        if (x > suggestive){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else { //<
+                                        if (x < suggestive){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }else if (!useSug){ //only use significant
+                                    if (thresholdSigns[1] == 0){ //>
+                                        if (x > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else { //<
+                                        if (x < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }else{ //use both
+                                    if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
+                                        if (x > suggestive || x < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
+                                        if (x < suggestive || x > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else if (thresholdSigns[0] == 0){ //both >
+                                        if (x > suggestive || x > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else{  //both <
+                                        if (x < suggestive || x < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }
+                            }else if (thresholdAxes[0] == 0 && thresholdAxes[1] == 1){ //sug y, sig x
+                                if (!useSig){  //only use suggestive
+                                    if (thresholdSigns[0] == 0){  //>
+                                        if (y > suggestive){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else { //<
+                                        if (y < suggestive){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }else if (!useSug){ //only use significant
+                                    if (thresholdSigns[1] == 0){ //>
+                                        if (x > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else { //<
+                                        if (x < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }else{ //use both
+                                    if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
+                                        if (y > suggestive || x < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
+                                        if (y < suggestive || x > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else if (thresholdSigns[0] == 0){ //both >
+                                        if (y > suggestive || x > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else{  //both <
+                                        if (y < suggestive || x < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }
+                            }else{ //sug x, sig y
+                                if (!useSig){  //only use suggestive
+                                    if (thresholdSigns[0] == 0){  //>
+                                        if (x > suggestive){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else { //<
+                                        if (x < suggestive){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }else if (!useSug){ //only use significant
+                                    if (thresholdSigns[1] == 0){ //>
+                                        if (y > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else { //<
+                                        if (y < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
+                                }else{ //use both
+                                    if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
+                                        if (x > suggestive || y < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
+                                        if (x < suggestive || y > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else if (thresholdSigns[0] == 0){ //both >
+                                        if (x > suggestive || y > significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }else{  //both <
+                                        if (x < suggestive || y < significant){
+                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
+                                        }else{
+                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                                        }
+                                    }
                                 }
                             }
                         }
                     }else{
                         graphics2D.fillRect((int) transX, (int) transY, 2, 2);
+                    }
+                }else if (orientation == PlotOrientation.HORIZONTAL) {
+                    if (useSug || useSig){
+                        if (threeSizes){ //this means that both signs must be equivalent and both suggestive & significant are not -1
+                            if (thresholdSigns[0] == 0){  //>
+                                if (y > suggestive && y <= significant){
+                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                }else if (y > significant){
+                                    graphics2D.fillRect((int) transY, (int) transX, 6, 6);
+                                }else{
+                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                }
+                            }else{  //<
+                                if (y < suggestive && y >= significant){
+                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                }else if (y < significant){
+                                    graphics2D.fillRect((int) transY, (int) transX, 6, 6);
+                                }else{
+                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                }
+                            }
+                        }else{
+                            if (!useSig){  //only use suggestive
+                                if (thresholdSigns[0] == 0){  //>
+                                    if (y > suggestive){
+                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                    }else{
+                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                    }
+                                }else { //<
+                                    if (y < suggestive){
+                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                    }else{
+                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                    }
+                                }
+                            }else if (!useSug){ //only use significant
+                                if (thresholdSigns[1] == 0){ //>
+                                    if (y > significant){
+                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                    }else{
+                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                    }
+                                }else { //<
+                                    if (y < significant){
+                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                    }else{
+                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                    }
+                                }
+                            }else{ //use both
+                                if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
+                                    if (y > suggestive || y < significant){
+                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                    }else{
+                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                    }
+                                }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
+                                    if (y < suggestive || y > significant){
+                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                    }else{
+                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                    }
+                                }else if (thresholdSigns[0] == 0){ //both >
+                                    if (y > suggestive || y > significant){
+                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                    }else{
+                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                    }
+                                }else{  //both <
+                                    if (y < suggestive || y < significant){
+                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
+                                    }else{
+                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                    }
+                                }
+                            }
+                        }
+                    }else{
+                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
                     }
                 }
 
@@ -898,7 +1540,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
 
         public String generateToolTip(XYDataset dataset, int series, int item){
-            return (String)info[seriesKeys[series]-1].get(new Double(dataset.getXValue(series,item)));
+            if (chroms){
+                return (String)chrInfo[seriesKeys[series]-1].get(new Double(dataset.getXValue(series,item)));
+            }else{
+                return (String)nonChrInfo.get(String.valueOf(dataset.getXValue(series,item)) + " " + String.valueOf(dataset.getYValue(series,item)));
+            }
         }
     }
 }

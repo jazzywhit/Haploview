@@ -28,6 +28,8 @@ public class HaploText implements Constants{
     private String plinkFileName;
     private String mapFileName;
     private boolean phasedhapmapDownload = false;
+    private boolean SNPBased = true;
+    private String selectCols;
     private String blockFileName;
     private String trackFileName;
     private String customAssocTestsFileName;
@@ -132,6 +134,10 @@ public class HaploText implements Constants{
 
     public String getMapFileName(){
         return mapFileName;
+    }
+
+    public String getSelectCols(){
+        return selectCols;
     }
 
     public int getBlockOutputType() {
@@ -397,6 +403,12 @@ public class HaploText implements Constants{
                     }
                     mapFileName = args[i];
                 }
+            }
+            else if (args[i].equalsIgnoreCase("-nonSNP")){
+                SNPBased = false;
+            }
+            else if (args[i].equalsIgnoreCase("-selectCols")){
+                selectCols = "Y";
             }
             else if(args[i].equalsIgnoreCase("-k") || args[i].equalsIgnoreCase("-blocks")) {
                 i++;
@@ -753,7 +765,8 @@ public class HaploText implements Constants{
         }
         if(plinkFileName != null){
             countOptions++;
-            if(mapFileName == null){
+            Options.setSNPBased(SNPBased);
+            if(mapFileName == null && Options.getSNPBased()){
                 die("You must specify a map file for plink format input.");
             }
         }

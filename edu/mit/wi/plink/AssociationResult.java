@@ -14,6 +14,11 @@ public class AssociationResult {
         index = i;
     }
 
+    public AssociationResult(int i, Vector values){
+        data = values;
+        index = i;
+    }
+
     public int getIndex(){
         return index;
     }

@@ -144,10 +144,10 @@ public class Plink {
             Hashtable markerDups = new Hashtable(1,1);
 
             while((wgaLine = wgaReader.readLine())!=null){
-               if (wgaLine.length() == 0){
+                if (wgaLine.length() == 0){
                     //skip blank lines
                     continue;
-               }
+                }
                 int tokenNumber = 0;
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
                 if (tokenizer.countTokens() != colIndex){
@@ -229,6 +229,63 @@ public class Plink {
             throw new PlinkException("File error.");
         }catch(NumberFormatException nfe){
             throw new PlinkException("File formatting error.");
+        }
+    }
+
+    public void parseNonSNP(String name) throws PlinkException{
+        results = new Vector();
+        columns = new Vector();
+
+        final File wgaFile = new File(name);
+        try{
+            if (wgaFile.length() < 1){
+                throw new PlinkException("plink file is empty or nonexistent.");
+            }
+
+            BufferedReader wgaReader = new BufferedReader(new FileReader(wgaFile));
+            int numColumns = 0;
+            String headerLine = wgaReader.readLine();
+            StringTokenizer headerSt = new StringTokenizer(headerLine);
+            while (headerSt.hasMoreTokens()){
+                String column = headerSt.nextToken();
+                columns.add(column);
+                numColumns++;
+            }
+
+            String wgaLine;
+            int lineNumber = 0;
+            while((wgaLine = wgaReader.readLine())!=null){
+                if (wgaLine.length() == 0){
+                    //skip blank lines
+                    continue;
+                }
+                int tokenNumber = 0;
+                StringTokenizer tokenizer = new StringTokenizer(wgaLine);
+                Vector values = new Vector();
+                while(tokenizer.hasMoreTokens()){
+                    String val = tokenizer.nextToken();
+                    if (val.equalsIgnoreCase("NA")){
+                        values.add(new Double(Double.NaN));
+                    }else{
+                        try{
+                            values.add(new Double(val));
+                        }catch (NumberFormatException n){
+                            values.add(new String(val));
+                        }
+                    }
+                    tokenNumber++;
+                }
+
+                if (tokenNumber != numColumns){
+                    throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
+                }
+
+                AssociationResult result = new AssociationResult(lineNumber,values);
+                results.add(result);
+                lineNumber++;
+            }
+        }catch (IOException ioe){
+            throw new PlinkException("File error.");
         }
     }
 

@@ -124,8 +124,8 @@ public interface Constants {
     static final String[] RELEASE_NAMES = {"16a","21"};
 
     //plot types
-    static final String[] PLOT_TYPES = {"Standard", "-log10", "ln"};
-    static final int STANDARD_PLOT = 0;
+    static final String[] PLOT_TYPES = {"Untransformed", "-log10", "ln"};
+    static final int UNTRANSFORMED_PLOT = 0;
     static final int LOG10_PLOT = 1;
     static final int LN_PLOT = 2;
 
@@ -152,6 +152,10 @@ public interface Constants {
             "-phasedhapmapdl                 Specify a phased HapMap download\n" +
             "-haps <hapsfile>                Specify an input file in .haps format\n" +
             "-info <infofile>                Specify a marker info file\n" +
+            "-plink <plinkfile>              Specify a PLINK file\n" +
+            "-map <mapfile>                  Specify a map file\n" +
+            "-nonSNP                         Specify that the accompanying PLINK file is non-SNP based output\n" +
+            "-selectCols                     Activate the preloading column filter for PLINK loads\n" +
             "-batch <batchfile>              Batch mode. Each line in batch file should contain a genotype file \n"+
             "                                followed by an optional info file, separated by a space.\n" +
             "-blocks <blockfile>             Blocks file, one block per line, will force output for these blocks\n" +

@@ -1004,7 +1004,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 embed = true;
             }
 
-            if (inputOptions[6] != null && wgaFile != null){
+            if (inputOptions[6] != null && wgaFile != null && Options.getSNPBased()){
                 try{
                     File columnFile = new File(wgaFile);
                     BufferedReader wgaReader = new BufferedReader(new FileReader(columnFile));
@@ -1030,7 +1030,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
 
             if (wgaFile != null){
-                plink.parseWGA(wgaFile,mapFile,embed,chrom,colsToRemove);
+                if (Options.getSNPBased()){
+                    plink.parseWGA(wgaFile,mapFile,embed,chrom,colsToRemove);
+                }else{
+                    plink.parseNonSNP(wgaFile);
+                }
             }
             if (colsToRemove != null){
                 colsToRemove.clear();
@@ -1572,7 +1576,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 inputArray[3] = null;
                 inputArray[4] = null;
                 inputArray[5] = argParser.getChromosome();
-                inputArray[6] = null;
+                inputArray[6] = argParser.getSelectCols();
                 window.readWGA(inputArray);
             }else{
                 ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
@@ -1720,12 +1724,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     class ColumnChooser extends JDialog implements ActionListener {
 
         JCheckBox[] checks;
+        boolean select;
 
         public ColumnChooser (HaploView h, String title, Vector columns){
             super(h,title);
 
             JPanel contents = new JPanel();
-            contents.setPreferredSize(new Dimension(150,400));
+            contents.setPreferredSize(new Dimension(150,405));
             contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
             checks = new JCheckBox[columns.size()];
             for (int i = 0; i < columns.size(); i++){
@@ -1743,6 +1748,10 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             JLabel label = new JLabel("Select which columns to load:");
             label.setAlignmentX(Component.CENTER_ALIGNMENT);
             contents.add(label);
+            JButton selectDeselect = new JButton("Select/Deselect All");
+            selectDeselect.addActionListener(this);
+            selectDeselect.setAlignmentX(Component.CENTER_ALIGNMENT);
+            contents.add(selectDeselect);
             contents.add(listPane);
             JButton okButton = new JButton("Ok");
             okButton.addActionListener(this);
@@ -1752,6 +1761,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             this.setLocation(this.getParent().getX() + 100,
                     this.getParent().getY() + 100);
+            this.getRootPane().setDefaultButton(okButton);
             this.setModal(true);
         }
 
@@ -1765,9 +1775,21 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }
                 }
                 if (colsToRemove.size() == 0){
-                    colsToRemove = null;    //todo: reset?
+                    colsToRemove = null;
                 }
                 this.dispose();
+            }else if (command.equals("Select/Deselect All")){
+                if (select){
+                    for (int i = 0; i < checks.length; i++){
+                        checks[i].setSelected(true);
+                    }
+                    select = !select;
+                }else{
+                    for (int i = 0; i < checks.length; i++){
+                        checks[i].setSelected(false);
+                    }
+                    select = !select;
+                }
             }
         }
     }

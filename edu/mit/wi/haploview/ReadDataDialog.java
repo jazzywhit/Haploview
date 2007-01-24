@@ -28,7 +28,7 @@ public class ReadDataDialog extends JDialog
     private int fileType;
     private JTextField pedFileField, pedInfoField, hapsFileField, hapsInfoField, hmpFileField,
             phaseFileField, phaseSampleField, phaseLegendField, plinkFileField, plinkMapField, testFileField;
-    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip, embeddedMap, plinkChrom, selectColumns;
+    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip, embeddedMap, plinkChrom, selectColumns, nonSNP;
     private JRadioButton trioButton, ccButton, standardTDT, parenTDT;
     private JButton browseAssocButton, browsePlinkMapButton;
     private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromEndField;
@@ -190,6 +190,10 @@ public class ReadDataDialog extends JDialog
         embeddedMap.addActionListener(this);
         embeddedMap.setSelected(false);
         inputPanel.add(embeddedMap);
+        nonSNP = new JCheckBox("Non-SNP");
+        nonSNP.addActionListener(this);
+        nonSNP.setSelected(false);
+        inputPanel.add(nonSNP);
         JPanel plinkChromPanel = new JPanel();
         plinkChrom = new JCheckBox("Only load results from Chromosome");
         plinkChrom.addActionListener(this);
@@ -563,8 +567,9 @@ public class ReadDataDialog extends JDialog
 
             if (fileType == PLINK_FILE){
                 if (embeddedMap.isSelected()){
-                    embed = "Y";
+                    embed = "E";
                 }
+                Options.setSNPBased(!nonSNP.isSelected());
                 if (plinkChrom.isSelected()){
                     if (plinkChromChooser.getSelectedIndex() == -1){
                         JOptionPane.showMessageDialog(caller,
@@ -643,14 +648,38 @@ public class ReadDataDialog extends JDialog
                 browsePlinkMapButton.setEnabled(true);
             }
 
+        }else if (command.equals("Non-SNP")){
+            if (nonSNP.isSelected()){
+                nonSNP.setSelected(true);
+                mapLabel.setEnabled(false);
+                plinkMapField.setEnabled(false);
+                plinkMapField.setText("");
+                browsePlinkMapButton.setEnabled(false);
+                plinkChrom.setSelected(false);
+                plinkChrom.setEnabled(false);
+                plinkChromChooser.setSelectedIndex(-1);
+                plinkChromChooser.setEnabled(false);
+                embeddedMap.setSelected(false);
+                embeddedMap.setEnabled(false);
+                selectColumns.setSelected(false);
+                selectColumns.setEnabled(false);
+            }else{
+                nonSNP.setSelected(false);
+                mapLabel.setEnabled(true);
+                plinkMapField.setEnabled(true);
+                browsePlinkMapButton.setEnabled(true);
+                plinkChrom.setEnabled(true);
+                embeddedMap.setEnabled(true);
+                selectColumns.setEnabled(true);
+            }
         }else if (command.equals("Only load results from Chromosome")){
-          if (plinkChrom.isSelected()){
-              plinkChrom.setSelected(true);
-              plinkChromChooser.setEnabled(true);
-          }else{
-              plinkChrom.setSelected(false);
-              plinkChromChooser.setEnabled(false);
-          }
+            if (plinkChrom.isSelected()){
+                plinkChrom.setSelected(true);
+                plinkChromChooser.setEnabled(true);
+            }else{
+                plinkChrom.setSelected(false);
+                plinkChromChooser.setEnabled(false);
+            }
         }else if (command.equals("Proxy Settings")){
             ProxyDialog pd = new ProxyDialog(this,"Proxy Settings");
             pd.pack();
@@ -744,7 +773,7 @@ public class ReadDataDialog extends JDialog
             name = file.getName();
             plinkFileField.setText(file.getParent()+File.separator+name);
 
-            if(plinkMapField.getText().equals("")){
+            if(plinkMapField.getText().equals("") && !nonSNP.isSelected()){
                 //baseName should be everything but the final ".XXX" extension
                 StringTokenizer st = new StringTokenizer(name,".");
                 String baseName = st.nextToken();
