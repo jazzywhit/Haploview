@@ -428,7 +428,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
             if (table.getValueAt(i,col) == null){
                 continue;
-            }else{
+            }else if ((table.getValueAt(i,col)).equals(new Double(Double.NaN))){
+                continue;
+            }
+            else{
                 if (table.getValueAt(i,col) instanceof Double){
                     f = ((Double)table.getValueAt(i,col)).doubleValue();
                 }else{
@@ -478,8 +481,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         nonChrInfo = new Hashtable();
         for (int i = 0; i < numRows; i++){
 
-            double y = -1;
+            double y;
             if (table.getValueAt(i,yCol) == null){
+                continue;
+            }else if ((table.getValueAt(i,yCol)).equals(new Double(Double.NaN))){
                 continue;
             }else{
                 if (table.getValueAt(i,yCol) instanceof Double){
@@ -508,8 +513,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }
 
 
-            double x = -1;
+            double x;
             if (table.getValueAt(i,xCol) == null){
+                continue;
+            }else if ((table.getValueAt(i,xCol)).equals(new Double(Double.NaN))){
                 continue;
             }else{
                 if (table.getValueAt(i,xCol) instanceof Double){
@@ -522,7 +529,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     return null;
                 }
             }
-
             if (xPlotType == LOG10_PLOT){
                 if (x < 0 || x > 1){
                     JOptionPane.showMessageDialog(this,
@@ -561,12 +567,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         hv.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         yPlotType = yType;
         xPlotType = xType;
-        //threeSizes = (signs[0] == signs[1]) && (thresholds[0] == thresholds [1]) && useSug && useSig;
-        if ((signs[0] == signs[1]) && (thresholds[0] == thresholds [1]) && useSug && useSig){
-           threeSizes = true;
-        }
         thresholdSigns = signs;
         thresholdAxes = thresholds;
+        threeSizes = (signs[0] == signs[1]) && (thresholds[0] == thresholds[1]) && useSug && useSig;
         chroms = Options.getSNPBased() && xCol == 2;
 
         XYSeriesCollection dataSet = null;
@@ -1142,358 +1145,208 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 double transY = valueAxis1.valueToJava2D(y, rectangle2D,yAxisLocation);
 
                 graphics2D.setPaint(this.getItemPaint(series, item));
+                int dotSize = 2;
                 PlotOrientation orientation = xyPlot.getOrientation();
-                if (orientation == PlotOrientation.VERTICAL) {
-                    if (useSug || useSig){
-                        if (threeSizes){ //this means that both signs must be equivalent and both suggestive & significant are not -1
-                            if (thresholdAxes[0] == 0){ //both are for y axis
-                                if (thresholdSigns[0] == 0){  //>
-                                    if (y > suggestive && y <= significant){
-                                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                    }else if (y > significant){
-                                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
-                                    }else{
-                                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                    }
-                                }else{  //<
-                                    if (y < suggestive && y >= significant){
-                                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                    }else if (y < significant){
-                                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
-                                    }else{
-                                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                    }
+                if (orientation == PlotOrientation.HORIZONTAL){ //JFreeChart allows the user to flip the axes
+                    transX = valueAxis1.valueToJava2D(y, rectangle2D,yAxisLocation);
+                    transY = valueAxis.valueToJava2D(x, rectangle2D, xAxisLocation);
+                }
+                if (useSug || useSig){
+                    if (threeSizes){ //this means that both signs must be equivalent and both suggestive & significant are not -1
+                        if (thresholdAxes[0] == 0){ //both are for y axis
+                            if (thresholdSigns[0] == 0){  //>
+                                if (y > suggestive && y <= significant){
+                                    dotSize += 2;
+                                }else if (y > significant){
+                                    dotSize += 4;
                                 }
-                            }else{ //both are for x axis
-                                if (thresholdSigns[0] == 0){  //>
-                                    if (x > suggestive && x <= significant){
-                                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                    }else if (x > significant){
-                                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
-                                    }else{
-                                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                    }
-                                }else{  //<
-                                    if (x < suggestive && x >= significant){
-                                        graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                    }else if (x < significant){
-                                        graphics2D.fillRect((int) transX, (int) transY, 6, 6);
-                                    }else{
-                                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                    }
+                            }else{  //<
+                                if (y < suggestive && y >= significant){
+                                    dotSize += 2;
+                                }else if (y < significant){
+                                    dotSize += 4;
                                 }
                             }
-                        }else{
-                            if (thresholdAxes[0] == 0 && thresholdAxes[1] == 0){ //both y
-                                if (!useSig){  //only use suggestive
-                                    if (thresholdSigns[0] == 0){  //>
-                                        if (y > suggestive){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else { //<
-                                        if (y < suggestive){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }else if (!useSug){ //only use significant
-                                    if (thresholdSigns[1] == 0){ //>
-                                        if (y > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else { //<
-                                        if (y < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }else{ //use both
-                                    if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
-                                        if (y > suggestive || y < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
-                                        if (y < suggestive || y > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else if (thresholdSigns[0] == 0){ //both >
-                                        if (y > suggestive || y > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else{  //both <
-                                        if (y < suggestive || y < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
+                        }else{ //both are for x axis
+                            if (thresholdSigns[0] == 0){  //>
+                                if (x > suggestive && x <= significant){
+                                    dotSize += 2;
+                                }else if (x > significant){
+                                    dotSize += 4;
                                 }
-                            }else if (thresholdAxes[0] == 1 && thresholdAxes[1] == 1){ //both x
-                                if (!useSig){  //only use suggestive
-                                    if (thresholdSigns[0] == 0){  //>
-                                        if (x > suggestive){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else { //<
-                                        if (x < suggestive){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }else if (!useSug){ //only use significant
-                                    if (thresholdSigns[1] == 0){ //>
-                                        if (x > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else { //<
-                                        if (x < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }else{ //use both
-                                    if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
-                                        if (x > suggestive || x < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
-                                        if (x < suggestive || x > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else if (thresholdSigns[0] == 0){ //both >
-                                        if (x > suggestive || x > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else{  //both <
-                                        if (x < suggestive || x < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }
-                            }else if (thresholdAxes[0] == 0 && thresholdAxes[1] == 1){ //sug y, sig x
-                                if (!useSig){  //only use suggestive
-                                    if (thresholdSigns[0] == 0){  //>
-                                        if (y > suggestive){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else { //<
-                                        if (y < suggestive){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }else if (!useSug){ //only use significant
-                                    if (thresholdSigns[1] == 0){ //>
-                                        if (x > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else { //<
-                                        if (x < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }else{ //use both
-                                    if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
-                                        if (y > suggestive || x < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
-                                        if (y < suggestive || x > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else if (thresholdSigns[0] == 0){ //both >
-                                        if (y > suggestive || x > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else{  //both <
-                                        if (y < suggestive || x < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }
-                            }else{ //sug x, sig y
-                                if (!useSig){  //only use suggestive
-                                    if (thresholdSigns[0] == 0){  //>
-                                        if (x > suggestive){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else { //<
-                                        if (x < suggestive){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }else if (!useSug){ //only use significant
-                                    if (thresholdSigns[1] == 0){ //>
-                                        if (y > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else { //<
-                                        if (y < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
-                                }else{ //use both
-                                    if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
-                                        if (x > suggestive || y < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
-                                        if (x < suggestive || y > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else if (thresholdSigns[0] == 0){ //both >
-                                        if (x > suggestive || y > significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }else{  //both <
-                                        if (x < suggestive || y < significant){
-                                            graphics2D.fillRect((int) transX, (int) transY, 4, 4);
-                                        }else{
-                                            graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                                        }
-                                    }
+                            }else{  //<
+                                if (x < suggestive && x >= significant){
+                                    dotSize += 2;
+                                }else if (x < significant){
+                                    dotSize += 4;
                                 }
                             }
                         }
                     }else{
-                        graphics2D.fillRect((int) transX, (int) transY, 2, 2);
-                    }
-                }else if (orientation == PlotOrientation.HORIZONTAL) {
-                    if (useSug || useSig){
-                        if (threeSizes){ //this means that both signs must be equivalent and both suggestive & significant are not -1
-                            if (thresholdSigns[0] == 0){  //>
-                                if (y > suggestive && y <= significant){
-                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                }else if (y > significant){
-                                    graphics2D.fillRect((int) transY, (int) transX, 6, 6);
-                                }else{
-                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
-                                }
-                            }else{  //<
-                                if (y < suggestive && y >= significant){
-                                    graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                }else if (y < significant){
-                                    graphics2D.fillRect((int) transY, (int) transX, 6, 6);
-                                }else{
-                                    graphics2D.fillRect((int) transY, (int) transX, 2, 2);
-                                }
-                            }
-                        }else{
+                        if (thresholdAxes[0] == 0 && thresholdAxes[1] == 0){ //both y
                             if (!useSig){  //only use suggestive
                                 if (thresholdSigns[0] == 0){  //>
                                     if (y > suggestive){
-                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                    }else{
-                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                        dotSize += 2;
                                     }
                                 }else { //<
                                     if (y < suggestive){
-                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                    }else{
-                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                        dotSize += 2;
                                     }
                                 }
                             }else if (!useSug){ //only use significant
                                 if (thresholdSigns[1] == 0){ //>
                                     if (y > significant){
-                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                    }else{
-                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                        dotSize += 2;
                                     }
                                 }else { //<
                                     if (y < significant){
-                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                    }else{
-                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                        dotSize += 2;
                                     }
                                 }
                             }else{ //use both
                                 if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
                                     if (y > suggestive || y < significant){
-                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                    }else{
-                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                        dotSize += 2;
                                     }
                                 }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
                                     if (y < suggestive || y > significant){
-                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                    }else{
-                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                        dotSize += 2;
                                     }
                                 }else if (thresholdSigns[0] == 0){ //both >
                                     if (y > suggestive || y > significant){
-                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                    }else{
-                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                        dotSize += 2;
                                     }
                                 }else{  //both <
                                     if (y < suggestive || y < significant){
-                                        graphics2D.fillRect((int) transY, (int) transX, 4, 4);
-                                    }else{
-                                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
+                                        dotSize += 2;
+                                    }
+                                }
+                            }
+                        }else if (thresholdAxes[0] == 1 && thresholdAxes[1] == 1){ //both x
+                            if (!useSig){  //only use suggestive
+                                if (thresholdSigns[0] == 0){  //>
+                                    if (x > suggestive){
+                                        dotSize += 2;
+                                    }
+                                }else { //<
+                                    if (x < suggestive){
+                                        dotSize += 2;
+                                    }
+                                }
+                            }else if (!useSug){ //only use significant
+                                if (thresholdSigns[1] == 0){ //>
+                                    if (x > significant){
+                                        dotSize += 2;
+                                    }
+                                }else { //<
+                                    if (x < significant){
+                                        dotSize += 2;
+                                    }
+                                }
+                            }else{ //use both
+                                if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
+                                    if (x > suggestive || x < significant){
+                                        dotSize += 2;
+                                    }
+                                }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
+                                    if (x < suggestive || x > significant){
+                                        dotSize += 2;
+                                    }
+                                }else if (thresholdSigns[0] == 0){ //both >
+                                    if (x > suggestive || x > significant){
+                                        dotSize += 2;
+                                    }
+                                }else{  //both <
+                                    if (x < suggestive || x < significant){
+                                        dotSize += 2;
+                                    }
+                                }
+                            }
+                        }else if (thresholdAxes[0] == 0 && thresholdAxes[1] == 1){ //sug y, sig x
+                            if (!useSig){  //only use suggestive
+                                if (thresholdSigns[0] == 0){  //>
+                                    if (y > suggestive){
+                                        dotSize += 2;
+                                    }
+                                }else { //<
+                                    if (y < suggestive){
+                                        dotSize += 2;
+                                    }
+                                }
+                            }else if (!useSug){ //only use significant
+                                if (thresholdSigns[1] == 0){ //>
+                                    if (x > significant){
+                                        dotSize += 2;
+                                    }
+                                }else { //<
+                                    if (x < significant){
+                                        dotSize += 2;
+                                    }
+                                }
+                            }else{ //use both
+                                if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
+                                    if (y > suggestive || x < significant){
+                                        dotSize += 2;
+                                    }
+                                }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
+                                    if (y < suggestive || x > significant){
+                                        dotSize += 2;
+                                    }
+                                }else if (thresholdSigns[0] == 0){ //both >
+                                    if (y > suggestive || x > significant){
+                                        dotSize += 2;
+                                    }
+                                }else{  //both <
+                                    if (y < suggestive || x < significant){
+                                        dotSize += 2;
+                                    }
+                                }
+                            }
+                        }else{ //sug x, sig y
+                            if (!useSig){  //only use suggestive
+                                if (thresholdSigns[0] == 0){  //>
+                                    if (x > suggestive){
+                                        dotSize += 2;
+                                    }
+                                }else { //<
+                                    if (x < suggestive){
+                                        dotSize += 2;
+                                    }
+                                }
+                            }else if (!useSug){ //only use significant
+                                if (thresholdSigns[1] == 0){ //>
+                                    if (y > significant){
+                                        dotSize += 2;
+                                    }
+                                }else { //<
+                                    if (y < significant){
+                                        dotSize += 2;
+                                    }
+                                }
+                            }else{ //use both
+                                if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
+                                    if (x > suggestive || y < significant){
+                                        dotSize += 2;
+                                    }
+                                }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
+                                    if (x < suggestive || y > significant){
+                                        dotSize += 2;
+                                    }
+                                }else if (thresholdSigns[0] == 0){ //both >
+                                    if (x > suggestive || y > significant){
+                                        dotSize += 2;
+                                    }
+                                }else{  //both <
+                                    if (x < suggestive || y < significant){
+                                        dotSize += 2;
                                     }
                                 }
                             }
                         }
-                    }else{
-                        graphics2D.fillRect((int) transY, (int) transX, 2, 2);
                     }
                 }
+                graphics2D.fillRect((int) transX, (int) transY, dotSize, dotSize);
 
                 // add an entity for the item...
                 if (entities != null) {
