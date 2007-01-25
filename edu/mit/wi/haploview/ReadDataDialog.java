@@ -661,8 +661,6 @@ public class ReadDataDialog extends JDialog
                 plinkChromChooser.setEnabled(false);
                 embeddedMap.setSelected(false);
                 embeddedMap.setEnabled(false);
-                selectColumns.setSelected(false);
-                selectColumns.setEnabled(false);
             }else{
                 nonSNP.setSelected(false);
                 mapLabel.setEnabled(true);
@@ -670,7 +668,6 @@ public class ReadDataDialog extends JDialog
                 browsePlinkMapButton.setEnabled(true);
                 plinkChrom.setEnabled(true);
                 embeddedMap.setEnabled(true);
-                selectColumns.setEnabled(true);
             }
         }else if (command.equals("Only load results from Chromosome")){
             if (plinkChrom.isSelected()){

@@ -1004,7 +1004,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 embed = true;
             }
 
-            if (inputOptions[6] != null && wgaFile != null && Options.getSNPBased()){
+            if (inputOptions[6] != null && wgaFile != null){
                 try{
                     File columnFile = new File(wgaFile);
                     BufferedReader wgaReader = new BufferedReader(new FileReader(columnFile));
@@ -1014,8 +1014,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     StringTokenizer ct = new StringTokenizer(columnLine);
                     while (ct.hasMoreTokens()){
                         String currentCol = ct.nextToken();
-                        if (!currentCol.equalsIgnoreCase("SNP") && !currentCol.equalsIgnoreCase("CHR") && !currentCol.equalsIgnoreCase("POS")){
-                            colChoices.add(currentCol);
+                        if (Options.getSNPBased()){
+                            if (!currentCol.equalsIgnoreCase("SNP") && !currentCol.equalsIgnoreCase("CHR") && !currentCol.equalsIgnoreCase("POS")){
+                                colChoices.add(currentCol);
+                            }
+                        }else{
+                            if (!currentCol.equalsIgnoreCase("FID") && !currentCol.equalsIgnoreCase("IID")){
+                                colChoices.add(currentCol);
+                            }
                         }
                     }
                     ColumnChooser colChooser = new ColumnChooser(this,"Select Columns",colChoices);
@@ -1033,7 +1039,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 if (Options.getSNPBased()){
                     plink.parseWGA(wgaFile,mapFile,embed,chrom,colsToRemove);
                 }else{
-                    plink.parseNonSNP(wgaFile);
+                    plink.parseNonSNP(wgaFile,colsToRemove);
                 }
             }
             if (colsToRemove != null){

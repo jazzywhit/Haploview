@@ -232,7 +232,7 @@ public class Plink {
         }
     }
 
-    public void parseNonSNP(String name) throws PlinkException{
+    public void parseNonSNP(String name, Vector columnFilter) throws PlinkException{
         results = new Vector();
         columns = new Vector();
 
@@ -246,10 +246,21 @@ public class Plink {
             int numColumns = 0;
             String headerLine = wgaReader.readLine();
             StringTokenizer headerSt = new StringTokenizer(headerLine);
+            boolean[] filteredColIndex = new boolean[headerSt.countTokens()];
             while (headerSt.hasMoreTokens()){
                 String column = headerSt.nextToken();
-                columns.add(column);
-                numColumns++;
+                if (columnFilter != null){
+                    if (columnFilter.contains(column)){
+                        filteredColIndex[numColumns] = true;
+                        numColumns++;
+                    }else{
+                        columns.add(column);
+                        numColumns++;
+                    }
+                }else{
+                    columns.add(column);
+                    numColumns++;
+                }
             }
 
             String wgaLine;
@@ -263,14 +274,18 @@ public class Plink {
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
-                    String val = tokenizer.nextToken();
-                    if (val.equalsIgnoreCase("NA")){
-                        values.add(new Double(Double.NaN));
-                    }else{
-                        try{
-                            values.add(new Double(val));
-                        }catch (NumberFormatException n){
-                            values.add(new String(val));
+                    if (filteredColIndex[tokenNumber]){
+                        tokenizer.nextToken();
+                    } else{
+                        String val = tokenizer.nextToken();
+                        if (val.equalsIgnoreCase("NA")){
+                            values.add(new Double(Double.NaN));
+                        }else{
+                            try{
+                                values.add(new Double(val));
+                            }catch (NumberFormatException n){
+                                values.add(new String(val));
+                            }
                         }
                     }
                     tokenNumber++;
@@ -383,7 +398,7 @@ public class Plink {
                         //we don't give a toss for the chromosome or position...
                         tokenizer.nextToken();
                     }else{
-                        String val = tokenizer.nextToken();  //TODO: Check this out
+                        String val = tokenizer.nextToken();
                         if (val.equalsIgnoreCase("NA")){
                             values.add(new Double(Double.NaN));
                         }else{
