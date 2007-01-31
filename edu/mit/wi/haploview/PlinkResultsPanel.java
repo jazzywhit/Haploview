@@ -565,6 +565,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
                     value = "FID: " + table.getValueAt(i,plinkTableModel.getFIDColumn()) + ", IID: " + table.getValueAt(i,plinkTableModel.getIIDColumn());
                     nonChrInfo.put(key,value);
+                }else{
+                    nonChrInfo.put(key,key);
                 }
             }
         }
@@ -818,7 +820,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         private JTextField titleField;
         private String[] signs = {">","<"};
         private String[] thresholds = {"Y-Axis","X-Axis"};
-        private String[] dotSizes = {"Normal","Large"};
+        private String[] dotSizes = {"Small","Medium","Large"};
 
         public PlotOptionDialog (String title) {
             super(hv,title);
@@ -881,8 +883,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             sigThresh = new NumberTextField("",6,true,true);
             sigPanel.add(sigThresh);
             JPanel dotPanel = new JPanel();
-            dotPanel.add(new JLabel("Base Data Point Size:"));
+            dotPanel.add(new JLabel("Data Point Size:"));
             dotChooser = new JComboBox(dotSizes);
+            dotChooser.setSelectedIndex(1);
             dotPanel.add(dotChooser);
 
             if (Options.getSNPBased()){
@@ -999,10 +1002,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 int[] thresholds = new int[2];
                 thresholds[0] = thresholdChooser1.getSelectedIndex();
                 thresholds[1] = thresholdChooser2.getSelectedIndex();
-                int dotSize = 2;
-                if (dotChooser.getSelectedIndex() == 1){
-                    dotSize += 2;
-                }
+                int dotSize = 2 + (dotChooser.getSelectedIndex()*2);
                 if (plotFrame != null){
                     plotFrame.dispose();
                 }
