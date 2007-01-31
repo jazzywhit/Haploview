@@ -174,6 +174,7 @@ public interface Constants {
             "-infoTrack                      Downloads and displays HapMap info track on PNG image output\n"+
             "-ldcolorscheme <argument>       Specify an LD color scheme. <argument> should be one of:\n" +
             "                                DEFAULT, RSQ, DPALT, GAB, GAM\n" +
+            "-ldvalues <DPRIME,RSQ,NONE>     Specify what to print in LD image output. default is DPrime\n" +
             "-check                          Outputs marker checks to <inputfile>.CHECK\n" +
             "                                note: -dprime  and -check default to no blocks output. \n" +
             "                                Use -blockoutput to also output blocks\n" +

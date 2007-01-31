@@ -559,6 +559,22 @@ public class HaploText implements Constants{
                     i--;
                 }
             }
+            else if(args[i].equalsIgnoreCase("-ldvalues")) {
+                i++;
+                if(!(i>=args.length) && !((args[i].charAt(0)) == '-')){
+                    if (args[i].equalsIgnoreCase("RSQ")){
+                        Options.setPrintWhat(R_SQ);
+                    }else if (args[i].equalsIgnoreCase("DPRIME")){
+                        Options.setPrintWhat(D_PRIME);
+                    }else if (args[i].equalsIgnoreCase("NONE")){
+                        Options.setPrintWhat(LD_NONE);
+                    }
+                }else {
+                    //defaults to printing DPRIME
+                    Options.setPrintWhat(D_PRIME);
+                    i--;
+                }
+            }
             else if(args[i].equalsIgnoreCase("-blockCutHighCI")) {
                 i++;
                 cutHighCI = getDoubleArg(args,i,0,1);
