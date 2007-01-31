@@ -408,6 +408,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         for (int i = 0; i < numRows; i++){
             String chrom = (String)table.getValueAt(i,0);
+            if (chrom.equals("")){
+                continue;
+            }
             int chr;
             if (chrom.equalsIgnoreCase("X")){
                 chr = 23;
@@ -627,15 +630,19 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         JFreeChart chart = ChartFactory.createScatterPlot(title,domainAxisName,rangeAxisName,dataSet,PlotOrientation.VERTICAL,legend,true,false);
 
         XYPlot thePlot = chart.getXYPlot();
-        if (thresholds[0] == 0){
-            thePlot.addRangeMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
-        }else{
-            thePlot.addDomainMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
+        if (useSug){
+            if (thresholds[0] == 0){
+                thePlot.addRangeMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
+            }else{
+                thePlot.addDomainMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
+            }
         }
-        if (thresholds[1] == 0){
-            thePlot.addRangeMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
-        }else{
-            thePlot.addDomainMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
+        if (useSig){
+            if (thresholds[1] == 0){
+                thePlot.addRangeMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
+            }else{
+                thePlot.addDomainMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
+            }
         }
         if (chroms){
             thePlot.setDomainGridlinesVisible(false);
@@ -1417,7 +1424,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 // add an entity for the item...
                 if (entities != null) {
                     if (entityArea == null) {
-                        entityArea = new Rectangle2D.Double(transX - 2, transY - 2, 20, 20);
+                        entityArea = new Rectangle2D.Double(transX, transY, dotSize, dotSize);
                     }
                     String tip = "";
                     if (getToolTipGenerator(series,item) != null) {
