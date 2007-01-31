@@ -1219,6 +1219,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             hapDisplay = null;
             tdtPanel = null;
             checkPanel = null;
+            if (plinkPanel != null){
+                plinkPanel.disposePlot();
+            }
             plinkPanel = null;
         }
     }

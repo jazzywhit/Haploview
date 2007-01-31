@@ -47,7 +47,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private Hashtable[] chrInfo;
     private int[] seriesKeys, thresholdSigns, thresholdAxes;
 
-    //private JFrame plotFrame;
+    private JFrame plotFrame;
     private int yPlotType, xPlotType;
     private double suggestive, significant;
     private boolean threeSizes, chroms, useSig, useSug;
@@ -650,7 +650,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         panel.setMinimumDrawWidth(20);
         panel.setMaximumDrawWidth(2000);
             panel.addChartMouseListener(this);
-        JFrame plotFrame = new JFrame("Plot");
+        plotFrame = new JFrame("Plot");
         plotFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         plotFrame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -659,6 +659,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 seriesKeys = null;
                 thresholdSigns = null;
                 thresholdAxes = null;
+                plotFrame = null;
             }
         });
         plotFrame.setContentPane(panel);
@@ -712,9 +713,15 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         plinkWriter.close();
     }
 
-   /* public void disposePlot(){
-       //TODO: use this to kill the plot on file loads with Haploview.clearDisplays();
-    }*/
+   public void disposePlot(){
+       plotFrame.dispose();
+       chrInfo = null;
+       nonChrInfo = null;
+       seriesKeys = null;
+       thresholdSigns = null;
+       thresholdAxes = null;
+       plotFrame = null;
+   }
 
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
@@ -764,14 +771,16 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 hv.requestFocus();
                 hv.toFront();
             }else{
-                StringTokenizer st = new StringTokenizer(ce.getToolTipText(),", ");
-                st.nextToken(); //FID:
-                String fid = st.nextToken();
-                st.nextToken(); //IID:
-                String iid = st.nextToken();
-                jumpToNonSNP(fid,iid);
-                hv.requestFocus();
-                hv.toFront();
+                if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
+                    StringTokenizer st = new StringTokenizer(ce.getToolTipText(),", ");
+                    st.nextToken(); //FID:
+                    String fid = st.nextToken();
+                    st.nextToken(); //IID:
+                    String iid = st.nextToken();
+                    jumpToNonSNP(fid,iid);
+                    hv.requestFocus();
+                    hv.toFront();
+                }
             }
         }
     }
@@ -944,7 +953,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 int[] thresholds = new int[2];
                 thresholds[0] = thresholdChooser1.getSelectedIndex();
                 thresholds[1] = thresholdChooser2.getSelectedIndex();
-
+                if (plotFrame != null){
+                    plotFrame.dispose();
+                }
                 this.dispose();
                 makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds);
             }else if (e.getSource() instanceof JComboBox){
@@ -1396,7 +1407,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             if (chroms){
                 return (String)chrInfo[seriesKeys[series]-1].get(new Double(dataset.getXValue(series,item)));
             }else{
-                return (String)nonChrInfo.get(String.valueOf(dataset.getXValue(series,item)) + " " + String.valueOf(dataset.getYValue(series,item)));
+                if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
+                    return (String)nonChrInfo.get(String.valueOf(dataset.getXValue(series,item)) + " " + String.valueOf(dataset.getYValue(series,item)));
+                }else{
+                    return "";
+                }
             }
         }
     }
