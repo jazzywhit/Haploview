@@ -48,7 +48,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private int[] seriesKeys, thresholdSigns, thresholdAxes;
 
     private JFrame plotFrame;
-    private int yPlotType, xPlotType;
+    private int yPlotType, xPlotType, baseDotSize;
     private double suggestive, significant;
     private boolean threeSizes, chroms, useSig, useSug;
 
@@ -563,12 +563,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         return dataset;
     }
 
-    public void makeChart(String title, int yType, int yCol, int xType, int xCol, double sug, double sig, int[] signs, int[] thresholds){
+    public void makeChart(String title, int yType, int yCol, int xType, int xCol, double sug, double sig, int[] signs, int[] thresholds, int dotSize){
         hv.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         yPlotType = yType;
         xPlotType = xType;
         thresholdSigns = signs;
         thresholdAxes = thresholds;
+        baseDotSize = dotSize;
         threeSizes = (signs[0] == signs[1]) && (thresholds[0] == thresholds[1]) && useSug && useSig;
         chroms = Options.getSNPBased() && xCol == 2;
 
@@ -789,12 +790,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     class PlotOptionDialog extends JDialog implements ActionListener {
-        private JComboBox yColumnChooser, xColumnChooser, yPlotChooser, xPlotChooser, signChooser1, signChooser2, thresholdChooser1, thresholdChooser2;
+        private JComboBox yColumnChooser, xColumnChooser, yPlotChooser, xPlotChooser, signChooser1, signChooser2, thresholdChooser1, thresholdChooser2, dotChooser;
         private JLabel label1, label2;
         private NumberTextField sigThresh, sugThresh;
         private JTextField titleField;
         private String[] signs = {">","<"};
         private String[] thresholds = {"Y-Axis","X-Axis"};
+        private String[] dotSizes = {"Normal","Large"};
 
         public PlotOptionDialog (String title) {
             super(hv,title);
@@ -854,6 +856,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             sigPanel.add(signChooser2);
             sigThresh = new NumberTextField("",6,true,true);
             sigPanel.add(sigThresh);
+            JPanel dotPanel = new JPanel();
+            dotPanel.add(new JLabel("Base Data Point Size:"));
+            dotChooser = new JComboBox(dotSizes);
+            dotPanel.add(dotChooser);
 
             if (Options.getSNPBased()){
                 yColumnChooser.setSize(xColumnChooser.getSize());
@@ -876,6 +882,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             contents.add(yPanel);
             contents.add(sugPanel);
             contents.add(sigPanel);
+            contents.add(dotPanel);
             contents.add(choicePanel);
             setContentPane(contents);
 
@@ -953,11 +960,15 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 int[] thresholds = new int[2];
                 thresholds[0] = thresholdChooser1.getSelectedIndex();
                 thresholds[1] = thresholdChooser2.getSelectedIndex();
+                int dotSize = 2;
+                if (dotChooser.getSelectedIndex() == 1){
+                    dotSize += 2;
+                }
                 if (plotFrame != null){
                     plotFrame.dispose();
                 }
                 this.dispose();
-                makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds);
+                makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds,dotSize);
             }else if (e.getSource() instanceof JComboBox){
                 if (xColumnChooser.getSelectedItem().equals("Chromosomes")){
                     xPlotChooser.setSelectedIndex(0);
@@ -1156,7 +1167,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 double transY = valueAxis1.valueToJava2D(y, rectangle2D,yAxisLocation);
 
                 graphics2D.setPaint(this.getItemPaint(series, item));
-                int dotSize = 2;
+                int dotSize = baseDotSize;
                 PlotOrientation orientation = xyPlot.getOrientation();
                 if (orientation == PlotOrientation.HORIZONTAL){ //JFreeChart allows the user to flip the axes
                     transX = valueAxis1.valueToJava2D(y, rectangle2D,yAxisLocation);
