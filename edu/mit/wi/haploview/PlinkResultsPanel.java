@@ -482,66 +482,75 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         for (int i = 0; i < numRows; i++){
 
             double y;
-            if (table.getValueAt(i,yCol) == null){
-                continue;
-            }else if ((table.getValueAt(i,yCol)).equals(new Double(Double.NaN))){
-                continue;
+            if (yCol == -1){
+                y = i;
             }else{
-                if (table.getValueAt(i,yCol) instanceof Double){
-                    y = ((Double)table.getValueAt(i,yCol)).doubleValue();
+                if (table.getValueAt(i,yCol) == null){
+                    continue;
+                }else if ((table.getValueAt(i,yCol)).equals(new Double(Double.NaN))){
+                    continue;
                 }else{
-                    JOptionPane.showMessageDialog(this,
-                            "The selected column does not appear to be numerical.",
-                            "Invalid column",
-                            JOptionPane.ERROR_MESSAGE);
-                    return null;
+                    if (table.getValueAt(i,yCol) instanceof Double){
+                        y = ((Double)table.getValueAt(i,yCol)).doubleValue();
+                    }else{
+                        JOptionPane.showMessageDialog(this,
+                                "The selected column does not appear to be numerical.",
+                                "Invalid column",
+                                JOptionPane.ERROR_MESSAGE);
+                        return null;
+                    }
                 }
-            }
 
-            if (yPlotType == LOG10_PLOT){
-                if (y < 0 || y > 1){
-                    JOptionPane.showMessageDialog(this,
-                            "The selected column is not formatted correctly \n" +
-                                    "for a -log10 plot.",
-                            "Invalid column",
-                            JOptionPane.ERROR_MESSAGE);
-                    return null;
+                if (yPlotType == LOG10_PLOT){
+                    if (y < 0 || y > 1){
+                        JOptionPane.showMessageDialog(this,
+                                "The selected column is not formatted correctly \n" +
+                                        "for a -log10 plot.",
+                                "Invalid column",
+                                JOptionPane.ERROR_MESSAGE);
+                        return null;
+                    }
+                    y = (Math.log(y)/Math.log(10))*-1;
+                }else if (yPlotType == LN_PLOT){
+                    y = Math.log(y);
                 }
-                y = (Math.log(y)/Math.log(10))*-1;
-            }else if (yPlotType == LN_PLOT){
-                y = Math.log(y);
             }
 
 
             double x;
-            if (table.getValueAt(i,xCol) == null){
-                continue;
-            }else if ((table.getValueAt(i,xCol)).equals(new Double(Double.NaN))){
-                continue;
+            if (xCol == -1){
+                x = i;
             }else{
-                if (table.getValueAt(i,xCol) instanceof Double){
-                    x = ((Double)table.getValueAt(i,xCol)).doubleValue();
+                if (table.getValueAt(i,xCol) == null){
+                    continue;
+                }else if ((table.getValueAt(i,xCol)).equals(new Double(Double.NaN))){
+                    continue;
                 }else{
-                    JOptionPane.showMessageDialog(this,
-                            "The selected column does not appear to be numerical.",
-                            "Invalid column",
-                            JOptionPane.ERROR_MESSAGE);
-                    return null;
+                    if (table.getValueAt(i,xCol) instanceof Double){
+                        x = ((Double)table.getValueAt(i,xCol)).doubleValue();
+                    }else{
+                        JOptionPane.showMessageDialog(this,
+                                "The selected column does not appear to be numerical.",
+                                "Invalid column",
+                                JOptionPane.ERROR_MESSAGE);
+                        return null;
+                    }
+                }
+                if (xPlotType == LOG10_PLOT){
+                    if (x < 0 || x > 1){
+                        JOptionPane.showMessageDialog(this,
+                                "The selected column is not formatted correctly \n" +
+                                        "for a -log10 plot.",
+                                "Invalid column",
+                                JOptionPane.ERROR_MESSAGE);
+                        return null;
+                    }
+                    x = (Math.log(x)/Math.log(10))*-1;
+                }else if (xPlotType == LN_PLOT){
+                    x = Math.log(x);
                 }
             }
-            if (xPlotType == LOG10_PLOT){
-                if (x < 0 || x > 1){
-                    JOptionPane.showMessageDialog(this,
-                            "The selected column is not formatted correctly \n" +
-                                    "for a -log10 plot.",
-                            "Invalid column",
-                            JOptionPane.ERROR_MESSAGE);
-                    return null;
-                }
-                x = (Math.log(x)/Math.log(10))*-1;
-            }else if (xPlotType == LN_PLOT){
-                x = Math.log(x);
-            }
+
             xys.add(x,y);
 
             String key = String.valueOf(x) + " " +  String.valueOf(y);
@@ -589,21 +598,25 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         suggestive = sug;
 
         String rangeAxisName;
-        if (yPlotType == UNTRANSFORMED_PLOT){
-            rangeAxisName = table.getColumnName(yCol);
+        if (yCol == -1){
+            rangeAxisName = null;
         }else{
-            rangeAxisName = PLOT_TYPES[yPlotType] + "(" + table.getColumnName(yCol) + ")";
+            if (yPlotType == UNTRANSFORMED_PLOT){
+                rangeAxisName = table.getColumnName(yCol);
+            }else{
+                rangeAxisName = PLOT_TYPES[yPlotType] + "(" + table.getColumnName(yCol) + ")";
+            }
         }
 
         String domainAxisName;
-        if (!chroms){
+        if (xCol == -1 || chroms){
+            domainAxisName = null;
+        }else{
             if (xPlotType == UNTRANSFORMED_PLOT){
                 domainAxisName = table.getColumnName(xCol);
             }else{
                 domainAxisName = PLOT_TYPES[xPlotType] + "(" + table.getColumnName(xCol) + ")";
             }
-        }else{
-            domainAxisName = null;
         }
 
         boolean legend = false;
@@ -714,15 +727,17 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         plinkWriter.close();
     }
 
-   public void disposePlot(){
-       plotFrame.dispose();
-       chrInfo = null;
-       nonChrInfo = null;
-       seriesKeys = null;
-       thresholdSigns = null;
-       thresholdAxes = null;
-       plotFrame = null;
-   }
+    public void disposePlot(){
+        if (plotFrame != null){
+            plotFrame.dispose();
+        }
+        chrInfo = null;
+        nonChrInfo = null;
+        seriesKeys = null;
+        thresholdSigns = null;
+        thresholdAxes = null;
+        plotFrame = null;
+    }
 
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
@@ -765,7 +780,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
     public void chartMouseClicked(ChartMouseEvent chartMouseEvent) {
         ChartEntity ce = chartMouseEvent.getEntity();
-        if (ce != null){
+        if (ce != null && ce.getToolTipText() != null){
             if (Options.getSNPBased()){
                 StringTokenizer st = new StringTokenizer(ce.getToolTipText(),",");
                 jumpToMarker(st.nextToken());
@@ -801,7 +816,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         public PlotOptionDialog (String title) {
             super(hv,title);
 
-            Vector columns = plinkTableModel.getUnknownColumns();
+            Vector columns = new Vector(plinkTableModel.getUnknownColumns());
+            columns.add("Index");
 
             Vector xCols = new Vector();
             if (Options.getSNPBased()){
@@ -833,6 +849,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             JPanel yPanel = new JPanel();
             yPanel.add(new JLabel("Y-Axis:"));
             yColumnChooser = new JComboBox(columns);
+            yColumnChooser.addActionListener(this);
             yPanel.add(yColumnChooser);
             yPanel.add(new JLabel("Scale:"));
             yPlotChooser = new JComboBox(PLOT_TYPES);
@@ -929,6 +946,21 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                         xColumn += 1;
                     }
                 }
+                if ((xColumnChooser.getSelectedItem().equals("Index") && yColumnChooser.getSelectedItem().equals("Index")) ||
+                        (xColumnChooser.getSelectedItem().equals("Chromosomes") && yColumnChooser.getSelectedItem().equals("Index"))){
+                    JOptionPane.showMessageDialog(this,
+                            "You must have at least one explicit axis.",
+                            "Invalid value",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }else{
+                    if (xColumnChooser.getSelectedItem().equals("Index")){
+                        xColumn = -1;
+                    }else if (yColumnChooser.getSelectedItem().equals("Index")){
+                        yColumn = -1;
+                    }
+                }
+
                 double suggestive, significant;
                 try{
                     if (sugThresh.getText().equals("")){
@@ -977,10 +1009,22 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     thresholdChooser1.setEnabled(false);
                     thresholdChooser2.setSelectedIndex(0);
                     thresholdChooser2.setEnabled(false);
+                }else if (xColumnChooser.getSelectedItem().equals("Index")){
+                    xPlotChooser.setSelectedIndex(0);
+                    xPlotChooser.setEnabled(false);
+                    thresholdChooser1.setEnabled(true);
+                    thresholdChooser2.setEnabled(true);
                 }else{
                     xPlotChooser.setEnabled(true);
                     thresholdChooser1.setEnabled(true);
                     thresholdChooser2.setEnabled(true);
+                }
+
+                if (yColumnChooser.getSelectedItem().equals("Index")){
+                    yPlotChooser.setSelectedIndex(0);
+                    yPlotChooser.setEnabled(false);
+                }else{
+                   yPlotChooser.setEnabled(true); 
                 }
                 if (yPlotChooser.getSelectedItem().equals("-log10")){
                     label1.setText("Suggestive (Blue Line)");
@@ -1418,11 +1462,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             if (chroms){
                 return (String)chrInfo[seriesKeys[series]-1].get(new Double(dataset.getXValue(series,item)));
             }else{
-                if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
-                    return (String)nonChrInfo.get(String.valueOf(dataset.getXValue(series,item)) + " " + String.valueOf(dataset.getYValue(series,item)));
-                }else{
-                    return "";
-                }
+                return (String)nonChrInfo.get(String.valueOf(dataset.getXValue(series,item)) + " " + String.valueOf(dataset.getYValue(series,item)));
             }
         }
     }
