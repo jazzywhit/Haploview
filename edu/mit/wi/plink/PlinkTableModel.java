@@ -143,9 +143,9 @@ public class PlinkTableModel extends AbstractTableModel{
                 }
             }
         }else{
-            if (column == IID_COLUMN){
+            if (column == IID_COLUMN || column == FID_COLUMN){
                 if (result.getValues().get(column) instanceof Double){
-                    value = ((Double)result.getValues().get(column)).toString();
+                    value = (result.getValues().get(column)).toString();
                 }else{
                     value = result.getValues().get(column);
                 }
