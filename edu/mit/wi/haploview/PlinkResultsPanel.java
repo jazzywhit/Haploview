@@ -63,7 +63,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         plinkTableModel = new PlinkTableModel(colNames,results);
         sorter = new TableSorter(plinkTableModel);
-        removedColumns = new Hashtable(1,1);
+        removedColumns = new Hashtable();
         originalColumns = (Vector)plinkTableModel.getUnknownColumns().clone();
 
 
@@ -1118,6 +1118,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             JPanel contents = new JPanel();
             contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
             contents.setPreferredSize(new Dimension(150,200));
+
+            if (removedColumns != null){
+                if (removedColumns.size() > 0){
+                    clearFilters();
+                }
+            }
 
             Vector doubleColumns = new Vector();
             columnIndeces = new Vector();

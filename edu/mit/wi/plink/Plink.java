@@ -463,9 +463,13 @@ public class Plink {
                 Double pv;
                 try{
                     if (values.size() >= value){
-                        if (values.get(value) != null && !(((Double)values.get(value)).equals(new Double(Double.NaN)))){
-                            pv = (Double)values.get(value);
-                            pValues.add(pv);
+                        if (values.get(value) != null){
+                            if (values.get(value) instanceof Double){
+                                if (!(((Double)values.get(value)).equals(new Double(Double.NaN)))){
+                                    pv = (Double)values.get(value);
+                                    pValues.add(pv);
+                                }
+                            }
                         }
                     }
                 }catch(NumberFormatException nfe){
