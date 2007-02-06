@@ -760,6 +760,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         return plinkTableModel.getUnknownColumns();
     }
 
+    public Vector getOriginalColumns(){
+        return originalColumns;
+    }
+
     public void exportTable(File outfile) throws IOException, HaploViewException{
         BufferedWriter plinkWriter = new BufferedWriter(new FileWriter(outfile));
         for (int i = 0; i < table.getColumnCount(); i++){

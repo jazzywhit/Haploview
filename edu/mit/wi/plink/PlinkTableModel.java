@@ -257,6 +257,14 @@ public class PlinkTableModel extends AbstractTableModel{
             genericPass = false;
         }
         filtered = newFiltered;
+        if (Options.getSNPBased()){
+            snps = new Vector();
+            for (int i = 0; i < filtered.size(); i++){
+                int realIndex = ((Integer)filtered.get(i)).intValue();
+                AssociationResult result = (AssociationResult)data.get(realIndex);
+                snps.add(result.getMarker().getMarkerID());
+            }
+        }
     }
 
     public void resetFilters(){

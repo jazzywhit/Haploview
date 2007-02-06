@@ -46,7 +46,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
         JPanel gBrowsePanel = new JPanel();
         gBrowsePanel.add(new JLabel("Annotate:"));
-        colChooser = new JComboBox(prp.getUnknownColumns());
+        colChooser = new JComboBox(prp.getOriginalColumns());
         gBrowsePanel.add(colChooser);
         gBrowse = new JCheckBox("Show HapMap info track?");
         gBrowse.setSelected(true);
@@ -106,7 +106,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                     gotoEnd, pop, gotoStart, gotoEnd, chrom, phase, "txt"};
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
-            Vector chipSNPs = prp.getSNPs();
+            Vector chipSNPs = new Vector(prp.getSNPs());
             if (Chromosome.getUnfilteredSize() > 0){
                 if (!colChooser.getSelectedItem().equals("")){
                     for (int i = 0; i < Chromosome.getSize(); i++){
