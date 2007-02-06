@@ -719,7 +719,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     public void exportTable(File outfile) throws IOException, HaploViewException{
         BufferedWriter plinkWriter = new BufferedWriter(new FileWriter(outfile));
         for (int i = 0; i < table.getColumnCount(); i++){
-            plinkWriter.write(table.getColumnName(i)+"\t");
+            if (table.getColumnName(i).equalsIgnoreCase("CHROM")){
+                plinkWriter.write("CHR"+"\t");
+            }else if (table.getColumnName(i).equalsIgnoreCase("MARKER")){
+                plinkWriter.write("SNP"+"\t");
+            }else{
+                plinkWriter.write(table.getColumnName(i)+"\t");
+            }
         }
         plinkWriter.newLine();
 
