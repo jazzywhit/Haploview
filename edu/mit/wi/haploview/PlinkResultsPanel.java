@@ -478,9 +478,42 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         return dataset;
     }
 
-    public XYSeriesCollection makeDataSet(int yCol, int xCol){
+    public XYSeriesCollection makeDataSet(int yCol, int xCol, int colorCol){
         int numRows = table.getRowCount();
+        XYSeries[] xyArray = new XYSeries[0];
         XYSeries xys = new XYSeries("Data");
+        Hashtable colorKey = new Hashtable();
+        if (colorCol != -1){
+            Vector seriesNames = new Vector();
+            for (int i = 0; i < numRows; i++){
+                if (table.getValueAt(i,colorCol) != null){
+                    if (!colorKey.containsKey(table.getValueAt(i,colorCol))){
+                        colorKey.put(table.getValueAt(i,colorCol),new Integer(seriesNames.size()));
+                        if (table.getValueAt(i,colorCol) instanceof Double){
+                            seriesNames.add(String.valueOf(table.getValueAt(i,colorCol)));
+                        }else{
+                            seriesNames.add(table.getValueAt(i,colorCol));
+                        }
+                        if (seriesNames.size() > 20){
+                            JOptionPane.showMessageDialog(this,
+                                    "The selected color key column contains more than 20 values.",
+                                    "Invalid column",
+                                    JOptionPane.ERROR_MESSAGE);
+                            colorKey = null;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (colorKey != null){
+                xyArray = new XYSeries[seriesNames.size()];
+                for (int i = 0; i < seriesNames.size(); i++){
+                    xyArray[i] = new XYSeries((String)seriesNames.get(i));
+                }
+            }
+        }else{
+            colorKey = null;
+        }
         nonChrInfo = new Hashtable();
         for (int i = 0; i < numRows; i++){
 
@@ -554,7 +587,12 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 }
             }
 
-            xys.add(x,y);
+            if (colorKey == null){
+                xys.add(x,y);
+            }else{
+                int series = ((Integer)colorKey.get(table.getValueAt(i,colorCol))).intValue();
+                xyArray[series].add(x,y);
+            }
 
             String key = String.valueOf(x) + " " +  String.valueOf(y);
             String value;
@@ -572,12 +610,18 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
 
         XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(xys);
+        if (colorKey == null){
+            dataset.addSeries(xys);
+        }else{
+            for (int i = 0; i < xyArray.length; i++){
+                dataset.addSeries(xyArray[i]);
+            }
+        }
 
         return dataset;
     }
 
-    public void makeChart(String title, int yType, int yCol, int xType, int xCol, double sug, double sig, int[] signs, int[] thresholds, int dotSize){
+    public void makeChart(String title, int yType, int yCol, int xType, int xCol, double sug, double sig, int[] signs, int[] thresholds, int dotSize, int colorKey){
         hv.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         yPlotType = yType;
         xPlotType = xType;
@@ -591,7 +635,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         if (chroms){
             dataSet = makeChrDataSet(yCol);
         }else{
-            dataSet = makeDataSet(yCol,xCol);
+            dataSet = makeDataSet(yCol,xCol,colorKey);
         }
 
         if (dataSet == null){
@@ -625,7 +669,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
 
         boolean legend = false;
-        if (chroms){
+        if (chroms || (colorKey != -1 && dataSet.getSeriesCount() > 1)){
             legend = true;
         }
 
@@ -672,7 +716,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         panel.setMaximumDrawHeight(2000);
         panel.setMinimumDrawWidth(20);
         panel.setMaximumDrawWidth(2000);
-            panel.addChartMouseListener(this);
+        panel.addChartMouseListener(this);
         plotFrame = new JFrame("Plot");
         plotFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         plotFrame.addWindowListener(new WindowAdapter() {
@@ -820,7 +864,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     class PlotOptionDialog extends JDialog implements ActionListener {
-        private JComboBox yColumnChooser, xColumnChooser, yPlotChooser, xPlotChooser, signChooser1, signChooser2, thresholdChooser1, thresholdChooser2, dotChooser;
+        private JComboBox yColumnChooser, xColumnChooser, yPlotChooser, xPlotChooser, signChooser1, signChooser2, thresholdChooser1, thresholdChooser2, dotChooser, colorKeyChooser;
         private JLabel label1, label2;
         private NumberTextField sigThresh, sugThresh;
         private JTextField titleField;
@@ -851,7 +895,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
             JPanel titlePanel = new JPanel();
             titlePanel.add(new JLabel("Title:"));
-            titleField = new JTextField(15);
+            titleField = new JTextField(20);
             titlePanel.add(titleField);
             JPanel xPanel = new JPanel();
             xPanel.add(new JLabel("X-Axis:"));
@@ -893,12 +937,16 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             dotChooser = new JComboBox(dotSizes);
             dotChooser.setSelectedIndex(1);
             dotPanel.add(dotChooser);
+            dotPanel.add(new JLabel("Color Key:"));
+            colorKeyChooser = new JComboBox(plinkTableModel.getUnknownColumns());
+            dotPanel.add(colorKeyChooser);
 
             if (Options.getSNPBased()){
                 yColumnChooser.setSize(xColumnChooser.getSize());
                 xPlotChooser.setEnabled(false);
                 thresholdChooser1.setEnabled(false);
                 thresholdChooser2.setEnabled(false);
+                colorKeyChooser.setEnabled(false);
             }
 
             JPanel choicePanel = new JPanel();
@@ -948,18 +996,22 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 int yPlotType = yPlotChooser.getSelectedIndex();
                 int xColumn = xColumnChooser.getSelectedIndex();
                 int xPlotType = xPlotChooser.getSelectedIndex();
+                int colorColumn = colorKeyChooser.getSelectedIndex()-1;
                 if (Options.getSNPBased()){
                     yColumn += 3; //accounts for 3 known columns (chrom,marker,position)
+                    colorColumn += 3;
                     xColumn += 2;
                 }else{
                     xColumn -= 1;
                     if (plinkTableModel.getFIDColumn() != -1){
                         yColumn += 1;
                         xColumn += 1;
+                        colorColumn += 1;
                     }
                     if (plinkTableModel.getIIDColumn() != -1){
                         yColumn += 1;
                         xColumn += 1;
+                        colorColumn += 1;
                     }
                 }
                 if ((xColumnChooser.getSelectedItem().equals("Index") && yColumnChooser.getSelectedItem().equals("Index")) ||
@@ -975,6 +1027,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     }else if (yColumnChooser.getSelectedItem().equals("Index")){
                         yColumn = -1;
                     }
+                }
+                if (colorKeyChooser.getSelectedIndex() < 1){
+                    colorColumn = -1;
                 }
 
                 double suggestive, significant;
@@ -1013,7 +1068,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     plotFrame.dispose();
                 }
                 this.dispose();
-                makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds,dotSize);
+                makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds,dotSize,colorColumn);
             }else if (e.getSource() instanceof JComboBox){
                 if (xColumnChooser.getSelectedItem().equals("Chromosomes")){
                     xPlotChooser.setSelectedIndex(0);
@@ -1022,22 +1077,26 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     thresholdChooser1.setEnabled(false);
                     thresholdChooser2.setSelectedIndex(0);
                     thresholdChooser2.setEnabled(false);
+                    colorKeyChooser.setSelectedIndex(0);
+                    colorKeyChooser.setEnabled(false);
                 }else if (xColumnChooser.getSelectedItem().equals("Index")){
                     xPlotChooser.setSelectedIndex(0);
                     xPlotChooser.setEnabled(false);
                     thresholdChooser1.setEnabled(true);
                     thresholdChooser2.setEnabled(true);
+                    colorKeyChooser.setEnabled(true);
                 }else{
                     xPlotChooser.setEnabled(true);
                     thresholdChooser1.setEnabled(true);
                     thresholdChooser2.setEnabled(true);
+                    colorKeyChooser.setEnabled(true);
                 }
 
                 if (yColumnChooser.getSelectedItem().equals("Index")){
                     yPlotChooser.setSelectedIndex(0);
                     yPlotChooser.setEnabled(false);
                 }else{
-                   yPlotChooser.setEnabled(true); 
+                    yPlotChooser.setEnabled(true);
                 }
                 if (yPlotChooser.getSelectedItem().equals("-log10")){
                     label1.setText("Suggestive (Blue Line)");
