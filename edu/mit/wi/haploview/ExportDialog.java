@@ -221,19 +221,19 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
 
             if (dpButton.isSelected()){
                 c = hv.dPrimeDisplay;
-            } else if (hapButton.isSelected()){
+            }else if (hapButton.isSelected()){
                 c = hv.hapDisplay;
-            } else if (checkButton.isSelected()){
+            }else if (checkButton != null && checkButton.isSelected()){
                 c = hv.checkPanel;
-            } else if (singleAssocButton.isSelected()){
+            }else if (singleAssocButton != null && singleAssocButton.isSelected()){
                 c = hv.tdtPanel;
-            }else if (hapAssocButton.isSelected()){
+            }else if (hapAssocButton != null && hapAssocButton.isSelected()){
                 c = hv.hapAssocPanel;
-            }else if (permAssocButton.isSelected()){
+            }else if (permAssocButton != null && permAssocButton.isSelected()){
                 c = hv.permutationPanel;
-            }else if (custAssocButton.isSelected()){
+            }else if (custAssocButton != null && custAssocButton.isSelected()){
                 c = hv.custAssocPanel;
-            }else if (taggerButton.isSelected()){
+            }else if (taggerButton != null && taggerButton.isSelected()){
                 c = hv.taggerResultsPanel;
             }
             this.dispose();
