@@ -1239,8 +1239,10 @@ public class DPrimeDisplay extends JComponent
                     chunkSpans[i] = MAX_GBROWSE_WIDTH;
                 }
                 //remainder, or cases when width is less than max allowed
-                chunkRights[numChunks-1] = gbright;
-                chunkSpans[numChunks-1] = gblineSpan - MAX_GBROWSE_WIDTH*(numChunks-1);
+                if (numChunks > 0){
+                    chunkRights[numChunks-1] = gbright;
+                    chunkSpans[numChunks-1] = gblineSpan - MAX_GBROWSE_WIDTH*(numChunks-1);
+                }
 
                 int totalHeight = 0;
                 int totalWidth = 0;
