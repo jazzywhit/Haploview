@@ -819,7 +819,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             if (returned != JFileChooser.APPROVE_OPTION) return;
             File file = HaploView.fc.getSelectedFile();
             String fullName = file.getParent()+File.separator+file.getName();
-            String[] inputs = {null,null,fullName,null,null,null,null};
+            String[] inputs = {null,null,fullName,null,null,null,"Y"};
             if (removedColumns.size() > 0){
                 hv.setRemovedColumns(removedColumns);
             }

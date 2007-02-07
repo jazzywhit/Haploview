@@ -1004,9 +1004,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 embed = true;
             }
 
-            if (inputOptions[6] != null && wgaFile != null){
+            if (inputOptions[6] != null && (wgaFile != null || secondaryFile != null)){
                 try{
-                    File columnFile = new File(wgaFile);
+                    File columnFile;
+                    if (wgaFile != null){
+                        columnFile = new File(wgaFile);
+                    }else{
+                        columnFile = new File(secondaryFile);
+                    }
                     BufferedReader wgaReader = new BufferedReader(new FileReader(columnFile));
                     String columnLine = wgaReader.readLine();
                     wgaReader.close();
@@ -1042,11 +1047,8 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     plink.parseNonSNP(wgaFile,colsToRemove);
                 }
             }
-            if (colsToRemove != null){
-                colsToRemove.clear();
-            }
             if (secondaryFile != null){
-                Vector v = plink.parseMoreResults(secondaryFile);
+                Vector v = plink.parseMoreResults(secondaryFile,colsToRemove);
                 Vector im = plink.getIgnoredMarkers();
                 if (im != null){
                     if (im.size() != 0){
@@ -1062,6 +1064,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                             "Duplicate value",
                             JOptionPane.ERROR_MESSAGE);
                 }
+            }
+            if (colsToRemove != null){
+                colsToRemove.clear();
             }
 
             plinkPanel = new PlinkResultsPanel(this,plink.getResults(),plink.getColumnNames(),plink.getPlinkDups(),removedCols);

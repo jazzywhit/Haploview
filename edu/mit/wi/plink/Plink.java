@@ -308,7 +308,7 @@ public class Plink {
         return ignoredMarkers;
     }
 
-    public Vector parseMoreResults(String wga) throws PlinkException {
+    public Vector parseMoreResults(String wga, Vector columnFilter) throws PlinkException {
         File moreResultsFile = new File(wga);
         Vector newColumns = new Vector();
         ignoredMarkers = new Vector();
@@ -329,6 +329,7 @@ public class Plink {
             int posColumn = -1;
             String headerLine = moreResultsReader.readLine();
             StringTokenizer headerSt = new StringTokenizer(headerLine);
+            boolean[] filteredColIndex = new boolean[headerSt.countTokens()];
 
             while (headerSt.hasMoreTokens()){
                 String column = new String(headerSt.nextToken());
@@ -346,19 +347,40 @@ public class Plink {
                     posColumn = numColumns;
                     numColumns++;
                 }else{
-                    if(columns.contains(column)){
-                        int counter = 1;
-                        String dupColumn = column + "-" + counter;
-                        while (columns.contains(dupColumn)){
-                            counter++;
-                            dupColumn = column + "-" + counter;
+                    if (columnFilter != null){
+                        if (columnFilter.contains(column)){
+                            filteredColIndex[numColumns] = true;
+                            numColumns++;
+                        }else{
+                            if(columns.contains(column)){
+                                int counter = 1;
+                                String dupColumn = column + "-" + counter;
+                                while (columns.contains(dupColumn)){
+                                    counter++;
+                                    dupColumn = column + "-" + counter;
+                                }
+                                duplicateColumns.add(dupColumn);
+                                newColumns.add(dupColumn);
+                            }else{
+                                newColumns.add(column);
+                            }
+                            numColumns++;
                         }
-                        duplicateColumns.add(dupColumn);
-                        newColumns.add(dupColumn);
                     }else{
-                        newColumns.add(column);
+                        if(columns.contains(column)){
+                            int counter = 1;
+                            String dupColumn = column + "-" + counter;
+                            while (columns.contains(dupColumn)){
+                                counter++;
+                                dupColumn = column + "-" + counter;
+                            }
+                            duplicateColumns.add(dupColumn);
+                            newColumns.add(dupColumn);
+                        }else{
+                            newColumns.add(column);
+                        }
+                        numColumns++;
                     }
-                    numColumns++;
                 }
             }
 
@@ -398,14 +420,18 @@ public class Plink {
                         //we don't give a toss for the chromosome or position...
                         tokenizer.nextToken();
                     }else{
-                        String val = tokenizer.nextToken();
-                        if (val.equalsIgnoreCase("NA")){
-                            values.add(new Double(Double.NaN));
+                        if (filteredColIndex[tokenNumber]){
+                            tokenizer.nextToken();
                         }else{
-                            try{
-                                values.add(new Double(val));
-                            }catch (NumberFormatException n){
-                                values.add(new String(val));
+                            String val = tokenizer.nextToken();
+                            if (val.equalsIgnoreCase("NA")){
+                                values.add(new Double(Double.NaN));
+                            }else{
+                                try{
+                                    values.add(new Double(val));
+                                }catch (NumberFormatException n){
+                                    values.add(new String(val));
+                                }
                             }
                         }
                     }
