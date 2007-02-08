@@ -1035,11 +1035,12 @@ public class HaploText implements Constants{
                 die("-phasedhapmapdl requires a population specification of CEU, YRI, or CHB+JPT");
             }
 
-            if (Integer.parseInt(chromosomeArg) < 1 && Integer.parseInt(chromosomeArg) > 22){
-                if (!(chromosomeArg.equalsIgnoreCase("X")) && !(chromosomeArg.equalsIgnoreCase("Y"))){
+            if (!(chromosomeArg.equalsIgnoreCase("X")) && !(chromosomeArg.equalsIgnoreCase("Y"))){
+                if (Integer.parseInt(chromosomeArg) < 1 && Integer.parseInt(chromosomeArg) > 22){
                     die("-chromosome must be betweeen 1 and 22, X, or Y");
                 }
             }
+
             try{
                 if (Integer.parseInt(startPos) > Integer.parseInt(endPos)){
                     die("-endpos must be greater then -startpos");
