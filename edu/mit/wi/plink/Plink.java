@@ -102,31 +102,47 @@ public class Plink {
             String headerLine = wgaReader.readLine();
             StringTokenizer headerSt = new StringTokenizer(headerLine);
             boolean[] filteredColIndex = new boolean[headerSt.countTokens()];
+            int counter;
             while (headerSt.hasMoreTokens()){
                 String column = headerSt.nextToken();
                 if (column.equalsIgnoreCase("SNP")){
                     markerColumn = colIndex;
-                    colIndex++;
                 }else if (column.equalsIgnoreCase("CHR")){
                     chromColumn = colIndex;
-                    colIndex++;
                 }else if (column.equalsIgnoreCase("POS")||column.equalsIgnoreCase("POSITION")){
                     positionColumn = colIndex;
-                    colIndex++;
                 }else{
                     if (columnFilter != null){
                         if (columnFilter.contains(column)){
                             filteredColIndex[colIndex] = true;
-                            colIndex++;
                         }else{
-                            columns.add(column);
-                            colIndex++;
+                            if(columns.contains(column)){
+                                counter = 1;
+                                String dupColumn = column + "-" + counter;
+                                while (columns.contains(dupColumn)){
+                                    counter++;
+                                    dupColumn = column + "-" + counter;
+                                }
+                                columns.add(dupColumn);
+                            }else{
+                                columns.add(column);
+                            }
                         }
                     }else{
-                        columns.add(column);
-                        colIndex++;
+                        if(columns.contains(column)){
+                            counter = 1;
+                            String dupColumn = column + "-" + counter;
+                            while (columns.contains(dupColumn)){
+                                counter++;
+                                dupColumn = column + "-" + counter;
+                            }
+                            columns.add(dupColumn);
+                        }else{
+                            columns.add(column);
+                        }
                     }
                 }
+                colIndex++;
             }
 
             if (markerColumn == -1){
@@ -488,7 +504,7 @@ public class Plink {
                 int value = ((Integer)cols.get(j)).intValue();
                 Double pv;
                 try{
-                    if (values.size() >= value){
+                    if (values.size() > value){
                         if (values.get(value) != null){
                             if (values.get(value) instanceof Double){
                                 if (!(((Double)values.get(value)).equals(new Double(Double.NaN)))){
@@ -513,6 +529,8 @@ public class Plink {
             double chisq = -2*sumLns;
             if (chisq == 0){
                 valuesToAdd.add(new Double(1));
+            }else if (chisq > Double.MAX_VALUE){ //in case of infinite chisq due to pvalue of 0
+                valuesToAdd.add(new Double("1.0E-16"));
             }else{
                 double df = 2*numPvals;
                 try{
@@ -538,7 +556,18 @@ public class Plink {
             }
             currentResult.addValues(valuesToAdd);
         }
-        columns.add("P_COMBINED");
+        String column = "P_COMBINED";
+        if(columns.contains(column)){
+            int counter = 1;
+            String dupColumn = column + "-" + counter;
+            while (columns.contains(dupColumn)){
+                counter++;
+                dupColumn = column + "-" + counter;
+            }
+            columns.add(dupColumn);
+        }else{
+            columns.add(column);
+        }
     }
 
     public Vector getResults(){
