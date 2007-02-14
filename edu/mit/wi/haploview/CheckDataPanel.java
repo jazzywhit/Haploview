@@ -162,6 +162,9 @@ public class CheckDataPanel extends JPanel
     }
 
     public boolean[] getMarkerResults(){
+        for (int i = 0; i < table.getColumnCount(); i++){
+            sorter.setSortingStatus(i,TableSorter.NOT_SORTED);
+        }
         boolean[] markerResults = new boolean[table.getRowCount()];
         for (int i = 0; i < table.getRowCount(); i++){
             markerResults[i] = ((Boolean)table.getValueAt(i,CheckDataPanel.STATUS_COL)).booleanValue();
