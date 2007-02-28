@@ -47,10 +47,12 @@ public class HaploText implements Constants{
     private boolean infoTrack;
     private boolean doPermutationTest;
     private boolean findTags;
+    private boolean aggressiveTagging;
     private boolean randomizeAffection = false;
     private int permutationCount;
     private int tagging;
     private int maxNumTags;
+    private int aggressiveNumMarkers = 0;
     private double tagRSquaredCutOff = -1;
     private Vector forceIncludeTags;
     private String forceIncludeFileName;
@@ -617,7 +619,15 @@ public class HaploText implements Constants{
                 }
             }
             else if(args[i].equalsIgnoreCase("-aggressiveTagging")) {
-                tagging = Tagger.AGGRESSIVE_TRIPLE;
+                //tagging = Tagger.AGGRESSIVE_TRIPLE;
+                aggressiveTagging = true;
+            }
+            else if (args[i].equalsIgnoreCase("-aggressiveNumMarkers")){
+                i++;
+                aggressiveNumMarkers = getIntegerArg(args,i);
+                if (aggressiveNumMarkers != 2 && aggressiveNumMarkers != 3){
+                    die (args[i-1] + " requires a value of either 2 or 3");
+                }
             }
             else if (args[i].equalsIgnoreCase("-pairwiseTagging")){
                 tagging = Tagger.PAIRWISE_ONLY;
@@ -888,6 +898,14 @@ public class HaploText implements Constants{
             }
             if(infoFileName == null) {
                 die("A marker info file must be specified when using a custom association test file.");
+            }
+        }
+
+        if (aggressiveTagging){
+            if (aggressiveNumMarkers == 2){
+                tagging = Tagger.AGGRESSIVE_DUPLE;
+            }else{
+                tagging = Tagger.AGGRESSIVE_TRIPLE;
             }
         }
 
@@ -1653,6 +1671,7 @@ public class HaploText implements Constants{
                         }
                     }
                 }
+
 
                 for (int i = 0; i < forceIncludeTags.size(); i++) {
                     String s = (String) forceIncludeTags.elementAt(i);

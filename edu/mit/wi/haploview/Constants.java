@@ -208,7 +208,8 @@ public interface Constants {
             "-permtests <numtests>           Performs <numtests> permutations on default association tests (or custom tests\n" +
             "                                if a custom association file is specified) and writes to <inputfile>.PERMUT\n" +
             "-pairwiseTagging                Generates pairwise tagging information in <inputfile>.TAGS, .TESTS and .TAGSNPS.\n" +
-            "-aggressiveTagging              As above but generates 2- and 3-marker haplotype tags.\n" +
+            "-aggressiveTagging              As above but generates 2- and 3-marker haplotype tags unless specified otherwise by -aggressiveNumMarkers\n" +
+            "-aggressiveNumMarkers <2,3>     Specifies whether to use 2-marker haplotype tags or 2 and 3-marker haplotype tags.\n" +
             "-maxNumTags <n>                 Only selects <n> best tags.\n" +
             "-dontaddtags                    Only uses forced in tags.\n" +
             "-includeTags <markers>          Forces in a comma separated list of marker names as tags.\n" +
