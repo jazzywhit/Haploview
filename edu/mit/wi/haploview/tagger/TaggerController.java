@@ -13,6 +13,7 @@ import java.io.IOException;
 public class TaggerController {
     private Tagger tagger;
     private Vector results;
+    private int numToCapture;
     private boolean taggingCompleted;
     private Hashtable snpHash;
 
@@ -22,6 +23,8 @@ public class TaggerController {
         Vector taggerSNPs = new Vector();
 
         snpHash = new Hashtable();
+
+        numToCapture = sitesToCapture.size();
 
         for(int i=0;i<sitesToCapture.size();i++) {
             SNP tempSNP = (SNP) sitesToCapture.get(i);
@@ -125,6 +128,10 @@ public class TaggerController {
 
     public int getNumTagSNPs(){
         return tagger.getTagSNPs().size();
+    }
+
+    public int getNumToCapture(){
+        return numToCapture;
     }
 
     public void saveResultsToFile(File outFile) throws IOException {

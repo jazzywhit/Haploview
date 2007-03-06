@@ -109,7 +109,7 @@ public class TaggerResultsPanel extends HaploviewTab
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
 
 
-        listsPanel.add(new JLabel(t.getNumTagSNPs() + " SNPs in " + t.getResults().size() +  " tests captured " + t.getTaggedSoFar() + " of " + Chromosome.getSize() +
+        listsPanel.add(new JLabel(t.getNumTagSNPs() + " SNPs in " + t.getResults().size() +  " tests captured " + t.getTaggedSoFar() + " of " + t.getNumToCapture() +
                 " (" + t.getPercentCaptured() + "%)" + " alleles at r\u00b2 >= " + Util.roundDouble(Options.getTaggerRsqCutoff(),3)));
         listsPanel.add(new JLabel("Mean max r\u00b2 is " + Util.roundDouble(t.getMeanRSq(),3)));
 

@@ -351,7 +351,7 @@ public class Tagger {
         //apparently some people think untagged SNPS should be averaged in as zeroes...leaving commented out for now.
         //count += untagged.size();
         meanRSq /= count;
-        percentCapped = (int)(((double)taggedSoFar/(double)Chromosome.getSize())*100);
+        percentCapped = (int)(((double)taggedSoFar/(double)snps.size())*100);
 
         return new Vector(tags);
     }
