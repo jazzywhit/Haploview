@@ -48,6 +48,7 @@ public class HaploText implements Constants{
     private boolean doPermutationTest;
     private boolean findTags;
     private boolean aggressiveTagging;
+    private boolean outputConditionalHaps;
     private boolean randomizeAffection = false;
     private int permutationCount;
     private int tagging;
@@ -707,6 +708,9 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-mintagdistance")){
                 i++;
                 minTagDistance = args[i];
+            }
+            else if (args[i].equalsIgnoreCase("-tagrsqcounts")){
+                outputConditionalHaps = true;
             }
             else if(args[i].equalsIgnoreCase("-chromosome") || args[i].equalsIgnoreCase("-chr")) {
                 i++;
@@ -1718,6 +1722,9 @@ public class HaploText implements Constants{
 
                 tc.saveResultsToFile(validateOutputFile(fileName + ".TAGS"));
                 tc.dumpTests(validateOutputFile(fileName + ".TESTS"));
+                if (outputConditionalHaps){
+                    tc.dumpConditionalHaps(validateOutputFile(fileName + ".CHAPS"));
+                }
                 //todo: I don't like this at the moment, removed subject to further consideration.
                 //tc.dumpTags(validateOutputFile(fileName + ".TAGSNPS"));
             }

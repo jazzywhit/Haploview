@@ -596,6 +596,10 @@ public class Tagger {
         bw.close();
     }
 
+    public void dumpConditionalHaps(File outFile) throws IOException{
+        //TODO Jules: Write this method.
+    }
+
     class PotentialTag {
         VariantSequence sequence;
         // tagged contains the sequences which this sequence can tag, which are not yet tagged

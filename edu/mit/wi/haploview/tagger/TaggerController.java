@@ -148,6 +148,10 @@ public class TaggerController {
         tagger.dumpTags(outFile);
     }
 
+    public void dumpConditionalHaps(File outFile) throws IOException {
+        tagger.dumpConditionalHaps(outFile);
+    }
+
     private class TagThread extends Thread{
         Tagger tagger;
         public TagThread(Tagger t) {

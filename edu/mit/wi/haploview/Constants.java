@@ -207,7 +207,7 @@ public interface Constants {
             "-customAssoc <file>             Loads a set of custom tests for association.\n" +
             "-permtests <numtests>           Performs <numtests> permutations on default association tests (or custom tests\n" +
             "                                if a custom association file is specified) and writes to <inputfile>.PERMUT\n" +
-            "-pairwiseTagging                Generates pairwise tagging information in <inputfile>.TAGS, .TESTS and .TAGSNPS.\n" +
+            "-pairwiseTagging                Generates pairwise tagging information in <inputfile>.TAGS and .TESTS\n" +
             "-aggressiveTagging              As above but generates 2- and 3-marker haplotype tags unless specified otherwise by -aggressiveNumMarkers\n" +
             "-aggressiveNumMarkers <2,3>     Specifies whether to use 2-marker haplotype tags or 2 and 3-marker haplotype tags.\n" +
             "-maxNumTags <n>                 Only selects <n> best tags.\n" +
@@ -220,7 +220,8 @@ public interface Constants {
             "-designScores <file>            Specify design scores in a file of one marker name and one score per line\n" +
             "-mintagdistance <distance>      Specify a Minimum distance in bases between picked tags\n" +
             "-taglodcutoff <thresh>          Tagger LOD cutoff for creating multimarker tag haplotypes.\n" +
-            "-tagrsqcutoff <thresh>          Tagger r^2 cutoff.\n"
+            "-tagrsqcutoff <thresh>          Tagger r^2 cutoff.\n" +
+            "-tagrsqcounts                   Output conditional haplotype probabilities from tagger in <inputfile>.CHAPS\n"
             ;
 
 }
