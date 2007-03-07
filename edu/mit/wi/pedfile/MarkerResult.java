@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.8 2006/06/22 21:11:12 djbender Exp $
+ * $Id: MarkerResult.java,v 3.9 2007/03/07 20:16:23 djbender Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -188,7 +188,6 @@ public class MarkerResult {
 
 	/**
 	 * Gets # of Mendelian inheritance errors
-	 *
 	 */
 	public int getMendErrNum(){
 		return this._mendErrNum;
@@ -196,9 +195,7 @@ public class MarkerResult {
 
 
 	/**
-	 * Gets the data rating,
-	 * rating is -1 if obsHet < 0.01, -2 if geno < 75, -3 if HWpval < .01,
-	 * -4 if Mendel > 1, and 1 if all criteria pass
+	 * Gets the data rating
 	 */
 	public int getRating(){
 		return this._rating;
