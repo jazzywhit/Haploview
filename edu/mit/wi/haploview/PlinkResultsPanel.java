@@ -41,6 +41,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     private JComboBox chromChooser, genericChooser, signChooser, removeChooser;
     private NumberTextField chromStart, chromEnd;
     private JTextField valueField, markerField;
+    private JCheckBox showGrid;
     private JPanel filterPanel;
     private Vector originalColumns;
     private Hashtable removedColumns, nonChrInfo;
@@ -621,7 +622,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         return dataset;
     }
 
-    public void makeChart(String title, int yType, int yCol, int xType, int xCol, double sug, double sig, int[] signs, int[] thresholds, int dotSize, int colorKey){
+    public void makeChart(String title, int yType, int yCol, int xType, int xCol, double sug, double sig, int[] signs, int[] thresholds, int dotSize, int colorKey, boolean grid){
         hv.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         yPlotType = yType;
         xPlotType = xType;
@@ -631,7 +632,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         threeSizes = (signs[0] == signs[1]) && (thresholds[0] == thresholds[1]) && useSug && useSig;
         chroms = Options.getSNPBased() && xCol == 2;
 
-        XYSeriesCollection dataSet = null;
+        XYSeriesCollection dataSet;
         if (chroms){
             dataSet = makeChrDataSet(yCol);
         }else{
@@ -694,6 +695,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             thePlot.setDomainGridlinesVisible(false);
             thePlot.getDomainAxis().setTickMarksVisible(false);
             thePlot.getDomainAxis().setTickLabelsVisible(false);
+        }
+
+        if (!grid){
+            thePlot.setDomainGridlinesVisible(false);
+            thePlot.setRangeGridlinesVisible(false);
         }
         thePlot.setRenderer(new PlinkScatterPlotRenderer());
         thePlot.getRenderer().setToolTipGenerator(new PlinkToolTipGenerator());
@@ -899,8 +905,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
             JPanel titlePanel = new JPanel();
             titlePanel.add(new JLabel("Title:"));
-            titleField = new JTextField(20);
+            titleField = new JTextField(15);
             titlePanel.add(titleField);
+            showGrid = new JCheckBox("Show Gridlines?",true);
+            titlePanel.add(showGrid);
             JPanel xPanel = new JPanel();
             xPanel.add(new JLabel("X-Axis:"));
             xColumnChooser = new JComboBox(xCols);
@@ -1072,7 +1080,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     plotFrame.dispose();
                 }
                 this.dispose();
-                makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds,dotSize,colorColumn);
+                makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds,dotSize,colorColumn,showGrid.isSelected());
             }else if (e.getSource() instanceof JComboBox){
                 if (xColumnChooser.getSelectedItem().equals("Chromosomes")){
                     xPlotChooser.setSelectedIndex(0);
