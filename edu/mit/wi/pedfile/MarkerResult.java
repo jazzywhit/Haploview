@@ -1,5 +1,5 @@
 /*
- * $Id: MarkerResult.java,v 3.9 2007/03/07 20:16:23 djbender Exp $
+ * $Id: MarkerResult.java,v 3.10 2007/03/12 19:20:15 djbender Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2003 by the
@@ -211,19 +211,18 @@ public class MarkerResult {
 		format.setMaximumFractionDigits(3);
 		format.setMinimumFractionDigits(3);
 
-		buffer.append(format.format(this._obsHET) +"\t"
-		        + format.format(this._predHET) + "\t");
+        buffer.append(format.format(this._obsHET)).append("\t").append(format.format(this._predHET)).append("\t");
 
 		format.setMaximumFractionDigits(2);
 		format.setMinimumFractionDigits(0);
-		buffer.append(format.format(this._HWpval) +"\t");
+        buffer.append(format.format(this._HWpval)).append("\t");
 
 		format.setMaximumFractionDigits(1);
 		format.setMinimumFractionDigits(1);
-		buffer.append(format.format(this._genoPercent) + "\t");
-		buffer.append(this._famTrioNum + "\t");
+        buffer.append(format.format(this._genoPercent)).append("\t");
+        buffer.append(this._famTrioNum).append("\t");
 		if(this._mendErrNum < 0) buffer.append("   \t");
-		else buffer.append(this._mendErrNum+"\t");
+		else buffer.append(this._mendErrNum).append("\t");
 		buffer.append(this._rating);
 		return buffer.toString();
 	}
