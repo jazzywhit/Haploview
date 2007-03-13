@@ -219,6 +219,11 @@ public class
         Hashtable edgesByInds = new Hashtable();
 
         PedTreeNode thisVertex = (PedTreeNode) theEdge.oppositeVertex(source);
+        if (thisVertex.visited){
+            throw new PedigreeException("There appears to be a marriage loop");
+        }else{
+            thisVertex.visited = true;
+        }
         Individual edgeInd = theEdge.getInd();
         List edges = g.edgesOf(thisVertex);
         Iterator eitr = edges.iterator();

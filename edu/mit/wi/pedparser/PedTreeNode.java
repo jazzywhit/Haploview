@@ -7,6 +7,7 @@ import java.util.Iterator;
 public class PedTreeNode {
 
     HashSet parents, kids;
+    boolean visited = false;
 
     PedTreeNode (){
         parents = new HashSet();
