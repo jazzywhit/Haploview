@@ -75,6 +75,7 @@
      <zipfileset src="resources/jh.jar"/>
      <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
+     <zipfileset src="resources/log4j-1.2.14.jar"/>
      <zipfileset src="resources/jfreechart/jfreechart-1.0.3.jar"/>
      <zipfileset src="resources/jfreechart/jcommon-1.0.7.jar"/>
    </jar>
@@ -95,6 +96,7 @@
      <zipfileset src="resources/jh.jar"/>
      <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
+     <zipfileset src="resources/log4j-1.2.14.jar"/>
      <zipfileset src="resources/jfreechart/jfreechart-1.0.3.jar"/>
      <zipfileset src="resources/jfreechart/jcommon-1.0.7.jar"/>
    </jar>
