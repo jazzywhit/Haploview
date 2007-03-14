@@ -28,7 +28,7 @@ public class ReadDataDialog extends JDialog
     private int fileType;
     private JTextField pedFileField, pedInfoField, hapsFileField, hapsInfoField, hmpFileField,
             phaseFileField, phaseSampleField, phaseLegendField, plinkFileField, plinkMapField, testFileField;
-    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, hapsXChrom, gZip, embeddedMap, plinkChrom, selectColumns, nonSNP;
+    private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, gZip, embeddedMap, plinkChrom, selectColumns, nonSNP;
     private JRadioButton trioButton, ccButton, standardTDT, parenTDT;
     private JButton browseAssocButton, browsePlinkMapButton;
     private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromEndField;
@@ -111,10 +111,6 @@ public class ReadDataDialog extends JDialog
         JButton browseHapsInfoButton = new JButton("Browse");
         browseHapsInfoButton.setActionCommand(BROWSE_INFO);
         browseHapsInfoButton.addActionListener(this);
-        hapsXChrom = new JCheckBox("X Chromosome");
-        hapsXChrom.setSelected(false);
-        hapsXChrom.setActionCommand("xChrom");
-        hapsXChrom.addActionListener(this);
 
         //HMP panel...
         hmpFileField = new JTextField("",20);
@@ -290,7 +286,6 @@ public class ReadDataDialog extends JDialog
         c.gridwidth = 3;
         c.insets = new Insets(0,0,0,0);
         pedTab.add(assocPanel,c);
-        hapsTab.add(hapsXChrom, c);
         hmpTab.add(doGB,c);
         plinkTab.add(inputPanel,c);
         c.gridy = 3;
@@ -476,10 +471,7 @@ public class ReadDataDialog extends JDialog
 
             if (xChrom.isSelected() && fileType == PED_FILE){
                 Chromosome.setDataChrom("chrx");
-            }else if (hapsXChrom.isSelected() && fileType == HAPS_FILE){
-                Chromosome.setDataChrom("chrx");
-            }
-            else {
+            }else {
                 Chromosome.setDataChrom("none");
             }
 

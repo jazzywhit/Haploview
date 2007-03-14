@@ -1093,7 +1093,11 @@ public class HaploText implements Constants{
             argHandlerMessages.add("-chromosome flag ignored when loading hapmap file");
             chromosomeArg = null;
         }
+
         if(chromosomeArg != null) {
+            if ((chromosomeArg.equalsIgnoreCase("X") || chromosomeArg.equalsIgnoreCase("Y")) && hapsFileName != null){
+                die("Chromosome X and Chromosome Y are not supported in the phased haplotypes file format.");
+            }
             Chromosome.setDataChrom("chr" + chromosomeArg);
         }else{
             chromosomeArg = "";
@@ -1105,12 +1109,6 @@ public class HaploText implements Constants{
             }else if (!(populationArg.equalsIgnoreCase("CEU") || populationArg.equalsIgnoreCase("YRI")  ||
                     populationArg.equalsIgnoreCase("CHB+JPT"))){
                 die("-phasedhapmapdl requires a population specification of CEU, YRI, or CHB+JPT");
-            }
-
-            if (!(chromosomeArg.equalsIgnoreCase("X")) && !(chromosomeArg.equalsIgnoreCase("Y"))){
-                if (Integer.parseInt(chromosomeArg) < 1 && Integer.parseInt(chromosomeArg) > 22){
-                    die("-chromosome must be betweeen 1 and 22, X, or Y");
-                }
             }
 
             try{
