@@ -98,10 +98,8 @@ public class HetsDialog extends JDialog implements ActionListener, Constants {
             Vector tmpVec = new Vector();
             tmpVec.add(st.nextToken());
             tmpVec.add(st.nextToken());
-            tmpVec.add(Chromosome.getUnfilteredMarker(i).getDisplayName());
             tmpVec.add(Chromosome.getUnfilteredMarker(Integer.parseInt(st.nextToken())).getDisplayName());
             data.add(tmpVec);
-
         }
 
         tableModel = new BasicTableModel(colNames, data);
