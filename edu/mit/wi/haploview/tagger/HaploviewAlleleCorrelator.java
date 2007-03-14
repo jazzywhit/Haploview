@@ -37,7 +37,7 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
             double rsq;
             PairwiseLinkage pl;
             if (v1Index > v2Index){
-                 pl = dpTable.getLDStats(v2Index,v1Index);
+                pl = dpTable.getLDStats(v2Index,v1Index);
             }else{
                 pl = dpTable.getLDStats(v1Index,v2Index);
             }
@@ -67,50 +67,118 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
                 return (LocusCorrelation) lcByComparison.get(c);
             }
 
-
+            
             Allele curBestAllele = null;
             double curBestRsq = 0;
-            int[][] genos = new int[phasedCache.length][theBlock.getMarkerCount()+1];
-            for (int i = 0; i < phasedCache.length; i++){
-                //create a temporary set of mini hap genotypes with theSNP as the first marker and theBlock's markers as the rest
-                genos[i][0] = phasedCache[i].getGeno()[((Integer)phasedCacheIndicesByVarSeq.get(theSNP)).intValue()];
-                for (int j = 1; j < theBlock.getMarkerCount()+1; j++){
-                    genos[i][j] = phasedCache[i].getGeno()[((Integer)phasedCacheIndicesByVarSeq.get(theBlock.getSNP(j-1))).intValue()];
-                }
-            }
-            for (int i = 0; i < genos.length; i++){
-                double aa=0,ab=0,bb=0,ba=0;
-                for (int j = 0; j < genos.length; j++){
-                    if (genos[j][0] == genos[0][0]){
-                        if(!sameHap(genos[i], genos[j])){
-                            ab += phasedCache[j].getPercentage();
-                        }else{
-                            aa += phasedCache[j].getPercentage();
+            if(HaploData.isPhasedData()){
+                double[] rsquareds;
+                int snpid = ((Integer)indicesByVarSeq.get(theSNP)).intValue();
+                int[] block = null;
+                if(theBlock.getMarkerCount() == 2){
+                    block = new int[2];
+                    block[0] = ((Integer)indicesByVarSeq.get(theBlock.getSNP(0))).intValue();
+                    block[1] = ((Integer)indicesByVarSeq.get(theBlock.getSNP(1))).intValue();
+                    HaploData.RSquared rsquaredWrapper = theData.getPhasedRSquared(snpid, block);
+                    rsquareds = rsquaredWrapper.getRsquareds();
+
+                    for(int i=0;i<rsquareds.length;i++){
+                        if(rsquareds[i] > curBestRsq) {
+                            curBestRsq = rsquareds[i];
+                            String allele = "";
+
+                            if(i < 2){
+                                allele += Chromosome.getMarker(block[0]).getMajor();
+                            }else{
+                                allele += Chromosome.getMarker(block[0]).getMinor();
+                            }
+                            if(i % 2 == 0){
+                                allele += Chromosome.getMarker(block[1]).getMajor();
+                            }else{
+                                allele += Chromosome.getMarker(block[1]).getMinor();
+                            }
+                            curBestAllele = new Allele(theBlock,allele);
                         }
-                    }else{
-                        if(!sameHap(genos[i], genos[j])){
-                            bb += phasedCache[j].getPercentage();
-                        }else{
-                            ba += phasedCache[j].getPercentage();
+
+                    }
+                }else if (theBlock.getMarkerCount() == 3){
+                    block = new int[3];
+                    block[0] = ((Integer)indicesByVarSeq.get(theBlock.getSNP(0))).intValue();
+                    block[1] = ((Integer)indicesByVarSeq.get(theBlock.getSNP(1))).intValue();
+                    block[2] = ((Integer)indicesByVarSeq.get(theBlock.getSNP(2))).intValue();
+                    HaploData.RSquared rsquaredWrapper = theData.getPhasedRSquared(snpid, block);
+                    rsquareds = rsquaredWrapper.getRsquareds();
+
+                    for(int i=0;i<rsquareds.length;i++){
+                        if(rsquareds[i] > curBestRsq) {
+                            curBestRsq = rsquareds[i];
+                            String allele = "";
+                            
+                            if(i < 4 ){
+                                allele += Chromosome.getMarker(block[0]).getMajor();
+                            }else{
+                                allele += Chromosome.getMarker(block[0]).getMinor();
+                            }
+                            if(i % 4 < 2){
+                                allele += Chromosome.getMarker(block[1]).getMajor();
+                            }else{
+                                allele += Chromosome.getMarker(block[1]).getMinor();
+                            }
+                            if(i % 2 == 0){
+                                allele += Chromosome.getMarker(block[2]).getMajor();
+                            }else{
+                                allele += Chromosome.getMarker(block[2]).getMinor();
+                            }
+
+                            curBestAllele = new Allele(theBlock,allele);
                         }
                     }
                 }
-                //p is snp's freq, q is hap's freq
-                double p = aa+ab;
-                double q = ba+aa;
-                //round to 5 decimal places.
-                double rsq = Util.roundDouble(Math.pow((aa*bb - ab*ba),2)/(p*(1-p)*q*(1-q)),3);
-                if (rsq > curBestRsq){
-                    StringBuffer sb = new StringBuffer();
-                    for (int j = 1; j < genos[i].length; j++){
-                        sb.append(genos[i][j]);
+
+            }else{
+                int[][] genos = new int[phasedCache.length][theBlock.getMarkerCount()+1];
+                for (int i = 0; i < phasedCache.length; i++){
+                    //create a temporary set of mini hap genotypes with theSNP as the first marker and theBlock's markers as the rest
+                    genos[i][0] = phasedCache[i].getGeno()[((Integer)phasedCacheIndicesByVarSeq.get(theSNP)).intValue()];
+                    for (int j = 1; j < theBlock.getMarkerCount()+1; j++){
+                        genos[i][j] = phasedCache[i].getGeno()[((Integer)phasedCacheIndicesByVarSeq.get(theBlock.getSNP(j-1))).intValue()];
                     }
-                    curBestAllele = new Allele(theBlock,sb.toString());
-                    curBestRsq = rsq;
                 }
+                for (int i = 0; i < genos.length; i++){
+                    double aa=0,ab=0,bb=0,ba=0;
+                    for (int j = 0; j < genos.length; j++){
+                        if (genos[j][0] == genos[0][0]){
+                            if(!sameHap(genos[i], genos[j])){
+                                ab += phasedCache[j].getPercentage();
+                            }else{
+                                aa += phasedCache[j].getPercentage();
+                            }
+                        }else{
+                            if(!sameHap(genos[i], genos[j])){
+                                bb += phasedCache[j].getPercentage();
+                            }else{
+                                ba += phasedCache[j].getPercentage();
+                            }
+                        }
+                    }
+                    //p is snp's freq, q is hap's freq
+                    double p = aa+ab;
+                    double q = ba+aa;
+                    //round to 5 decimal places.
+                    double rsq = Util.roundDouble(Math.pow((aa*bb - ab*ba),2)/(p*(1-p)*q*(1-q)),3);
+                    if (rsq > curBestRsq){
+                        StringBuffer sb = new StringBuffer();
+                        for (int j = 1; j < genos[i].length; j++){
+                            sb.append(genos[i][j]);
+                        }
+                        curBestAllele = new Allele(theBlock,sb.toString());
+                        curBestRsq = rsq;
+                    }
+                }
+
             }
             LocusCorrelation lc = new LocusCorrelation(curBestAllele, curBestRsq);
             lcByComparison.put(new Comparison(theSNP, theBlock),lc);
+
             return (lc);
         }
     }
@@ -132,21 +200,23 @@ public class HaploviewAlleleCorrelator implements AlleleCorrelator{
 
     public void phaseAndCache(HashSet snpList){
         phasedCacheIndicesByVarSeq = new Hashtable();
-        try{
-            //create a pseudo block of the SNP to be correlated and the markers from the multi-test
-            int[] blockArray = new int[snpList.size()];
-            Iterator itr = snpList.iterator();
-            for (int i = 0; i < blockArray.length; i++){
-                SNP n = (SNP) itr.next();
-                blockArray[i] = ((Integer)indicesByVarSeq.get(n)).intValue();
-                phasedCacheIndicesByVarSeq.put(n,new Integer(i));
-            }
+        if(!HaploData.isPhasedData()){
+            try{
+                //create a pseudo block of the SNP to be correlated and the markers from the multi-test
+                int[] blockArray = new int[snpList.size()];
+                Iterator itr = snpList.iterator();
+                for (int i = 0; i < blockArray.length; i++){
+                    SNP n = (SNP) itr.next();
+                    blockArray[i] = ((Integer)indicesByVarSeq.get(n)).intValue();
+                    phasedCacheIndicesByVarSeq.put(n,new Integer(i));
+                }
 
-            Vector victor = new Vector();
-            victor.add(blockArray);
-            phasedCache = theData.generateHaplotypes(victor, true)[0];
-        }catch (HaploViewException hve){
-            throw new RuntimeException("PC_LOADLETTER.\n" + hve.getMessage());
+                Vector victor = new Vector();
+                victor.add(blockArray);
+                phasedCache = theData.generateHaplotypes(victor, true)[0];
+            }catch (HaploViewException hve){
+                throw new RuntimeException("PC_LOADLETTER.\n" + hve.getMessage());
+            }
         }
     }
 

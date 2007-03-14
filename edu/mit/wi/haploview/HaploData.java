@@ -52,6 +52,7 @@ public class HaploData implements Constants{
     int dPrimeTotalCount = -1;
     int dPrimeCount;
 
+    private static boolean phasedData = false;
 
     public int numTrios, numSingletons,numPeds;
 
@@ -778,6 +779,8 @@ public class HaploData implements Constants{
         }else{
             pedFile.parsePhasedData(info);
         }
+
+        HaploData.setPhasedData(true);
 
         Vector result = pedFile.check();
         Vector indList = pedFile.getUnrelatedIndividuals();
@@ -2020,5 +2023,204 @@ public class HaploData implements Constants{
 
     public Haplotype[][] getRawHaplotypes() {
         return rawHaplotypes;
+    }
+
+    public class RSquared {
+        private double[] rsquareds;
+        private double[] conditionalProbs;
+
+        public RSquared(double[] rsquareds, double[] conditionalProbs) {
+            this.rsquareds = rsquareds;
+            this.conditionalProbs = conditionalProbs;
+        }
+
+        public double[] getRsquareds() {
+            return rsquareds;
+        }
+
+        public double[] getConditionalProbs() {
+            return conditionalProbs;
+        }
+    }
+
+    public RSquared getPhasedRSquared(int snp, int[] block){
+
+        double rsquareds[] = null;
+        double conditionalProbs[] = null;
+        double alleleCounts[][] = null;
+        int maxIndex =0;
+        int[] multiMarkerHaplos = null;
+        boolean monomorphic = false;
+
+        if(block.length == 2){
+            multiMarkerHaplos = new int[8];
+
+            int pos1 = snp;
+            int pos2 = block[0];
+            int pos3 = block[1];
+
+            int[] marker1num = new int[5]; int[] marker2num = new int[5]; int[] marker3num = new int[5];
+
+            marker1num[Chromosome.getMarker(pos1).getMajor()]=0;
+            marker1num[Chromosome.getMarker(pos1).getMinor()]=4;
+            marker2num[Chromosome.getMarker(pos2).getMajor()]=0;
+            marker2num[Chromosome.getMarker(pos2).getMinor()]=2;
+            marker3num[Chromosome.getMarker(pos3).getMajor()]=0;
+            marker3num[Chromosome.getMarker(pos3).getMinor()]=1;
+
+            alleleCounts = new double[3][5];
+
+            byte a1,a2,a3,b1,b2,b3;
+            //iterate through all chromosomes in dataset
+            for (int i = 0; i < chromosomes.size(); i++){
+
+                if(!((Chromosome)chromosomes.elementAt(i)).isHaploid()){
+
+                    a1 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos1);
+                    a2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
+                    a3 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos3);
+                    b1 = ((Chromosome) chromosomes.elementAt(++i)).getGenotype(pos1);
+                    b2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
+                    b3 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos3);
+
+                    multiMarkerHaplos[marker1num[a1] + marker2num[a2] + marker3num[a3]]++;
+                    multiMarkerHaplos[marker1num[b1] + marker2num[b2] + marker3num[b3]]++;
+                    alleleCounts[0][a1]++;
+                    alleleCounts[0][b1]++;
+                    alleleCounts[1][a2]++;
+                    alleleCounts[1][b2]++;
+                    alleleCounts[2][a3]++;
+                    alleleCounts[2][b3]++;
+                }else {
+                    //haploid
+                    a1 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos1);
+                    a2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
+                    a3 =  ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos3);
+
+                    multiMarkerHaplos[marker1num[a1] +  marker2num[a2] + marker3num[a3]]++;
+                }
+            }
+            //check for any monomorphic SNPs
+            if(alleleCounts[0][Chromosome.getMarker(pos1).getMajor()] == 0 || alleleCounts[0][Chromosome.getMarker(pos1).getMinor()] == 0
+                    || alleleCounts[1][Chromosome.getMarker(pos2).getMajor()] == 0 || alleleCounts[1][Chromosome.getMarker(pos2).getMinor()] == 0
+                    || alleleCounts[2][Chromosome.getMarker(pos3).getMajor()] == 0 || alleleCounts[2][Chromosome.getMarker(pos3).getMinor()] == 0){
+                monomorphic = true;
+            }
+            maxIndex = 4;
+        }else if (block.length == 3){
+            multiMarkerHaplos = new int[16];
+
+              int pos1 = snp;
+            int pos2 = block[0];
+            int pos3 = block[1];
+            int pos4 = block[2];
+
+            int[] marker1num = new int[5];
+            int[] marker2num = new int[5];
+            int[] marker3num = new int[5];
+            int[] marker4num = new int[5];
+
+            marker1num[Chromosome.getMarker(pos1).getMinor()]=8;
+            marker2num[Chromosome.getMarker(pos2).getMinor()]=4;
+            marker3num[Chromosome.getMarker(pos3).getMinor()]=2;
+            marker4num[Chromosome.getMarker(pos4).getMinor()]=1;
+
+            alleleCounts = new double[4][5];
+
+            byte a1,a2,a3,a4,b1,b2,b3,b4;
+            //iterate through all chromosomes in dataset
+            for (int i = 0; i < chromosomes.size(); i++){
+
+                if(!((Chromosome)chromosomes.elementAt(i)).isHaploid()){
+
+                    a1 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos1);
+                    a2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
+                    a3 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos3);
+                    a4 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos4);
+                    b1 = ((Chromosome) chromosomes.elementAt(++i)).getGenotype(pos1);
+                    b2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
+                    b3 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos3);
+                    b4 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos4);
+
+                    multiMarkerHaplos[marker1num[a1] + marker2num[a2] + marker3num[a3] + marker4num[a4]]++;
+                    multiMarkerHaplos[marker1num[b1] + marker2num[b2] + marker3num[b3] + marker4num[b4]]++;
+
+                    alleleCounts[0][a1]++;
+                    alleleCounts[0][b1]++;
+                    alleleCounts[1][a2]++;
+                    alleleCounts[1][b2]++;
+                    alleleCounts[2][a3]++;
+                    alleleCounts[2][b3]++;
+                    alleleCounts[3][a4]++;
+                    alleleCounts[3][b4]++;
+                }else {
+                    //haploid
+                    a1 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos1);
+                    a2 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos2);
+                    a3 =  ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos3);
+                    a4 = ((Chromosome) chromosomes.elementAt(i)).getGenotype(pos4);
+
+                    multiMarkerHaplos[marker1num[a1] +  marker2num[a2] + marker3num[a3] + marker4num[a4]]++;
+                }
+            }
+            if(alleleCounts[0][Chromosome.getMarker(pos1).getMajor()] == 0 || alleleCounts[0][Chromosome.getMarker(pos1).getMinor()] == 0
+                    || alleleCounts[1][Chromosome.getMarker(pos2).getMajor()] == 0 || alleleCounts[1][Chromosome.getMarker(pos2).getMinor()] == 0
+                    || alleleCounts[2][Chromosome.getMarker(pos3).getMajor()] == 0 || alleleCounts[2][Chromosome.getMarker(pos3).getMinor()] == 0
+                    || alleleCounts[3][Chromosome.getMarker(pos4).getMajor()] == 0 || alleleCounts[3][Chromosome.getMarker(pos4).getMinor()] == 0){
+                monomorphic = true;
+            }
+            maxIndex =8;
+        }
+        //the rest of the code is the same for 2 and 3 marker blocks
+        rsquareds = new double[maxIndex];
+        conditionalProbs = new double[maxIndex];
+
+        if(monomorphic){
+            Arrays.fill(rsquareds,0);
+            Arrays.fill(conditionalProbs,0);
+            return new RSquared(rsquareds,conditionalProbs);
+        }
+
+        int totalChroms=0;
+
+        for(int i = 0;i < multiMarkerHaplos.length;i++){
+            totalChroms += multiMarkerHaplos[i];
+        }
+
+        double[] freqs = new double[multiMarkerHaplos.length];
+        for(int i=0;i<freqs.length;i++){
+            freqs[i] = multiMarkerHaplos[i]/(double)totalChroms;
+        }
+
+        double p=0;
+        for(int i=0;i< maxIndex; i++){
+            p += freqs[i];
+        }
+
+        for(int i =0;i< maxIndex;i++){
+            //calculate r^2
+            double aa = freqs[i];
+            double ab = p - freqs[i];
+            double ba = freqs[i+maxIndex];
+            double bb = (1-p) - freqs[i+maxIndex];
+
+            double q = ba + aa;
+            double c = aa*bb - ab*ba;
+            rsquareds[i] = Util.roundDouble((c*c)/(p*(1-p)*q*(1-q)),3);
+
+            //calculate conditional prob (ie P(snp | hap))
+            conditionalProbs[i] = freqs[i]/(freqs[i] + freqs[i+maxIndex]);
+        }
+
+        return new RSquared(rsquareds,conditionalProbs);
+    }
+
+
+    public static boolean isPhasedData() {
+        return phasedData;
+    }
+
+    public static void setPhasedData(boolean phasedData) {
+        HaploData.phasedData = phasedData;
     }
 }
