@@ -14,6 +14,7 @@ public class ReadDataDialog extends JDialog
 
     static final String MARKER_DATA_EXT = ".info";
     static final String MAP_FILE_EXT = ".map";
+    static final String BIM_FILE_EXT = ".bim";
     static final String BROWSE_GENO = "browse for geno files";
     static final String BROWSE_HAPS = "browse for haps files";
     static final String BROWSE_HMP = "browse for hapmap files";
@@ -772,11 +773,11 @@ public class ReadDataDialog extends JDialog
                 }
 
                 //check for map file for original file
-                //either .info or .map extensions
-                File maybeMap1 = new File(file.getParent(), name + MARKER_DATA_EXT);
-                File maybeMap2 = new File(file.getParent(), baseName + MARKER_DATA_EXT);
-                File maybeMap3 = new File(file.getParent(), name + MAP_FILE_EXT);
-                File maybeMap4 = new File(file.getParent(), baseName + MAP_FILE_EXT);
+                //either .map or .bim extensions
+                File maybeMap1 = new File(file.getParent(), name + MAP_FILE_EXT);
+                File maybeMap2 = new File(file.getParent(), baseName + MAP_FILE_EXT);
+                File maybeMap3 = new File(file.getParent(), name + BIM_FILE_EXT);
+                File maybeMap4 = new File(file.getParent(), baseName + BIM_FILE_EXT);
                 if (maybeMap1.exists()){
                     mapFileName = maybeMap1.getName();
                 }else if (maybeMap2.exists()){
