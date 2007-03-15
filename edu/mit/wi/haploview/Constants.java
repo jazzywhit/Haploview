@@ -142,7 +142,7 @@ public interface Constants {
             "-memory <memsize>               allocates <memsize> megabytes of memory (default 512)\n"+
             "-n, -nogui                      Command line output only\n" +
             "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
-            "-log <filename>                 Specify a logfile name (defaults to haploview.log) \n" +
+            "-log <filename>                 Specify a logfile name (defaults to haploview.log if no name specified)\n" +
             "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
             "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
             "-phasedhmpdata <phasedfile>     Specify a phased HapMap data file\n" +
@@ -152,8 +152,8 @@ public interface Constants {
             "-phasedhapmapdl                 Specify a phased HapMap download\n" +
             "-haps <hapsfile>                Specify an input file in .haps format\n" +
             "-info <infofile>                Specify a marker info file\n" +
-            "-plink <plinkfile>              Specify a PLINK file\n" +
-            "-map <mapfile>                  Specify a map file\n" +
+            "-plink <plinkfile>              Specify a PLINK or other results file\n" +
+            "-map <mapfile>                  Specify a map file or binary map file\n" +
             "-nonSNP                         Specify that the accompanying PLINK file is non-SNP based output\n" +
             "-selectCols                     Activate the preloading column filter for PLINK loads\n" +
             "-batch <batchfile>              Batch mode. Each line in batch file should contain a genotype file \n"+
