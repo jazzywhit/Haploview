@@ -2,7 +2,7 @@ package edu.mit.wi.tagger;
 
 import edu.mit.wi.haploview.Util;
 import edu.mit.wi.haploview.Options;
-import edu.mit.wi.haploview.Chromosome;
+import edu.mit.wi.haploview.HaploText;
 
 import java.util.*;
 import java.io.*;
@@ -147,7 +147,7 @@ public class Tagger {
         Vector sitesToCapture = (Vector) snps.clone();
 
 
-        debugPrint("snps to tag: " + sitesToCapture.size());
+        HaploText.logger.debug("snps to tag: " + sitesToCapture.size());
 
 
         int countTagged = 0;
@@ -257,8 +257,8 @@ public class Tagger {
             untagged.addAll(sitesToCapture);
         }
 
-        debugPrint("tagged " + countTagged + " SNPS using " + tags.size() +" tags" );
-        debugPrint("# of SNPs that could not be tagged: " + untagged.size());
+        HaploText.logger.debug("tagged " + countTagged + " SNPS using " + tags.size() +" tags" );
+        HaploText.logger.debug("# of SNPs that could not be tagged: " + untagged.size());
 
         if (aggression != PAIRWISE_ONLY){
             //peelback starting with the worst tag (i.e. the one that tags the fewest other snps.
@@ -360,7 +360,7 @@ public class Tagger {
         Hashtable blockTagsByAllele = new Hashtable();
         HashSet snpsInBlockTags = new HashSet();
 
-        debugPrint("starting peelback. untagged.size() = " + untagged.size());
+        HaploText.logger.debug("starting peelback. untagged.size() = " + untagged.size());
 
         Vector availTagSNPs = new Vector();
         for (int j = 0; j < tags.size(); j++){
@@ -416,7 +416,7 @@ public class Tagger {
             }
         }
 
-        debugPrint("finished attempt at pairwise untaggables. untagged.size() = " + untagged.size());
+        HaploText.logger.debug("finished attempt at pairwise untaggables. untagged.size() = " + untagged.size());
 
         for (int i = 0; i < tagsToBePeeled.size(); i++){
             TagSequence curTag = (TagSequence) tagsToBePeeled.get(i);
@@ -782,14 +782,6 @@ public class Tagger {
             } else {
                 return -1;
             }
-        }
-    }
-
-    boolean debug = false;
-
-    void debugPrint(String s) {
-        if(debug) {
-            System.out.println(s);
         }
     }
 

@@ -101,7 +101,7 @@ public class HaplotypeDisplay extends JComponent {
             data = out.toByteArray();
 
         } catch (IOException e) {
-            System.err.println("error loading font data from orator.raw");
+            HaploText.commandLogger.error("error loading font data from orator.raw");
             e.printStackTrace();
             System.exit(1);
         }

@@ -15,6 +15,7 @@ import java.awt.image.BufferedImage;
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 import org.apache.log4j.*;
+import org.apache.log4j.varia.DenyAllFilter;
 
 public class HaploText implements Constants{
     private boolean nogui = false;
@@ -71,8 +72,8 @@ public class HaploText implements Constants{
     private String populationArg, startPos, endPos, release;
     private String logFileName, debugFileName;
 
-    static Logger logger = Logger.getLogger(HaploText.class);
-    static Logger commandLogger = Logger.getLogger("Command Logger");
+    public static Logger logger = Logger.getLogger("logger");
+    public static Logger commandLogger = Logger.getLogger("logger.command");
 
     public boolean isNogui() {
         return nogui;
@@ -190,20 +191,36 @@ public class HaploText implements Constants{
         this.argHandler(args);
 
         if(this.batchFileName != null) {
-            commandLogger.warn(TITLE_STRING);
+            commandLogger.warn("*****************************************************");
+            commandLogger.warn(TITLE_STRING + "\tJava Version: " + JAVA_VERSION);
+            commandLogger.warn("*****************************************************\n\n");
+            StringBuffer buffer = new StringBuffer();
+            for (int i = 0; i < args.length; i++){
+                buffer.append(args[i]).append("\t");
+            }
+            String arguments = buffer.toString();
+
+            commandLogger.warn("Arguments:\t" + arguments + "\n\n");
             for (int i = 0; i < argHandlerMessages.size(); i++){
                 commandLogger.warn(argHandlerMessages.get(i));
-                logger.info(argHandlerMessages.get(i));
             }
             this.doBatch();
         }
 
         if(!(this.pedFileName== null) || !(this.hapsFileName== null) || !(this.hapmapFileName== null) || !(this.phasedhmpdataFileName== null) || phasedhapmapDownload){
             if(nogui){
-                commandLogger.warn(TITLE_STRING);
+                commandLogger.warn("*****************************************************");
+                commandLogger.warn(TITLE_STRING + "\tJava Version: " + JAVA_VERSION);
+                commandLogger.warn("*****************************************************\n\n");
+                StringBuffer buffer = new StringBuffer();
+                for (int i = 0; i < args.length; i++){
+                    buffer.append(args[i]).append("\t");
+                }
+                String arguments = buffer.toString();
+
+                commandLogger.info("Arguments:\t" + arguments + "\n\n");
                 for (int i = 0; i < argHandlerMessages.size(); i++){
-                    commandLogger.info(argHandlerMessages.get(i));
-                    logger.info(argHandlerMessages.get(i));
+                    commandLogger.warn(argHandlerMessages.get(i));
                 }
                 processTextOnly();
             }
@@ -260,7 +277,7 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-debug")){
                 i++;
                 if (i >= args.length || args[i].charAt(0) == '-'){
-                    debugFileName = "haploview.debug";
+                    debugFileName = "";
                     i--;
                 }else{
                     debugFileName = args[i];
@@ -768,58 +785,50 @@ public class HaploText implements Constants{
             }
         }
 
-        String logName;
-        if (logFileName != null && debugFileName != null){
-            System.err.println("You may specify either -log or -debug but not both, ignoring -log.");
-            logger.setLevel(Level.DEBUG);
-            logName = debugFileName;
+        ConsoleAppender nullAppender = new ConsoleAppender();
+        nullAppender.addFilter(new DenyAllFilter());
+        if (debugFileName != null){
+            if (logFileName != null){
+                System.err.println("You may specify either -log or -debug but not both, ignoring -log.");
+            }
+            if (debugFileName.equals("")){
+                logger.addAppender(new ConsoleAppender(new PatternLayout()));
+                logger.setLevel(Level.DEBUG);
+                commandLogger.addAppender(nullAppender);
+            }else{
+                try{
+                    logger.addAppender(new FileAppender(new PatternLayout(),debugFileName,false));
+                }catch (IOException ioe){
+                    System.err.println("An error occurred while writing to the debug file.");
+                }
+                logger.setLevel(Level.DEBUG);
+                commandLogger.addAppender(new ConsoleAppender(new PatternLayout()));
+                commandLogger.setLevel(Level.INFO);
+            }
         }else if (logFileName != null){
-            logger.setLevel(Level.INFO);
-            logName = logFileName;
-        }else if (debugFileName != null){
-            logger.setLevel(Level.DEBUG);
-            logName = debugFileName;
-        }else{
-            logger.setLevel(Level.OFF);
-            logName = null;
-        }
-
-        if (logName != null){
-            //SimpleLayout layout = new SimpleLayout();
-            /*logger.info("Here is some INFO");
-            logger.warn("Here is some WARN");
-            logger.error("Here is some ERROR");
-            logger.fatal("Here is some FATAL");*/
-            PatternLayout layout = new PatternLayout();
-
-            FileAppender appender;
             try{
-                appender = new FileAppender(layout,logName,false);
-                logger.addAppender(appender);
+                logger.addAppender(new FileAppender(new PatternLayout(),logFileName,false));
             }catch (IOException ioe){
                 System.err.println("An error occurred while writing to the log file.");
             }
-
-            logger.info("*****************************************************");
-            logger.info(TITLE_STRING + "\tJava Version: " + JAVA_VERSION);
-            logger.info("*****************************************************\n\n");
-
-            StringBuffer buffer = new StringBuffer();
-            for (int i = 0; i < args.length; i++){
-                buffer.append(args[i]).append("\t");
-            }
-            String arguments = buffer.toString();
-
-            logger.info("Arguments:\t" + arguments + "\n\n");
-        }
-
-        ConsoleAppender commandAppender = new ConsoleAppender(new PatternLayout());
-        commandLogger.addAppender(commandAppender);
-        if (quietMode){
-            commandLogger.setLevel(Level.WARN);
-        }else{
+            logger.setLevel(Level.INFO);
+            commandLogger.addAppender(new ConsoleAppender(new PatternLayout()));
             commandLogger.setLevel(Level.INFO);
+        }else{
+            logger.addAppender(nullAppender);
+            commandLogger.addAppender(new ConsoleAppender(new PatternLayout()));
+            if (quietMode){
+                commandLogger.setLevel(Level.WARN);
+            }else{
+                commandLogger.setLevel(Level.INFO);
+            }
         }
+
+        logger.setAdditivity(false);
+        commandLogger.setAdditivity(true);
+        //Convert all active System.out.println statements to commandLogger.info()
+        //Convert all active System.err.println statements to commandLogger.error()
+        //Convert all debug statements to logger.debug()
 
 
         int countOptions = 0;
@@ -1211,11 +1220,8 @@ public class HaploText implements Constants{
         File f = new File(fn);
         if (f.exists()){
             commandLogger.info("File " + f.getName() + " already exists and will be overwritten.");
-            logger.info("File " + f.getName() + " already exists and will be overwritten.");
         }
-
         commandLogger.info("Writing output to "+f.getName());
-        logger.info("Writing output to "+ f.getName());
         return f;
     }
 
@@ -1266,11 +1272,8 @@ public class HaploText implements Constants{
                 if (phasedhapmapDownload){
                     commandLogger.info("Downloading chromosome " + chromosomeArg + ", population " + populationArg + ", " +
                             startPos + ".." + endPos + " from HapMap release " + release + ".");
-                    logger.info("Downloading chromosome " + chromosomeArg + ", population " + populationArg + ", " +
-                            startPos + ".." + endPos + " from HapMap release " + release + ".");
                 }else{
                     commandLogger.info("Using data file: " + fileName);
-                    logger.info("Using data file: " + fileName);
                 }
 
             }
@@ -1408,7 +1411,6 @@ public class HaploText implements Constants{
 
             if(infoFile != null){
                 commandLogger.info("Using marker information file: " + infoFile.getName());
-                logger.info("Using marker information file: " + infoFile.getName());
             }
             if(outputCheck && result != null){
                 textData.getPedFile().saveCheckDataToText(validateOutputFile(fileName + ".CHECK"));
@@ -1458,7 +1460,6 @@ public class HaploText implements Constants{
                         //read in the blocks file
                         File blocksFile = new File(blockFileName);
                         commandLogger.info("Using custom blocks file " + blockFileName);
-                        logger.info("Using custom blocks file " + blockFileName);
                         cust = textData.readBlocks(blocksFile);
                         break;
                     case BLOX_ALL:
@@ -1483,7 +1484,6 @@ public class HaploText implements Constants{
                         textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), outputFile);
                     }else {
                         commandLogger.info("Skipping block output: no valid Gabriel blocks.");
-                        logger.info("Skipping block output: no valid Gabriel blocks.");
                     }
 
                     outputFile = validateOutputFile(fileName + ".4GAMblocks");
@@ -1496,7 +1496,6 @@ public class HaploText implements Constants{
                         textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), outputFile);
                     }else {
                         commandLogger.info("Skipping block output: no valid 4 Gamete blocks.");
-                        logger.info("Skipping block output: no valid 4 Gamete blocks.");
                     }
 
                     outputFile = validateOutputFile(fileName + ".SPINEblocks");
@@ -1509,7 +1508,6 @@ public class HaploText implements Constants{
                         textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), outputFile);
                     }else {
                         commandLogger.info("Skipping block output: no valid LD Spine blocks.");
-                        logger.info("Skipping block output: no valid LD Spine blocks.");
                     }
 
                 }else{
@@ -1523,14 +1521,12 @@ public class HaploText implements Constants{
                         textData.saveHapsToText(haplos, textData.computeMultiDprime(filtHaplos), outputFile);
                     }else {
                         commandLogger.info("Skipping block output: no valid blocks.");
-                        logger.info("Skipping block output: no valid blocks.");
                     }
                 }
 
                 if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC) {
                     if (blockOutputType == BLOX_ALL){
                         commandLogger.warn("Haplotype association results cannot be used with block output \"ALL\"");
-                        logger.info("Haplotype association results cannot be used with block output " + "\"ALL\"");
                     }else{
                         if (haplos != null){
                             blockTestSet = new AssociationTestSet(haplos,null);
@@ -1538,7 +1534,6 @@ public class HaploText implements Constants{
 
                         }else {
                             commandLogger.info("Skipping block association output: no valid blocks.");
-                            logger.info("Skipping block association output: no valid blocks.");
                         }
                     }
                 }
@@ -1562,7 +1557,6 @@ public class HaploText implements Constants{
                 if (trackFileName != null){
                     textData.readAnalysisTrack(new File(trackFileName));
                     commandLogger.info("Using analysis track file " + trackFileName);
-                    logger.info("Using analysis track file " + trackFileName);
                 }
                 if (infoTrack){
                     Options.setShowGBrowse(true);
@@ -1600,15 +1594,13 @@ public class HaploText implements Constants{
 
             if(customAssocSet != null) {
                 commandLogger.info("Using custom association test file " + customAssocTestsFileName);
-                logger.info("Using custom association test file " + customAssocTestsFileName);
                 try {
                     customAssocSet.setPermTests(doPermutationTest);
                     customAssocSet.runFileTests(textData,markerTestSet.getMarkerAssociationResults());
                     customAssocSet.saveResultsToText(validateOutputFile(fileName + ".CUSTASSOC"));
 
                 }catch(IOException ioe) {
-                    System.out.println("An error occured writing the custom association results file.");
-                    logger.info("An error occured writing the custom association results file.");
+                    commandLogger.error("An error occured writing the custom association results file.");
                     customAssocSet = null;
                 }
             }
@@ -1634,7 +1626,6 @@ public class HaploText implements Constants{
 
 
                 commandLogger.info("Starting " + permutationCount + " permutation tests (each . printed represents 1% of tests completed)");
-                logger.info("Starting " + permutationCount + " permutation tests.");
 
                 int dotsPrinted =0;
                 while(pts.getPermutationCount() - pts.getPermutationsPerformed() > 0) {
@@ -1646,13 +1637,17 @@ public class HaploText implements Constants{
                         Thread.sleep(100);
                     }catch(InterruptedException ie) {}
                 }
+                StringBuffer buffer = new StringBuffer();
+                for (int i = 0; i < dotsPrinted; i++){
+                    buffer.append(".");
+                }
+                logger.info(buffer.toString());
                 System.out.println();
 
                 try {
                     pts.writeResultsToFile(validateOutputFile(fileName  + ".PERMUT"));
                 } catch(IOException ioe) {
-                    System.out.println("An error occured while writing the permutation test results to file.");
-                    logger.info("An error occured while writing the permutation test results to file.");
+                    commandLogger.error("An error occured while writing the permutation test results to file.");
                 }
             }
 
@@ -1692,7 +1687,6 @@ public class HaploText implements Constants{
                     String s = (String) forceIncludeTags.elementAt(i);
                     if(!names.contains(s)) {
                         commandLogger.info("Warning: skipping marker " + s + " in the list of forced included tags since I don't know about it.");
-                        logger.info("Warning: skipping marker " + s + " in the list of forced included tags since I don't know about it.");
                     }
                 }
 
@@ -1700,7 +1694,6 @@ public class HaploText implements Constants{
                     String s = (String) forceExcludeTags.elementAt(i);
                     if(!names.contains(s)) {
                         commandLogger.info("Warning: skipping marker " + s + " in the list of forced excluded tags since I don't know about it.");
-                        logger.info("Warning: skipping marker " + s + " in the list of forced excluded tags since I don't know about it.");
                     }
                 }
 
@@ -1709,7 +1702,6 @@ public class HaploText implements Constants{
                 forceIncludeTags.retainAll(names);
 
                 commandLogger.info("Starting tagging.");
-                logger.info("Starting tagging.");
 
                 TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture,
                         designScores,tagging,maxNumTags,findTags);
