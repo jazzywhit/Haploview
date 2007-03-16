@@ -203,7 +203,7 @@ public class TaggerConfigPanel extends HaploviewTab
         aggressiveGroup.add(pairwiseButton);
         aggressiveGroup.add(dupleButton);
         aggressiveGroup.add(tripleButton);
-        tripleButton.setSelected(true);
+        dupleButton.setSelected(true);
 
         JPanel optsPanel = new JPanel();
         //optsPanel.setMaximumSize(new Dimension(800,600));

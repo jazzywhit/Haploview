@@ -965,10 +965,10 @@ public class HaploText implements Constants{
         }
 
         if (aggressiveTagging){
-            if (aggressiveNumMarkers == 2){
-                tagging = Tagger.AGGRESSIVE_DUPLE;
-            }else{
+            if (aggressiveNumMarkers == 3){
                 tagging = Tagger.AGGRESSIVE_TRIPLE;
+            }else{
+                tagging = Tagger.AGGRESSIVE_DUPLE;
             }
         }
 
