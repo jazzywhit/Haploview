@@ -10,7 +10,7 @@ public interface Constants {
     public static final String TITLE_STRING = "Haploview "+VERSION+"beta"+BETA_VERSION;
     public static final String JAVA_VERSION = System.getProperty("java.version");
     public static final String USER_AGENT = "Haploview/" + VERSION + " Java/" + JAVA_VERSION;
-    public static final String RELEASE_DATE = "16 March, 2007";
+    public static final String RELEASE_DATE = "19 March, 2007";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
     public static final String BETA_WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/beta.php";
     public static final String ABOUT_STRING = TITLE_STRING + "\n" + RELEASE_DATE + "\n" +
