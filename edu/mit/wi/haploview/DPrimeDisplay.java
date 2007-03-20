@@ -1316,9 +1316,11 @@ public class DPrimeDisplay extends JComponent
                         "An error occured while accessing the HapMap website.\n"+e.getMessage(),
                         "HapMap Info Track",
                         JOptionPane.ERROR_MESSAGE);
+                Options.setShowGBrowse(false);
             }catch (InterruptedException e){
                 //just in case something awful happens
                 gBrowseImage = null;
+                Options.setShowGBrowse(false);
             }
         }
 
