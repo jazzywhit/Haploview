@@ -487,6 +487,9 @@ public class HaploText implements Constants{
                     i--;
                 }
             }
+            else if (args[i].equalsIgnoreCase("-showBlockTags")){ //This option is undocumented to discourage its use
+                Options.setShowBlockTags(true);
+            }
             else if(args[i].equalsIgnoreCase("-d") || args[i].equalsIgnoreCase("--dprime") || args[i].equalsIgnoreCase("-dprime")) {
                 outputDprime = true;
             }
