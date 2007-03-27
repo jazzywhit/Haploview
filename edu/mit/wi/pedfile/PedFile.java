@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.42 2007/01/09 20:15:59 djbender Exp $
+* $Id: PedFile.java,v 3.43 2007/03/27 14:18:24 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -557,6 +557,9 @@ public class PedFile {
 
                 byte genotype1;
                 byte genotype2;
+                if (!tokenizer.hasMoreTokens()){
+                    throw new PedFileException("Pedfile error: no marker genotypes specified.");
+                }
                 while(tokenizer.hasMoreTokens()){
                     try {
                         String alleleA = tokenizer.nextToken();
