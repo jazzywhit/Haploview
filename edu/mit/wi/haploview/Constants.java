@@ -13,8 +13,9 @@ public interface Constants {
     public static final String RELEASE_DATE = "19 March, 2007";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
     public static final String BETA_WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/beta.php";
+    public static final String CITATION_STRING = "Citation: Barrett JC, Fry B, Maller J, Daly MJ.\nHaploview: analysis and visualization of LD and haplotype maps.\nBioinformatics. 2005";
     public static final String ABOUT_STRING = TITLE_STRING + "\n" + RELEASE_DATE + "\n" +
-            WEBSITE_STRING + "\n\n" +
+            WEBSITE_STRING + "\n\n" + CITATION_STRING + "\n\n" +
             "Daly Lab at the Broad Institute\n" +
             "Cambridge, MA 02141, USA\n\n"+
             "Jeffrey Barrett\n" +
