@@ -1594,7 +1594,7 @@ public class DPrimeDisplay extends JComponent
                     }
                     displayStrings.add(new String ("MAF: " + Chromosome.getMarker(marker).getMAF()));
                     if (Chromosome.getMarker(marker).getExtra() != null)
-                        displayStrings.add(new String (Chromosome.getMarker(marker).getExtra()));
+                        displayStrings.addAll(Chromosome.getMarker(marker).getExtra());
                     currentSelection += new String (", MAF: " + Chromosome.getMarker(marker).getMAF());
                 }
             }

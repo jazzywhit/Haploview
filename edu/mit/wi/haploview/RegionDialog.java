@@ -10,8 +10,8 @@ import java.util.Vector;
 public class RegionDialog extends JDialog implements ActionListener, Constants {
     private HaploView hv;
 
-    private JComboBox popChooser, phaseChooser, colChooser;
-    private JCheckBox gBrowse;
+    private JComboBox popChooser, phaseChooser;
+    private JCheckBox gBrowse, annotate;
     private NumberTextField rangeInput;
     private String chrom, marker;
     private long markerPosition;
@@ -45,9 +45,9 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         chooserPanel.add(new JLabel("kb"));
 
         JPanel gBrowsePanel = new JPanel();
-        gBrowsePanel.add(new JLabel("Annotate:"));
-        colChooser = new JComboBox(prp.getOriginalColumns());
-        gBrowsePanel.add(colChooser);
+        annotate = new JCheckBox("Annotate LD Plot?");
+        annotate.setSelected(true);
+        gBrowsePanel.add(annotate);
         gBrowse = new JCheckBox("Show HapMap info track?");
         gBrowse.setSelected(true);
         gBrowsePanel.add(gBrowse);
@@ -108,17 +108,22 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
             Vector chipSNPs = new Vector(prp.getSNPs());
             if (Chromosome.getUnfilteredSize() > 0){
-                if (!colChooser.getSelectedItem().equals("")){
+                if (annotate.isSelected()){
                     for (int i = 0; i < Chromosome.getSize(); i++){
                         if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
-                            Chromosome.getMarker(i).setExtra(String.valueOf(prp.getValueAt(
-                                    chipSNPs.indexOf(Chromosome.getMarker(i).getName()),colChooser.getSelectedIndex()+2)));
+                            Vector extras = new Vector();
+                            for (int j = 1; j < prp.getOriginalColumns().size(); j++){
+                                extras.add(prp.getOriginalColumns().get(j) + ": " + String.valueOf(prp.getValueAt(chipSNPs.indexOf(Chromosome.getMarker(i).getName()),j+2)));
+                            }
+                            Chromosome.getMarker(i).setExtra(extras);
                         }
                     }
                 }else{
                     for (int i = 0; i < Chromosome.getSize(); i++){
                         if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
-                            Chromosome.getMarker(i).setExtra("PLINK");
+                            Vector plink = new Vector();
+                            plink.add("PLINK");
+                            Chromosome.getMarker(i).setExtra(plink);
                         }
                     }
                 }

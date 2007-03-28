@@ -1,12 +1,13 @@
 package edu.mit.wi.haploview;
 
+import java.util.Vector;
 
 public class SNP implements Comparable{
 
     private String name;
     private long position;
     private double MAF;
-    private String extra;
+    private Vector extra;
     private byte minor, major;
     private int dup;
 
@@ -24,7 +25,10 @@ public class SNP implements Comparable{
         MAF = m;
         major = a1;
         minor = a2;
-        extra = e;
+        if (e != null){
+            extra = new Vector();
+            extra.add(e);
+        }
     }
 
     public String getDisplayName(){
@@ -47,11 +51,11 @@ public class SNP implements Comparable{
         return MAF;
     }
 
-    public String getExtra(){
+    public Vector getExtra(){
         return extra;
     }
 
-    public void setExtra(String extra) {
+    public void setExtra(Vector extra) {
         this.extra = extra;
     }
 
