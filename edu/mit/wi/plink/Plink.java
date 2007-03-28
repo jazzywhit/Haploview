@@ -51,17 +51,19 @@ public class Plink {
 
                 BufferedReader mapReader = new BufferedReader(new FileReader(mapFile));
                 String mapLine;
+                int line = 0;
 
                 while((mapLine = mapReader.readLine())!=null) {
                     if (mapLine.length() == 0){
                         //skip blank lines
+                        line++;
                         continue;
                     }
 
                     StringTokenizer st = new StringTokenizer(mapLine,"\t ");
 
                     if (st.countTokens() < 4){
-                        throw new PlinkException("Map file is not correctly formatted.");
+                        throw new PlinkException("Map file is missing columns on line " + (line+1));
                     }
 
                     String chrom = st.nextToken();
@@ -72,11 +74,17 @@ public class Plink {
                         chr = 24;
                     }else if (chrom.equals("XY")){
                         chr = 25;
+                    }else if (chrom.equals("-9")){
+                        chr = 0;
                     }else{
                         chr = Short.parseShort(chrom);
+                        if (chr < 0 || chr > 25){
+                            throw new PlinkException("Invalid chromosome specification on line " + (line+1));
+                        }
                     }
                     if (chrFilter > 0){
                         if (chr != chrFilter){
+                            line++;
                             continue;
                         }
                     }
@@ -85,12 +93,14 @@ public class Plink {
                     st.nextToken();
                     String pos = st.nextToken();
                     if (pos.startsWith("-")){
+                        line++;
                         continue;
                     }
                     long position = Long.parseLong(pos);
 
                     Marker mark = new Marker(chr, marker, position);
                     markerHash.put(mark.getMarkerID(), mark);
+                    line++;
                 }
             }
 
@@ -191,8 +201,13 @@ public class Plink {
                             chr = 24;
                         }else if(chromosome.equals("XY")){
                             chr = 25;
+                        }else if (chromosome.equals("-9")){
+                            chr = 0;
                         }else{
                             chr = Short.parseShort(chromosome);
+                            if (chr < 0 || chr > 25){
+                                throw new PlinkException("Invalid chromosome specification on line " + (lineNumber+1));
+                            }
                         }
                     }else if (tokenNumber == positionColumn && embed){
                         position = Long.parseLong(tokenizer.nextToken());
@@ -217,6 +232,7 @@ public class Plink {
 
                 if (chrFilter > 0){
                     if (chr != chrFilter){
+                        lineNumber++;
                         continue;
                     }
                 }
