@@ -557,7 +557,7 @@ public class DPrimeDisplay extends JComponent
         //See http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img
         //for more info on GBrowse img.
         int imgHeight = 0;
-        if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null && !Chromosome.getDataChrom().equalsIgnoreCase("none")){
+        if (Options.isGBrowseShown() && Chromosome.getDataChrom() != null && !Chromosome.getDataChrom().equalsIgnoreCase("none") && gBrowseImage != null){
             g2.drawImage(gBrowseImage,H_BORDER-GBROWSE_MARGIN,V_BORDER,this);
             imgHeight = gBrowseImage.getHeight(this) + TRACK_GAP; // get height so we can shift everything down
         }
@@ -1313,7 +1313,7 @@ public class DPrimeDisplay extends JComponent
             }catch (IOException e){
                 //couldn't get the image for whatever reason.
                 JOptionPane.showMessageDialog(theHV,
-                        "An error occured while accessing the HapMap website.\n"+e.getMessage(),
+                        "An error occurred while accessing the HapMap website.\n"+e.getMessage(),
                         "HapMap Info Track",
                         JOptionPane.ERROR_MESSAGE);
                 Options.setShowGBrowse(false);
