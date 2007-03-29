@@ -1095,6 +1095,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             contents.repaint();
             contents.add(tabs);
 
+            if (wgaFile != null){
+                File plinkFile = new File(wgaFile);
+                setTitle(TITLE_STRING + " -- " + plinkFile.getName());
+            }
+
             repaint();
             setVisible(true);
         }catch(PlinkException wge){
