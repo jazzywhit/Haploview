@@ -12,6 +12,7 @@ import java.util.StringTokenizer;
 import java.util.Hashtable;
 
 
+/** @noinspection RedundantStringConstructorCall*/
 public class Plink {
 
     private Vector results = null;
@@ -52,6 +53,7 @@ public class Plink {
                 BufferedReader mapReader = new BufferedReader(new FileReader(mapFile));
                 String mapLine;
                 int line = 0;
+                int numColumns = -1;
 
                 while((mapLine = mapReader.readLine())!=null) {
                     if (mapLine.length() == 0){
@@ -62,8 +64,16 @@ public class Plink {
 
                     StringTokenizer st = new StringTokenizer(mapLine,"\t ");
 
-                    if (st.countTokens() < 4){
-                        throw new PlinkException("Map file is missing columns on line " + (line+1));
+                    if (numColumns == -1){
+                        numColumns = st.countTokens();
+                    }else{
+                        if (numColumns != st.countTokens()){
+                            throw new PlinkException("Inconsistent number of map file columns on line " + (line+1));
+                        }
+                    }
+
+                    if (numColumns != 3 && numColumns != 4){
+                        throw new PlinkException("Improper map file formatting.");
                     }
 
                     String chrom = st.nextToken();
@@ -89,8 +99,10 @@ public class Plink {
                         }
                     }
                     String marker = new String(st.nextToken());
-                    //useless morgan distance
-                    st.nextToken();
+                    if (numColumns == 4){
+                        //useless morgan distance
+                        st.nextToken();
+                    }
                     String pos = st.nextToken();
                     if (pos.startsWith("-")){
                         line++;
@@ -523,7 +535,7 @@ public class Plink {
                     if (values.size() > value){
                         if (values.get(value) != null){
                             if (values.get(value) instanceof Double){
-                                if (!(((Double)values.get(value)).equals(new Double(Double.NaN)))){
+                                if (!((values.get(value)).equals(new Double(Double.NaN)))){
                                     pv = (Double)values.get(value);
                                     pValues.add(pv);
                                 }
