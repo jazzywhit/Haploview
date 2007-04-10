@@ -76,8 +76,15 @@
      <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
      <zipfileset src="resources/log4j-1.2.14.jar"/>
-     <zipfileset src="resources/jfreechart/jfreechart-1.0.3.jar"/>
-     <zipfileset src="resources/jfreechart/jcommon-1.0.7.jar"/>
+     <zipfileset src="resources/jfreechart/jfreechart-1.0.5.jar"/>
+     <zipfileset src="resources/jfreechart/jcommon-1.0.9.jar"/>
+     <zipfileset src="resources/jfreechart/batik-xml.jar"/>
+     <zipfileset src="resources/jfreechart/xml-apis.jar"/>
+     <zipfileset src="resources/jfreechart/batik-awt-util.jar"/>
+     <zipfileset src="resources/jfreechart/batik-dom.jar"/>
+     <zipfileset src="resources/jfreechart/batik-svggen.jar"/>
+     <zipfileset src="resources/jfreechart/batik-util.jar"/>
+     <zipfileset src="resources/jfreechart/batik-ext.jar"/>
    </jar>
 </target>
 
@@ -97,8 +104,15 @@
      <zipfileset src="docs/HaploHelp.jar"/>
      <zipfileset src="resources/jgrapht-0.5.3.jar"/>
      <zipfileset src="resources/log4j-1.2.14.jar"/>
-     <zipfileset src="resources/jfreechart/jfreechart-1.0.3.jar"/>
-     <zipfileset src="resources/jfreechart/jcommon-1.0.7.jar"/>
+     <zipfileset src="resources/jfreechart/jfreechart-1.0.5.jar"/>
+     <zipfileset src="resources/jfreechart/jcommon-1.0.9.jar"/>
+     <zipfileset src="resources/jfreechart/batik-xml.jar"/>
+     <zipfileset src="resources/jfreechart/xml-apis.jar"/>
+     <zipfileset src="resources/jfreechart/batik-awt-util.jar"/>
+     <zipfileset src="resources/jfreechart/batik-dom.jar"/>
+     <zipfileset src="resources/jfreechart/batik-svggen.jar"/>
+     <zipfileset src="resources/jfreechart/batik-util.jar"/>
+     <zipfileset src="resources/jfreechart/batik-ext.jar"/>
    </jar>
 </target>
 
