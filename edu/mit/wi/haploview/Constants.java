@@ -155,6 +155,8 @@ public interface Constants {
             "-info <infofile>                Specify a marker info file\n" +
             "-plink <plinkfile>              Specify a PLINK or other results file\n" +
             "-map <mapfile>                  Specify a map file or binary map file\n" +
+            "-plinkhttp <URL>                Specify a http:// URL containing a PLINK or other results file\n" +
+            "-maphttp <URL>                  Specify a http:// URL containing a map file or binary map file\n" +
             "-nonSNP                         Specify that the accompanying PLINK file is non-SNP based output\n" +
             "-selectCols                     Activate the preloading column filter for PLINK loads\n" +
             "-batch <batchfile>              Batch mode. Each line in batch file should contain a genotype file \n"+

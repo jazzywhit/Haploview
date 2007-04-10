@@ -2,14 +2,14 @@ package edu.mit.wi.plink;
 
 import edu.mit.wi.haploview.StatFunctions;
 import edu.mit.wi.haploview.Util;
+import edu.mit.wi.haploview.Options;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.util.Hashtable;
+import java.net.URL;
+import java.net.HttpURLConnection;
 
 
 /** @noinspection RedundantStringConstructorCall*/
@@ -41,16 +41,30 @@ public class Plink {
         }
 
         try{
-            if (wgaFile.length() < 1){
+            if (wgaFile.length() < 1 && !Options.getPlinkHttp()){
                 throw new PlinkException("plink file is empty or nonexistent.");
             }
 
             if (!embed){
-                if (mapFile.length() < 1){
+                if (mapFile.length() < 1 && !Options.getMapHttp()){
                     throw new PlinkException("Map file is empty or nonexistent.");
                 }
 
-                BufferedReader mapReader = new BufferedReader(new FileReader(mapFile));
+                BufferedReader mapReader;
+                HttpURLConnection mapCon = null;
+                if (!Options.getMapHttp()){
+                    mapReader = new BufferedReader(new FileReader(mapFile));
+                }else{
+                    URL mapUrl = new URL(map);
+                    mapCon = (HttpURLConnection)mapUrl.openConnection();
+                    mapCon.connect();
+                    int response = mapCon.getResponseCode();
+                    if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
+                        throw new IOException("Could not connect to map file URL.");
+                    }else {
+                        mapReader = new BufferedReader(new InputStreamReader(mapCon.getInputStream()));
+                    }
+                }
                 String mapLine;
                 int line = 0;
                 int numColumns = -1;
@@ -114,9 +128,26 @@ public class Plink {
                     markerHash.put(mark.getMarkerID(), mark);
                     line++;
                 }
+                if (Options.getMapHttp()){
+                    mapCon.disconnect();
+                }
             }
 
-            BufferedReader wgaReader = new BufferedReader(new FileReader(wgaFile));
+            BufferedReader wgaReader;
+            HttpURLConnection wgaCon = null;
+            if (!Options.getPlinkHttp()){
+                wgaReader = new BufferedReader(new FileReader(wgaFile));
+            }else{
+                URL wgaUrl = new URL(wga);
+                wgaCon = (HttpURLConnection)wgaUrl.openConnection();
+                wgaCon.connect();
+                int response = wgaCon.getResponseCode();
+                if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
+                    throw new IOException("Could not connect to PLINK file URL.");
+                }else {
+                    wgaReader = new BufferedReader(new InputStreamReader(wgaCon.getInputStream()));
+                }
+            }
             int colIndex = 0;
             int markerColumn = -1;
             int chromColumn = -1;
@@ -269,10 +300,13 @@ public class Plink {
                 results.add(result);
                 lineNumber++;
             }
+            if (Options.getPlinkHttp()){
+                wgaCon.disconnect();
+            }
         }catch(IOException ioe){
-            throw new PlinkException("File error.");
+            throw new PlinkException("An error occurred while reading the file: " + ioe.getMessage());
         }catch(NumberFormatException nfe){
-            throw new PlinkException("File formatting error.");
+            throw new PlinkException("File formatting error: " + nfe.getMessage());
         }
     }
 
@@ -282,11 +316,25 @@ public class Plink {
 
         final File wgaFile = new File(name);
         try{
-            if (wgaFile.length() < 1){
+            if (wgaFile.length() < 1 && !Options.getPlinkHttp()){
                 throw new PlinkException("plink file is empty or nonexistent.");
             }
 
-            BufferedReader wgaReader = new BufferedReader(new FileReader(wgaFile));
+            BufferedReader wgaReader;
+            HttpURLConnection wgaCon = null;
+            if (!Options.getPlinkHttp()){
+                wgaReader = new BufferedReader(new FileReader(wgaFile));
+            }else{
+                URL wgaUrl = new URL(name);
+                wgaCon = (HttpURLConnection)wgaUrl.openConnection();
+                wgaCon.connect();
+                int response = wgaCon.getResponseCode();
+                if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
+                    throw new IOException("Could not connect to PLINK file URL.");
+                }else {
+                    wgaReader = new BufferedReader(new InputStreamReader(wgaCon.getInputStream()));
+                }
+            }
             int numColumns = 0;
             String headerLine = wgaReader.readLine();
             StringTokenizer headerSt = new StringTokenizer(headerLine);
@@ -343,8 +391,11 @@ public class Plink {
                 results.add(result);
                 lineNumber++;
             }
+            if (Options.getPlinkHttp()){
+                wgaCon.disconnect();
+            }
         }catch (IOException ioe){
-            throw new PlinkException("File error.");
+            throw new PlinkException("An error occurred while reading the file: " + ioe.getMessage());
         }
     }
 

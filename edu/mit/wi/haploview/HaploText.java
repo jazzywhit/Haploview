@@ -416,6 +416,20 @@ public class HaploText implements Constants{
                         argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last PLINK file listed will be used");
                     }
                     plinkFileName = args[i];
+                    Options.setPlinkHttp(false);
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-plinkhttp")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a URL");
+                }
+                else{
+                    if(plinkFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last PLINK file listed will be used");
+                    }
+                    plinkFileName = args[i];
+                    Options.setPlinkHttp(true);
                 }
             }
             else if (args[i].equalsIgnoreCase("-map")){
@@ -428,6 +442,20 @@ public class HaploText implements Constants{
                         argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last map file listed will be used");
                     }
                     mapFileName = args[i];
+                    Options.setMapHttp(false);
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-maphttp")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a URL");
+                }
+                else{
+                    if(mapFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last map file listed will be used");
+                    }
+                    mapFileName = args[i];
+                    Options.setMapHttp(true);
                 }
             }
             else if (args[i].equalsIgnoreCase("-nonSNP")){
@@ -1348,7 +1376,7 @@ public class HaploText implements Constants{
                 }
             }
 
-            if(captureAllelesFileName != null) {  //TODO: This is causing alleles to now show up as BAD in the check output even though they fail thresholds
+            if(captureAllelesFileName != null) {  //TODO: This is causing alleles to not show up as BAD in the check output even though they fail thresholds
                 for(int i =0;i<captureAlleleTags.size();i++) {
                     if(snpsByName.containsKey(captureAlleleTags.get(i))) {
                         whiteListedCustomMarkers.add(snpsByName.get(captureAlleleTags.get(i)));
