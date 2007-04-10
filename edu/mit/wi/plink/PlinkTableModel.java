@@ -163,15 +163,17 @@ public class PlinkTableModel extends AbstractTableModel{
         fireTableCellUpdated(row, column);
     }
 
-    public void filterAll(String chr, int start, int end, String column, String s, String value){
+    public void filterAll(String chr, int start, int end, String column1, String s1, String value1, String column2, String s2, String value2){
         resetFilters();
         int rows = getRowCount();
         Vector newFiltered = new Vector();
         boolean chromPass = false;
-        boolean genericPass = false;
+        boolean genericPass1 = false;
+        boolean genericPass2 = false;
         long realStart = start*1000;
         long realEnd = end*1000;
-        int col = -1;
+        int col1 = -1;
+        int col2 = -1;
 
         for (int i = 0; i < rows; i++){
             if (!(chr.equals(""))){
@@ -186,75 +188,139 @@ public class PlinkTableModel extends AbstractTableModel{
                 chromPass = true;
             }
 
-            if (column != null && s != null && value != null){
-                double rowVal;
-                double val = 0;
-                String stringVal = null;
+            if (column1 != null && s1 != null && value1 != null){
+                double rowVal1;
+                double val1 = 0;
+                String stringVal1 = null;
 
                 try{
-                    val = Double.parseDouble(value);
+                    val1 = Double.parseDouble(value1);
                 }catch (NumberFormatException nfe){
-                    stringVal = value;
+                    stringVal1 = value1;
                 }
 
-                if (col == -1){
+                if (col1 == -1){
                     for (int j = 0; j < columnNames.size(); j++){
-                        if(column.equalsIgnoreCase((String)columnNames.get(j))){
-                            col = j;
+                        if(column1.equalsIgnoreCase((String)columnNames.get(j))){
+                            col1 = j;
                             break;
                         }
                     }
                 }
 
-                if (col == HAPLOTYPE_COLUMN || col == A1_COLUMN || col == A2_COLUMN){
-                    stringVal = value;
+                if (col1 == HAPLOTYPE_COLUMN || col1 == A1_COLUMN || col1 == A2_COLUMN){
+                    stringVal1 = value1;
                 }
 
-                if (getValueAt(i,col) != null){
-                    if (stringVal != null && getValueAt(i,col) instanceof String){
-                        if (((String)getValueAt(i,col)).equalsIgnoreCase(stringVal)){
-                            genericPass = true;
+                if (getValueAt(i,col1) != null){
+                    if (stringVal1 != null && getValueAt(i,col1) instanceof String){
+                        if (((String)getValueAt(i,col1)).equalsIgnoreCase(stringVal1)){
+                            genericPass1 = true;
                         }
                     }else{
-                        if (getValueAt(i,col) instanceof Double){
-                            rowVal = ((Double)getValueAt(i,col)).doubleValue();
+                        if (getValueAt(i,col1) instanceof Double){
+                            rowVal1 = ((Double)getValueAt(i,col1)).doubleValue();
                         }else{
-                            rowVal = Double.NaN;
+                            rowVal1 = Double.NaN;
                         }
-                        if (s.equals(">=")){
-                            if (rowVal >= val){
-                                genericPass = true;
+                        if (s1.equals(">=")){
+                            if (rowVal1 >= val1){
+                                genericPass1 = true;
                             }
-                        }else if (s.equals(">")){
-                            if (rowVal > val){
-                                genericPass = true;
+                        }else if (s1.equals(">")){
+                            if (rowVal1 > val1){
+                                genericPass1 = true;
                             }
-                        }else if (s.equals("<=")){
-                            if (rowVal <= val){
-                                genericPass = true;
+                        }else if (s1.equals("<=")){
+                            if (rowVal1 <= val1){
+                                genericPass1 = true;
                             }
-                        }else if (s.equals("<")){
-                            if (rowVal < val){
-                                genericPass = true;
+                        }else if (s1.equals("<")){
+                            if (rowVal1 < val1){
+                                genericPass1 = true;
                             }
                         }else{
-                            if (rowVal == val){
-                                genericPass = true;
+                            if (rowVal1 == val1){
+                                genericPass1 = true;
                             }
                         }
                     }
                 }
             }else{
-                genericPass = true;
+                genericPass1 = true;
             }
 
 
-            if (chromPass && genericPass){
+            if (column2 != null && s2 != null && value2 != null){
+                double rowVal2;
+                double val2 = 0;
+                String stringVal2 = null;
+
+                try{
+                    val2 = Double.parseDouble(value2);
+                }catch (NumberFormatException nfe){
+                    stringVal2 = value2;
+                }
+
+                if (col2 == -1){
+                    for (int j = 0; j < columnNames.size(); j++){
+                        if(column2.equalsIgnoreCase((String)columnNames.get(j))){
+                            col2 = j;
+                            break;
+                        }
+                    }
+                }
+
+                if (col2 == HAPLOTYPE_COLUMN || col2 == A1_COLUMN || col2 == A2_COLUMN){
+                    stringVal2 = value2;
+                }
+
+                if (getValueAt(i,col2) != null){
+                    if (stringVal2 != null && getValueAt(i,col2) instanceof String){
+                        if (((String)getValueAt(i,col2)).equalsIgnoreCase(stringVal2)){
+                            genericPass2 = true;
+                        }
+                    }else{
+                        if (getValueAt(i,col2) instanceof Double){
+                            rowVal2 = ((Double)getValueAt(i,col2)).doubleValue();
+                        }else{
+                            rowVal2 = Double.NaN;
+                        }
+                        if (s2.equals(">=")){
+                            if (rowVal2 >= val2){
+                                genericPass2 = true;
+                            }
+                        }else if (s2.equals(">")){
+                            if (rowVal2 > val2){
+                                genericPass2 = true;
+                            }
+                        }else if (s2.equals("<=")){
+                            if (rowVal2 <= val2){
+                                genericPass2 = true;
+                            }
+                        }else if (s2.equals("<")){
+                            if (rowVal2 < val2){
+                                genericPass2 = true;
+                            }
+                        }else{
+                            if (rowVal2 == val2){
+                                genericPass2 = true;
+                            }
+                        }
+                    }
+                }
+            }else{
+                genericPass2 = true;
+            }
+
+
+            if (chromPass && genericPass1 && genericPass2){
                 newFiltered.add(new Integer(i));
             }
 
             chromPass = false;
-            genericPass = false;
+            genericPass1 = false;
+            genericPass2 = false;
         }
         filtered = newFiltered;
         if (Options.getSNPBased()){

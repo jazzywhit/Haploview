@@ -1,6 +1,8 @@
 package edu.mit.wi.haploview;
 
 import edu.mit.wi.plink.PlinkTableModel;
+import edu.mit.wi.plink.PlinkGraph;
+import edu.mit.wi.plink.PlotOptionDialog;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -8,29 +10,15 @@ import javax.swing.table.TableColumn;
 import javax.swing.border.TitledBorder;
 import java.util.Vector;
 import java.util.Hashtable;
-import java.util.StringTokenizer;
+import java.util.Arrays;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 
-import org.jfree.data.xy.*;
-import org.jfree.chart.*;
-import org.jfree.chart.entity.EntityCollection;
-import org.jfree.chart.entity.XYItemEntity;
-import org.jfree.chart.entity.ChartEntity;
-import org.jfree.chart.labels.StandardXYToolTipGenerator;
-import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.renderer.xy.XYItemRendererState;
-import org.jfree.chart.renderer.xy.XYDotRenderer;
-import org.jfree.chart.plot.*;
-import org.jfree.ui.RefineryUtilities;
-import org.jfree.ui.RectangleEdge;
-
-public class PlinkResultsPanel extends JPanel implements ActionListener, Constants, ChartMouseListener {
+public class PlinkResultsPanel extends JPanel implements ActionListener, Constants {
     private JTable table;
     private PlinkTableModel plinkTableModel;
     private TableSorter sorter;
@@ -38,23 +26,16 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     String[] chromNames = {"","1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"};
     String[] signs = {"",">",">=","=","<=","<"};
-    private JComboBox chromChooser, genericChooser, signChooser, removeChooser;
+    private JComboBox chromChooser, genericChooser1, genericChooser2, signChooser1, signChooser2, removeChooser;
     private NumberTextField chromStart, chromEnd;
-    private JTextField valueField, markerField;
-    private JCheckBox showGrid;
+    private JTextField valueField1, valueField2, markerField;
     private JPanel filterPanel;
     private Vector originalColumns;
-    private Hashtable removedColumns, nonChrInfo;
-    private Hashtable[] chrInfo;
-    private int[] seriesKeys, thresholdSigns, thresholdAxes;
-
-    private JFrame plotFrame;
-    private int yPlotType, xPlotType, baseDotSize;
-    private double suggestive, significant;
-    private boolean threeSizes, chroms, useSig, useSug;
+    private Hashtable removedColumns;
 
     private String chosenMarker;
     private HaploView hv;
+    private PlinkGraph theGraph;
 
 
     public PlinkResultsPanel(HaploView h, Vector results, Vector colNames, boolean dups, Hashtable remove){
@@ -99,7 +80,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         JPanel extraFilterPanel = new JPanel();
         mainFilterPanel.setMinimumSize(new Dimension(700,40));
         if (Options.getSNPBased()){
-            mainFilterPanel.add(new JLabel("Chromosome:"));
+            mainFilterPanel.add(new JLabel("Chrom:"));
             chromChooser = new JComboBox(chromNames);
             mainFilterPanel.add(chromChooser);
             mainFilterPanel.add(new JLabel("Start kb:"));
@@ -116,15 +97,23 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             doMarkerFilter.addActionListener(this);
             extraFilterPanel.add(doMarkerFilter);
         }
-        mainFilterPanel.add(new JLabel("Other:"));
-        genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
-        genericChooser.setSelectedIndex(-1);
-        mainFilterPanel.add(genericChooser);
-        signChooser = new JComboBox(signs);
-        signChooser.setSelectedIndex(-1);
-        mainFilterPanel.add(signChooser);
-        valueField = new JTextField(8);
-        mainFilterPanel.add(valueField);
+        mainFilterPanel.add(new JLabel("Filter1:"));
+        genericChooser1 = new JComboBox(plinkTableModel.getUnknownColumns());
+        genericChooser1.setSelectedIndex(-1);
+        mainFilterPanel.add(genericChooser1);
+        signChooser1 = new JComboBox(signs);
+        signChooser1.setSelectedIndex(-1);
+        mainFilterPanel.add(signChooser1);
+        valueField1 = new JTextField(8);
+        mainFilterPanel.add(valueField1);
+        mainFilterPanel.add(new JLabel("Filter2:"));
+        genericChooser2 = new JComboBox(plinkTableModel.getUnknownColumns());
+        mainFilterPanel.add(genericChooser2);
+        signChooser2 = new JComboBox(signs);
+        signChooser2.setSelectedIndex(-1);
+        mainFilterPanel.add(signChooser2);
+        valueField2 = new JTextField(8);
+        mainFilterPanel.add(valueField2);
         JButton doFilter = new JButton("Filter");
         doFilter.addActionListener(this);
         mainFilterPanel.add(doFilter);
@@ -215,6 +204,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 break;
             }
         }
+        hv.requestFocus();
+        hv.toFront();
     }
 
     public void jumpToNonSNP(String fid, String iid){
@@ -227,6 +218,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                     break;
                 }
             }
+            hv.requestFocus();
+            hv.toFront();
         }
     }
 
@@ -273,24 +266,40 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }
         }
 
-        String columnChoice = null;
-        String signChoice = null;
-        String value = null;
+        String columnChoice1 = null;
+        String signChoice1 = null;
+        String value1 = null;
 
-        if (genericChooser.getSelectedIndex() > 0){
-            columnChoice = (String)genericChooser.getSelectedItem();
+        if (genericChooser1.getSelectedIndex() > 0){
+            columnChoice1 = (String) genericChooser1.getSelectedItem();
 
-            if (signChooser.getSelectedIndex() > 0){
-                signChoice = (String)signChooser.getSelectedItem();
+            if (signChooser1.getSelectedIndex() > 0){
+                signChoice1 = (String) signChooser1.getSelectedItem();
 
-                if (!(valueField.getText().equals(""))){
-                    value = valueField.getText();
+                if (!(valueField1.getText().equals(""))){
+                    value1 = valueField1.getText();
+                }
+            }
+        }
+
+        String columnChoice2 = null;
+        String signChoice2 = null;
+        String value2 = null;
+
+        if (genericChooser2.getSelectedIndex() > 0){
+            columnChoice2 = (String) genericChooser2.getSelectedItem();
+
+            if (signChooser2.getSelectedIndex() > 0){
+                signChoice2 = (String) signChooser2.getSelectedItem();
+
+                if (!(valueField2.getText().equals(""))){
+                    value2 = valueField2.getText();
                 }
             }
         }
 
         reSort();
-        plinkTableModel.filterAll(chromChoice,startPos,endPos,columnChoice,signChoice,value);
+        plinkTableModel.filterAll(chromChoice,startPos,endPos,columnChoice1,signChoice1,value1,columnChoice2,signChoice2,value2);
         countResults();
     }
 
@@ -300,7 +309,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         table.removeColumn(deletedColumn);
         removeChooser.removeItemAt(index);
         removeChooser.setSelectedIndex(removeChooser.getItemCount()-1);
-        genericChooser.setSelectedIndex(0);
+        genericChooser1.setSelectedIndex(0);
+        genericChooser2.setSelectedIndex(0);
         if (table.getColumnCount() < 20){
             table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         }
@@ -337,10 +347,14 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             chromEnd.setText("");
             markerField.setText("");
         }
-        genericChooser.setSelectedIndex(0);
-        genericChooser.updateUI();
-        signChooser.setSelectedIndex(0);
-        valueField.setText("");
+        genericChooser1.setSelectedIndex(0);
+        genericChooser1.updateUI();
+        signChooser1.setSelectedIndex(0);
+        valueField1.setText("");
+        genericChooser2.setSelectedIndex(0);
+        genericChooser2.updateUI();
+        signChooser2.setSelectedIndex(0);
+        valueField2.setText("");
         reSort();
         countResults();
     }
@@ -357,390 +371,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         repaint();
     }
 
-    public XYSeriesCollection makeChrDataSet(int col){
-        int numRows = table.getRowCount();
-        long[] maxPositions = new long[25];
-
-        for (int i = 0; i < numRows; i++){
-            String chrom = (String)table.getValueAt(i,0);
-            if (chrom.equals("")){
-                continue;
-            }
-            int chr;
-            if (chrom.equalsIgnoreCase("X")){
-                chr = 23;
-            }else if (chrom.equalsIgnoreCase("Y")){
-                chr = 24;
-            }else if (chrom.equalsIgnoreCase("XY")){
-                chr = 25;
-            }else{
-                chr = Integer.parseInt(chrom);
-            }
-            if (chr < 1){
-                continue;
-            }
-            long position = ((Long)table.getValueAt(i,2)).longValue();
-            if (position > maxPositions[chr-1]){
-                maxPositions[chr-1] = position;
-            }
-        }
-
-        long[] addValues = new long[25];
-        long addValue = 0;
-        addValues[0] = 0;
-
-        for (int i = 1; i < 25; i++){
-            addValue += maxPositions[i-1];
-            addValues[i] = addValue;
-        }
-
-        XYSeries[] xyArray = new XYSeries[26];
-        for(int i = 1; i < 23; i++){
-            xyArray[i] = new XYSeries("Chr" + i);
-        }
-        xyArray[23] = new XYSeries("ChrX");
-        xyArray[24] = new XYSeries("ChrY");
-        xyArray[25] = new XYSeries("ChrXY");
-
-        chrInfo = new Hashtable[25];
-        for (int i = 0; i < 24; i++){
-            chrInfo[i] = new Hashtable();
-        }
-
-        for (int i = 0; i < numRows; i++){
-            String chrom = (String)table.getValueAt(i,0);
-            if (chrom.equals("")){
-                continue;
-            }
-            int chr;
-            if (chrom.equalsIgnoreCase("X")){
-                chr = 23;
-            }else if (chrom.equalsIgnoreCase("Y")){
-                chr = 24;
-            }else if (chrom.equalsIgnoreCase("XY")){
-                chr = 25;
-            }else{
-                chr = Integer.parseInt(chrom);
-            }
-            if (chr < 1){
-                continue;
-            }
-            double c = Double.parseDouble(String.valueOf(table.getValueAt(i,2)));
-            c += addValues[chr-1];
-            c = c/1000;
-            double f = -1;
-
-            if (table.getValueAt(i,col) == null){
-                continue;
-            }else if ((table.getValueAt(i,col)).equals(new Double(Double.NaN))){
-                continue;
-            }
-            else{
-                if (table.getValueAt(i,col) instanceof Double){
-                    f = ((Double)table.getValueAt(i,col)).doubleValue();
-                }else{
-                    JOptionPane.showMessageDialog(this,
-                            "The selected column does not appear to be numerical.",
-                            "Invalid column",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            }
-
-            if (yPlotType == LOG10_PLOT){
-                if (f < 0 || f > 1){
-                    JOptionPane.showMessageDialog(this,
-                            "The selected column is not formatted correctly \n" +
-                                    "for a -log10 plot.",
-                            "Invalid column",
-                            JOptionPane.ERROR_MESSAGE);
-                    return null;
-                }
-                f = (Math.log(f)/Math.log(10))*-1;
-            }else if (yPlotType == LN_PLOT){
-                f = Math.log(f);
-            }
-            long kbPos = Long.parseLong(String.valueOf(table.getValueAt(i,2)))/1000;
-            String infoString = table.getValueAt(i,1) + ", Chr" + chrom + ":" + kbPos + ", " + table.getValueAt(i,col);
-            chrInfo[chr-1].put(new Double(c),infoString);
-            xyArray[chr].add(c,f);
-        }
-
-        XYSeriesCollection dataset = new XYSeriesCollection();
-
-        seriesKeys = new int[26];
-        int seriesIndex = 0;
-        for (int i = 1; i < 25; i++){
-            if (xyArray[i].getItemCount() > 0){
-                seriesKeys[seriesIndex] = i;
-                seriesIndex++;
-                dataset.addSeries(xyArray[i]);
-            }
-        }
-        return dataset;
-    }
-
-    public XYSeriesCollection makeDataSet(int yCol, int xCol, int colorCol){
-        int numRows = table.getRowCount();
-        XYSeries[] xyArray = new XYSeries[0];
-        XYSeries xys = new XYSeries("Data");
-        Hashtable colorKey = new Hashtable();
-        if (colorCol != -1){
-            Vector seriesNames = new Vector();
-            for (int i = 0; i < numRows; i++){
-                if (table.getValueAt(i,colorCol) != null){
-                    if (!colorKey.containsKey(table.getValueAt(i,colorCol))){
-                        colorKey.put(table.getValueAt(i,colorCol),new Integer(seriesNames.size()));
-                        if (table.getValueAt(i,colorCol) instanceof Double){
-                            seriesNames.add(String.valueOf(table.getValueAt(i,colorCol)));
-                        }else{
-                            seriesNames.add(table.getValueAt(i,colorCol));
-                        }
-                        if (seriesNames.size() > 20){
-                            JOptionPane.showMessageDialog(this,
-                                    "The selected color key column contains more than 20 values.",
-                                    "Invalid column",
-                                    JOptionPane.ERROR_MESSAGE);
-                            colorKey = null;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (colorKey != null){
-                xyArray = new XYSeries[seriesNames.size()];
-                for (int i = 0; i < seriesNames.size(); i++){
-                    xyArray[i] = new XYSeries((String)seriesNames.get(i));
-                }
-            }
-        }else{
-            colorKey = null;
-        }
-        nonChrInfo = new Hashtable();
-        for (int i = 0; i < numRows; i++){
-
-            double y;
-            if (yCol == -1){
-                y = i;
-            }else{
-                if (table.getValueAt(i,yCol) == null){
-                    continue;
-                }else if ((table.getValueAt(i,yCol)).equals(new Double(Double.NaN))){
-                    continue;
-                }else{
-                    if (table.getValueAt(i,yCol) instanceof Double){
-                        y = ((Double)table.getValueAt(i,yCol)).doubleValue();
-                    }else{
-                        JOptionPane.showMessageDialog(this,
-                                "The selected column does not appear to be numerical.",
-                                "Invalid column",
-                                JOptionPane.ERROR_MESSAGE);
-                        return null;
-                    }
-                }
-
-                if (yPlotType == LOG10_PLOT){
-                    if (y < 0 || y > 1){
-                        JOptionPane.showMessageDialog(this,
-                                "The selected column is not formatted correctly \n" +
-                                        "for a -log10 plot.",
-                                "Invalid column",
-                                JOptionPane.ERROR_MESSAGE);
-                        return null;
-                    }
-                    y = (Math.log(y)/Math.log(10))*-1;
-                }else if (yPlotType == LN_PLOT){
-                    y = Math.log(y);
-                }
-            }
-
-
-            double x;
-            if (xCol == -1){
-                x = i;
-            }else{
-                if (table.getValueAt(i,xCol) == null){
-                    continue;
-                }else if ((table.getValueAt(i,xCol)).equals(new Double(Double.NaN))){
-                    continue;
-                }else{
-                    if (table.getValueAt(i,xCol) instanceof Double){
-                        x = ((Double)table.getValueAt(i,xCol)).doubleValue();
-                    }else{
-                        JOptionPane.showMessageDialog(this,
-                                "The selected column does not appear to be numerical.",
-                                "Invalid column",
-                                JOptionPane.ERROR_MESSAGE);
-                        return null;
-                    }
-                }
-                if (xPlotType == LOG10_PLOT){
-                    if (x < 0 || x > 1){
-                        JOptionPane.showMessageDialog(this,
-                                "The selected column is not formatted correctly \n" +
-                                        "for a -log10 plot.",
-                                "Invalid column",
-                                JOptionPane.ERROR_MESSAGE);
-                        return null;
-                    }
-                    x = (Math.log(x)/Math.log(10))*-1;
-                }else if (xPlotType == LN_PLOT){
-                    x = Math.log(x);
-                }
-            }
-
-            if (colorKey == null){
-                xys.add(x,y);
-            }else{
-                int series = ((Integer)colorKey.get(table.getValueAt(i,colorCol))).intValue();
-                xyArray[series].add(x,y);
-            }
-
-            String key = String.valueOf(x) + " " +  String.valueOf(y);
-            String value;
-            if (Options.getSNPBased()){
-                value = table.getValueAt(i,1) + ", Chr" + table.getValueAt(i,0) + ":" + table.getValueAt(i,2);
-                nonChrInfo.put(key,value);
-            }else{
-                if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
-                    value = "FID: " + table.getValueAt(i,plinkTableModel.getFIDColumn()) + ", IID: " + table.getValueAt(i,plinkTableModel.getIIDColumn());
-                    nonChrInfo.put(key,value);
-                }else{
-                    nonChrInfo.put(key,key);
-                }
-            }
-        }
-
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        if (colorKey == null){
-            dataset.addSeries(xys);
-        }else{
-            for (int i = 0; i < xyArray.length; i++){
-                dataset.addSeries(xyArray[i]);
-            }
-        }
-
-        return dataset;
-    }
-
-    public void makeChart(String title, int yType, int yCol, int xType, int xCol, double sug, double sig, int[] signs, int[] thresholds, int dotSize, int colorKey, boolean grid){
+    public void makeChart(String title,int yPlotType,int yColumn,int xPlotType,int xColumn,double suggestive,double significant,boolean useSug,boolean useSig,int[] signs,int[] thresholds,int dotSize,int colorColumn,boolean grid, File svgFile, int width, int height){
         hv.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        yPlotType = yType;
-        xPlotType = xType;
-        thresholdSigns = signs;
-        thresholdAxes = thresholds;
-        baseDotSize = dotSize;
-        threeSizes = (signs[0] == signs[1]) && (thresholds[0] == thresholds[1]) && useSug && useSig;
-        chroms = Options.getSNPBased() && xCol == 2;
-
-        XYSeriesCollection dataSet;
-        if (chroms){
-            dataSet = makeChrDataSet(yCol);
-        }else{
-            dataSet = makeDataSet(yCol,xCol,colorKey);
-        }
-
-        if (dataSet == null){
-            hv.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            return;
-        }
-
-        significant = sig;
-        suggestive = sug;
-
-        String rangeAxisName;
-        if (yCol == -1){
-            rangeAxisName = null;
-        }else{
-            if (yPlotType == UNTRANSFORMED_PLOT){
-                rangeAxisName = table.getColumnName(yCol);
-            }else{
-                rangeAxisName = PLOT_TYPES[yPlotType] + "(" + table.getColumnName(yCol) + ")";
-            }
-        }
-
-        String domainAxisName;
-        if (xCol == -1 || chroms){
-            domainAxisName = null;
-        }else{
-            if (xPlotType == UNTRANSFORMED_PLOT){
-                domainAxisName = table.getColumnName(xCol);
-            }else{
-                domainAxisName = PLOT_TYPES[xPlotType] + "(" + table.getColumnName(xCol) + ")";
-            }
-        }
-
-        boolean legend = false;
-        if (chroms || (colorKey != -1 && dataSet.getSeriesCount() > 1)){
-            legend = true;
-        }
-
-        JFreeChart chart = ChartFactory.createScatterPlot(title,domainAxisName,rangeAxisName,dataSet,PlotOrientation.VERTICAL,legend,true,false);
-
-        XYPlot thePlot = chart.getXYPlot();
-        if (useSug){
-            if (thresholds[0] == 0){
-                thePlot.addRangeMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
-            }else{
-                thePlot.addDomainMarker(new ValueMarker(sug,Color.blue,new BasicStroke()));
-            }
-        }
-        if (useSig){
-            if (thresholds[1] == 0){
-                thePlot.addRangeMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
-            }else{
-                thePlot.addDomainMarker(new ValueMarker(sig,Color.red,new BasicStroke()));
-            }
-        }
-        if (chroms){
-            thePlot.setDomainGridlinesVisible(false);
-            thePlot.getDomainAxis().setTickMarksVisible(false);
-            thePlot.getDomainAxis().setTickLabelsVisible(false);
-        }
-
-        if (!grid){
-            thePlot.setDomainGridlinesVisible(false);
-            thePlot.setRangeGridlinesVisible(false);
-        }
-        thePlot.setRenderer(new PlinkScatterPlotRenderer());
-        thePlot.getRenderer().setToolTipGenerator(new PlinkToolTipGenerator());
-        chart.setAntiAlias(false);
-
-        Shape[] shapes = new Shape[1];
-        shapes[0] = new Rectangle2D.Double(-2,-3,20,5);
-        DrawingSupplier supplier = new DefaultDrawingSupplier(
-                DefaultDrawingSupplier.DEFAULT_PAINT_SEQUENCE,
-                DefaultDrawingSupplier.DEFAULT_OUTLINE_PAINT_SEQUENCE,
-                DefaultDrawingSupplier.DEFAULT_STROKE_SEQUENCE,
-                DefaultDrawingSupplier.DEFAULT_OUTLINE_STROKE_SEQUENCE,
-                shapes
-        );
-        thePlot.setDrawingSupplier(supplier);
-
-        ChartPanel panel = new ChartPanel(chart, true);
-        panel.setPreferredSize(new Dimension(750,300));
-        panel.setMinimumDrawHeight(10);
-        panel.setMaximumDrawHeight(2000);
-        panel.setMinimumDrawWidth(20);
-        panel.setMaximumDrawWidth(2000);
-        panel.addChartMouseListener(this);
-        plotFrame = new JFrame("Plot");
-        plotFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        plotFrame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                chrInfo = null;
-                nonChrInfo = null;
-                seriesKeys = null;
-                thresholdSigns = null;
-                thresholdAxes = null;
-                plotFrame = null;
-            }
-        });
-        plotFrame.setContentPane(panel);
-        plotFrame.pack();
-        RefineryUtilities.centerFrameOnScreen(plotFrame);
-        plotFrame.setVisible(true);
-        plotFrame.requestFocus();
-        plotFrame.toFront();
+        theGraph = new PlinkGraph(title,yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,useSug,useSig,signs,thresholds,dotSize,colorColumn,grid,svgFile,width,height,table,plinkTableModel,this);
         hv.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
@@ -797,15 +430,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void disposePlot(){
-        if (plotFrame != null){
-            plotFrame.dispose();
+        if (theGraph != null){
+            theGraph.disposePlot();
+            theGraph = null;
         }
-        chrInfo = null;
-        nonChrInfo = null;
-        seriesKeys = null;
-        thresholdSigns = null;
-        thresholdAxes = null;
-        plotFrame = null;
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -839,285 +467,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 removeColumn((String)removeChooser.getSelectedItem(),removeChooser.getSelectedIndex());
             }
         }else if (command.equals("Plot")){
-            PlotOptionDialog pod = new PlotOptionDialog("Plot Options");
+            PlotOptionDialog pod = new PlotOptionDialog(hv,this,"Plot Options",plinkTableModel);
             pod.pack();
             pod.setVisible(true);
         }else if (command.equals("Go to Selected Region")){
             gotoRegion();
-        }
-    }
-
-    public void chartMouseClicked(ChartMouseEvent chartMouseEvent) {
-        ChartEntity ce = chartMouseEvent.getEntity();
-        if (ce != null && ce.getToolTipText() != null){
-            if (Options.getSNPBased()){
-                StringTokenizer st = new StringTokenizer(ce.getToolTipText(),",");
-                jumpToMarker(st.nextToken());
-                hv.requestFocus();
-                hv.toFront();
-            }else{
-                if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
-                    StringTokenizer st = new StringTokenizer(ce.getToolTipText(),", ");
-                    st.nextToken(); //FID:
-                    String fid = st.nextToken();
-                    st.nextToken(); //IID:
-                    String iid = st.nextToken();
-                    jumpToNonSNP(fid,iid);
-                    hv.requestFocus();
-                    hv.toFront();
-                }
-            }
-        }
-    }
-
-    public void chartMouseMoved(ChartMouseEvent chartMouseEvent) {
-    }
-
-    class PlotOptionDialog extends JDialog implements ActionListener {
-        private JComboBox yColumnChooser, xColumnChooser, yPlotChooser, xPlotChooser, signChooser1, signChooser2, thresholdChooser1, thresholdChooser2, dotChooser, colorKeyChooser;
-        private JLabel label1, label2;
-        private NumberTextField sigThresh, sugThresh;
-        private JTextField titleField;
-        private String[] signs = {">","<"};
-        private String[] thresholds = {"Y-Axis","X-Axis"};
-        private String[] dotSizes = {"Small","Medium","Large"};
-
-        public PlotOptionDialog (String title) {
-            super(hv,title);
-
-            Vector columns = new Vector(plinkTableModel.getUnknownColumns());
-            columns.add("Index");
-
-            Vector xCols = new Vector();
-            if (Options.getSNPBased()){
-                xCols.add("Chromosomes");
-                for (int i = 1; i < columns.size(); i++){
-                    xCols.add(columns.get(i));
-                }
-            }else{
-                for (int i = 0; i < columns.size(); i++){
-                    xCols.add(columns.get(i));
-                }
-            }
-
-            JPanel contents = new JPanel();
-            contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));  //TODO: GridBag
-
-            JPanel titlePanel = new JPanel();
-            titlePanel.add(new JLabel("Title:"));
-            titleField = new JTextField(15);
-            titlePanel.add(titleField);
-            showGrid = new JCheckBox("Show Gridlines?",true);
-            titlePanel.add(showGrid);
-            JPanel xPanel = new JPanel();
-            xPanel.add(new JLabel("X-Axis:"));
-            xColumnChooser = new JComboBox(xCols);
-            xColumnChooser.addActionListener(this);
-            xPanel.add(xColumnChooser);
-            xPanel.add(new JLabel("Scale:"));
-            xPlotChooser = new JComboBox(PLOT_TYPES);
-            xPanel.add(xPlotChooser);
-            JPanel yPanel = new JPanel();
-            yPanel.add(new JLabel("Y-Axis:"));
-            yColumnChooser = new JComboBox(columns);
-            yColumnChooser.addActionListener(this);
-            yPanel.add(yColumnChooser);
-            yPanel.add(new JLabel("Scale:"));
-            yPlotChooser = new JComboBox(PLOT_TYPES);
-            yPlotChooser.addActionListener(this);
-            yPanel.add(yPlotChooser);
-            JPanel sugPanel = new JPanel();
-            thresholdChooser1 = new JComboBox(thresholds);
-            sugPanel.add(thresholdChooser1);
-            label1 = new JLabel("Threshold 1 (Blue Line)");
-            sugPanel.add(label1);
-            signChooser1 = new JComboBox(signs);
-            sugPanel.add(signChooser1);
-            sugThresh = new NumberTextField("",6,true,true);
-            sugPanel.add(sugThresh);
-            JPanel sigPanel = new JPanel();
-            thresholdChooser2 = new JComboBox(thresholds);
-            sigPanel.add(thresholdChooser2);
-            label2 = new JLabel("Threshold 2 (Red Line) ");
-            sigPanel.add(label2);
-            signChooser2 = new JComboBox(signs);
-            sigPanel.add(signChooser2);
-            sigThresh = new NumberTextField("",6,true,true);
-            sigPanel.add(sigThresh);
-            JPanel dotPanel = new JPanel();
-            dotPanel.add(new JLabel("Data Point Size:"));
-            dotChooser = new JComboBox(dotSizes);
-            dotChooser.setSelectedIndex(1);
-            dotPanel.add(dotChooser);
-            dotPanel.add(new JLabel("Color Key:"));
-            colorKeyChooser = new JComboBox(plinkTableModel.getUnknownColumns());
-            dotPanel.add(colorKeyChooser);
-
-            if (Options.getSNPBased()){
-                yColumnChooser.setSize(xColumnChooser.getSize());
-                xPlotChooser.setEnabled(false);
-                thresholdChooser1.setEnabled(false);
-                thresholdChooser2.setEnabled(false);
-                colorKeyChooser.setEnabled(false);
-            }
-
-            JPanel choicePanel = new JPanel();
-            JButton okButton = new JButton("OK");
-            okButton.addActionListener(this);
-            this.getRootPane().setDefaultButton(okButton);
-            choicePanel.add(okButton);
-            JButton cancelButton = new JButton("Cancel");
-            cancelButton.addActionListener(this);
-            choicePanel.add(cancelButton);
-
-            contents.add(titlePanel);
-            contents.add(xPanel);
-            contents.add(yPanel);
-            contents.add(sugPanel);
-            contents.add(sigPanel);
-            contents.add(dotPanel);
-            contents.add(choicePanel);
-            setContentPane(contents);
-
-            this.setLocation(this.getParent().getX() + 100,
-                    this.getParent().getY() + 100);
-            this.setModal(true);
-            this.setResizable(false);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String command = e.getActionCommand();
-            if(command.equals("Cancel")) {
-                this.dispose();
-            }else if (command.equals("OK")){
-                if (xColumnChooser.getSelectedIndex() == 0 && !Options.getSNPBased()){
-                    JOptionPane.showMessageDialog(this,
-                            "Please select a column to plot on the X-Axis.",
-                            "Invalid value",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                if (yColumnChooser.getSelectedIndex() == 0){
-                    JOptionPane.showMessageDialog(this,
-                            "Please select a column to plot on the Y-Axis.",
-                            "Invalid value",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-                int yColumn = yColumnChooser.getSelectedIndex()-1; //accounts for ""
-                int yPlotType = yPlotChooser.getSelectedIndex();
-                int xColumn = xColumnChooser.getSelectedIndex();
-                int xPlotType = xPlotChooser.getSelectedIndex();
-                int colorColumn = colorKeyChooser.getSelectedIndex()-1;
-                if (Options.getSNPBased()){
-                    yColumn += 3; //accounts for 3 known columns (chrom,marker,position)
-                    colorColumn += 3;
-                    xColumn += 2;
-                }else{
-                    xColumn -= 1;
-                    if (plinkTableModel.getFIDColumn() != -1){
-                        yColumn += 1;
-                        xColumn += 1;
-                        colorColumn += 1;
-                    }
-                    if (plinkTableModel.getIIDColumn() != -1){
-                        yColumn += 1;
-                        xColumn += 1;
-                        colorColumn += 1;
-                    }
-                }
-                if ((xColumnChooser.getSelectedItem().equals("Index") && yColumnChooser.getSelectedItem().equals("Index")) ||
-                        (xColumnChooser.getSelectedItem().equals("Chromosomes") && yColumnChooser.getSelectedItem().equals("Index"))){
-                    JOptionPane.showMessageDialog(this,
-                            "You must have at least one explicit axis.",
-                            "Invalid value",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }else{
-                    if (xColumnChooser.getSelectedItem().equals("Index")){
-                        xColumn = -1;
-                    }else if (yColumnChooser.getSelectedItem().equals("Index")){
-                        yColumn = -1;
-                    }
-                }
-                if (colorKeyChooser.getSelectedIndex() < 1){
-                    colorColumn = -1;
-                }
-
-                double suggestive, significant;
-                try{
-                    if (sugThresh.getText().equals("")){
-                        useSug = false;
-                        suggestive = -1;
-                    }else{
-                        suggestive = Double.parseDouble(sugThresh.getText());
-                        useSug = true;
-                    }
-
-                    if (sigThresh.getText().equals("")){
-                        useSig = false;
-                        significant = -1;
-                    }else{
-                        significant = Double.parseDouble(sigThresh.getText());
-                        useSig = true;
-                    }
-                }catch(NumberFormatException nfe){
-                    JOptionPane.showMessageDialog(this,
-                            "Thresholds must be numerical.",
-                            "Invalid value",
-                            JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                int[] signs = new int[2];
-                signs[0] = signChooser1.getSelectedIndex();
-                signs[1] = signChooser2.getSelectedIndex();
-                int[] thresholds = new int[2];
-                thresholds[0] = thresholdChooser1.getSelectedIndex();
-                thresholds[1] = thresholdChooser2.getSelectedIndex();
-                int dotSize = 2 + (dotChooser.getSelectedIndex()*2);
-                if (plotFrame != null){
-                    plotFrame.dispose();
-                }
-                this.dispose();
-                makeChart(titleField.getText(),yPlotType,yColumn,xPlotType,xColumn,suggestive,significant,signs,thresholds,dotSize,colorColumn,showGrid.isSelected());
-            }else if (e.getSource() instanceof JComboBox){
-                if (xColumnChooser.getSelectedItem().equals("Chromosomes")){
-                    xPlotChooser.setSelectedIndex(0);
-                    xPlotChooser.setEnabled(false);
-                    thresholdChooser1.setSelectedIndex(0);
-                    thresholdChooser1.setEnabled(false);
-                    thresholdChooser2.setSelectedIndex(0);
-                    thresholdChooser2.setEnabled(false);
-                    colorKeyChooser.setSelectedIndex(0);
-                    colorKeyChooser.setEnabled(false);
-                }else if (xColumnChooser.getSelectedItem().equals("Index")){
-                    xPlotChooser.setSelectedIndex(0);
-                    xPlotChooser.setEnabled(false);
-                    thresholdChooser1.setEnabled(true);
-                    thresholdChooser2.setEnabled(true);
-                    colorKeyChooser.setEnabled(true);
-                }else{
-                    xPlotChooser.setEnabled(true);
-                    thresholdChooser1.setEnabled(true);
-                    thresholdChooser2.setEnabled(true);
-                    colorKeyChooser.setEnabled(true);
-                }
-
-                if (yColumnChooser.getSelectedItem().equals("Index")){
-                    yPlotChooser.setSelectedIndex(0);
-                    yPlotChooser.setEnabled(false);
-                }else{
-                    yPlotChooser.setEnabled(true);
-                }
-                if (yPlotChooser.getSelectedItem().equals("-log10")){
-                    label1.setText("Suggestive (Blue Line)");
-                    label2.setText("Significant (Red Line) ");
-                }else{
-                    label1.setText("Threshold 1 (Blue Line)");
-                    label2.setText("Threshold 2 (Red Line) ");
-                }
-            }
         }
     }
 
@@ -1205,6 +559,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 this.dispose();
             }else if (command.equals("Go")){
                 int[] pCols = new int[5];
+                Arrays.fill(pCols,-1);
                 int numPvals = 0;
 
                 if (pval1.getSelectedIndex() > 0){
@@ -1238,7 +593,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
                 String cols = "";
                 for (int i = 0; i < pCols.length; i++){
-                    if (pCols[i] > 0){
+                    if (pCols[i] > -1){
                         cols = cols + pCols[i] + " ";
                     }
                 }
@@ -1277,283 +632,6 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 }
             }
             return cell;
-        }
-    }
-
-    class PlinkScatterPlotRenderer extends XYDotRenderer {
-
-        public PlinkScatterPlotRenderer(){
-            super();
-        }
-
-        public void drawItem(Graphics2D graphics2D, XYItemRendererState xyItemRendererState, Rectangle2D rectangle2D, PlotRenderingInfo plotRenderingInfo, XYPlot xyPlot, ValueAxis valueAxis, ValueAxis valueAxis1, XYDataset xyDataset, int series, int item, CrosshairState crosshairState, int pass) {
-            EntityCollection entities = null;
-            Shape entityArea = null;
-            if (plotRenderingInfo != null) {
-                entities = plotRenderingInfo.getOwner().getEntityCollection();
-            }
-            double x = xyDataset.getXValue(series, item);
-            double y = xyDataset.getYValue(series, item);
-            if (!(new Double(y).equals(new Double(Double.NaN))) && !(new Double(x).equals(new Double(Double.NaN)))) {
-                RectangleEdge xAxisLocation = xyPlot.getDomainAxisEdge();
-                RectangleEdge yAxisLocation = xyPlot.getRangeAxisEdge();
-                double transX = valueAxis.valueToJava2D(x, rectangle2D, xAxisLocation);
-                double transY = valueAxis1.valueToJava2D(y, rectangle2D,yAxisLocation);
-
-                graphics2D.setPaint(this.getItemPaint(series, item));
-                int dotSize = baseDotSize;
-                PlotOrientation orientation = xyPlot.getOrientation();
-                if (orientation == PlotOrientation.HORIZONTAL){ //JFreeChart allows the user to flip the axes
-                    transX = valueAxis1.valueToJava2D(y, rectangle2D,yAxisLocation);
-                    transY = valueAxis.valueToJava2D(x, rectangle2D, xAxisLocation);
-                }
-                if (useSug || useSig){
-                    if (threeSizes){ //this means that both signs must be equivalent and both suggestive & significant are not -1
-                        if (thresholdAxes[0] == 0){ //both are for y axis
-                            if (thresholdSigns[0] == 0){  //>
-                                if (y > suggestive && y <= significant){
-                                    dotSize += 2;
-                                }else if (y > significant){
-                                    dotSize += 4;
-                                }
-                            }else{  //<
-                                if (y < suggestive && y >= significant){
-                                    dotSize += 2;
-                                }else if (y < significant){
-                                    dotSize += 4;
-                                }
-                            }
-                        }else{ //both are for x axis
-                            if (thresholdSigns[0] == 0){  //>
-                                if (x > suggestive && x <= significant){
-                                    dotSize += 2;
-                                }else if (x > significant){
-                                    dotSize += 4;
-                                }
-                            }else{  //<
-                                if (x < suggestive && x >= significant){
-                                    dotSize += 2;
-                                }else if (x < significant){
-                                    dotSize += 4;
-                                }
-                            }
-                        }
-                    }else{
-                        if (thresholdAxes[0] == 0 && thresholdAxes[1] == 0){ //both y
-                            if (!useSig){  //only use suggestive
-                                if (thresholdSigns[0] == 0){  //>
-                                    if (y > suggestive){
-                                        dotSize += 2;
-                                    }
-                                }else { //<
-                                    if (y < suggestive){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }else if (!useSug){ //only use significant
-                                if (thresholdSigns[1] == 0){ //>
-                                    if (y > significant){
-                                        dotSize += 2;
-                                    }
-                                }else { //<
-                                    if (y < significant){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }else{ //use both
-                                if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
-                                    if (y > suggestive || y < significant){
-                                        dotSize += 2;
-                                    }
-                                }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
-                                    if (y < suggestive || y > significant){
-                                        dotSize += 2;
-                                    }
-                                }else if (thresholdSigns[0] == 0){ //both >
-                                    if (y > suggestive || y > significant){
-                                        dotSize += 2;
-                                    }
-                                }else{  //both <
-                                    if (y < suggestive || y < significant){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }
-                        }else if (thresholdAxes[0] == 1 && thresholdAxes[1] == 1){ //both x
-                            if (!useSig){  //only use suggestive
-                                if (thresholdSigns[0] == 0){  //>
-                                    if (x > suggestive){
-                                        dotSize += 2;
-                                    }
-                                }else { //<
-                                    if (x < suggestive){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }else if (!useSug){ //only use significant
-                                if (thresholdSigns[1] == 0){ //>
-                                    if (x > significant){
-                                        dotSize += 2;
-                                    }
-                                }else { //<
-                                    if (x < significant){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }else{ //use both
-                                if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
-                                    if (x > suggestive || x < significant){
-                                        dotSize += 2;
-                                    }
-                                }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
-                                    if (x < suggestive || x > significant){
-                                        dotSize += 2;
-                                    }
-                                }else if (thresholdSigns[0] == 0){ //both >
-                                    if (x > suggestive || x > significant){
-                                        dotSize += 2;
-                                    }
-                                }else{  //both <
-                                    if (x < suggestive || x < significant){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }
-                        }else if (thresholdAxes[0] == 0 && thresholdAxes[1] == 1){ //sug y, sig x
-                            if (!useSig){  //only use suggestive
-                                if (thresholdSigns[0] == 0){  //>
-                                    if (y > suggestive){
-                                        dotSize += 2;
-                                    }
-                                }else { //<
-                                    if (y < suggestive){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }else if (!useSug){ //only use significant
-                                if (thresholdSigns[1] == 0){ //>
-                                    if (x > significant){
-                                        dotSize += 2;
-                                    }
-                                }else { //<
-                                    if (x < significant){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }else{ //use both
-                                if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
-                                    if (y > suggestive || x < significant){
-                                        dotSize += 2;
-                                    }
-                                }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
-                                    if (y < suggestive || x > significant){
-                                        dotSize += 2;
-                                    }
-                                }else if (thresholdSigns[0] == 0){ //both >
-                                    if (y > suggestive || x > significant){
-                                        dotSize += 2;
-                                    }
-                                }else{  //both <
-                                    if (y < suggestive || x < significant){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }
-                        }else{ //sug x, sig y
-                            if (!useSig){  //only use suggestive
-                                if (thresholdSigns[0] == 0){  //>
-                                    if (x > suggestive){
-                                        dotSize += 2;
-                                    }
-                                }else { //<
-                                    if (x < suggestive){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }else if (!useSug){ //only use significant
-                                if (thresholdSigns[1] == 0){ //>
-                                    if (y > significant){
-                                        dotSize += 2;
-                                    }
-                                }else { //<
-                                    if (y < significant){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }else{ //use both
-                                if (thresholdSigns[0] == 0 && thresholdSigns[1] == 1){  //suggestive is >, significant is <
-                                    if (x > suggestive || y < significant){
-                                        dotSize += 2;
-                                    }
-                                }else if (thresholdSigns[0] == 1 && thresholdSigns[1] == 0){ //suggestive is <, significant is >
-                                    if (x < suggestive || y > significant){
-                                        dotSize += 2;
-                                    }
-                                }else if (thresholdSigns[0] == 0){ //both >
-                                    if (x > suggestive || y > significant){
-                                        dotSize += 2;
-                                    }
-                                }else{  //both <
-                                    if (x < suggestive || y < significant){
-                                        dotSize += 2;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                graphics2D.fillRect((int) transX, (int) transY, dotSize, dotSize);
-
-                // add an entity for the item...
-                if (entities != null) {
-                    if (entityArea == null) {
-                        entityArea = new Rectangle2D.Double(transX, transY, dotSize, dotSize);
-                    }
-                    String tip = "";
-                    if (getToolTipGenerator(series,item) != null) {
-                        tip = getToolTipGenerator(series,item).generateToolTip(xyDataset, series, item);
-                    }
-                    String url = null;
-                    if (getURLGenerator() != null) {
-                        url = getURLGenerator().generateURL(xyDataset, series, item);
-                    }
-                    XYItemEntity entity = new XYItemEntity(entityArea, xyDataset, series, item, tip, url);
-                    entities.add(entity);
-                }
-
-                // do we need to update the crosshair values?
-                if (xyPlot.isDomainCrosshairLockedOnData()) {
-                    if (xyPlot.isRangeCrosshairLockedOnData()) {
-                        // both axes
-                        crosshairState.updateCrosshairPoint(x, y, transX, transY, orientation);
-                    }
-                    else {
-                        // just the horizontal axis...
-                        crosshairState.updateCrosshairX(x);
-                    }
-                }
-                else {
-                    if (xyPlot.isRangeCrosshairLockedOnData()) {
-                        // just the vertical axis...
-                        crosshairState.updateCrosshairY(y);
-                    }
-                }
-            }
-        }
-    }
-
-    class PlinkToolTipGenerator extends StandardXYToolTipGenerator{
-
-        public PlinkToolTipGenerator(){
-            super();
-        }
-
-        public String generateToolTip(XYDataset dataset, int series, int item){
-            if (chroms){
-                return (String)chrInfo[seriesKeys[series]-1].get(new Double(dataset.getXValue(series,item)));
-            }else{
-                return (String)nonChrInfo.get(String.valueOf(dataset.getXValue(series,item)) + " " + String.valueOf(dataset.getYValue(series,item)));
-            }
         }
     }
 }
