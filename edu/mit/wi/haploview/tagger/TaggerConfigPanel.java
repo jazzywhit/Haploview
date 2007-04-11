@@ -183,8 +183,9 @@ public class TaggerConfigPanel extends HaploviewTab
         maxNumTagsField = new NumberTextField("",5,false,false);
         maxNumPanel.add(maxNumTagsField);
         maxNumPanel.add(new JLabel("Min distance between tags"));
-        minDistField = new NumberTextField("",5,false,false);
+        minDistField = new NumberTextField("0",5,false,false);
         maxNumPanel.add(minDistField);
+        maxNumPanel.add(new JLabel("bp"));
 
         optsRightPanel.add(maxNumPanel);
 
