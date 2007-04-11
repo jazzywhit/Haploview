@@ -156,7 +156,7 @@ public class ReadDataDialog extends JDialog
         downloadChooserPanel.add(new JLabel("Chromosome:"));
         chromChooser.setSelectedIndex(-1);
         downloadChooserPanel.add(chromChooser);
-        downloadChooserPanel.add(new JLabel("Population:"));
+        downloadChooserPanel.add(new JLabel("Analysis Panel:"));
         downloadChooserPanel.add(popChooser);
         JPanel downloadPositionPanel = new JPanel();
         chromStartField = new NumberTextField("",6,false,false);
@@ -314,7 +314,7 @@ public class ReadDataDialog extends JDialog
         dataFormatPane.addTab("Haps Format",hapsTab);
         dataFormatPane.addTab("HapMap Format",hmpTab);
         dataFormatPane.addTab("PHASE Format",phaseTab);
-        dataFormatPane.addTab("<html>Phased HapMap<br>Download",downloadTab);
+        dataFormatPane.addTab("HapMap Download",downloadTab);
         dataFormatPane.addTab("PLINK Format",plinkTab);
 
         JButton okButton = new JButton("OK");
