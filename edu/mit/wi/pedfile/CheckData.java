@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.20 2006/12/10 14:33:33 jcbarret Exp $
+* $Id: CheckData.java,v 3.21 2007/04/12 17:05:12 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -306,7 +306,11 @@ public class CheckData {
             }
             currentFamily.setMendErrs(mendErrNum);
         }
-        double obsHET = getObsHET(het, hom);
+        int founderHomTotal = 0;
+        for (int i = 0; i < founderHomCount.length; i++){
+            founderHomTotal += founderHomCount[i];
+        }
+        double obsHET = getObsHET(founderHetCount, founderHomTotal);
         double freqStuff[] = null;
         int numHets = count[5];
         count[5] = 0;
