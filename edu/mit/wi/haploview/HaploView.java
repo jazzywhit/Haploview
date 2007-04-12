@@ -849,7 +849,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                         HaploviewTab taggerTab = new HaploviewTab(tagTabs);
                         taggerTab.add(tagTabs);
-                        tabs.addTab(VIEW_TAGGER,taggerTab);
+                        tabs.addTab(VIEW_TAGGER,taggerTab); //todo
                         viewMenuItems[VIEW_TAGGER_NUM].setEnabled(true);
                     }
 
@@ -1349,6 +1349,18 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                     if (taggerConfigPanel != null){
                         taggerConfigPanel.refreshTable();
+                    }
+
+                    if (taggerResultsPanel != null){
+                        for (int i = 0; i < tabs.getComponentCount(); i ++){
+                            if (tabs.getTitleAt(i).equals(VIEW_TAGGER)){
+                                ((HaploviewTabbedPane)(((HaploviewTab)(tabs.getComponentAt(i))).getPrimary())).removeTabAt(1);
+                                taggerResultsPanel = new TaggerResultsPanel();
+                                taggerConfigPanel.addActionListener(taggerResultsPanel);
+                                ((HaploviewTabbedPane)(((HaploviewTab)(tabs.getComponentAt(i))).getPrimary())).addTab("Results",taggerResultsPanel);
+                                break;
+                            }
+                        }
                     }
 
                     if(permutationPanel != null) {
