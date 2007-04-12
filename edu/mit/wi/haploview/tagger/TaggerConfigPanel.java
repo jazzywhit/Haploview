@@ -149,6 +149,8 @@ public class TaggerConfigPanel extends HaploviewTab
         forceExcludeButton.addActionListener(this);
         JButton excludeAllButton = new JButton("Exclude All");
         excludeAllButton.addActionListener(this);
+        JButton uncaptureAllButton = new JButton("Uncapture All");
+        uncaptureAllButton.addActionListener(this);
         JButton designScoresButton = new JButton("Design Scores");
         designScoresButton.addActionListener(this);
         JButton allelesCapturedButton = new JButton("Alleles to Capture");
@@ -158,6 +160,7 @@ public class TaggerConfigPanel extends HaploviewTab
         buttonPanel.setMaximumSize(new Dimension(600,100));
         buttonPanel.add(includeAllButton);
         buttonPanel.add(excludeAllButton);
+        buttonPanel.add(uncaptureAllButton);
         buttonPanel.add(resetTableButton);
         add(buttonPanel);
 
@@ -416,6 +419,10 @@ public class TaggerConfigPanel extends HaploviewTab
             for (int i = 0; i < table.getRowCount(); i++){
                 table.setValueAt(new Boolean(true),i,EXCLUDE_COL);
                 table.setValueAt(new Boolean(true),i,CAPTURE_COL);
+            }
+        }else if (command.equals("Uncapture All")){
+            for (int i = 0; i < table.getRowCount(); i++){
+                table.setValueAt(new Boolean(false),i,CAPTURE_COL);
             }
         }else if (command.equals("Design Scores")){
             designScores = new Hashtable(1,1);
