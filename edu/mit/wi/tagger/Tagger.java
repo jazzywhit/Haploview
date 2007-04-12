@@ -492,6 +492,25 @@ public class Tagger {
                 tags.remove(curTag);
             }
         }
+
+        //this removes multimarker tags that are not the best tag for any alleles
+         for (int i = 0; i < tags.size(); i++){
+            if (((TagSequence)tags.get(i)).getBestTagged().size() == 0){
+                TagSequence ts = (TagSequence)tags.get(i);
+                Vector taggedByHap = ts.getTagged();
+                for (int j = 0; j < taggedByHap.size(); j++){
+                    VariantSequence vs =  (VariantSequence)taggedByHap.get(j);
+                    vs.removeTag(ts);
+                    if (vs.getTags().size() == 0){
+                       //this should never happen!
+                    }
+                }
+                HaploText.logger.debug(((TagSequence)tags.get(i)).getSequence().getName() + ": " + ((TagSequence)tags.get(i)).getTagged().size() + " " + ((TagSequence)tags.get(i)).getBestTagged().size());
+                HaploText.logger.debug("Removing the above tag since it isn't the best tag for anything.");
+                tags.remove(i);
+                i--;
+            }
+         }
     }
 
     private Vector generateTests(SNP s, Vector availTags){
