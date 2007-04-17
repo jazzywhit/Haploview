@@ -97,7 +97,10 @@ public class TaggerResultsPanel extends HaploviewTab
         JScrollPane taggedListScrollPane = new JScrollPane(taggedList);
         JPanel bottomListPanel = new JPanel();
         bottomListPanel.setLayout(new BoxLayout(bottomListPanel, BoxLayout.Y_AXIS));
-        bottomListPanel.add(new JLabel("Alleles captured by Current Selection"));
+        //bottomListPanel.add(new JLabel("Alleles captured by Current Selection"));
+        JLabel capturesLabel = new JLabel("Alleles captured by Current Selection");
+        capturesLabel.setFont(new Font(defaultFont.getName(),Font.BOLD,(int)(defaultFont.getSize()*1.5)));
+        bottomListPanel.add(capturesLabel);
         bottomListPanel.add(taggedListScrollPane);
 
         JPanel listsPanel = new JPanel();
