@@ -150,7 +150,7 @@ public class ReadDataDialog extends JDialog
          //Download Panel...
         JPanel downloadChooserPanel = new JPanel();
         JLabel downloadLabel = new JLabel("*Phased HapMap downloads require an active internet connection");
-        downloadChooserPanel.add(new JLabel("Release"));
+        downloadChooserPanel.add(new JLabel("Release:"));
         downloadChooserPanel.add(phaseChooser);
         phaseChooser.setSelectedIndex(1);
         downloadChooserPanel.add(new JLabel("Chromosome:"));
