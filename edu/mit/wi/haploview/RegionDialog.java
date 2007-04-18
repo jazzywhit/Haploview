@@ -102,7 +102,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             }
 
             String[] returnStrings;
-            returnStrings = new String[]{"Chr " + chrom + ":" + panel + ":" + gotoStart + ".." +
+            returnStrings = new String[]{"Chr" + chrom + ":" + panel + ":" + gotoStart + ".." +
                     gotoEnd, panel, gotoStart, gotoEnd, chrom, phase, "txt"};
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
