@@ -849,7 +849,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                         HaploviewTab taggerTab = new HaploviewTab(tagTabs);
                         taggerTab.add(tagTabs);
-                        tabs.addTab(VIEW_TAGGER,taggerTab); //todo
+                        tabs.addTab(VIEW_TAGGER,taggerTab);
                         viewMenuItems[VIEW_TAGGER_NUM].setEnabled(true);
                     }
 
