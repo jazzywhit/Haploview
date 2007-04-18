@@ -37,9 +37,9 @@ public class ReadDataDialog extends JDialog
     private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox plinkChromChooser = new JComboBox(CHROM_NAMES);
-    private JComboBox popChooser = new JComboBox(POP_NAMES);
+    private JComboBox panelChooser = new JComboBox(PANEL_NAMES);
     private JComboBox phaseChooser = new JComboBox(RELEASE_NAMES);
-    private String chromChoice, popChoice, phaseChoice, embed, selectCols;
+    private String chromChoice, panelChoice, phaseChoice, embed, selectCols;
     private boolean isDownloaded = false;
 
     JTabbedPane dataFormatPane = new JTabbedPane(JTabbedPane.LEFT);
@@ -157,7 +157,7 @@ public class ReadDataDialog extends JDialog
         chromChooser.setSelectedIndex(-1);
         downloadChooserPanel.add(chromChooser);
         downloadChooserPanel.add(new JLabel("Analysis Panel:"));
-        downloadChooserPanel.add(popChooser);
+        downloadChooserPanel.add(panelChooser);
         JPanel downloadPositionPanel = new JPanel();
         chromStartField = new NumberTextField("",6,false,false);
         chromStartField.setEnabled(true);
@@ -374,9 +374,9 @@ public class ReadDataDialog extends JDialog
             }
 
             if (((String)h.getPhasedSelection().get(2)).equals("YRI")){
-                popChooser.setSelectedIndex(1);
+                panelChooser.setSelectedIndex(1);
             }else if (((String)h.getPhasedSelection().get(2)).equals("CHB+JPT")){
-                popChooser.setSelectedIndex(2);
+                panelChooser.setSelectedIndex(2);
             }
 
             chromStartField.setText((String)h.getPhasedSelection().get(3));
@@ -553,7 +553,7 @@ public class ReadDataDialog extends JDialog
                     return;
                 }
                 chromChoice = (String)chromChooser.getSelectedItem();
-                popChoice = (String)popChooser.getSelectedItem();
+                panelChoice = (String) panelChooser.getSelectedItem();
                 phaseChoice = (String)phaseChooser.getSelectedItem();
 
             }
@@ -589,8 +589,8 @@ public class ReadDataDialog extends JDialog
             }else if (fileType == PHASED_FILE ){
                 returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), phaseLegendField.getText(), chromChoice};
             }else if (fileType == PHASEDHMPDL_FILE){
-                returnStrings = new String[]{"Chr" + chromChoice + ":" + popChoice + ":" + chromStartField.getText() + ".." +
-                        chromEndField.getText(), popChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice, "txt"};
+                returnStrings = new String[]{"Chr" + chromChoice + ":" + panelChoice + ":" + chromStartField.getText() + ".." +
+                        chromEndField.getText(), panelChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice, "txt"};
             }else if (fileType == PLINK_FILE){
                 returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(),null,embed,null,chromChoice,selectCols};
             }

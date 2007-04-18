@@ -69,7 +69,7 @@ public class HaploText implements Constants{
     private Vector argHandlerMessages;
     private String chromosomeArg;
     private String[] phasedHapMapInfo;
-    private String populationArg, startPos, endPos, release;
+    private String panelArg, startPos, endPos, release;
     private String logFileName, debugFileName;
 
     public static Logger logger = Logger.getLogger("logger");
@@ -119,8 +119,8 @@ public class HaploText implements Constants{
         return chromosomeArg;
     }
 
-    public String getPopulation(){
-        return populationArg;
+    public String getPanel(){
+        return panelArg;
     }
 
     public String getStartPos(){
@@ -403,7 +403,7 @@ public class HaploText implements Constants{
                     phasedhmplegendFileName = args[i];
                 }
             }
-            else if (args[i].equalsIgnoreCase("-phasedhapmapdl")){
+            else if (args[i].equalsIgnoreCase("-hapmapDownload")){
                 phasedhapmapDownload = true;
             }
             else if (args[i].equalsIgnoreCase("-plink")){
@@ -785,12 +785,12 @@ public class HaploText implements Constants{
                 }
 
             }
-            else if(args[i].equalsIgnoreCase("-population")){
+            else if(args[i].equalsIgnoreCase("-panel")){
                 i++;
                 if(!(i>=args.length) && !(args[i].charAt(0)== '-')) {
-                    populationArg = args[i];
+                    panelArg = args[i];
                 }else {
-                    die(args[i-1] + "requires a population name");
+                    die(args[i-1] + "requires an analysis panel name");
                 }
             }
             else if(args[i].equalsIgnoreCase("-startpos")){
@@ -1145,10 +1145,10 @@ public class HaploText implements Constants{
 
         if (phasedhapmapDownload){
             if (chromosomeArg == null){
-                die("-phasedhapmapdl requires a chromosome specification");
-            }else if (!(populationArg.equalsIgnoreCase("CEU") || populationArg.equalsIgnoreCase("YRI")  ||
-                    populationArg.equalsIgnoreCase("CHB+JPT"))){
-                die("-phasedhapmapdl requires a population specification of CEU, YRI, or CHB+JPT");
+                die("-hapmapDownload requires a chromosome specification");
+            }else if (!(panelArg.equalsIgnoreCase("CEU") || panelArg.equalsIgnoreCase("YRI")  ||
+                    panelArg.equalsIgnoreCase("CHB+JPT"))){
+                die("-hapmapDownload requires an analysis panel specification of CEU, YRI, or CHB+JPT");
             }
 
             try{
@@ -1276,9 +1276,9 @@ public class HaploText implements Constants{
             phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, chromosomeArg};
         }
         else if (phasedhapmapDownload){
-            fileName = "Chromosome" + chromosomeArg + populationArg;
+            fileName = "Chromosome" + chromosomeArg + panelArg;
             fileType = PHASEDHMPDL_FILE;
-            phasedHapMapInfo = new String[]{fileName, populationArg, startPos, endPos, chromosomeArg, release, "max"};
+            phasedHapMapInfo = new String[]{fileName, panelArg, startPos, endPos, chromosomeArg, release, "max"};
         }else{
             fileName = hapmapFileName;
             fileType = HMP_FILE;
@@ -1301,7 +1301,7 @@ public class HaploText implements Constants{
 
             if (fileName != null){
                 if (phasedhapmapDownload){
-                    commandLogger.info("Downloading chromosome " + chromosomeArg + ", population " + populationArg + ", " +
+                    commandLogger.info("Downloading chromosome " + chromosomeArg + ", analysis panel " + panelArg + ", " +
                             startPos + ".." + endPos + " from HapMap release " + release + ".");
                 }else{
                     commandLogger.info("Using data file: " + fileName);

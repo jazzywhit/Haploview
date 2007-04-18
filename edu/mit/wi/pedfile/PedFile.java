@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.43 2007/03/27 14:18:24 djbender Exp $
+* $Id: PedFile.java,v 3.44 2007/04/18 16:53:42 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1019,11 +1019,11 @@ public class PedFile {
         byte[] byteDataT = new byte[0];
         byte[] byteDataU = new byte[0];
         this.allIndividuals = new Vector();
-        String populationChoice;
+        String panelChoice;
         if (info[1].equals("CHB+JPT")){
-            populationChoice = "JC";
+            panelChoice = "JC";
         }else{
-            populationChoice = info[1];
+            panelChoice = info[1];
         }
         boolean pseudoChecked = false;
         long startPos;
@@ -1042,9 +1042,9 @@ public class PedFile {
         String output = info[6];
         boolean infoDone = false;
         boolean hminfoDone = false;
-        String urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + populationChoice +
+        String urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + panelChoice +
                 "&start=" + startPos + "&stop=" + stopPos + "&ds=p" + phaseChoice + "&out=" + output + "&filter=cons+"
-                + populationChoice.toLowerCase();
+                + panelChoice.toLowerCase();
 
         try{
             URL hmpUrl = new URL(urlHmp);
@@ -1200,7 +1200,7 @@ public class PedFile {
                                                        byteDataU[index] = byteDataT[index];
                                                    }*/
                                 throw new PedFileException("Haploview does not currently support regions encompassing both\n"
-                                        + " pseudoautosomal and non-pseudoautosomal markers.");
+                                        + "pseudoautosomal and non-pseudoautosomal markers.");
                             }else {
                                 throw new PedFileException("File format error.");
                             }

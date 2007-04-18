@@ -10,7 +10,7 @@ import java.util.Vector;
 public class RegionDialog extends JDialog implements ActionListener, Constants {
     private HaploView hv;
 
-    private JComboBox popChooser, phaseChooser;
+    private JComboBox panelChooser, phaseChooser;
     private JCheckBox gBrowse, annotate;
     private NumberTextField rangeInput;
     private String chrom, marker;
@@ -30,14 +30,14 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
 
         JPanel chooserPanel = new JPanel();
-        chooserPanel.add(new JLabel("Release"));
+        chooserPanel.add(new JLabel("Release:"));
         phaseChooser = new JComboBox(RELEASE_NAMES);
         chooserPanel.add(phaseChooser);
         phaseChooser.setSelectedIndex(1);
         chooserPanel.add(new JLabel("Chr"+chr));
-        popChooser = new JComboBox(POP_NAMES);
-        chooserPanel.add(new JLabel("Pop:"));
-        chooserPanel.add(popChooser);
+        panelChooser = new JComboBox(PANEL_NAMES);
+        chooserPanel.add(new JLabel("Analysis Panel:"));
+        chooserPanel.add(panelChooser);
         chooserPanel.add(new JLabel("Position: " + new Long(position/1000).toString()));
         chooserPanel.add(new JLabel("+/-"));
         rangeInput = new NumberTextField("100",6,false,false);
@@ -85,7 +85,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            String pop = (String)popChooser.getSelectedItem();
+            String panel = (String) panelChooser.getSelectedItem();
             int range = Integer.parseInt(rangeInput.getText());
             long start = (markerPosition/1000)-range;
             if (start < 0){
@@ -102,8 +102,8 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             }
 
             String[] returnStrings;
-            returnStrings = new String[]{"Chr " + chrom + ":" + pop + ":" + gotoStart + ".." +
-                    gotoEnd, pop, gotoStart, gotoEnd, chrom, phase, "txt"};
+            returnStrings = new String[]{"Chr " + chrom + ":" + panel + ":" + gotoStart + ".." +
+                    gotoEnd, panel, gotoStart, gotoEnd, chrom, phase, "txt"};
             this.dispose();
             hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
             Vector chipSNPs = new Vector(prp.getSNPs());

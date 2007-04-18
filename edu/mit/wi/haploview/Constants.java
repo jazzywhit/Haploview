@@ -121,7 +121,7 @@ public interface Constants {
     //phased data stuff
     static final String[] CHROM_NAMES = {"1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"};
-    static final String[] POP_NAMES = {"CEU", "YRI", "CHB+JPT"};
+    static final String[] PANEL_NAMES = {"CEU", "YRI", "CHB+JPT"};
     static final String[] RELEASE_NAMES = {"16a","21"};
 
     //plot types
@@ -150,7 +150,7 @@ public interface Constants {
             "-phasedhmpsample <samplefile>   Specify a phased HapMap sample file\n" +
             "-phasedhmplegend <legendfile>   Specify a phased HapMap legend file\n" +
             "-gzip                           Indicates that phased HapMap input files use GZIP compression\n" +
-            "-phasedhapmapdl                 Specify a phased HapMap download\n" +
+            "-hapmapDownload                 Specify a phased HapMap download\n" +
             "-haps <hapsfile>                Specify an input file in .haps format\n" +
             "-info <infofile>                Specify a marker info file\n" +
             "-plink <plinkfile>              Specify a PLINK or other results file\n" +
@@ -167,7 +167,7 @@ public interface Constants {
             "                                skipped for all analyses. Format: 1,2,5..12\n"+
             "-skipcheck                      Skips the various genotype file checks\n" +
             "-chromosome <1-22,X,Y>          Specifies the chromosome for this file or download\n" +
-            "-population <CEU,YRI,CHB+JPT>   Specifies the population for this HapMap download\n" +
+            "-panel <CEU,YRI,CHB+JPT>        Specifies the analysis panel for this HapMap download\n" +
             "-startpos <integer>             Specifies the start position in kb for this HapMap download\n" +
             "-endpos <integer>               Specifies the end position in kb for this HapMap download\n" +
             "-release <16a,21>               Specifies the HapMap phase for this HapMap download (defaults to 21)\n" +

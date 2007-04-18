@@ -1591,9 +1591,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 window.readGenotypes(inputArray, PHASED_FILE, false);
             }else if (argParser.getPhasedHmpDownload()){
                 Options.setShowGBrowse(true);
-                inputArray[0] = "Chr" + argParser.getChromosome() + ":" + argParser.getPopulation() + ":" +
+                inputArray[0] = "Chr" + argParser.getChromosome() + ":" + argParser.getPanel() + ":" +
                         argParser.getStartPos() + ".." + argParser.getEndPos();
-                inputArray[1] = argParser.getPopulation();
+                inputArray[1] = argParser.getPanel();
                 inputArray[2] = argParser.getStartPos();
                 inputArray[3] = argParser.getEndPos();
                 inputArray[4] = argParser.getChromosome();
