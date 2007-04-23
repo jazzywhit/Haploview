@@ -52,7 +52,7 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
 
         JPanel buildPanel = new JPanel();
         buildPanel.add(new JLabel("Genome build: "));
-        String[]b ={"34","35"};
+        String[]b ={"34","35","36"};
         buildBox = new JComboBox(b);
         buildBox.setSelectedIndex(1);
         buildPanel.add(buildBox);
@@ -66,7 +66,7 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
         buttonPanel.add(okBut);
         buttonPanel.add(cancelBut);
         contents.add(buttonPanel);
-        this.getRootPane().setDefaultButton(okBut);        
+        this.getRootPane().setDefaultButton(okBut);
 
         contents.add(new JLabel("(Note: this option requires an internet connection)"));
 
