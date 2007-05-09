@@ -21,7 +21,7 @@ public class Options implements Constants{
     private static int printWhat = D_PRIME;
     private static boolean showBlockTags = false;
     private static boolean printAllTags = false;
-    private static boolean gZip, SNPBased, httpPlink, httpMap;
+    private static boolean gZip, SNPBased;
 
     public static int getLDColorScheme() {
         return LDColorScheme;
@@ -191,22 +191,6 @@ public class Options implements Constants{
 
     public static void setSNPBased(boolean snp){
         SNPBased = snp;
-    }
-
-    public static boolean getPlinkHttp(){
-        return httpPlink;
-    }
-
-    public static void setPlinkHttp(boolean http){
-        httpPlink = http;
-    }
-
-    public static boolean getMapHttp(){
-        return httpMap;
-    }
-
-    public static void setMapHttp(boolean http){
-        httpMap = http;
     }
 
     public static void setProxy(String host, String port){

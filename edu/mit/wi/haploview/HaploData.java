@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.text.NumberFormat;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -60,7 +62,7 @@ public class HaploData implements Constants{
         return this.pedFile;
     }
 
-    void prepareMarkerInput(File infile, String[][] hapmapGoodies) throws IOException, HaploViewException{
+    void prepareMarkerInput(InputStream inStream, String[][] hapmapGoodies) throws IOException, HaploViewException{
         //this method is called to gather data about the markers used.
         //It is assumed that the input file is two columns, the first being
         //the name and the second the absolute position. the maxdist is
@@ -81,16 +83,12 @@ public class HaploData implements Constants{
         dupsToBeFlagged = false;
         dupNames = false;
         try{
-            if (infile != null){
-                if (infile.length() < 1){
-                    throw new HaploViewException("Info file is empty or does not exist: " + infile.getName());
-                }
-
+            if (inStream != null){
+                //read the input file:
+                BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
                 String currentLine;
                 long prevloc = -1000000000;
 
-                //read the input file:
-                BufferedReader in = new BufferedReader(new FileReader(infile));
 
                 int lineCount = 0;
                 while ((currentLine = in.readLine()) != null){
@@ -402,12 +400,24 @@ public class HaploData implements Constants{
         }
     }
 
-    public Vector prepareHapsInput(File infile) throws IOException, HaploViewException, PedFileException {
+    public Vector prepareHapsInput(String name) throws IOException, HaploViewException, PedFileException {
         //this method is called to suck in data from a file (its only argument)
         //of genotypes and sets up the Chromosome objects.
         Vector chroms = new Vector();
         Vector hapsFileStrings = new Vector();
-        BufferedReader reader = new BufferedReader(new FileReader(infile));
+        BufferedReader reader;
+        try{
+            URL inURL = new URL(name);
+            reader = new BufferedReader(new InputStreamReader(inURL.openStream()));
+        }catch(MalformedURLException mfe){
+            File inFile = new File(name);
+            if (inFile.length() < 1){
+                throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
+            }
+            reader = new BufferedReader(new FileReader(inFile));
+        }catch(IOException ioe){
+            throw new HaploViewException("Could not connect to " + name);
+        }
 
         String line;
         while((line = reader.readLine())!=null){
@@ -454,12 +464,25 @@ public class HaploData implements Constants{
         return result;
     }
 
-    public Vector linkageToChrom(File infile, int type)
+    public Vector linkageToChrom(String name, int type)
             throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
 
         Vector pedFileStrings = new Vector();
         Vector hapsDataStrings = new Vector();
-        BufferedReader reader = new BufferedReader(new FileReader(infile));
+
+        BufferedReader reader;
+        try{
+            URL inURL = new URL(name);
+            reader = new BufferedReader(new InputStreamReader(inURL.openStream()));
+        }catch(MalformedURLException mfe){
+            File inFile = new File(name);
+            if (inFile.length() < 1){
+                throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
+            }
+            reader = new BufferedReader(new FileReader(inFile));
+        }catch(IOException ioe){
+            throw new HaploViewException("Could not connect to " + name);
+        }
         String line;
         while((line = reader.readLine())!=null){
             if (line.length() == 0){
@@ -1927,15 +1950,15 @@ public class HaploData implements Constants{
         saveDprimeWriter.close();
     }
 
-    public void readAnalysisTrack(File inFile) throws HaploViewException, IOException{
+    public void readAnalysisTrack(InputStream inStream) throws HaploViewException, IOException{
         //clear out the vector of old values
 
-        if (!inFile.exists()){
-            throw new HaploViewException("File " + inFile.getName() + " doesn't exist!");
+        if (inStream == null){
+            throw new HaploViewException("Custom analysis track file doesn't exist!");
         }
 
         XYSeries xys = new XYSeries(new Integer(analysisTracks.getSeriesCount()));
-        BufferedReader in = new BufferedReader(new FileReader(inFile));
+        BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
         String currentLine;
         int lineCount = 0;
         while ((currentLine = in.readLine()) != null){
@@ -1944,7 +1967,7 @@ public class HaploData implements Constants{
 
             if (st.countTokens() == 1){
                 //complain if we have only one col
-                throw new HaploViewException("File error on line " + lineCount + " in " + inFile.getName());
+                throw new HaploViewException("File error on line " + lineCount + " in the custom analysis track file");
             }else if (st.countTokens() == 0){
                 //skip blank lines
                 continue;
@@ -1954,7 +1977,7 @@ public class HaploData implements Constants{
                 pos = new Double(st.nextToken());
                 val = new Double(st.nextToken());
             }catch (NumberFormatException nfe) {
-                throw new HaploViewException("Format error on line " + lineCount + " in " + inFile.getName());
+                throw new HaploViewException("Format error on line " + lineCount + " in the custom analysis track file");
             }
             xys.add(pos,val);
         }
@@ -1962,13 +1985,13 @@ public class HaploData implements Constants{
         trackExists = true;
     }
 
-    public Vector readBlocks(File infile) throws HaploViewException, IOException{
-        if (!infile.exists()){
-            throw new HaploViewException("File " + infile.getName() + " doesn't exist!");
+    public Vector readBlocks(InputStream inStream) throws HaploViewException, IOException{
+        if (inStream == null){
+            throw new HaploViewException("Blocks file doesn't exist!");
         }
 
         Vector cust = new Vector();
-        BufferedReader in = new BufferedReader(new FileReader(infile));
+        BufferedReader in = new BufferedReader(new InputStreamReader(inStream));
         String currentLine;
         int lineCount = 0;
         int highestYet = -1;
@@ -2010,7 +2033,7 @@ public class HaploData implements Constants{
                     cust.add(thisBlock);
                 }
             }catch (NumberFormatException nfe) {
-                throw new HaploViewException("Format error on line " + lineCount + " in " + infile.getName());
+                throw new HaploViewException("Format error on line " + lineCount + " in the blocks file");
             }
         }
         return cust;

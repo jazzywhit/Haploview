@@ -8,6 +8,8 @@ import edu.mit.wi.pedfile.PedFileException;
 
 import java.util.*;
 import java.io.*;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 public class AssociationTestSet implements Constants{
 
@@ -166,7 +168,7 @@ public class AssociationTestSet implements Constants{
         if(permuteInd == null || permuteInd.size() != indList.size()) {
             permuteInd = new Vector();
             for (int i = 0; i < indList.size(); i++){
-                permuteInd.add(new Boolean(false));
+                permuteInd.add(Boolean.FALSE);
             }
         }
 
@@ -285,21 +287,21 @@ public class AssociationTestSet implements Constants{
 
     private void buildParenTDTTrioSet(PedFile pf, Vector permuteInd, Vector permuteDiscPar, TreeSet snpsToBeTested) throws PedFileException{
         Vector results = new Vector();
-        //TODO: implement for X chrom 
+        //TODO: implement for X chrom
 
         Vector indList = pf.getAllIndividuals();
 
         if(permuteInd == null || permuteInd.size() != indList.size()) {
             permuteInd = new Vector();
             for (int i = 0; i < indList.size(); i++){
-                permuteInd.add(new Boolean(false));
+                permuteInd.add(Boolean.FALSE);
             }
         }
 
         if(permuteDiscPar == null || permuteDiscPar.size() != indList.size()){
             permuteDiscPar = new Vector();
             for (int i = 0; i < indList.size(); i++){
-                permuteDiscPar.add(new Boolean(false));
+                permuteDiscPar.add(Boolean.FALSE);
             }
         }
 
@@ -505,11 +507,22 @@ public class AssociationTestSet implements Constants{
         this.results = results;
     }
 
-    public AssociationTestSet(String fileName) throws IOException, HaploViewException{
+    public AssociationTestSet(String name) throws IOException, HaploViewException{
         tests = new Vector();
         whitelist = new HashSet();
-        File testListFile = new File(fileName);
-        BufferedReader in = new BufferedReader(new FileReader(testListFile));
+        BufferedReader in;
+        try{
+            URL inURL = new URL(name);
+            in = new BufferedReader(new InputStreamReader(inURL.openStream()));
+        }catch(MalformedURLException mfe){
+            File testListFile = new File(name);
+            if (testListFile.length() < 1){
+                throw new HaploViewException("Custom tests file is empty or missing.");
+            }
+            in = new BufferedReader(new FileReader(testListFile));
+        }catch(IOException ioe){
+            throw new HaploViewException("Could not connect to " + name);
+        }
 
         String currentLine;
         int lineCount = 0;

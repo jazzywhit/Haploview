@@ -18,6 +18,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.*;
 import java.net.URL;
+import java.net.MalformedURLException;
 
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
@@ -364,7 +365,23 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             fc.setSelectedFile(new File(""));
             int returnVal = fc.showOpenDialog(this);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-                readMarkers(fc.getSelectedFile(),null);
+                File markerFile = fc.getSelectedFile();
+                if (markerFile.length() < 1){
+                    JOptionPane.showMessageDialog(this,
+                            "Marker information file is empty or non-existent: " + markerFile.getName(),
+                            "File Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+                InputStream infoStream = null;
+                try{
+                    infoStream = new FileInputStream(markerFile);
+                }catch(IOException ioe){
+                    JOptionPane.showMessageDialog(this,
+                            "Error reading the marker information file: " + markerFile.getName(),
+                            "File Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+                readMarkers(infoStream,null);
             }
         }else if (command.equals(READ_ANALYSIS_TRACK)){
             fc.setSelectedFile(new File(""));
@@ -609,7 +626,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     void readAnalysisFile(File inFile){
         try{
-            theData.readAnalysisTrack(inFile);
+            theData.readAnalysisTrack(new FileInputStream(inFile));
         }catch (HaploViewException hve){
             JOptionPane.showMessageDialog(this,
                     hve.getMessage(),
@@ -659,10 +676,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             }
 
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            if (!downloadFile && inFile.length() < 1){
-                throw new HaploViewException("Genotype file is empty or nonexistent: " + inFile.getName());
-            }
-
             if (type == HAPS_FILE){
                 //these are not available for non ped files
                 viewMenuItems[VIEW_CHECK_NUM].setEnabled(false);
@@ -672,11 +685,11 @@ public class HaploView extends JFrame implements ActionListener, Constants{
             theData = new HaploData();
 
             if (type == HAPS_FILE){
-                theData.prepareHapsInput(new File(inputOptions[0]));
+                theData.prepareHapsInput(inputOptions[0]);
             }else if (type == PHASED_FILE || type == PHASEDHMPDL_FILE){
                 theData.phasedToChrom(inputOptions, downloadFile);
             }else{
-                theData.linkageToChrom(inFile, type);
+                theData.linkageToChrom(inputOptions[0], type);
             }
 
             if (type != PHASED_FILE && type != PHASEDHMPDL_FILE){
@@ -698,12 +711,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             //deal with marker information
             theData.infoKnown = false;
-            File markerFile;
-            if (inputOptions[1] == null){
-                markerFile = null;
-            }else{
-                markerFile = new File(inputOptions[1]);
-            }
 
             //turn on/off gbrowse menu
             if (Options.isGBrowseShown()){
@@ -712,8 +719,29 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 gbEditItem.setEnabled(false);
             }
 
+            InputStream markerStream = null;
+            if (inputOptions[1] != null && type != PHASED_FILE && type != PHASEDHMPDL_FILE){
+                try {
+                    URL markerURL = new URL(inputOptions[1]);
+                    markerStream = markerURL.openStream();
+                }catch (MalformedURLException mfe){
+                    File markerFile = new File(inputOptions[1]);
+                    if (markerFile.length() < 1){
+                        JOptionPane.showMessageDialog(this,
+                                "Marker information file is empty or non-existent: " + markerFile.getName(),
+                                "File Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                    markerStream = new FileInputStream(markerFile);
+                }catch (IOException ioe){
+                    JOptionPane.showMessageDialog(this,
+                            "Could not connect to " + inputOptions[1],
+                            "File Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
             if (type == HAPS_FILE){
-                readMarkers(markerFile, null);
+                readMarkers(markerStream, null);
                 //initialize realIndex
                 Chromosome.doFilter(Chromosome.getUnfilteredSize());
                 customAssocSet = null;
@@ -727,7 +755,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 checkPanel = new CheckDataPanel(this);
                 Chromosome.doFilter(checkPanel.getMarkerResults());
             }else{
-                readMarkers(markerFile, theData.getPedFile().getHMInfo());
+                readMarkers(markerStream, theData.getPedFile().getHMInfo());
                 //we read the file in first, so we can whitelist all the markers in the custom test set
                 HashSet whiteListedCustomMarkers = new HashSet();
                 if (inputOptions[2] != null){
@@ -1006,13 +1034,22 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             if (inputOptions[6] != null && (wgaFile != null || secondaryFile != null)){
                 try{
-                    File columnFile;
+                    BufferedReader wgaReader = null;
                     if (wgaFile != null){
-                        columnFile = new File(wgaFile);
+                        try{
+                            URL columnURL = new URL(wgaFile);
+                            wgaReader = new BufferedReader(new InputStreamReader(columnURL.openStream()));
+                        }catch(MalformedURLException mfe){
+                            wgaReader = new BufferedReader(new FileReader(new File(wgaFile)));
+                        }catch(IOException ioe){
+                            JOptionPane.showMessageDialog(this,
+                                    "Could not connect to " + wgaFile,
+                                    "File Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
                     }else{
-                        columnFile = new File(secondaryFile);
+                        wgaReader = new BufferedReader(new FileReader(new File(secondaryFile)));
                     }
-                    BufferedReader wgaReader = new BufferedReader(new FileReader(columnFile));
                     String columnLine = wgaReader.readLine();
                     wgaReader.close();
                     Vector colChoices = new Vector();
@@ -1034,7 +1071,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     colChooser.setVisible(true);
                 }catch(IOException ioe){
                     JOptionPane.showMessageDialog(this,
-                            "Error reading file.",
+                            "Error reading the results file.",
                             "File Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
@@ -1114,7 +1151,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
     void readBlocksFile(File file) {
         try{
-            Vector cust = theData.readBlocks(file);
+            Vector cust = theData.readBlocks(new FileInputStream(file));
             theData.guessBlocks(BLOX_CUSTOM, cust);
             changeBlocks(BLOX_CUSTOM);
         }catch (HaploViewException hve){
@@ -1130,9 +1167,9 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
-    void readMarkers(File inputFile, String[][] hminfo){
+    void readMarkers(InputStream is, String[][] hminfo){
         try {
-            theData.prepareMarkerInput(inputFile, hminfo);
+            theData.prepareMarkerInput(is, hminfo);
             if (theData.infoKnown){
                 analysisItem.setEnabled(true);
                 gbrowseItem.setEnabled(true);
@@ -1565,54 +1602,56 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             //parse command line stuff for input files or prompt data dialog
             String[] inputArray = new String[7];
-            if (argParser.getHapsFileName() != null){
-                inputArray[0] = argParser.getHapsFileName();
-                inputArray[1] = argParser.getInfoFileName();
-                inputArray[2] = null;
-                window.readGenotypes(inputArray, HAPS_FILE, false);
-            }else if (argParser.getPedFileName() != null){
-                inputArray[0] = argParser.getPedFileName();
-                inputArray[1] = argParser.getInfoFileName();
-                inputArray[2] = null;
-                window.readGenotypes(inputArray, PED_FILE, false);
-            }else if (argParser.getHapmapFileName() != null){
-                inputArray[0] = argParser.getHapmapFileName();
-                inputArray[1] = null;
-                inputArray[2] = null;
-                window.readGenotypes(inputArray, HMP_FILE, false);
-            }else if (argParser.getPhasedHmpDataName() != null){
-                if (!argParser.getChromosome().equals("")){
+            if (!argParser.getCommandLineError()){
+                if (argParser.getHapsFileName() != null){
+                    inputArray[0] = argParser.getHapsFileName();
+                    inputArray[1] = argParser.getInfoFileName();
+                    inputArray[2] = null;
+                    window.readGenotypes(inputArray, HAPS_FILE, false);
+                }else if (argParser.getPedFileName() != null){
+                    inputArray[0] = argParser.getPedFileName();
+                    inputArray[1] = argParser.getInfoFileName();
+                    inputArray[2] = null;
+                    window.readGenotypes(inputArray, PED_FILE, false);
+                }else if (argParser.getHapmapFileName() != null){
+                    inputArray[0] = argParser.getHapmapFileName();
+                    inputArray[1] = null;
+                    inputArray[2] = null;
+                    window.readGenotypes(inputArray, HMP_FILE, false);
+                }else if (argParser.getPhasedHmpDataName() != null){
+                    if (!argParser.getChromosome().equals("")){
+                        Options.setShowGBrowse(true);
+                    }
+                    inputArray[0] = argParser.getPhasedHmpDataName();
+                    inputArray[1] = argParser.getPhasedHmpSampleName();
+                    inputArray[2] = argParser.getPhasedHmpLegendName();
+                    inputArray[3] = argParser.getChromosome();
+                    window.readGenotypes(inputArray, PHASED_FILE, false);
+                }else if (argParser.getPhasedHmpDownload()){
                     Options.setShowGBrowse(true);
+                    inputArray[0] = "Chr" + argParser.getChromosome() + ":" + argParser.getPanel() + ":" +
+                            argParser.getStartPos() + ".." + argParser.getEndPos();
+                    inputArray[1] = argParser.getPanel();
+                    inputArray[2] = argParser.getStartPos();
+                    inputArray[3] = argParser.getEndPos();
+                    inputArray[4] = argParser.getChromosome();
+                    inputArray[5] = argParser.getRelease();
+                    inputArray[6] = "txt";
+                    window.readGenotypes(inputArray, PHASEDHMPDL_FILE, true);
+                }else if (argParser.getPlinkFileName() != null){
+                    inputArray[0] = argParser.getPlinkFileName();
+                    inputArray[1] = argParser.getMapFileName();
+                    inputArray[2] = null;
+                    inputArray[3] = null;
+                    inputArray[4] = null;
+                    inputArray[5] = argParser.getChromosome();
+                    inputArray[6] = argParser.getSelectCols();
+                    window.readWGA(inputArray);
+                }else{
+                    ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
+                    readDialog.pack();
+                    readDialog.setVisible(true);
                 }
-                inputArray[0] = argParser.getPhasedHmpDataName();
-                inputArray[1] = argParser.getPhasedHmpSampleName();
-                inputArray[2] = argParser.getPhasedHmpLegendName();
-                inputArray[3] = argParser.getChromosome();
-                window.readGenotypes(inputArray, PHASED_FILE, false);
-            }else if (argParser.getPhasedHmpDownload()){
-                Options.setShowGBrowse(true);
-                inputArray[0] = "Chr" + argParser.getChromosome() + ":" + argParser.getPanel() + ":" +
-                        argParser.getStartPos() + ".." + argParser.getEndPos();
-                inputArray[1] = argParser.getPanel();
-                inputArray[2] = argParser.getStartPos();
-                inputArray[3] = argParser.getEndPos();
-                inputArray[4] = argParser.getChromosome();
-                inputArray[5] = argParser.getRelease();
-                inputArray[6] = "txt";
-                window.readGenotypes(inputArray, PHASEDHMPDL_FILE, true);
-            }else if (argParser.getPlinkFileName() != null){
-                inputArray[0] = argParser.getPlinkFileName();
-                inputArray[1] = argParser.getMapFileName();
-                inputArray[2] = null;
-                inputArray[3] = null;
-                inputArray[4] = null;
-                inputArray[5] = argParser.getChromosome();
-                inputArray[6] = argParser.getSelectCols();
-                window.readWGA(inputArray);
-            }else{
-                ReadDataDialog readDialog = new ReadDataDialog("Welcome to HaploView", window);
-                readDialog.pack();
-                readDialog.setVisible(true);
             }
         }
     }

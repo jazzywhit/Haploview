@@ -2,14 +2,13 @@ package edu.mit.wi.plink;
 
 import edu.mit.wi.haploview.StatFunctions;
 import edu.mit.wi.haploview.Util;
-import edu.mit.wi.haploview.Options;
 
 import java.io.*;
 import java.util.Vector;
 import java.util.StringTokenizer;
 import java.util.Hashtable;
 import java.net.URL;
-import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 
 
 /** @noinspection RedundantStringConstructorCall*/
@@ -27,11 +26,12 @@ public class Plink {
         columns.add("MARKER");
         columns.add("POSITION");
 
-        final File wgaFile = new File(wga);
-        final File mapFile = new File(map);
         Hashtable markerHash = new Hashtable(1,1);
         ignoredMarkers = new Vector();
         short chrFilter = 0;
+        BufferedReader mapReader;
+        String mapName = null;
+        String wgaName = null;
 
 
         if (chromFilter != null){
@@ -40,35 +40,31 @@ public class Plink {
             }
         }
 
-        try{
-            if (wgaFile.length() < 1 && !Options.getPlinkHttp()){
-                throw new PlinkException("plink file is empty or nonexistent.");
+        if (!embed){
+            try{
+                URL mapURL = new URL(map);
+                mapName = map;
+                mapReader = new BufferedReader(new InputStreamReader(mapURL.openStream()));
+            }catch(MalformedURLException mfe){
+                File mapFile = new File(map);
+                mapName = mapFile.getName();
+                try{
+                    if (mapFile.length() < 1){
+                        throw new PlinkException("Map file is empty or nonexistent: " + mapName);
+                    }
+                    mapReader = new BufferedReader(new FileReader(mapFile));
+                }catch(IOException ioe){
+                    throw new PlinkException("Error reading the map file: " + mapName);
+                }
+            }catch(IOException ioe){
+                throw new PlinkException("Could not connect to " + mapName);
             }
 
-            if (!embed){
-                if (mapFile.length() < 1 && !Options.getMapHttp()){
-                    throw new PlinkException("Map file is empty or nonexistent.");
-                }
+            String mapLine;
+            int line = 0;
+            int numColumns = -1;
 
-                BufferedReader mapReader;
-                HttpURLConnection mapCon = null;
-                if (!Options.getMapHttp()){
-                    mapReader = new BufferedReader(new FileReader(mapFile));
-                }else{
-                    URL mapUrl = new URL(map);
-                    mapCon = (HttpURLConnection)mapUrl.openConnection();
-                    mapCon.connect();
-                    int response = mapCon.getResponseCode();
-                    if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
-                        throw new IOException("Could not connect to map file URL.");
-                    }else {
-                        mapReader = new BufferedReader(new InputStreamReader(mapCon.getInputStream()));
-                    }
-                }
-                String mapLine;
-                int line = 0;
-                int numColumns = -1;
-
+            try{
                 while((mapLine = mapReader.readLine())!=null) {
                     if (mapLine.length() == 0){
                         //skip blank lines
@@ -87,7 +83,7 @@ public class Plink {
                     }
 
                     if (numColumns != 3 && numColumns != 4){
-                        throw new PlinkException("Improper map file formatting.");
+                        throw new PlinkException("Improper map file formatting on line " + (line+1));
                     }
 
                     String chrom = st.nextToken();
@@ -101,9 +97,13 @@ public class Plink {
                     }else if (chrom.equals("-9")){
                         chr = 0;
                     }else{
-                        chr = Short.parseShort(chrom);
+                        try{
+                            chr = Short.parseShort(chrom);
+                        }catch(NumberFormatException nfe){
+                            throw new PlinkException("Invalid chromosome specification on line " + (line +1) + ": " + chrom);
+                        }
                         if (chr < 0 || chr > 25){
-                            throw new PlinkException("Invalid chromosome specification on line " + (line+1));
+                            throw new PlinkException("Invalid chromosome specification on line " + (line +1) + ": " + chrom);
                         }
                     }
                     if (chrFilter > 0){
@@ -122,65 +122,68 @@ public class Plink {
                         line++;
                         continue;
                     }
-                    long position = Long.parseLong(pos);
+                    long position;
+                    try{
+                        position = Long.parseLong(pos);
+                    }catch(NumberFormatException nfe){
+                        throw new PlinkException("Invalid position specification on line " + (line +1) + ": " + pos);
+                    }
 
                     Marker mark = new Marker(chr, marker, position);
                     markerHash.put(mark.getMarkerID(), mark);
                     line++;
                 }
-                if (Options.getMapHttp()){
-                    mapCon.disconnect();
-                }
+            }catch(IOException ioe){
+                throw new PlinkException("Error reading the map file: " + mapName);
             }
+        }
 
-            BufferedReader wgaReader;
-            HttpURLConnection wgaCon = null;
-            if (!Options.getPlinkHttp()){
-                wgaReader = new BufferedReader(new FileReader(wgaFile));
-            }else{
-                URL wgaUrl = new URL(wga);
-                wgaCon = (HttpURLConnection)wgaUrl.openConnection();
-                wgaCon.connect();
-                int response = wgaCon.getResponseCode();
-                if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
-                    throw new IOException("Could not connect to PLINK file URL.");
-                }else {
-                    wgaReader = new BufferedReader(new InputStreamReader(wgaCon.getInputStream()));
+        BufferedReader wgaReader;
+
+        try{
+            URL wgaURL = new URL(wga);
+            wgaName = wga;
+            wgaReader = new BufferedReader(new InputStreamReader(wgaURL.openStream()));
+        }catch(MalformedURLException mfe){
+            File wgaFile = new File(wga);
+            wgaName = wgaFile.getName();
+            try{
+                if (wgaFile.length() < 1){
+                    throw new PlinkException("Results file is empty or nonexistent: " + wgaName);
                 }
+                wgaReader = new BufferedReader(new FileReader(wgaFile));
+            }catch(IOException ioe){
+                throw new PlinkException("Error reading the results file: " + wgaName);
             }
-            int colIndex = 0;
-            int markerColumn = -1;
-            int chromColumn = -1;
-            int positionColumn = -1;
-            String headerLine = wgaReader.readLine();
-            StringTokenizer headerSt = new StringTokenizer(headerLine);
-            boolean[] filteredColIndex = new boolean[headerSt.countTokens()];
-            int counter;
-            while (headerSt.hasMoreTokens()){
-                String column = headerSt.nextToken();
-                if (column.equalsIgnoreCase("SNP")){
-                    markerColumn = colIndex;
-                }else if (column.equalsIgnoreCase("CHR")){
-                    chromColumn = colIndex;
-                }else if (column.equalsIgnoreCase("POS")||column.equalsIgnoreCase("POSITION")){
-                    positionColumn = colIndex;
-                }else{
-                    if (columnFilter != null){
-                        if (columnFilter.contains(column)){
-                            filteredColIndex[colIndex] = true;
-                        }else{
-                            if(columns.contains(column)){
-                                counter = 1;
-                                String dupColumn = column + "-" + counter;
-                                while (columns.contains(dupColumn)){
-                                    counter++;
-                                    dupColumn = column + "-" + counter;
-                                }
-                                columns.add(dupColumn);
-                            }else{
-                                columns.add(column);
-                            }
-                        }
+        }catch(IOException ioe){
+            throw new PlinkException("Could not connect to " + wgaName);
+        }
+
+        int colIndex = 0;
+        int markerColumn = -1;
+        int chromColumn = -1;
+        int positionColumn = -1;
+        String headerLine;
+        try{
+            headerLine = wgaReader.readLine();
+        }catch(IOException ioe){
+            throw new PlinkException("Error reading the results file: " + wgaName);
+        }
+        StringTokenizer headerSt = new StringTokenizer(headerLine);
+        boolean[] filteredColIndex = new boolean[headerSt.countTokens()];
+        int counter;
+        while (headerSt.hasMoreTokens()){
+            String column = headerSt.nextToken();
+            if (column.equalsIgnoreCase("SNP")){
+                markerColumn = colIndex;
+            }else if (column.equalsIgnoreCase("CHR")){
+                chromColumn = colIndex;
+            }else if (column.equalsIgnoreCase("POS")||column.equalsIgnoreCase("POSITION")){
+                positionColumn = colIndex;
+            }else{
+                if (columnFilter != null){
+                    if (columnFilter.contains(column)){
+                        filteredColIndex[colIndex] = true;
                     }else{
                         if(columns.contains(column)){
                             counter = 1;
@@ -194,24 +197,38 @@ public class Plink {
                             columns.add(column);
                         }
                     }
+                }else{
+                    if(columns.contains(column)){
+                        counter = 1;
+                        String dupColumn = column + "-" + counter;
+                        while (columns.contains(dupColumn)){
+                            counter++;
+                            dupColumn = column + "-" + counter;
+                        }
+                        columns.add(dupColumn);
+                    }else{
+                        columns.add(column);
+                    }
                 }
-                colIndex++;
             }
+            colIndex++;
+        }
 
-            if (markerColumn == -1){
-                throw new PlinkException("Results file must contain a SNP column.");
+        if (markerColumn == -1){
+            throw new PlinkException("Results file must contain a SNP column.");
+        }
+
+        if (embed){
+            if (chromColumn == -1 || positionColumn == -1){
+                throw new PlinkException("Results files with embedded map files must contain CHR and POS columns.");
             }
+        }
 
-            if (embed){
-                if (chromColumn == -1 || positionColumn == -1){
-                    throw new PlinkException("Results files with embedded map files must contain CHR and POS columns.");
-                }
-            }
+        String wgaLine;
+        int lineNumber = 0;
+        Hashtable markerDups = new Hashtable(1,1);
 
-            String wgaLine;
-            int lineNumber = 0;
-            Hashtable markerDups = new Hashtable(1,1);
-
+        try{
             while((wgaLine = wgaReader.readLine())!=null){
                 if (wgaLine.length() == 0){
                     //skip blank lines
@@ -223,9 +240,9 @@ public class Plink {
                     throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
                 }
                 String marker = null;
-                String chromosome;
+                String chromosome, position;
                 short chr = 0;
-                long position = 0;
+                long pos = 0;
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
                     if (tokenNumber == markerColumn){
@@ -247,13 +264,22 @@ public class Plink {
                         }else if (chromosome.equals("-9")){
                             chr = 0;
                         }else{
-                            chr = Short.parseShort(chromosome);
+                            try{
+                                chr = Short.parseShort(chromosome);
+                            }catch(NumberFormatException nfe){
+                                throw new PlinkException("Invalid chromosome specification on line " + (lineNumber +1) + ": " + chromosome);
+                            }
                             if (chr < 0 || chr > 25){
-                                throw new PlinkException("Invalid chromosome specification on line " + (lineNumber+1));
+                                throw new PlinkException("Invalid chromosome specification on line " + (lineNumber +1) + ": " + chromosome);
                             }
                         }
                     }else if (tokenNumber == positionColumn && embed){
-                        position = Long.parseLong(tokenizer.nextToken());
+                        position = new String(tokenizer.nextToken());
+                        try{
+                            pos = Long.parseLong(position);
+                        }catch(NumberFormatException nfe){
+                            throw new PlinkException("Invalid position specification on line " + (lineNumber +1) + ": " + position);
+                        }
                     }else{
                         if (filteredColIndex[tokenNumber]){
                             tokenizer.nextToken();
@@ -293,20 +319,15 @@ public class Plink {
                                 "\non line " + lineNumber + " " + assocMarker.getChromosomeIndex() + " " + chr);
                     }
                 }else{
-                    assocMarker = new Marker(chr,marker,position);
+                    assocMarker = new Marker(chr,marker,pos);
                 }
 
                 AssociationResult result = new AssociationResult(lineNumber,assocMarker,values);
                 results.add(result);
                 lineNumber++;
             }
-            if (Options.getPlinkHttp()){
-                wgaCon.disconnect();
-            }
         }catch(IOException ioe){
-            throw new PlinkException("An error occurred while reading the file: " + ioe.getMessage());
-        }catch(NumberFormatException nfe){
-            throw new PlinkException("File formatting error: " + nfe.getMessage());
+            throw new PlinkException("Error reading the results file: " + wgaName);
         }
     }
 
@@ -314,49 +335,55 @@ public class Plink {
         results = new Vector();
         columns = new Vector();
 
-        final File wgaFile = new File(name);
+        String wgaName = null;
+        BufferedReader wgaReader;
         try{
-            if (wgaFile.length() < 1 && !Options.getPlinkHttp()){
-                throw new PlinkException("plink file is empty or nonexistent.");
-            }
-
-            BufferedReader wgaReader;
-            HttpURLConnection wgaCon = null;
-            if (!Options.getPlinkHttp()){
-                wgaReader = new BufferedReader(new FileReader(wgaFile));
-            }else{
-                URL wgaUrl = new URL(name);
-                wgaCon = (HttpURLConnection)wgaUrl.openConnection();
-                wgaCon.connect();
-                int response = wgaCon.getResponseCode();
-                if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
-                    throw new IOException("Could not connect to PLINK file URL.");
-                }else {
-                    wgaReader = new BufferedReader(new InputStreamReader(wgaCon.getInputStream()));
+            URL wgaURL = new URL(name);
+            wgaName = name;
+            wgaReader = new BufferedReader(new InputStreamReader(wgaURL.openStream()));
+        }catch(MalformedURLException mfe){
+            File wgaFile = new File(name);
+            wgaName = wgaFile.getName();
+            try{
+                if (wgaFile.length() < 1){
+                    throw new PlinkException("Results file is empty or nonexistent: " + wgaName);
                 }
+                wgaReader = new BufferedReader(new FileReader(wgaFile));
+            }catch(IOException ioe){
+                throw new PlinkException("Error reading the results file: " + wgaName);
             }
-            int numColumns = 0;
-            String headerLine = wgaReader.readLine();
-            StringTokenizer headerSt = new StringTokenizer(headerLine);
-            boolean[] filteredColIndex = new boolean[headerSt.countTokens()];
-            while (headerSt.hasMoreTokens()){
-                String column = headerSt.nextToken();
-                if (columnFilter != null){
-                    if (columnFilter.contains(column)){
-                        filteredColIndex[numColumns] = true;
-                        numColumns++;
-                    }else{
-                        columns.add(column);
-                        numColumns++;
-                    }
+        }catch(IOException ioe){
+            throw new PlinkException("Could not connect to " + wgaName);
+        }
+
+        int numColumns = 0;
+        String headerLine;
+        try{
+            headerLine = wgaReader.readLine();
+        }catch(IOException ioe){
+            throw new PlinkException("Error reading the results file: " + wgaName);
+        }
+        StringTokenizer headerSt = new StringTokenizer(headerLine);
+        boolean[] filteredColIndex = new boolean[headerSt.countTokens()];
+        while (headerSt.hasMoreTokens()){
+            String column = headerSt.nextToken();
+            if (columnFilter != null){
+                if (columnFilter.contains(column)){
+                    filteredColIndex[numColumns] = true;
+                    numColumns++;
                 }else{
                     columns.add(column);
                     numColumns++;
                 }
+            }else{
+                columns.add(column);
+                numColumns++;
             }
+        }
 
-            String wgaLine;
-            int lineNumber = 0;
+        String wgaLine;
+        int lineNumber = 0;
+        try{
             while((wgaLine = wgaReader.readLine())!=null){
                 if (wgaLine.length() == 0){
                     //skip blank lines
@@ -391,11 +418,8 @@ public class Plink {
                 results.add(result);
                 lineNumber++;
             }
-            if (Options.getPlinkHttp()){
-                wgaCon.disconnect();
-            }
-        }catch (IOException ioe){
-            throw new PlinkException("An error occurred while reading the file: " + ioe.getMessage());
+        }catch(IOException ioe){
+            throw new PlinkException("Error reading the results file: " + wgaName);
         }
     }
 
@@ -414,7 +438,7 @@ public class Plink {
 
         try{
             if (moreResultsFile.length() < 1){
-                throw new PlinkException("plink file is empty or nonexistent.");
+                throw new PlinkException("Results file is empty or nonexistent: " + moreResultsFile.getName());
             }
 
             BufferedReader moreResultsReader = new BufferedReader(new FileReader(moreResultsFile));
@@ -558,7 +582,7 @@ public class Plink {
                 lineNumber++;
             }
         }catch(IOException ioe){
-            throw new PlinkException("File error.");
+            throw new PlinkException("Error reading the results file: " + moreResultsFile.getName());
         }
 
         if (addColumns){

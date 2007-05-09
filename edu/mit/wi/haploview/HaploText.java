@@ -11,6 +11,8 @@ import edu.mit.wi.tagger.TaggerException;
 import java.io.*;
 import java.util.*;
 import java.awt.image.BufferedImage;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
@@ -32,8 +34,8 @@ public class HaploText implements Constants{
     private boolean phasedhapmapDownload = false;
     private boolean SNPBased = true;
     private String selectCols;
-    private String blockFileName;
-    private String trackFileName;
+    private String blockName;
+    private String trackName;
     private String customAssocTestsFileName;
     private boolean skipCheck = false;
     private Vector excludedMarkers = new Vector();
@@ -58,19 +60,20 @@ public class HaploText implements Constants{
     private int aggressiveNumMarkers = 0;
     private double tagRSquaredCutOff = -1;
     private Vector forceIncludeTags;
-    private String forceIncludeFileName;
+    private String forceIncludeName;
     private Vector forceExcludeTags;
-    private String forceExcludeFileName;
+    private String forceExcludeName;
     private Vector captureAlleleTags;
-    private String captureAllelesFileName;
+    private String captureAllelesName;
     private Hashtable designScores;
-    private String designScoresFileName;
+    private String designScoresName;
     private String minTagDistance;
     private Vector argHandlerMessages;
     private String chromosomeArg;
     private String[] phasedHapMapInfo;
     private String panelArg, startPos, endPos, release;
     private String logFileName, debugFileName;
+    private boolean commandLineError;
 
     public static Logger logger = Logger.getLogger("logger");
     public static Logger commandLogger = Logger.getLogger("logger.command");
@@ -149,6 +152,10 @@ public class HaploText implements Constants{
 
     public int getBlockOutputType() {
         return blockOutputType;
+    }
+
+    public boolean getCommandLineError(){
+        return commandLineError;
     }
 
     private double getDoubleArg(String[] args, int valueIndex, double min, double max) {
@@ -416,20 +423,6 @@ public class HaploText implements Constants{
                         argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last PLINK file listed will be used");
                     }
                     plinkFileName = args[i];
-                    Options.setPlinkHttp(false);
-                }
-            }
-            else if (args[i].equalsIgnoreCase("-plinkhttp")){
-                i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    die(args[i-1] + " requires a URL");
-                }
-                else{
-                    if(plinkFileName != null){
-                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last PLINK file listed will be used");
-                    }
-                    plinkFileName = args[i];
-                    Options.setPlinkHttp(true);
                 }
             }
             else if (args[i].equalsIgnoreCase("-map")){
@@ -442,20 +435,6 @@ public class HaploText implements Constants{
                         argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last map file listed will be used");
                     }
                     mapFileName = args[i];
-                    Options.setMapHttp(false);
-                }
-            }
-            else if (args[i].equalsIgnoreCase("-maphttp")){
-                i++;
-                if(i>=args.length || ((args[i].charAt(0)) == '-')){
-                    die(args[i-1] + " requires a URL");
-                }
-                else{
-                    if(mapFileName != null){
-                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last map file listed will be used");
-                    }
-                    mapFileName = args[i];
-                    Options.setMapHttp(true);
                 }
             }
             else if (args[i].equalsIgnoreCase("-nonSNP")){
@@ -467,7 +446,7 @@ public class HaploText implements Constants{
             else if(args[i].equalsIgnoreCase("-k") || args[i].equalsIgnoreCase("-blocks")) {
                 i++;
                 if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
-                    blockFileName = args[i];
+                    blockName = args[i];
                     blockOutputType = BLOX_CUSTOM;
                 }else{
                     die(args[i-1] + " requires a filename");
@@ -485,7 +464,7 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-track")){
                 i++;
                 if (!(i>=args.length) && !((args[i].charAt(0)) == '-')){
-                    trackFileName = args[i];
+                    trackName = args[i];
                 }else{
                     die("-track requires a filename");
                 }
@@ -719,7 +698,7 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-includeTagsFile")) {
                 i++;
                 if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
-                    forceIncludeFileName =args[i];
+                    forceIncludeName =args[i];
                 }else {
                     die(args[i-1] + " requires a filename");
                 }
@@ -738,7 +717,7 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-excludeTagsFile")) {
                 i++;
                 if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
-                    forceExcludeFileName =args[i];
+                    forceExcludeName =args[i];
                 }else {
                     die(args[i-1] + " requires a filename");
                 }
@@ -746,7 +725,7 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-captureAlleles")){
                 i++;
                 if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
-                    captureAllelesFileName =args[i];
+                    captureAllelesName =args[i];
                 }else {
                     die(args[i-1] + " requires a filename");
                 }
@@ -754,7 +733,7 @@ public class HaploText implements Constants{
             else if (args[i].equalsIgnoreCase("-designScores")){
                 i++;
                 if(!(i>=args.length) && !(args[i].charAt(0) == '-')) {
-                    designScoresFileName =args[i];
+                    designScoresName =args[i];
                 }else {
                     die(args[i-1] + " requires a filename");
                 }
@@ -1010,16 +989,14 @@ public class HaploText implements Constants{
 
             if(forceExcludeTags == null) {
                 forceExcludeTags = new Vector();
-            } else if (forceExcludeFileName != null) {
+            } else if (forceExcludeName != null) {
                 die("-excludeTags and -excludeTagsFile cannot both be used");
             }
 
-            if(forceExcludeFileName != null) {
-                File excludeFile = new File(forceExcludeFileName);
-                forceExcludeTags = new Vector();
-
-                try {
-                    BufferedReader br = new BufferedReader(new FileReader(excludeFile));
+            if(forceExcludeName != null) {
+                try{
+                    BufferedReader br = new BufferedReader(new InputStreamReader(getInputStream(forceExcludeName)));
+                    forceExcludeTags = new Vector();
                     String line;
                     while((line = br.readLine()) != null) {
                         if(line.length() > 0 && line.charAt(0) != '#'){
@@ -1033,16 +1010,14 @@ public class HaploText implements Constants{
 
             if(forceIncludeTags == null ) {
                 forceIncludeTags = new Vector();
-            } else if (forceIncludeFileName != null) {
+            } else if (forceIncludeName != null) {
                 die("-includeTags and -includeTagsFile cannot both be used");
             }
 
-            if(forceIncludeFileName != null) {
-                File includeFile = new File(forceIncludeFileName);
-                forceIncludeTags = new Vector();
-
-                try {
-                    BufferedReader br = new BufferedReader(new FileReader(includeFile));
+            if(forceIncludeName != null) {
+                try{
+                    BufferedReader br = new BufferedReader(new InputStreamReader(getInputStream(forceIncludeName)));
+                    forceIncludeTags = new Vector();
                     String line;
                     while((line = br.readLine()) != null) {
                         if(line.length() > 0 && line.charAt(0) != '#'){
@@ -1054,12 +1029,10 @@ public class HaploText implements Constants{
                 }
             }
 
-            if (captureAllelesFileName != null) {
-                File captureFile = new File(captureAllelesFileName);
-                captureAlleleTags = new Vector();
-
+            if (captureAllelesName != null) {
                 try {
-                    BufferedReader br = new BufferedReader(new FileReader(captureFile));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(getInputStream(captureAllelesName)));
+                    captureAlleleTags = new Vector();
                     String line;
                     while((line = br.readLine()) != null) {
                         if(line.length() > 0 && line.charAt(0) != '#'){
@@ -1072,11 +1045,10 @@ public class HaploText implements Constants{
                 }
             }
 
-            if (designScoresFileName != null) {
-                File designFile = new File(designScoresFileName);
-                designScores = new Hashtable(1,1);
+            if (designScoresName != null) {
                 try {
-                    BufferedReader br = new BufferedReader(new FileReader(designFile));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(getInputStream(designScoresName)));
+                    designScores = new Hashtable(1,1);
                     String line;
                     int lines = 0;
                     while((line = br.readLine()) != null) {
@@ -1093,7 +1065,7 @@ public class HaploText implements Constants{
                         lines++;
                     }
                 }catch(IOException ioe) {
-                    die("An error occured while reading the file specified by -captureAlleles.");
+                    die("An error occured while reading the file specified by -designScores.");
                 }
             }
 
@@ -1172,7 +1144,10 @@ public class HaploText implements Constants{
     private void die(String msg){
         System.err.println(TITLE_STRING + " Fatal Error");
         System.err.println(msg);
-        System.exit(1);
+        commandLineError = true;
+        if (isNogui()){
+            System.exit(1);
+        }
     }
 
     private void doBatch() {
@@ -1181,7 +1156,7 @@ public class HaploText implements Constants{
         File dataFile;
         String line;
         StringTokenizer tok;
-        String infoMaybe =null;
+        String infoMaybe;
 
         files = new Vector();
         if(batchFileName == null) {
@@ -1248,12 +1223,38 @@ public class HaploText implements Constants{
     }
 
     private File validateOutputFile(String fn){
-        File f = new File(fn);
+        File f;
+        try{
+            new URL(fn);
+            f = new File(fn.substring(fn.lastIndexOf("/")+1));
+        }catch(MalformedURLException mfe){
+            f = new File(fn);   
+        }
         if (f.exists()){
             commandLogger.info("File " + f.getName() + " already exists and will be overwritten.");
         }
         commandLogger.info("Writing output to "+f.getName());
         return f;
+    }
+
+    private InputStream getInputStream(String name){
+        InputStream theStream = null;
+        if (name != null){
+            try{
+                try{
+                    URL streamURL = new URL(name);
+                    theStream = streamURL.openStream();
+                }catch(MalformedURLException mfe){
+                    File streamFile = new File(name);
+                    theStream = new FileInputStream(streamFile);
+                }catch(IOException ioe){
+                    die("Could not connect to " + name);
+                }
+            }catch(IOException ioe){
+                die("Error reading " + name);
+            }
+        }
+        return theStream;
     }
 
     /**
@@ -1296,7 +1297,6 @@ public class HaploText implements Constants{
         try {
             HaploData textData;
             File outputFile;
-            File inputFile;
             AssociationTestSet customAssocSet;
 
             if (fileName != null){
@@ -1309,22 +1309,22 @@ public class HaploText implements Constants{
 
             }
 
-            inputFile = new File(fileName);
+           /* inputFile = new File(fileName);
             if(!inputFile.exists() && !phasedhapmapDownload){
                 commandLogger.warn("input file: " + fileName + " does not exist");
                 System.exit(1);
-            }
+            }*/
 
             textData = new HaploData();
             //Vector result = null;
 
             if(fileType == HAPS_FILE){
                 //read in haps file
-                textData.prepareHapsInput(inputFile);
+                textData.prepareHapsInput(fileName);
             }
             else if (fileType == PED_FILE) {
                 //read in ped file
-                textData.linkageToChrom(inputFile, PED_FILE);
+                textData.linkageToChrom(fileName, PED_FILE);
 
                 if(textData.getPedFile().isBogusParents()) {
                     commandLogger.warn("Error: One or more individuals in the file reference non-existent parents.\nThese references have been ignored.");
@@ -1343,16 +1343,13 @@ public class HaploText implements Constants{
             }
             else{
                 //read in hapmapfile
-                textData.linkageToChrom(inputFile,HMP_FILE);
+                textData.linkageToChrom(fileName,HMP_FILE);
             }
 
 
-            File infoFile = null;
-            if (infoFileName != null){
-                infoFile = new File(infoFileName);
-            }
+            InputStream markerStream = getInputStream(infoFileName);
 
-            textData.prepareMarkerInput(infoFile,textData.getPedFile().getHMInfo());
+            textData.prepareMarkerInput(markerStream,textData.getPedFile().getHMInfo());
 
             HashSet whiteListedCustomMarkers = new HashSet();
             if (customAssocTestsFileName != null){
@@ -1376,7 +1373,7 @@ public class HaploText implements Constants{
                 }
             }
 
-            if(captureAllelesFileName != null) {  //TODO: This is causing alleles to not show up as BAD in the check output even though they fail thresholds
+            if(captureAllelesName != null) {  //TODO: This is causing alleles to not show up as BAD in the check output even though they fail thresholds
                 for(int i =0;i<captureAlleleTags.size();i++) {
                     if(snpsByName.containsKey(captureAlleleTags.get(i))) {
                         whiteListedCustomMarkers.add(snpsByName.get(captureAlleleTags.get(i)));
@@ -1387,7 +1384,7 @@ public class HaploText implements Constants{
             textData.getPedFile().setWhiteList(whiteListedCustomMarkers);
 
             boolean[] markerResults = new boolean[Chromosome.getUnfilteredSize()];
-            Vector result = null;
+            Vector result;
             result = textData.getPedFile().getResults();
             //once check has been run we can filter the markers
             int mafFails = 0;
@@ -1440,8 +1437,8 @@ public class HaploText implements Constants{
 
             Chromosome.doFilter(markerResults);
 
-            if(infoFile != null){
-                commandLogger.info("Using marker information file: " + infoFile.getName());
+            if(markerStream != null){
+                commandLogger.info("Using marker information file: " + infoFileName);
             }
             if(outputCheck && result != null){
                 textData.getPedFile().saveCheckDataToText(validateOutputFile(fileName + ".CHECK"));
@@ -1489,9 +1486,8 @@ public class HaploText implements Constants{
                     case BLOX_CUSTOM:
                         outputFile = validateOutputFile(fileName + ".CUSTblocks");
                         //read in the blocks file
-                        File blocksFile = new File(blockFileName);
-                        commandLogger.info("Using custom blocks file " + blockFileName);
-                        cust = textData.readBlocks(blocksFile);
+                        commandLogger.info("Using custom blocks file: " + blockName);
+                        cust = textData.readBlocks(getInputStream(blockName));
                         break;
                     case BLOX_ALL:
                         //handled below, so we don't do anything here
@@ -1585,9 +1581,9 @@ public class HaploText implements Constants{
                     textData.generateDPrimeTable();
                     textData.guessBlocks(BLOX_CUSTOM, new Vector());
                 }
-                if (trackFileName != null){
-                    textData.readAnalysisTrack(new File(trackFileName));
-                    commandLogger.info("Using analysis track file " + trackFileName);
+                if (trackName != null){
+                    textData.readAnalysisTrack(getInputStream(trackName));
+                    commandLogger.info("Using analysis track file: " + trackName);
                 }
                 if (infoTrack){
                     Options.setShowGBrowse(true);
@@ -1605,14 +1601,11 @@ public class HaploText implements Constants{
             if(Options.getAssocTest() == ASSOC_TRIO || Options.getAssocTest() == ASSOC_CC){
                 if (randomizeAffection){
                     Vector aff = new Vector();
-                    int j=0, k=0;
                     for (int i = 0; i < textData.getPedFile().getNumIndividuals(); i++){
                         if (i%2 == 0){
                             aff.add(new Integer(1));
-                            j++;
                         }else{
                             aff.add(new Integer(2));
-                            k++;
                         }
                     }
                     Collections.shuffle(aff);
@@ -1713,7 +1706,19 @@ public class HaploText implements Constants{
                     }
                 }
 
-
+                if (forceIncludeName != null){
+                    commandLogger.info("Using force include tags file: " + forceIncludeName);
+                }
+                if (forceExcludeName != null){
+                    commandLogger.info("Using force exclude tags file: " + forceExcludeName);
+                }
+                if (designScoresName != null){
+                    commandLogger.info("Using design scores file: " + designScoresName);
+                }
+                if (captureAllelesName != null){
+                    commandLogger.info("Using capture alleles file: " + captureAllelesName);
+                }
+                
                 for (int i = 0; i < forceIncludeTags.size(); i++) {
                     String s = (String) forceIncludeTags.elementAt(i);
                     if(!names.contains(s)) {

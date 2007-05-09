@@ -144,25 +144,23 @@ public interface Constants {
             "-n, -nogui                      Command line output only\n" +
             "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
             "-log <filename>                 Specify a logfile name (defaults to haploview.log if no name specified)\n" +
-            "-pedfile <pedfile>              Specify an input file in pedigree file format\n" +
-            "-hapmap <hapmapfile>            Specify an input file in HapMap format\n" +
-            "-phasedhmpdata <phasedfile>     Specify a phased HapMap data file\n" +
-            "-phasedhmpsample <samplefile>   Specify a phased HapMap sample file\n" +
-            "-phasedhmplegend <legendfile>   Specify a phased HapMap legend file\n" +
-            "-gzip                           Indicates that phased HapMap input files use GZIP compression\n" +
+            "-pedfile <pedfile>              Specify an input file (or http:// location) in pedigree file format\n" +
+            "-hapmap <hapmapfile>            Specify an input file (or http:// location) in HapMap format\n" +
+            "-phasedhmpdata <phasedfile>     Specify a HapMap PHASE data file (or http:// location)\n" +
+            "-phasedhmpsample <samplefile>   Specify a HapMap PHASE sample file (or http:// location)\n" +
+            "-phasedhmplegend <legendfile>   Specify a HapMap PHASE legend file (or http:// location)\n" +
+            "-gzip                           Indicates that HapMap PHASE input files use GZIP compression\n" +
             "-hapmapDownload                 Specify a phased HapMap download\n" +
-            "-haps <hapsfile>                Specify an input file in .haps format\n" +
-            "-info <infofile>                Specify a marker info file\n" +
-            "-plink <plinkfile>              Specify a PLINK or other results file\n" +
-            "-map <mapfile>                  Specify a map file or binary map file\n" +
-            "-plinkhttp <URL>                Specify a http:// URL containing a PLINK or other results file\n" +
-            "-maphttp <URL>                  Specify a http:// URL containing a map file or binary map file\n" +
+            "-haps <hapsfile>                Specify an input file (or http:// location) in .haps format\n" +
+            "-info <infofile>                Specify a marker info file (or http:// location)\n" +
+            "-plink <plinkfile>              Specify a PLINK or other results file (or http:// location)\n" +
+            "-map <mapfile>                  Specify a map file or binary map file (or http:// location)\n" +
             "-nonSNP                         Specify that the accompanying PLINK file is non-SNP based output\n" +
             "-selectCols                     Activate the preloading column filter for PLINK loads\n" +
             "-batch <batchfile>              Batch mode. Each line in batch file should contain a genotype file \n"+
             "                                followed by an optional info file, separated by a space.\n" +
-            "-blocks <blockfile>             Blocks file, one block per line, will force output for these blocks\n" +
-            "-track <trackfile>              Specify an input analysis track file.\n"+
+            "-blocks <blockfile>             Blocks file (or http:// location), one block per line, will force output for these blocks\n" +
+            "-track <trackfile>              Specify an input analysis track file (or http:// location)\n"+
             "-excludeMarkers <markers>       Specify markers (in range 1-N where N is total number of markers) to be\n"+
             "                                skipped for all analyses. Format: 1,2,5..12\n"+
             "-skipcheck                      Skips the various genotype file checks\n" +
@@ -217,11 +215,11 @@ public interface Constants {
             "-maxNumTags <n>                 Only selects <n> best tags.\n" +
             "-dontaddtags                    Only uses forced in tags.\n" +
             "-includeTags <markers>          Forces in a comma separated list of marker names as tags.\n" +
-            "-includeTagsFile <file>         Forces in a file of one marker name per line as tags.\n" +
+            "-includeTagsFile <file>         Forces in a file (or http:// location) of one marker name per line as tags.\n" +
             "-excludeTags <markers>          Excludes a comma separated list of marker names from being used as tags.\n" +
-            "-excludeTagsFile <file>         Excludes a file of one marker name per line from being used as tags.\n" +
-            "-captureAlleles <file>          Capture only the alleles contained in a file of one marker name per line.\n" +
-            "-designScores <file>            Specify design scores in a file of one marker name and one score per line\n" +
+            "-excludeTagsFile <file>         Excludes a file (or http:// location) of one marker name per line from being used as tags.\n" +
+            "-captureAlleles <file>          Capture only the alleles contained in a file (or http:// location) of one marker name per line.\n" +
+            "-designScores <file>            Specify design scores in a file (or http:// location) of one marker name and one score per line\n" +
             "-mintagdistance <distance>      Specify a Minimum distance in bases between picked tags\n" +
             "-taglodcutoff <thresh>          Tagger LOD cutoff for creating multimarker tag haplotypes.\n" +
             "-tagrsqcutoff <thresh>          Tagger r^2 cutoff.\n"

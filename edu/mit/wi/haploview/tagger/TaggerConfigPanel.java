@@ -15,10 +15,7 @@ import java.awt.Color;
 import java.util.Vector;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
-import java.io.File;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 
 public class TaggerConfigPanel extends HaploviewTab
         implements TableModelListener, ActionListener {
@@ -441,13 +438,16 @@ public class TaggerConfigPanel extends HaploviewTab
                         }
                     }
                 }catch(IOException ioe){
-                    //throw new IOException("An error occured while reading the design scores file.");
+                    JOptionPane.showMessageDialog(this,
+                            "Error reading the design scores file",
+                            "File Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
                 }catch(NumberFormatException nfe){
-                    //throw new NumberFormatException("Invalid design score format.");
-                     JOptionPane.showMessageDialog(this,
-                        "Invalid file formatting",
-                        "File Error",
-                        JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this,
+                            "Invalid file formatting",
+                            "File Error",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 for (int i = 0; i < table.getRowCount();i++){
@@ -471,7 +471,11 @@ public class TaggerConfigPanel extends HaploviewTab
                         }
                     }
                 }catch(IOException ioe){
-                    //throw new IOException("An error occured while reading the alleles file.");
+                    JOptionPane.showMessageDialog(this,
+                            "Error reading the alleles file",
+                            "File Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
                 for (int j = 0; j < table.getRowCount(); j++){

@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.44 2007/04/18 16:53:42 djbender Exp $
+* $Id: PedFile.java,v 3.45 2007/05/09 16:06:37 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.net.URL;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.io.*;
 
 import org._3pq.jgrapht.graph.SimpleGraph;
@@ -802,29 +803,32 @@ public class PedFile {
         byte[] byteDataU = new byte[0];
         this.allIndividuals = new Vector();
 
+        InputStream phaseStream, sampleStream, legendStream;
+        String phaseName, sampleName, legendName;
 
-        File phasedFile = new File(info[0]);
-        File sampleFile = new File(info[1]);
-        File legendFile = new File(info[2]);
-
-        if (phasedFile.length() < 1){
-            throw new PedFileException("Genotypes file is empty or non-existent: " + phasedFile.getName());
-        }else if (sampleFile.length() < 1){
-            throw new PedFileException("Sample file is empty or non-existent: " + sampleFile.getName());
-        }else if (legendFile.length() < 1){
-            throw new PedFileException("Legend file is empty or non-existent: " + legendFile.getName());
+        try {
+            URL sampleURL = new URL(info[1]);
+            sampleName = sampleURL.getFile();
+            sampleStream = sampleURL.openStream();
+        }catch (MalformedURLException mfe){
+            File sampleFile = new File(info[1]);
+            if (sampleFile.length() < 1){
+                throw new PedFileException("Sample file is empty or non-existent: " + sampleFile.getName());
+            }
+            sampleName = sampleFile.getName();
+            sampleStream = new FileInputStream(sampleFile);
+        }catch (IOException ioe){
+            throw new PedFileException("Could not connect to " + info[1]);
         }
 
         //read in the individual ids data.
         try{
             BufferedReader sampleBuffReader;
             if (Options.getGzip()){
-                FileInputStream sampleFis = new FileInputStream(sampleFile);
-                GZIPInputStream sampleInputStream = new GZIPInputStream(sampleFis);
+                GZIPInputStream sampleInputStream = new GZIPInputStream(sampleStream);
                 sampleBuffReader = new BufferedReader(new InputStreamReader(sampleInputStream));
             }else{
-                FileReader sampleReader = new FileReader(sampleFile);
-                sampleBuffReader = new BufferedReader(sampleReader);
+                sampleBuffReader = new BufferedReader(new InputStreamReader(sampleStream));
             }
             String sampleLine;
             while((sampleLine = sampleBuffReader.readLine())!=null){
@@ -832,21 +836,32 @@ public class PedFile {
                 sampleData.add(sampleTokenizer.nextToken());
             }
         }catch(NoSuchElementException nse){
-            throw new PedFileException("File format error: " + sampleFile.getName());
+            throw new PedFileException("File format error in " + sampleName);
         }
 
-
+         try {
+             URL legendURL = new URL(info[2]);
+             legendName = legendURL.getFile();
+             legendStream = legendURL.openStream();
+         }catch (MalformedURLException mfe){
+             File legendFile = new File(info[2]);
+             if (legendFile.length() < 1){
+                 throw new PedFileException("Legend file is empty or non-existent: " + legendFile.getName());
+             }
+             legendName = legendFile.getName();
+             legendStream = new FileInputStream(legendFile);
+         }catch (IOException ioe){
+             throw new PedFileException("Could not connect to " + info[2]);
+         }
 
         //read in the legend data
         try{
             BufferedReader legendBuffReader;
             if (Options.getGzip()){
-                FileInputStream legendFis = new FileInputStream(legendFile);
-                GZIPInputStream legendInputStream = new GZIPInputStream(legendFis);
+                GZIPInputStream legendInputStream = new GZIPInputStream(legendStream);
                 legendBuffReader = new BufferedReader(new InputStreamReader(legendInputStream));
             }else{
-                FileReader legendReader = new FileReader(legendFile);
-                legendBuffReader = new BufferedReader(legendReader);
+                legendBuffReader = new BufferedReader(new InputStreamReader(legendStream));
             }
             String legendLine;
             String zero, one;
@@ -898,19 +913,32 @@ public class PedFile {
                 hminfo[i][1] = (String)legendPositions.get(i);
             }
         }catch(NoSuchElementException nse){
-            throw new PedFileException("File format error: " + legendFile.getName());
+            throw new PedFileException("File format error in " + legendName);
+        }
+
+        try {
+            URL phaseURL = new URL(info[0]);
+            phaseName = phaseURL.getFile();
+            phaseStream = phaseURL.openStream();
+        }catch (MalformedURLException mfe){
+            File phaseFile = new File(info[0]);
+            if (phaseFile.length() < 1){
+                throw new PedFileException("Genotypes file is empty or non-existent: " + phaseFile.getName());
+            }
+            phaseName = phaseFile.getName();
+            phaseStream = new FileInputStream(phaseFile);
+        }catch (IOException ioe){
+            throw new PedFileException("Could not connect to " + info[0]);
         }
 
         //read in the phased data.
         try{
             BufferedReader phasedBuffReader;
             if (Options.getGzip()){
-                FileInputStream phasedFis = new FileInputStream(phasedFile);
-                GZIPInputStream phasedInputStream = new GZIPInputStream(phasedFis);
+                GZIPInputStream phasedInputStream = new GZIPInputStream(phaseStream);
                 phasedBuffReader = new BufferedReader(new InputStreamReader(phasedInputStream));
             }else{
-                FileReader phasedReader = new FileReader(phasedFile);
-                phasedBuffReader = new BufferedReader(phasedReader);
+                phasedBuffReader = new BufferedReader(new InputStreamReader(phaseStream));
             }
             String phasedLine;
             int columns = 0;
@@ -935,7 +963,7 @@ public class PedFile {
                     String details = (String)hapMapTranslate.get(ind.getIndividualID());
                     //exception in case of wierd compression combos in input files
                     if (details == null){
-                        throw new PedFileException("File format error: " + sampleFile.getName());
+                        throw new PedFileException("File format error in " + sampleName);
                     }
                     StringTokenizer dt = new StringTokenizer(details, "\n\t\" \"");
                     ind.setFamilyID(dt.nextToken().trim());
@@ -975,7 +1003,7 @@ public class PedFile {
                         }else if (token.equalsIgnoreCase("1")){
                             byteDataT[index] = ((byte[])legendData.get(index))[1];
                         }else {
-                            throw new PedFileException("File format error: " + phasedFile.getName());
+                            throw new PedFileException("File format error in " + phaseName);
                         }
                     }else{
                         if (token.equalsIgnoreCase("0")){
@@ -985,7 +1013,7 @@ public class PedFile {
                         }else if (Chromosome.getDataChrom().equalsIgnoreCase("chrx") && ind.getGender() == Individual.MALE && token.equalsIgnoreCase("-")){
                             //X male
                         }else {
-                            throw new PedFileException("File format error: " + phasedFile.getName());
+                            throw new PedFileException("File format error in " + phaseName);
                         }
                     }
                     index++;
@@ -1004,7 +1032,7 @@ public class PedFile {
                 even = !even;
             }
         }catch(NoSuchElementException nse){
-            throw new PedFileException("File format error: " + phasedFile.getName());
+            throw new PedFileException("File format error in " + phaseName);
         }
     }
 
