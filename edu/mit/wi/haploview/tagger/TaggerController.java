@@ -45,9 +45,9 @@ public class TaggerController {
 
         Hashtable indicesByVarSeq = new Hashtable();
         for(int i=0;i<Chromosome.getSize();i++) {
-            if(sitesToCapture.contains(Chromosome.getMarker(i))) {
-                indicesByVarSeq.put(snpHash.get(Chromosome.getMarker(i).getDisplayName()),new Integer(i));
-            }
+	    //if(sitesToCapture.contains(Chromosome.getMarker(i))) {
+	    indicesByVarSeq.put(snpHash.get(Chromosome.getMarker(i).getDisplayName()),new Integer(i));
+	    //}
         }
 
         for (int i = 0; i < sitesToCapture.size(); i++){
