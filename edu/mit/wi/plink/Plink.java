@@ -273,12 +273,16 @@ public class Plink {
                                 throw new PlinkException("Invalid chromosome specification on line " + (lineNumber +1) + ": " + chromosome);
                             }
                         }
-                    }else if (tokenNumber == positionColumn && embed){
-                        position = new String(tokenizer.nextToken());
-                        try{
-                            pos = Long.parseLong(position);
-                        }catch(NumberFormatException nfe){
-                            throw new PlinkException("Invalid position specification on line " + (lineNumber +1) + ": " + position);
+                    }else if (tokenNumber == positionColumn){
+                        if (embed){
+                            position = new String(tokenizer.nextToken());
+                            try{
+                                pos = Long.parseLong(position);
+                            }catch(NumberFormatException nfe){
+                                throw new PlinkException("Invalid position specification on line " + (lineNumber +1) + ": " + position);
+                            }
+                        }else{
+                            tokenizer.nextToken();
                         }
                     }else{
                         if (filteredColIndex[tokenNumber]){
