@@ -15,27 +15,27 @@
 <!-- Setup project roots -->
  <target name="init">
     <property name="haploview.root" value="${basedir}"/>
-    <property name="xslPath" value="/usr/share/sgml/docbook/xsl-stylesheets"/>
+    <property name="xslPath" value="/usr/share/sgml/docbook/stylesheet/xsl/nwalsh"/>
     <property name="stylesheet.fo" value="${xslPath}/fo/docbook.xsl" />
     <property name="stylesheet.html" value="${xslPath}/html/chunk.xsl" />
     <property name="stylesheet.javahelp" value="${xslPath}/javahelp/javahelp.xsl" />
-    <property name="stylesheet.params" value="toc.section.depth=1 generate.toc=&quot;book toc&quot; shade.verbatim=1 chunk.section.depth=0 suppress.navigation=1" /> 
+    <property name="stylesheet.params" value="toc.section.depth=1 generate.toc=&quot;book toc&quot; shade.verbatim=1 chunk.section.depth=0 suppress.navigation=1" />
     <property name="xslt.processor.class" value="com.icl.saxon.StyleSheet" />
-    <property name="out.doc.fo" value="pdf/haploview.fo" />    
+    <property name="out.doc.fo" value="pdf/haploview.fo" />
     <property name="out.doc.pdf" value="pdf/" />
     <property name="out.doc.html" value="html/" />
     <property name="out.doc.javahelp" value="javahelp/" />
     <property name="stylesheet.params.html" value="${stylesheet.params} base.dir=${out.doc.html} root.filename=&quot;documentation&quot; use.id.as.filename=1 html.ext=&quot;.php&quot;" />
     <property name="stylesheet.params.javahelp" value="${stylesheet.params} base.dir=${out.doc.javahelp}" />
-    <property name="stylesheet.params.pdf" value="${stylesheet.params} ulink.show=0"/> 
+    <property name="stylesheet.params.pdf" value="${stylesheet.params} ulink.show=0"/>
     <property name="out.doc.javahelp" value="javahelp/" />
     <property name="doc.xml" value="haploview.xml" />
     <property name="jhindexer" value="/opt/javahelp/javahelp/bin/jhindexer" />
     <property name="doc.javahelp.jar" value="HaploHelp.jar" />
 
-    <path id="xslt.processor.classpath">                                         
+    <path id="xslt.processor.classpath">
       <pathelement path="/opt/saxon/saxon.jar" />
-      <pathelement path="${xslPath}/extensions/saxon653.jar"/> 
+      <pathelement path="${xslPath}/extensions/saxon653.jar"/>
     </path>
     <tstamp>
       <format property="build.number" pattern="yyyyMMddHHmm"/>
@@ -44,15 +44,15 @@
 
  <target name="doc-pdf" depends="init">
     <delete dir="${out.doc.pdf}"/>
-    <java classname="${xslt.processor.class}" 
-	      fork="yes" 
+    <java classname="${xslt.processor.class}"
+	      fork="yes"
               failonerror="true">
       <classpath refid="xslt.processor.classpath" />
       <arg line="-o ${out.doc.fo}"/>
-      <arg line="${doc.xml} ${stylesheet.fo} ${stylesheet.params.pdf}" /> 
+      <arg line="${doc.xml} ${stylesheet.fo} ${stylesheet.params.pdf}" />
     </java>
 
-    <exec executable="/opt/fop/fop.sh" dir="${out.doc.pdf}" output="/dev/null">
+    <exec executable="/opt/fop/fop" dir="${out.doc.pdf}" output="/dev/null">
       <arg line="-fo haploview.fo -pdf haploview.pdf"/>
     </exec>
 </target>
@@ -60,35 +60,35 @@
 <target name="doc-html" depends="init">
     <delete dir="${out.doc.html}"/>
 
-    <java classname="${xslt.processor.class}" 
-	      fork="yes" 
+    <java classname="${xslt.processor.class}"
+	      fork="yes"
 	      failonerror="true">
       <classpath refid="xslt.processor.classpath" />
-	  <arg line="${doc.xml} ${stylesheet.html} ${stylesheet.params.html}" /> 
+	  <arg line="${doc.xml} ${stylesheet.html} ${stylesheet.params.html}" />
     </java>
 
     <exec executable="perl">
          <arg line="add-web-headers.pl ${out.doc.html}"/>
     </exec>
-    
+
 </target>
 
 <target name="doc-javahelp" depends="init">
     <delete dir="${out.doc.javahelp}"/>
     <delete file="${doc.javahelp.jar}"/>
-    <java classname="${xslt.processor.class}" 
-	      fork="yes" 
+    <java classname="${xslt.processor.class}"
+	      fork="yes"
 	      failonerror="true">
       <classpath refid="xslt.processor.classpath" />
-	  <arg line="${doc.xml} ${stylesheet.javahelp} ${stylesheet.params.javahelp}" /> 
+	  <arg line="${doc.xml} ${stylesheet.javahelp} ${stylesheet.params.javahelp}" />
     </java>
-    
+
     <exec executable="${jhindexer}" dir="${out.doc.javahelp}">
       <arg line="."/>
     </exec>
-    
+
     <jar destfile="${doc.javahelp.jar}" basedir="${out.doc.javahelp}" />
-    
+
 </target>
 
 
