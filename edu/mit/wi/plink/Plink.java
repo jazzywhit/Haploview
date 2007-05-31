@@ -82,7 +82,7 @@ public class Plink {
                         }
                     }
 
-                    if (numColumns != 3 && numColumns != 4){
+                    if (numColumns < 3){
                         throw new PlinkException("Improper map file formatting on line " + (line+1));
                     }
 
