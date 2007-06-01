@@ -867,8 +867,8 @@
                             will not work correctly. A sample line from such a file
                             might look something like:</para>
 
-                        <screen>3    12    8    9    1    2    1 2    3 3    0 0    4 2
-                            a     b    c    d    e    f    -----------g------------ </screen>
+<screen>3    12    8    9    1    2    1 2    3 3    0 0    4 2
+a     b    c    d    e    f    -----------g------------ </screen>
 
                         <glosslist>
                             <glossentry><glossterm>(a)  pedigree name</glossterm>
@@ -914,10 +914,10 @@
                             the standard format of Genehunter's TDT output. See the sample
                             below:
                         </para>
-                        <screen>FAM1    FAM1M01    0    4    2    2
-                            FAM1    FAM1M01    0    4    2    2
-                            FAM1    FAM1F02    3    h    1    2
-                            FAM1    FAM1F02    3    h    1    2</screen>
+<screen>FAM1    FAM1M01    0    4    2    2
+FAM1    FAM1M01    0    4    2    2
+FAM1    FAM1F02    3    h    1    2
+FAM1    FAM1F02    3    h    1    2</screen>
 
                         <para>
                             The data format uses the numerals 1-4 to represent genotypes,
@@ -980,18 +980,18 @@
                             position. The positions can be either absolute chromosomal
                             coordinates or relative positions. It might look something
                             like this:</para>
-                        <screen>marker01 190299
-                            marker02 190950
-                            marker03 191287</screen>
+<screen>marker01 190299
+marker02 190950
+marker03 191287</screen>
 	    
                         <para>An optional third column can be included in the info file to
                             make additional notes for specific SNPs. SNPs with additional
                             information are highlighted in green on the LD display. For instance,
                             you could make note that the first SNP is a coding variant as follows:</para>
 	    
-                        <screen>marker01 190299 CODING_SNP
-                            marker02 190950
-                            marker03 191287</screen>
+<screen>marker01 190299 CODING_SNP
+marker02 190950
+marker03 191287</screen>
                     </glossdef></glossentry>
 
                 <glossentry id="plink"><glossterm>PLINK Format</glossterm>
@@ -1028,9 +1028,9 @@
                         <para>The following example shows 2 pedfiles (with info files) and a
                             hapmap file:</para>
 
-                        <screen>sample1.ped   sample1.info
-                            sample2.ped   sample2.info
-                            sample3.hmp</screen>
+<screen>sample1.ped   sample1.info
+sample2.ped   sample2.info
+sample3.hmp</screen>
                     </glossdef></glossentry>
             </glosslist>
         </section>
@@ -1098,17 +1098,17 @@
                             are shown as a matrix with this block's haplotypes as the rows
                             and the next block'shaplotypes as the columns. An example might look like:</para>
 	    
-                        <para>
-                            <screen>BLOCK 1.  MARKERS: 1 2 3 4
-                                3312 (0.825)    |0.800  0.025   0.000|
-                                1144 (0.163)    |0.031  0.125   0.007|
-                                3342 (0.013)    |0.006  0.000   0.006|
-                                Multiallelic Dprime: 0.802
-                                BLOCK 2.  MARKERS: 10 11 12
-                                441 (0.837)
-                                222 (0.150)
-                                242 (0.013)</screen>
-                        </para>
+<para>
+<screen>BLOCK 1.  MARKERS: 1 2 3 4
+3312 (0.825)    |0.800  0.025   0.000|
+1144 (0.163)    |0.031  0.125   0.007|
+3342 (0.013)    |0.006  0.000   0.006|
+Multiallelic Dprime: 0.802
+BLOCK 2.  MARKERS: 10 11 12
+441 (0.837)
+222 (0.150)
+242 (0.013)</screen>
+</para>
 	    
                         <para>In this example, the first block has 4 markers with 3
                             haplotypes displayed and the second block has 3 markers and 3
@@ -1267,8 +1267,8 @@
                         file. Each line is a space separated list of markers with one
                         block per line. For example:</para>
 	    
-                        <screen>1 2 3 4
-                            9 10 11 12 13 14 15</screen>
+<screen>1 2 3 4
+9 10 11 12 13 14 15</screen>
 	    
                         <para>Would create one block from markers 1-4 and another from
                             9-15. The first marker in the file is number 1 (not 0).</para>
@@ -1283,11 +1283,11 @@
                         use the same coordinates as the marker info file. For
                         example:</para>
 	    
-                        <screen>1000 0.3
-                            2000 1.7
-                            3000 11.0
-                            4000 2.3
-                            5000 4.6</screen>
+<screen>1000 0.3
+2000 1.7
+3000 11.0
+4000 2.3
+5000 4.6</screen>
 	    
                         <para>Would plot a line from position 1000 to 5000. The values
                             can be of any units or magnitude, as the Haploview scales the
@@ -1299,10 +1299,10 @@
 
 
                         <para>For instance, the following example would create 5 tests: markers 1, 2 and 3 individually, all the alleles (haplotypes) of the block 4,5,6 and the CAA haplotype of the block 12,13,14:</para>
-                        <screen>marker1
-                            marker2
-                            marker3
-                            marker12,marker13,marker14     2,1,1</screen>
+<screen>marker1
+marker2
+marker3
+marker12,marker13,marker14     2,1,1</screen>
 
                         <para><emphasis role="bold">N.B.</emphasis> Using a Custom Association Tests File requires a <link linkend="info">marker info file</link>, since the tests file reads the marker names as specified in the info file.</para>
                     </glossdef>
@@ -1311,9 +1311,9 @@
                 <glossentry id="taggerincludeexclude"><glossterm>Tagger Marker Include/Exclude File</glossterm>
                     <glossdef><para>You can specifiy a list of markers for Tagger to include or exclude from those markers available for selection as tag SNPs. In either case the format is the same: one marker name per line. The following file could be used to either include or exclude markers 1,7 and 9:</para>
 
-                        <screen>marker1
-                            marker7
-                            marker9</screen>
+<screen>marker1
+marker7
+marker9</screen>
 
                         <para><emphasis role="bold">N.B.</emphasis> Using a Tagger Include/Exclude File requires a <link linkend="info">marker info file</link>, since it reads the marker names as specified in the info file.</para>
 
