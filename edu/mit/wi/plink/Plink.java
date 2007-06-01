@@ -82,7 +82,7 @@ public class Plink {
                         }
                     }
 
-                    if (numColumns < 3){
+                    if (numColumns != 3 && numColumns != 4 && numColumns != 6){
                         throw new PlinkException("Improper map file formatting on line " + (line+1));
                     }
 
@@ -113,7 +113,7 @@ public class Plink {
                         }
                     }
                     String marker = new String(st.nextToken());
-                    if (numColumns == 4){
+                    if (numColumns == 4 || numColumns == 6){
                         //useless morgan distance
                         st.nextToken();
                     }
