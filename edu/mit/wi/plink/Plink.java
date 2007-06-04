@@ -90,10 +90,12 @@ public class Plink {
                     short chr;
                     if (chrom.equalsIgnoreCase("X")){
                         chr = 23;
-                    }else if (chrom.equals("Y")){
+                    }else if (chrom.equalsIgnoreCase("Y")){
                         chr = 24;
-                    }else if (chrom.equals("XY")){
+                    }else if (chrom.equalsIgnoreCase("XY")){
                         chr = 25;
+                    }else if (chrom.equalsIgnoreCase("MT")){
+                        chr = 26;
                     }else if (chrom.equals("-9")){
                         chr = 0;
                     }else{
@@ -102,7 +104,7 @@ public class Plink {
                         }catch(NumberFormatException nfe){
                             throw new PlinkException("Invalid chromosome specification on line " + (line +1) + ": " + chrom);
                         }
-                        if (chr < 0 || chr > 25){
+                        if (chr < 0 || chr > 26){
                             throw new PlinkException("Invalid chromosome specification on line " + (line +1) + ": " + chrom);
                         }
                     }
@@ -255,12 +257,14 @@ public class Plink {
                     }else if (tokenNumber == chromColumn){
                         //new String() stops StringTokenizer from wasting memory
                         chromosome = new String(tokenizer.nextToken());
-                        if(chromosome.equals("X")){
+                        if(chromosome.equalsIgnoreCase("X")){
                             chr = 23;
-                        }else if(chromosome.equals("Y")){
+                        }else if(chromosome.equalsIgnoreCase("Y")){
                             chr = 24;
-                        }else if(chromosome.equals("XY")){
+                        }else if(chromosome.equalsIgnoreCase("XY")){
                             chr = 25;
+                        }else if(chromosome.equalsIgnoreCase("MT")){
+                            chr = 26;
                         }else if (chromosome.equals("-9")){
                             chr = 0;
                         }else{
@@ -269,7 +273,7 @@ public class Plink {
                             }catch(NumberFormatException nfe){
                                 throw new PlinkException("Invalid chromosome specification on line " + (lineNumber +1) + ": " + chromosome);
                             }
-                            if (chr < 0 || chr > 25){
+                            if (chr < 0 || chr > 26){
                                 throw new PlinkException("Invalid chromosome specification on line " + (lineNumber +1) + ": " + chromosome);
                             }
                         }
