@@ -994,7 +994,7 @@ marker02 190950
 marker03 191287</screen>
                     </glossdef></glossentry>
 
-                <glossentry id="plink"><glossterm>PLINK Format</glossterm>
+                <glossentry id="plink2"><glossterm>PLINK Format</glossterm>
                     <glossdef>
                         <para>Output files from <emphasis>PLINK</emphasis> can be loaded into Haploview using the PLINK tab
                             on the initial loading screen.  PLINK files must contain a header and at least
