@@ -210,13 +210,17 @@ public class Tagger {
                     if (designScores.containsKey(currentBestTag.sequence.getName())){
                         currentBestScore = ((Double)designScores.get(currentBestTag.sequence.getName())).doubleValue();
                     }
+                    HaploText.logger.debug("Current Best Tag: " + currentBestTag.sequence.getName() + "\tDesign Score: " + currentBestScore +
+                    " # Captured: " + currentBestTag.taggedCount());
                     for (int i = potentialTags.size()-1; i>0; i--){
                         if (currentBestTag.taggedCount() == ((PotentialTag)potentialTags.get(i)).taggedCount()){
                             double previousScore = 0;
-                            if (designScores.containsKey(((PotentialTag)potentialTags.get(i)))){
-                                previousScore = ((Double)designScores.get(((PotentialTag)potentialTags.get(i)))).doubleValue();
+                            if (designScores.containsKey(((PotentialTag)potentialTags.get(i)).sequence.getName())){
+                                previousScore = ((Double)designScores.get(((PotentialTag)potentialTags.get(i)).sequence.getName())).doubleValue();
                             }
                             if (previousScore > currentBestScore){
+                                HaploText.logger.debug("Choosing " + ((PotentialTag)potentialTags.get(i)).sequence.getName() + " with Design Score " +
+                                previousScore + " instead of " + currentBestTag.sequence.getName() + " with Design Score " + currentBestScore);
                                 currentBestTag = (PotentialTag)potentialTags.get(i);
                                 currentBestScore = previousScore;
                             }
