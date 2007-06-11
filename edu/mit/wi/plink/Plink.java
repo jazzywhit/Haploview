@@ -324,7 +324,7 @@ public class Plink {
                         continue;
                     }else if (assocMarker.getChromosomeIndex() != chr && chromColumn != -1){
                         throw new PlinkException("Incompatible chromosomes for marker " + marker +
-                                "\non line " + lineNumber + " " + assocMarker.getChromosomeIndex() + " " + chr);
+                                "\non line " + (lineNumber + 1) + " " + assocMarker.getChromosomeIndex() + " " + chr);
                     }
                 }else{
                     assocMarker = new Marker(chr,marker,pos);
