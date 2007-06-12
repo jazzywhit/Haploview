@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.45 2007/05/09 16:06:37 djbender Exp $
+* $Id: PedFile.java,v 3.46 2007/06/12 17:29:06 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -1318,7 +1318,7 @@ public class PedFile {
                 else {
                     chromB.add(thisGenotype);
                 }
-                if (thisGenotype.equals("h")) {
+                if (thisGenotype.equalsIgnoreCase("h")) {
                     genos[q] = 9;
                 }else if (thisGenotype.equalsIgnoreCase("A")){
                     genos[q] = 1;
@@ -1347,7 +1347,7 @@ public class PedFile {
 
             if (hapsEven) {
                 for (int m=0; m<chromA.size(); m++){
-                    if (((String)chromA.get(m)).equals("h")){
+                    if (((String)chromA.get(m)).equalsIgnoreCase("h")){
                         chromA.set(m, "9");
                     }else if (((String)chromA.get(m)).equalsIgnoreCase("A")){
                         chromA.set(m, "1");
@@ -1362,7 +1362,7 @@ public class PedFile {
                         chromA.set(m, "4");
                         hapsError = !hapsError;
                     }
-                    if (((String)chromB.get(m)).equals("h")){
+                    if (((String)chromB.get(m)).equalsIgnoreCase("h")){
                         chromB.set(m, "9");
                     }else if (((String)chromB.get(m)).equalsIgnoreCase("A")){
                         chromB.set(m, "1");
