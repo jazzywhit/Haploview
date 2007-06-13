@@ -238,15 +238,17 @@ public class Tagger {
 
                 if(Options.getTaggerMinDistance() !=0){
                     Vector tooClose = new Vector();
+                    Vector tagsToRemove = new Vector();
                     long tagLocation = ((SNP)currentBestTag.sequence).getLocation();
                     Iterator itr = potentialTagByVarSeq.keySet().iterator();
                     while(itr.hasNext()) {
                         PotentialTag pt = (PotentialTag) potentialTagByVarSeq.get(itr.next());
                         if(Math.abs(((SNP)pt.sequence).getLocation() - tagLocation) <= Options.getTaggerMinDistance()  ){
-                            potentialTags.remove(pt);
+                            tagsToRemove.add(pt);
                             tooClose.add(pt.sequence);
                         }
                     }
+                    potentialTags.removeAll(tagsToRemove);
                     for(int i =0;i<tooClose.size();i++){
                         potentialTagByVarSeq.remove(tooClose.get(i));
                     }
