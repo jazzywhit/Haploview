@@ -223,7 +223,7 @@ public class PlinkGraph implements Constants, ChartMouseListener {
 
     public XYSeriesCollection makeChrDataSet(int col){
         int numRows = table.getRowCount();
-        long[] maxPositions = new long[25];
+        long[] maxPositions = new long[26];
 
         for (int i = 0; i < numRows; i++){
             String chrom = (String)table.getValueAt(i,0);
@@ -237,6 +237,8 @@ public class PlinkGraph implements Constants, ChartMouseListener {
                 chr = 24;
             }else if (chrom.equalsIgnoreCase("XY")){
                 chr = 25;
+            }else if (chrom.equalsIgnoreCase("MT")){
+                chr = 26;
             }else{
                 chr = Integer.parseInt(chrom);
             }
@@ -249,25 +251,26 @@ public class PlinkGraph implements Constants, ChartMouseListener {
             }
         }
 
-        long[] addValues = new long[25];
+        long[] addValues = new long[27];
         long addValue = 0;
         addValues[0] = 0;
 
-        for (int i = 1; i < 25; i++){
+        for (int i = 1; i < 27; i++){
             addValue += maxPositions[i-1];
             addValues[i] = addValue;
         }
 
-        XYSeries[] xyArray = new XYSeries[26];
+        XYSeries[] xyArray = new XYSeries[27];
         for(int i = 1; i < 23; i++){
             xyArray[i] = new XYSeries("Chr" + i);
         }
         xyArray[23] = new XYSeries("ChrX");
         xyArray[24] = new XYSeries("ChrY");
         xyArray[25] = new XYSeries("ChrXY");
+        xyArray[26] = new XYSeries("ChrMT");
 
-        chrInfo = new Hashtable[25];
-        for (int i = 0; i < 24; i++){
+        chrInfo = new Hashtable[26];
+        for (int i = 0; i < 26; i++){
             chrInfo[i] = new Hashtable();
         }
 
@@ -283,6 +286,8 @@ public class PlinkGraph implements Constants, ChartMouseListener {
                 chr = 24;
             }else if (chrom.equalsIgnoreCase("XY")){
                 chr = 25;
+            }else if (chrom.equalsIgnoreCase("MT")){
+                chr = 26;
             }else{
                 chr = Integer.parseInt(chrom);
             }
@@ -331,9 +336,9 @@ public class PlinkGraph implements Constants, ChartMouseListener {
 
         XYSeriesCollection dataset = new XYSeriesCollection();
 
-        seriesKeys = new int[26];
+        seriesKeys = new int[27];
         int seriesIndex = 0;
-        for (int i = 1; i < 25; i++){
+        for (int i = 1; i < 27; i++){
             if (xyArray[i].getItemCount() > 0){
                 seriesKeys[seriesIndex] = i;
                 seriesIndex++;
