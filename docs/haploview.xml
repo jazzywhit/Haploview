@@ -1676,7 +1676,7 @@ marker9</screen>
             <title>Change Log</title>
 
             <section>
-                <title>Version 4.0, May 2007</title>
+                <title>Version 4.0, June 2007</title>
                 <itemizedlist>
                     <listitem>added support for HapMap PHASE format data</listitem>
                     <listitem>added support for phased HapMap downloads</listitem>
@@ -1697,6 +1697,7 @@ marker9</screen>
                     <listitem>added http:// loading for files on the command line and initial load screen</listitem>
                     <listitem>changed some labelling in Tagger and made pairwise the default option</listitem>
                     <listitem>changed obsHet calculation to use founders only</listitem>
+                    <listitem>changed HW and het calculations to show as "NA" in X data with too few individuals</listitem>
                     <listitem>enhanced GUI design with tabbed pane for initial loading dialog</listitem>
                     <listitem>fixed bug with haplotype associations for extended trios and x chromosome</listitem>
                     <listitem>fixed bug with case control counts for certain zeroed out markers</listitem>
