@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.46 2007/06/12 17:29:06 djbender Exp $
+* $Id: PedFile.java,v 3.47 2007/06/20 14:45:22 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -727,7 +727,12 @@ public class PedFile {
                 hminfo[k-1] = new String[2];
                 for (int skip = 0; skip < numMetaColumns; skip++){
                     //meta-data crap
-                    String s = tokenizer.nextToken().trim();
+                    String s;
+                    try{
+                        s = tokenizer.nextToken().trim();
+                    }catch(NoSuchElementException nse){
+                        throw new PedFileException("Data format error on line " + (k+1) + ": " + (String)lines.get(k));
+                    }
 
                     //get marker name, chrom and pos
                     if (skip == 0){
