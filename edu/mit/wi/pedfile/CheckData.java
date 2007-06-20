@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.21 2007/04/12 17:05:12 djbender Exp $
+* $Id: CheckData.java,v 3.22 2007/06/20 17:10:51 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -69,6 +69,8 @@ public class CheckData {
         Hashtable kidgeno = new Hashtable();
         int[] founderHomCount = new int[5];
         Vector mendels = new Vector();
+
+        int femaleCount = 0;
 
         int[] count = new int[6];
         for(int i=0;i<5;i++) {
@@ -279,6 +281,7 @@ public class CheckData {
                             }else{
                                 count[5]++;
                             }
+                            femaleCount++;
                         }
                     }else{
                         if(kidgeno.containsKey(familyID)){
@@ -375,6 +378,13 @@ public class CheckData {
 
         //HW p value
         double pvalue = getPValue(founderHomCount, founderHetCount);
+
+        //This will cause the values to show up as NA since there aren't enough females to calculate
+        if(femaleCount < 10 && Chromosome.getDataChrom().equalsIgnoreCase("chrx")){
+            obsHET = Double.MAX_VALUE;
+            preHET = Double.MAX_VALUE;
+            pvalue = Double.MAX_VALUE;
+        }
 
         //geno percent
         double genopct = getGenoPercent(het, hom, haploid, missing);

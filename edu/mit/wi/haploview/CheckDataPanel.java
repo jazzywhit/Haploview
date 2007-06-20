@@ -239,7 +239,12 @@ public class CheckDataPanel extends JPanel
         }
 
         public Object getValueAt(int row, int column){
-            return ((Vector)data.elementAt(row)).elementAt(column);
+            Object value = ((Vector)data.elementAt(row)).elementAt(column);
+            if ((getColumnName(column).equals("ObsHET") || getColumnName(column).equals("PredHET") || getColumnName(column).equals("HWpval")) &&
+                    Chromosome.getDataChrom().equalsIgnoreCase("chrx") && ((Double)value).doubleValue() == Double.MAX_VALUE){
+                value = "NA";
+            }
+            return value;
         }
 
         public Class getColumnClass(int c){
