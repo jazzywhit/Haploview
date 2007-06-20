@@ -1604,6 +1604,10 @@ marker9</screen>
 	
             <listitem>The interface to the HapMap GBrowse track is courtesy of
                 <emphasis role="bold">Simon Twigger</emphasis>. </listitem>
+
+            <listitem><ulink url="http://pngu.mgh.harvard.edu/~purcell/plink/">PLINK</ulink> is the work of <emphasis role="bold">Shaun
+                Purcell</emphasis> at the Center for Human Genetic Research
+                of Massachusetts General Hospital</listitem>
 	
         </itemizedlist>
       
