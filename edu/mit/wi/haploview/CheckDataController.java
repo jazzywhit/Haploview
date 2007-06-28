@@ -51,6 +51,11 @@ public class CheckDataController extends JPanel implements ActionListener {
         JButton rescore = new JButton("Rescore Markers");
         rescore.addActionListener(this);
         newPanel.add(rescore);
+        if (cdp.isPlink()){
+            JButton plinkOnly = new JButton("Select only PLINK Markers");
+            plinkOnly.addActionListener(this);
+            newPanel.add(plinkOnly);
+        }
 
         this.add(failPanel);
         failPanel.add(newPanel);
@@ -62,6 +67,8 @@ public class CheckDataController extends JPanel implements ActionListener {
             cdp.selectAll();
         }else if (command.equals("Deselect All")){
             cdp.deSelectAll();
+        }else if (command.equals("Select only PLINK Markers")){
+            cdp.plinkOnly();
         }else if (command.equals("Rescore Markers")){
             String cut = hwcut.getText();
             if (cut.equals("")){

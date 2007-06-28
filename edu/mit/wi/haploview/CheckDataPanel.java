@@ -133,6 +133,30 @@ public class CheckDataPanel extends JPanel
         changed = true;
     }
 
+    public void plinkOnly(){
+         try{
+            Vector result = new CheckData(theData.getPedFile()).check();
+
+            for (int j = 0; j < table.getColumnCount(); j++){
+                sorter.setSortingStatus(j,TableSorter.NOT_SORTED);
+            }
+
+            for (int i = 0; i < table.getRowCount(); i++){
+                MarkerResult cur = (MarkerResult)result.get(i);
+
+                //use this marker if it has "extra info", a sign of PLINK status
+                if (Chromosome.getUnfilteredMarker(i).getExtra() != null){
+                    table.setValueAt(new Boolean(true),i,STATUS_COL);
+                }else{
+                    table.setValueAt(new Boolean(false),i,STATUS_COL);
+                }
+            }
+            changed = true;
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public void redoRatings(){
         try{
             Vector result = new CheckData(theData.getPedFile()).check();
@@ -340,6 +364,9 @@ public class CheckDataPanel extends JPanel
         }
     }
 
+    public boolean isPlink(){
+      return (hv.plinkPanel != null);
+    }
     class CheckDataTableSorter extends TableSorter {
 
         CheckDataTableSorter(TableModel tm){
