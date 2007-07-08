@@ -35,19 +35,23 @@ public class TaggerController {
 
         Vector includedSNPs = new Vector();
         for(int i=0;i<included.size();i++) {
-            includedSNPs.add(snpHash.get(included.get(i)));
+            if(snpHash.containsKey(included.get(i))){
+                includedSNPs.add(snpHash.get(included.get(i)));
+            }
         }
 
         Vector excludedSNPs = new Vector();
         for(int i=0;i<excluded.size();i++) {
-            excludedSNPs.add(snpHash.get(excluded.get(i)));
+            if(snpHash.containsKey(excluded.get(i))){
+                excludedSNPs.add(snpHash.get(excluded.get(i)));
+            }
         }
 
         Hashtable indicesByVarSeq = new Hashtable();
         for(int i=0;i<Chromosome.getSize();i++) {
-	    //if(sitesToCapture.contains(Chromosome.getMarker(i))) {
-	    indicesByVarSeq.put(snpHash.get(Chromosome.getMarker(i).getDisplayName()),new Integer(i));
-	    //}
+            if(snpHash.containsKey(Chromosome.getMarker(i).getDisplayName())){
+                indicesByVarSeq.put(snpHash.get(Chromosome.getMarker(i).getDisplayName()),new Integer(i));
+            }
         }
 
         for (int i = 0; i < sitesToCapture.size(); i++){
