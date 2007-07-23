@@ -824,8 +824,13 @@ public class HaploData implements Constants{
                 chrom1[i] = thisMarkerA;
                 chrom2[i] = thisMarkerB;
             }
-            chroms.add(new Chromosome(currentInd.getFamilyID(), currentInd.getIndividualID(), chrom1, currentInd.getAffectedStatus(), 0, true));
-            chroms.add(new Chromosome(currentInd.getFamilyID(), currentInd.getIndividualID(), chrom2, currentInd.getAffectedStatus(), 0, true));
+            if(Chromosome.getDataChrom().equalsIgnoreCase("chrx") && currentInd.getGender() == Individual.MALE){
+                chroms.add(new Chromosome(currentInd.getFamilyID(), currentInd.getIndividualID(), chrom1, currentInd.getAffectedStatus(), 0, true));
+                ((Chromosome)chroms.lastElement()).setHaploid(true);
+            }else{
+                chroms.add(new Chromosome(currentInd.getFamilyID(), currentInd.getIndividualID(), chrom1, currentInd.getAffectedStatus(), 0, true));
+                chroms.add(new Chromosome(currentInd.getFamilyID(), currentInd.getIndividualID(), chrom2, currentInd.getAffectedStatus(), 0, true));
+            }
             numSingletons++;
         }
 
