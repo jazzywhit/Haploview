@@ -125,15 +125,7 @@ public class PlinkTableModel extends AbstractTableModel{
                     if (result.getValues().size() <= column-3){
                         value = null;
                     }else{
-                        if(result.getValues().get(column-3) != null){
-                            if (result.getValues().get(column-3) instanceof String){
-                                value = result.getValues().get(column-3);
-                            }else{
-                                value = result.getValues().get(column-3);
-                            }
-                        }else{
-                            value = null;
-                        }
+                        value = result.getValues().get(column-3);
                     }
                 }catch (NumberFormatException nfe){
                     value = result.getValues().get(column-3);
