@@ -79,6 +79,7 @@ public class HaploData implements Constants{
         HashSet dupCheck = new HashSet();
         Vector positions = new Vector();
         Vector extras = new Vector();
+        boolean infoProblem = false;
 
         dupsToBeFlagged = false;
         dupNames = false;
@@ -112,6 +113,7 @@ public class HaploData implements Constants{
                     try{
                         loc = Long.parseLong(l);
                     }catch (NumberFormatException nfe){
+                        infoProblem = true;
                         throw new HaploViewException("Info file format error on line "+lineCount+
                                 ":\n\"" + l + "\" should be of type long." +
                                 "\n Info file must be of format: <markername> <markerposition>");
@@ -120,6 +122,7 @@ public class HaploData implements Constants{
                     //basically if anyone is crazy enough to load a dataset, then go back and load
                     //an out-of-order info file we tell them to bugger off and start over.
                     if (loc < prevloc && Chromosome.markers != null){
+                        infoProblem = true;
                         throw new HaploViewException("Info file out of order with preloaded dataset:\n"+
                                 name + "\nPlease reload data file and info file together.");
                     }
@@ -135,9 +138,11 @@ public class HaploData implements Constants{
                 }
 
                 if (lineCount > Chromosome.getUnfilteredSize()){
+                    infoProblem = true;
                     throw(new HaploViewException("Info file error:\nMarker number mismatch: too many\nmarkers in info file compared to data file."));
                 }
                 if (lineCount < Chromosome.getUnfilteredSize()){
+                    infoProblem = true;
                     throw(new HaploViewException("Info file error:\nMarker number mismatch: too few\nmarkers in info file compared to data file."));
                 }
                 infoKnown=true;
@@ -361,42 +366,46 @@ public class HaploData implements Constants{
                     maf = Util.roundDouble((numa2/(numa1+numa2)),3);
                 }
 
-                if (infoKnown){
-                    long pos = Long.parseLong((String)positions.elementAt(i));
+                if (Chromosome.markers == null || !infoProblem){
+                    if (infoKnown){
+                        long pos = Long.parseLong((String)positions.elementAt(i));
 
-                    SNP thisMarker = (new SNP((String)names.elementAt(i),
-                            pos, maf, a1, a2,
-                            (String)extras.elementAt(i)));
-                    markerInfo.add(thisMarker);
+                        SNP thisMarker = (new SNP((String)names.elementAt(i),
+                                pos, maf, a1, a2,
+                                (String)extras.elementAt(i)));
+                        markerInfo.add(thisMarker);
 
-                    if (mr != null){
-                        double genoPC = mr.getGenoPercent();
-                        //check to make sure adjacent SNPs do not have identical positions
-                        if (prevPosition != Long.MIN_VALUE){
-                            //only do this for markers 2..N, since we're comparing to the previous location
-                            if (pos == prevPosition){
-                                dupsToBeFlagged = true;
-                                if (genoPC >= pmr.getGenoPercent()){
-                                    //use this one because it has more genotypes
-                                    thisMarker.setDup(1);
-                                    prevMarker.setDup(2);
-                                }else{
-                                    //use the other one because it has more genotypes
-                                    thisMarker.setDup(2);
-                                    prevMarker.setDup(1);
+                        if (mr != null){
+                            double genoPC = mr.getGenoPercent();
+                            //check to make sure adjacent SNPs do not have identical positions
+                            if (prevPosition != Long.MIN_VALUE){
+                                //only do this for markers 2..N, since we're comparing to the previous location
+                                if (pos == prevPosition){
+                                    dupsToBeFlagged = true;
+                                    if (genoPC >= pmr.getGenoPercent()){
+                                        //use this one because it has more genotypes
+                                        thisMarker.setDup(1);
+                                        prevMarker.setDup(2);
+                                    }else{
+                                        //use the other one because it has more genotypes
+                                        thisMarker.setDup(2);
+                                        prevMarker.setDup(1);
+                                    }
                                 }
                             }
+                            prevPosition = pos;
+                            prevMarker = thisMarker;
+                            pmr = mr;
                         }
-                        prevPosition = pos;
-                        prevMarker = thisMarker;
-                        pmr = mr;
+                    }else{
+                        markerInfo.add(new SNP(null,i+1,maf,a1,a2));
                     }
-                }else{
-                    markerInfo.add(new SNP(null,i+1,maf,a1,a2));
+                    percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
                 }
-                percentBadGenotypes[i] = numBadGenotypes[i]/numChroms;
             }
-            Chromosome.markers = markerInfo;
+            if (Chromosome.markers == null || !infoProblem){
+                Chromosome.markers = markerInfo;
+            }
         }
     }
 
