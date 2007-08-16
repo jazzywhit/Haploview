@@ -415,6 +415,9 @@ public class HaploData implements Constants{
         Vector chroms = new Vector();
         Vector hapsFileStrings = new Vector();
         BufferedReader reader;
+
+        HaploData.setPhasedData(false);
+
         try{
             URL inURL = new URL(name);
             reader = new BufferedReader(new InputStreamReader(inURL.openStream()));
@@ -478,6 +481,8 @@ public class HaploData implements Constants{
 
         Vector pedFileStrings = new Vector();
         Vector hapsDataStrings = new Vector();
+
+        HaploData.setPhasedData(false);
 
         BufferedReader reader;
         try{
