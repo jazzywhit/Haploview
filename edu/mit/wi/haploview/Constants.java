@@ -5,12 +5,12 @@ public interface Constants {
 
     //main jframe setup stuff & labels.
     public static final double VERSION = 4.0;
-    public static final int BETA_VERSION = 17;
+    public static final int BETA_VERSION = 0;
     public static final String EMAIL_STRING = "haploview@broad.mit.edu";
-    public static final String TITLE_STRING = "Haploview "+VERSION+"RC2";
+    public static final String TITLE_STRING = "Haploview "+VERSION;
     public static final String JAVA_VERSION = System.getProperty("java.version");
     public static final String USER_AGENT = "Haploview/" + VERSION + " Java/" + JAVA_VERSION;
-    public static final String RELEASE_DATE = "20 June, 2007";
+    public static final String RELEASE_DATE = "21 August, 2007";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
     public static final String BETA_WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/beta.php";
     public static final String CITATION_STRING = "Citation: Barrett JC, Fry B, Maller J, Daly MJ.\nHaploview: analysis and visualization of LD and haplotype maps.\nBioinformatics. 2005";
@@ -210,7 +210,6 @@ public interface Constants {
             "                                if a custom association file is specified) and writes to <inputfile>.PERMUT\n" +
             "-pairwiseTagging                Generates pairwise tagging information in <inputfile>.TAGS and .TESTS\n" +
             "-aggressiveTagging              As above but generates 2-marker haplotype tags unless specified otherwise by -aggressiveNumMarkers\n" +
-            "-tagrsqcounts                   Generates conditional haplotype probabilities from tagger in <inputfile>.CHAPS\n" +
             "-aggressiveNumMarkers <2,3>     Specifies whether to use 2-marker haplotype tags or 2 and 3-marker haplotype tags.\n" +
             "-maxNumTags <n>                 Only selects <n> best tags.\n" +
             "-dontaddtags                    Only uses forced in tags.\n" +
