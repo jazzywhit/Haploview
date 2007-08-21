@@ -80,7 +80,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         JPanel extraFilterPanel = new JPanel();
         mainFilterPanel.setMinimumSize(new Dimension(700,40));
         if (Options.getSNPBased()){
-            mainFilterPanel.add(new JLabel("Chrom:"));
+            mainFilterPanel.add(new JLabel("Chr:"));
             chromChooser = new JComboBox(chromNames);
             mainFilterPanel.add(chromChooser);
             mainFilterPanel.add(new JLabel("Start kb:"));
@@ -177,7 +177,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         c.fill = 1;
         c.weightx = 1;
         c.weighty = 1;
-        c.insets = new Insets(10,50,10,50);
+        c.insets = new Insets(10,10,10,10);
         add(tableScroller, c);
         c.weighty = 0;
         c.gridy = 1;
