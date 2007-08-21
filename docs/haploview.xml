@@ -1680,7 +1680,7 @@ marker9</screen>
             <title>Change Log</title>
 
             <section>
-                <title>Version 4.0, June 2007</title>
+                <title>Version 4.0, 21 August 2007</title>
                 <itemizedlist>
                     <listitem>added support for HapMap PHASE format data</listitem>
                     <listitem>added support for phased HapMap downloads</listitem>
@@ -1726,6 +1726,7 @@ marker9</screen>
                     <listitem>fixed bug with exception being thrown for certain input files with no markers</listitem>
                     <listitem>fixed bug with multimarker tags showing in the tagger results even though they don't capture anything</listitem>
                     <listitem>fixed bug with command line error handling</listitem>
+                    <listitem>fixed bug with loading improperly formatted info files from "Load marker data"</listitem>
                 </itemizedlist>
             </section>
 
