@@ -1670,7 +1670,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 return null;
             }
             public void finished() {
-                if(uc != null && Constants.BETA_VERSION == 0) {
+                if(uc != null) {
                     if(uc.isNewVersionAvailable()) {
                         //theres an update available so lets pop some crap up
                         final JLayeredPane jlp = window.getLayeredPane();
@@ -1679,8 +1679,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
                         udp.setLayout(new BoxLayout(udp, BoxLayout.Y_AXIS));
                         double version = uc.getNewVersion();
+                        int betaVersion = uc.getNewBetaVersion();
                         Font detailsFont = new Font("Default", Font.PLAIN, 14);
-                        JLabel announceLabel = new JLabel("A newer version of Haploview (" +version+") is available.");
+                        JLabel announceLabel;
+                        if (betaVersion == -1){
+                            announceLabel = new JLabel("A newer version of Haploview (" +version+") is available.");
+                        }else{
+                            announceLabel = new JLabel("A newer BETA version of Haploview (" + version + "beta" + betaVersion+") is available.");
+                        }
                         announceLabel.setFont(detailsFont);
                         JLabel detailsLabel = new JLabel("See \"Check for update\" in the file menu for details.");
                         detailsLabel.setFont(detailsFont);

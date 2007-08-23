@@ -15,13 +15,16 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
 
-        Font bigguns = new Font("Default", Font.PLAIN, 14);
+        Font bigguns = new Font("Default", Font.BOLD, 14);
 
         JTextArea announceArea = new JTextArea();
         announceArea.setFont(bigguns);
-        if (BETA_VERSION > 0 && VERSION == uc.getNewVersion()){
+        if (uc.getNewBetaVersion() != -1 && !uc.isFinalVersionAvailable()){
             announceArea.append("A newer BETA version of Haploview is available: " + uc.getNewVersion() + "beta" + uc.getNewBetaVersion() + "\n");
             announceArea.append("\n" + BETA_WEBSITE_STRING + "\n");
+        }else if (uc.isFinalVersionAvailable()){
+            announceArea.append("The final release of version " + uc.getNewVersion() + " is now available:\n");
+            announceArea.append("\n" + WEBSITE_STRING + "\n");
         }else{
             announceArea.append("A newer version of Haploview is available: " + uc.getNewVersion() + "\n");
             announceArea.append("\n" + WEBSITE_STRING + "\n");
@@ -33,18 +36,20 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
         announcePanel.add(announceArea);
         JScrollPane changeScroller = null;
 
-        if (BETA_VERSION == 0){
-            try {
-                JEditorPane changePane = new JEditorPane();
-                changePane.setEditable(false);
+        try {
+            JEditorPane changePane = new JEditorPane();
+            changePane.setEditable(false);
+            if (uc.getNewBetaVersion() != -1 && !uc.isFinalVersionAvailable()){
+                changePane.setPage(new URL("http://www.broad.mit.edu/mpg/haploview/uc/betachanges.html"));
+            }else{
                 changePane.setPage(new URL("http://www.broad.mit.edu/mpg/haploview/uc/changes.html"));
-                changePane.setOpaque(false);
-                changeScroller = new JScrollPane(changePane);
-                changeScroller.setPreferredSize(new Dimension(250,150));
-            } catch(IOException ioe) {
-                //if were here then we were able to check for an update, so well just show them a dialog
-                //without listing the changes
             }
+            changePane.setOpaque(false);
+            changeScroller = new JScrollPane(changePane);
+            changeScroller.setPreferredSize(new Dimension(250,150));
+        } catch(IOException ioe) {
+            //if were here then we were able to check for an update, so well just show them a dialog
+            //without listing the changes
         }
 
         contents.add(announcePanel);

@@ -17,8 +17,9 @@ import java.io.InputStreamReader;
  */
 public class UpdateChecker {
     private boolean newVersionAvailable;
+    private boolean finalReleaseAvailable;
     private double newVersion;
-    private int newBetaVersion;
+    private int newBetaVersion = -1;
 
     public UpdateChecker() {
 
@@ -26,6 +27,10 @@ public class UpdateChecker {
 
     public boolean isNewVersionAvailable() {
         return newVersionAvailable;
+    }
+
+    public boolean isFinalVersionAvailable() {
+        return finalReleaseAvailable;
     }
 
     public void setNewVersionAvailable(boolean newVersionAvailable) {
@@ -47,7 +52,7 @@ public class UpdateChecker {
     public boolean checkForUpdate() throws IOException{
 
         try {
-            URL url = new URL("http://www.broad.mit.edu/mpg/haploview/uc/version.txt");
+            URL url = new URL("http://www.broad.mit.edu/mpg/haploview/uc/newversion.txt");
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.setRequestProperty("User-agent",Constants.USER_AGENT);
             con.connect();
@@ -57,65 +62,47 @@ public class UpdateChecker {
             if ((response != HttpURLConnection.HTTP_ACCEPTED) && (response != HttpURLConnection.HTTP_OK)) {
                 //if something went wrong
                 throw new IOException("Could not connect to update server.");
-            }
-            else {
+            }else {
                 //all is well
-                InputStream inputStream = con.getInputStream();
-                byte[] buf = new byte[200];
-                int size = con.getContentLength();
-                int read;
-                if(size > 200) {
-                    read = inputStream.read(buf,0,200);
-                }
-                else {
-                    read = inputStream.read(buf,0,size);
+                BufferedReader betaReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                String versionLine = betaReader.readLine();
+                String betaLine = betaReader.readLine();
+                double newestVersion;
+                int newestBetaVersion;
+                try{
+                    newestVersion = Double.parseDouble(versionLine);
+                    newestBetaVersion = Integer.parseInt(betaLine);
+                }catch(NumberFormatException nfe){
+                    return false;
                 }
 
-                String data = "";
-                if(read != 0)  {
-                    data = new String(buf);
-                    double newestVersion = Double.parseDouble(data);
 
-                    if(newestVersion > Constants.VERSION) {
-                        this.newVersion = newestVersion;
+                if(Constants.VERSION < newestVersion) { //you're using an older final version
+                    this.newVersion = newestVersion;
+                    this.newVersionAvailable = true;
+                }else if (Constants.VERSION == newestVersion){
+                    if(Constants.BETA_VERSION == 0){ //you're using the current final version
+                        this.newVersion = Constants.VERSION;
+                        this.newVersionAvailable = false;
+                    }else{ //you're using a beta of the current final version
+                        this.newVersion = Constants.VERSION;
                         this.newVersionAvailable = true;
-                    }else if (Constants.BETA_VERSION > 0){
-                        if (newestVersion == Constants.VERSION){
-                            this.newVersion = newestVersion;
-                            this.newVersionAvailable = true;
-                        }else{
-                            URL betaUrl = new URL("http://www.broad.mit.edu/mpg/haploview/uc/betaversion.txt");
-                            HttpURLConnection betaCon = (HttpURLConnection)betaUrl.openConnection();
-                            betaCon.setRequestProperty("User-agent",Constants.USER_AGENT);
-                            betaCon.connect();
-
-                            int betaResponse = betaCon.getResponseCode();
-
-                            if ((betaResponse != HttpURLConnection.HTTP_ACCEPTED) && (betaResponse != HttpURLConnection.HTTP_OK)) {
-                                //if something went wrong
-                                throw new IOException("Could not connect to update server.");
-                            }
-                            else {
-                                //all is well
-                                BufferedReader betaReader = new BufferedReader(new InputStreamReader(betaCon.getInputStream()));
-                                String versionLine = betaReader.readLine();
-                                String betaLine = betaReader.readLine();
-                                double version = Double.parseDouble(versionLine);
-                                int betaVersion = Integer.parseInt(betaLine);
-
-                                if (Constants.VERSION < version || Constants.BETA_VERSION < betaVersion){
-                                    this.newVersionAvailable = true;
-                                    this.newVersion = version;
-                                    this.newBetaVersion = betaVersion;
-                                }
-                            }
-                        }
+                        this.finalReleaseAvailable = true;
                     }
-                    else {
+                }else if (Constants.VERSION > newestVersion) {
+                    if(Constants.BETA_VERSION == 0){ //you're using a newer final version
                         this.newVersionAvailable = false;
                         this.newVersion = Constants.VERSION;
+                    }else{
+                        if (newestBetaVersion == -1 || Constants.BETA_VERSION >= newestBetaVersion){ //you're using a beta of a newer final version
+                            this.newVersionAvailable = false;
+                            this.newVersion = Constants.VERSION;
+                        }else if (Constants.BETA_VERSION < newestBetaVersion){ //you're using an older beta of a newer final version
+                            this.newVersion = Constants.VERSION;
+                            this.newVersionAvailable = true;
+                            this.newBetaVersion = newestBetaVersion;
+                        }
                     }
-
                 }
             }
             con.disconnect();
