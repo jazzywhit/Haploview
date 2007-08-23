@@ -26,14 +26,16 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     String[] chromNames = {"","1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y","XY","MT"};
     String[] signs = {"",">",">=","=","<=","<"};
-    private JComboBox chromChooser, genericChooser1, genericChooser2, signChooser1, signChooser2, removeChooser;
+    private JComboBox chromChooser, genericChooser, signChooser, removeChooser;
+    private JButton viewFilters;
     private NumberTextField chromStart, chromEnd;
-    private JTextField valueField1, valueField2, markerField;
+    private JTextField valueField, markerField;
     private JPanel filterPanel;
-    private Vector originalColumns;
+    private Vector originalColumns, genericFilters;
     private Hashtable removedColumns;
 
-    private String chosenMarker;
+    private String chosenMarker, chromChoice;
+    private int startPos, endPos;
     private HaploView hv;
     private PlinkGraph theGraph;
 
@@ -47,6 +49,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         sorter = new TableSorter(plinkTableModel);
         removedColumns = new Hashtable();
         originalColumns = (Vector)plinkTableModel.getUnknownColumns().clone();
+        genericFilters = new Vector();
 
 
         table = new JTable(sorter);
@@ -97,26 +100,23 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             doMarkerFilter.addActionListener(this);
             extraFilterPanel.add(doMarkerFilter);
         }
-        mainFilterPanel.add(new JLabel("Filter1:"));
-        genericChooser1 = new JComboBox(plinkTableModel.getUnknownColumns());
-        genericChooser1.setSelectedIndex(-1);
-        mainFilterPanel.add(genericChooser1);
-        signChooser1 = new JComboBox(signs);
-        signChooser1.setSelectedIndex(-1);
-        mainFilterPanel.add(signChooser1);
-        valueField1 = new JTextField(8);
-        mainFilterPanel.add(valueField1);
-        mainFilterPanel.add(new JLabel("Filter2:"));
-        genericChooser2 = new JComboBox(plinkTableModel.getUnknownColumns());
-        mainFilterPanel.add(genericChooser2);
-        signChooser2 = new JComboBox(signs);
-        signChooser2.setSelectedIndex(-1);
-        mainFilterPanel.add(signChooser2);
-        valueField2 = new JTextField(8);
-        mainFilterPanel.add(valueField2);
+        mainFilterPanel.add(new JLabel("Filter:"));
+        genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
+        genericChooser.setSelectedIndex(-1);
+        mainFilterPanel.add(genericChooser);
+        signChooser = new JComboBox(signs);
+        signChooser.setSelectedIndex(-1);
+        mainFilterPanel.add(signChooser);
+        valueField = new JTextField(8);
+        mainFilterPanel.add(valueField);
         JButton doFilter = new JButton("Filter");
         doFilter.addActionListener(this);
         mainFilterPanel.add(doFilter);
+        viewFilters = new JButton("View Active Filters");
+        viewFilters.setActionCommand("View Active Filters");
+        viewFilters.addActionListener(this);
+        viewFilters.setEnabled(false);
+        mainFilterPanel.add(viewFilters);
 
         extraFilterPanel.add(new JLabel("Remove Column:"));
         removeChooser = new JComboBox(plinkTableModel.getUnknownColumns());
@@ -240,9 +240,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void doFilters(){
-        String chromChoice = "";
-        int startPos = -1;
-        int endPos = -1;
+        chromChoice = "";
+        startPos = -1;
+        endPos = -1;
         if (Options.getSNPBased()){
             chromChoice = (String)chromChooser.getSelectedItem();
 
@@ -266,40 +266,23 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             }
         }
 
-        String columnChoice1 = null;
-        String signChoice1 = null;
-        String value1 = null;
+        String columnChoice, signChoice, val;
 
-        if (genericChooser1.getSelectedIndex() > 0){
-            columnChoice1 = (String) genericChooser1.getSelectedItem();
+        if (genericChooser.getSelectedIndex() > 0){
+            columnChoice = (String) genericChooser.getSelectedItem();
 
-            if (signChooser1.getSelectedIndex() > 0){
-                signChoice1 = (String) signChooser1.getSelectedItem();
+            if (signChooser.getSelectedIndex() > 0){
+                signChoice = (String) signChooser.getSelectedItem();
 
-                if (!(valueField1.getText().equals(""))){
-                    value1 = valueField1.getText();
-                }
-            }
-        }
-
-        String columnChoice2 = null;
-        String signChoice2 = null;
-        String value2 = null;
-
-        if (genericChooser2.getSelectedIndex() > 0){
-            columnChoice2 = (String) genericChooser2.getSelectedItem();
-
-            if (signChooser2.getSelectedIndex() > 0){
-                signChoice2 = (String) signChooser2.getSelectedItem();
-
-                if (!(valueField2.getText().equals(""))){
-                    value2 = valueField2.getText();
+                if (!(valueField.getText().equals(""))){
+                    val = valueField.getText();
+                    genericFilters.add(columnChoice + "\t" + signChoice + "\t" + val);
                 }
             }
         }
 
         reSort();
-        plinkTableModel.filterAll(chromChoice,startPos,endPos,columnChoice1,signChoice1,value1,columnChoice2,signChoice2,value2);
+        plinkTableModel.filterAll(chromChoice,startPos,endPos,genericFilters);
         countResults();
     }
 
@@ -309,8 +292,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         table.removeColumn(deletedColumn);
         removeChooser.removeItemAt(index);
         removeChooser.setSelectedIndex(removeChooser.getItemCount()-1);
-        genericChooser1.setSelectedIndex(0);
-        genericChooser2.setSelectedIndex(0);
+        genericChooser.setSelectedIndex(0);
         if (table.getColumnCount() < 20){
             table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         }
@@ -347,14 +329,11 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             chromEnd.setText("");
             markerField.setText("");
         }
-        genericChooser1.setSelectedIndex(0);
-        genericChooser1.updateUI();
-        signChooser1.setSelectedIndex(0);
-        valueField1.setText("");
-        genericChooser2.setSelectedIndex(0);
-        genericChooser2.updateUI();
-        signChooser2.setSelectedIndex(0);
-        valueField2.setText("");
+        genericChooser.setSelectedIndex(0);
+        genericChooser.updateUI();
+        signChooser.setSelectedIndex(0);
+        valueField.setText("");
+        genericFilters = new Vector();
         reSort();
         countResults();
     }
@@ -368,6 +347,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     public void countResults(){
         filterPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
                 "Viewing " + plinkTableModel.getRowCount() + " results"));
+        if (genericFilters.size() == 0){
+            viewFilters.setEnabled(false);
+            viewFilters.setText("View Active Filters");
+        }else{
+            viewFilters.setEnabled(true);
+            viewFilters.setText("View " + genericFilters.size() + " Active Filters");
+        }
         repaint();
     }
 
@@ -462,6 +448,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             FisherCombinedDialog fcd = new FisherCombinedDialog("Fisher Combine");
             fcd.pack();
             fcd.setVisible(true);
+        }else if (command.equals("View Active Filters")){
+            ActiveFiltersDialog afd = new ActiveFiltersDialog("Active Filters");
+            afd.pack();
+            afd.setVisible(true);
         }else if (command.equals("Remove")){
             if (removeChooser.getSelectedIndex() > 0){
                 removeColumn((String)removeChooser.getSelectedItem(),removeChooser.getSelectedIndex());
@@ -603,6 +593,114 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 hv.readWGA(inputs);
             }
         }
+    }
+
+    class ActiveFiltersDialog extends JDialog implements ActionListener{
+
+        JPanel contents, chPanel;
+        JCheckBox[] checks;
+        JComboBox gChooser, sChooser;
+        JTextField vField;
+
+        ActiveFiltersDialog(String title){
+            super(hv,title);
+            contents = new JPanel();
+            contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
+            contents.setPreferredSize(new Dimension(300,150));
+
+            changeContents();
+            this.setLocation(this.getParent().getX() + 100,
+                    this.getParent().getY() + 100);
+            this.setModal(true);
+
+        }
+
+        public void changeContents(){
+            contents.removeAll();
+            checks = new JCheckBox[genericFilters.size()];
+            for (int i = 0; i < genericFilters.size(); i++){
+                checks[i] = new JCheckBox((String)genericFilters.get(i));
+                checks[i].setSelected(true);
+            }
+
+            chPanel = new JPanel();
+            chPanel.setLayout(new BoxLayout(chPanel,BoxLayout.Y_AXIS));
+            for (int i = 0; i < checks.length; i++){
+                chPanel.add(checks[i]);
+            }
+            JScrollPane jsp = new JScrollPane(chPanel);
+
+            JPanel filterPanel = new JPanel();
+            filterPanel.add(new JLabel("Filter:"));
+            gChooser = new JComboBox(plinkTableModel.getUnknownColumns());
+            gChooser.setSelectedIndex(-1);
+            filterPanel.add(gChooser);
+            sChooser = new JComboBox(signs);
+            sChooser.setSelectedIndex(-1);
+            filterPanel.add(sChooser);
+            vField = new JTextField(8);
+            filterPanel.add(vField);
+            JButton addFilter = new JButton("Add");
+            addFilter.addActionListener(this);
+            filterPanel.add(addFilter);
+
+
+            JPanel choicePanel = new JPanel();
+            JButton doneButton = new JButton("<html><b>Done</b>");
+            doneButton.addActionListener(this);
+            doneButton.setActionCommand("Done");
+            choicePanel.add(doneButton);
+            JButton clearButton = new JButton("Clear");
+            clearButton.addActionListener(this);
+            choicePanel.add(clearButton);
+
+            contents.add(jsp);
+            contents.add(filterPanel);
+            contents.add(choicePanel);
+
+            contents.repaint();
+            this.setContentPane(contents);
+        }
+
+        public void actionPerformed(ActionEvent e){
+            String command = e.getActionCommand();
+
+            if (command.equals("Add")){
+                String columnChoice, signChoice, val;
+
+                if (gChooser.getSelectedIndex() > 0){
+                    columnChoice = (String) gChooser.getSelectedItem();
+
+                    if (sChooser.getSelectedIndex() > 0){
+                        signChoice = (String) sChooser.getSelectedItem();
+
+                        if (!(vField.getText().equals(""))){
+                            val = vField.getText();
+                            genericFilters.add(columnChoice + "\t" + signChoice + "\t" + val);
+                            changeContents();
+                        }
+                    }
+                }
+            }else if (command.equals("Clear")){
+                genericFilters = new Vector();
+                changeContents();
+            }else if (command.equals("Done")){
+                for (int i = 0; i < checks.length; i++){
+                    if (!checks[i].isSelected()){
+                        genericFilters.remove(i);
+                    }
+                }
+                genericChooser.setSelectedIndex(0);
+                genericChooser.updateUI();
+                signChooser.setSelectedIndex(0);
+                valueField.setText("");
+                reSort();
+                plinkTableModel.filterAll(chromChoice,startPos,endPos,genericFilters);
+                countResults();
+                this.dispose();
+            }
+        }
+
     }
 
     class PlinkCellRenderer extends DefaultTableCellRenderer {
