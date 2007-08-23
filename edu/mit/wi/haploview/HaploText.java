@@ -1610,7 +1610,11 @@ public class HaploText implements Constants{
                     commandLogger.info("Using analysis track file: " + trackName);
                 }
                 if (infoTrack){
-                    Options.setShowGBrowse(true);
+                    if (chromosomeArg.equals("") && (fileType == PED_FILE || fileType == HAPS_FILE || fileType == PHASED_FILE)){
+                        commandLogger.warn("-infoTrack requires a -chromosome specification when used with this filetype");
+                    }else{
+                        Options.setShowGBrowse(true);
+                    }
                 }
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
                 BufferedImage i = dpd.export(0,Chromosome.getUnfilteredSize(),outputCompressedPNG);
@@ -1632,7 +1636,11 @@ public class HaploText implements Constants{
                     commandLogger.info("Using analysis track file: " + trackName);
                 }
                 if (infoTrack){
-                    Options.setShowGBrowse(true);
+                    if (chromosomeArg.equals("") && (fileType == PED_FILE || fileType == HAPS_FILE || fileType == PHASED_FILE)){
+                        commandLogger.warn("-infoTrack requires a -chromosome specification when used with this filetype");
+                    }else{
+                        Options.setShowGBrowse(true);
+                    }
                 }
                 DPrimeDisplay dpd = new DPrimeDisplay(textData);
                 SVGGraphics2D svg = dpd.exportSVG(0,Chromosome.getUnfilteredSize());
