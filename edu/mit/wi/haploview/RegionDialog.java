@@ -38,7 +38,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         panelChooser = new JComboBox(PANEL_NAMES);
         chooserPanel.add(new JLabel("Analysis Panel:"));
         chooserPanel.add(panelChooser);
-        chooserPanel.add(new JLabel("Position: " + new Long(position/1000).toString()));
+        chooserPanel.add(new JLabel("Position: " + Long.toString(position / 1000)));
         chooserPanel.add(new JLabel("+/-"));
         rangeInput = new NumberTextField("100",6,false,false);
         chooserPanel.add(rangeInput);
@@ -92,8 +92,8 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 start = 0;
             }
             long end = (markerPosition/1000)+range;
-            String gotoStart = new Long(start).toString();
-            String gotoEnd = new Long(end).toString();
+            String gotoStart = Long.toString(start);
+            String gotoEnd = Long.toString(end);
             String phase = (String)phaseChooser.getSelectedItem();
             prp.setChosenMarker(marker);
 
@@ -105,7 +105,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             returnStrings = new String[]{"Chr" + chrom + ":" + panel + ":" + gotoStart + ".." +
                     gotoEnd, panel, gotoStart, gotoEnd, chrom, phase, "txt"};
             this.dispose();
-            hv.readGenotypes(returnStrings, PHASEDHMPDL_FILE, true);
+            hv.readGenotypes(returnStrings, HMPDL_FILE, true);
             Vector chipSNPs = new Vector(prp.getSNPs());
             if (Chromosome.getUnfilteredSize() > 0){
                 if (annotate.isSelected()){

@@ -1291,12 +1291,12 @@ public class HaploText implements Constants{
         }
         else if (phasedhmpdataFileName != null){
             fileName = phasedhmpdataFileName;
-            fileType = PHASED_FILE;
+            fileType = PHASEHMP_FILE;
             phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, chromosomeArg};
         }
         else if (phasedhapmapDownload){
             fileName = "Chromosome" + chromosomeArg + panelArg;
-            fileType = PHASEDHMPDL_FILE;
+            fileType = HMPDL_FILE;
             phasedHapMapInfo = new String[]{fileName, panelArg, startPos, endPos, chromosomeArg, release, "max"};
         }else{
             fileName = hapmapFileName;
@@ -1357,11 +1357,11 @@ public class HaploText implements Constants{
                     commandLogger.warn("Error: At least one male in the file is heterozygous.\nThese genotypes have been ignored.");
                 }
             }
-            else if (fileType == PHASED_FILE){
+            else if (fileType == PHASEHMP_FILE){
                 //read in phased hapmap data
                 textData.phasedToChrom(phasedHapMapInfo, false);
             }
-            else if (fileType == PHASEDHMPDL_FILE){
+            else if (fileType == HMPDL_FILE){
                 //read in downloaded phased hapmap data
                 textData.phasedToChrom(phasedHapMapInfo, true);
             }
@@ -1610,7 +1610,7 @@ public class HaploText implements Constants{
                     commandLogger.info("Using analysis track file: " + trackName);
                 }
                 if (infoTrack){
-                    if (chromosomeArg.equals("") && (fileType == PED_FILE || fileType == HAPS_FILE || fileType == PHASED_FILE)){
+                    if (chromosomeArg.equals("") && (fileType == PED_FILE || fileType == HAPS_FILE || fileType == PHASEHMP_FILE)){
                         commandLogger.warn("-infoTrack requires a -chromosome specification when used with this filetype");
                     }else{
                         Options.setShowGBrowse(true);
@@ -1636,7 +1636,7 @@ public class HaploText implements Constants{
                     commandLogger.info("Using analysis track file: " + trackName);
                 }
                 if (infoTrack){
-                    if (chromosomeArg.equals("") && (fileType == PED_FILE || fileType == HAPS_FILE || fileType == PHASED_FILE)){
+                    if (chromosomeArg.equals("") && (fileType == PED_FILE || fileType == HAPS_FILE || fileType == PHASEHMP_FILE)){
                         commandLogger.warn("-infoTrack requires a -chromosome specification when used with this filetype");
                     }else{
                         Options.setShowGBrowse(true);

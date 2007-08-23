@@ -400,11 +400,11 @@ public class ReadDataDialog extends JDialog
         }else if (command.equals(BROWSE_HMP)){
             browse(HMP_FILE);
         }else if (command.equals(BROWSE_PHASE)){
-            browse(PHASED_FILE);
+            browse(PHASEHMP_FILE);
         }else if (command.equals(BROWSE_SAMPLE)){
-            browse(SAMPLE_FILE);
+            browse(SAMPLEHMP_FILE);
         }else if (command.equals(BROWSE_LEGEND)){
-            browse(LEGEND_FILE);
+            browse(LEGENDHMP_FILE);
         }else if (command.equals(BROWSE_INFO)){
             browse(INFO_FILE);
         }else if (command.equals(BROWSE_ASSOC)){
@@ -434,9 +434,9 @@ public class ReadDataDialog extends JDialog
             }else if (currTab == 2){
                 fileType = HMP_FILE;
             }else if (currTab == 3){
-                fileType = PHASED_FILE;
+                fileType = PHASEHMP_FILE;
             }else if (currTab == 4){
-                fileType = PHASEDHMPDL_FILE;
+                fileType = HMPDL_FILE;
             }else if (currTab == 5){
                 fileType = PLINK_FILE;
             }
@@ -491,7 +491,7 @@ public class ReadDataDialog extends JDialog
                 Options.setMaxDistance(Integer.parseInt(maxComparisonDistField.getText()));
             }
 
-            if (fileType == PHASED_FILE){
+            if (fileType == PHASEHMP_FILE){
                 if (gZip.isSelected()){
                     Options.setGzip(true);
                 }else{
@@ -516,7 +516,7 @@ public class ReadDataDialog extends JDialog
                     chromChoice = (String)loadChromChooser.getSelectedItem();
                 }
             }
-            if (fileType == PHASEDHMPDL_FILE){
+            if (fileType == HMPDL_FILE){
                 isDownloaded = true;
 
                 if (downloadDoGB.isSelected()){
@@ -586,9 +586,9 @@ public class ReadDataDialog extends JDialog
                 if (returnStrings[1].equals("")) returnStrings[1] = null;
             }else if (fileType == HMP_FILE){
                 returnStrings = new String[]{hmpFileField.getText(),null,null};
-            }else if (fileType == PHASED_FILE ){
+            }else if (fileType == PHASEHMP_FILE){
                 returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), phaseLegendField.getText(), chromChoice};
-            }else if (fileType == PHASEDHMPDL_FILE){
+            }else if (fileType == HMPDL_FILE){
                 returnStrings = new String[]{"Chr" + chromChoice + ":" + panelChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), panelChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice, "txt"};
             }else if (fileType == PLINK_FILE){
@@ -741,13 +741,13 @@ public class ReadDataDialog extends JDialog
         }else if (browseType == HMP_FILE){
             name = file.getName();
             hmpFileField.setText(file.getParent()+File.separator+name);
-        }else if (browseType == PHASED_FILE){
+        }else if (browseType == PHASEHMP_FILE){
             name = file.getName();
             phaseFileField.setText(file.getParent()+File.separator+name);
-        }else if (browseType == SAMPLE_FILE){
+        }else if (browseType == SAMPLEHMP_FILE){
             name = file.getName();
             phaseSampleField.setText(file.getParent()+File.separator+name);
-        }else if (browseType == LEGEND_FILE){
+        }else if (browseType == LEGENDHMP_FILE){
             name = file.getName();
             phaseLegendField.setText(file.getParent()+File.separator+name);
         }else if (browseType==INFO_FILE){

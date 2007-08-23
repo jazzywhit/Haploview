@@ -79,10 +79,10 @@ public interface Constants {
     static final int PED_FILE = 3;
     static final int HMP_FILE = 4;
     static final int ASSOC_FILE = 5;
-    static final int PHASED_FILE = 6;
-    static final int PHASEDHMPDL_FILE = 7;
-    static final int SAMPLE_FILE = 8;
-    static final int LEGEND_FILE = 9;
+    static final int PHASEHMP_FILE = 6;
+    static final int HMPDL_FILE = 7;
+    static final int SAMPLEHMP_FILE = 8;
+    static final int LEGENDHMP_FILE = 9;
     static final int PLINK_FILE = 10;
     static final int MAP_FILE = 11;
 
