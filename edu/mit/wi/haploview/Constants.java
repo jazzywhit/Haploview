@@ -144,12 +144,13 @@ public interface Constants {
             "-n, -nogui                      Command line output only\n" +
             "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +
             "-log <filename>                 Specify a logfile name (defaults to haploview.log if no name specified)\n" +
+            "-out <fileroot>                 Specify a fileroot to be used for all output files\n" +
             "-pedfile <pedfile>              Specify an input file (or http:// location) in pedigree file format\n" +
             "-hapmap <hapmapfile>            Specify an input file (or http:// location) in HapMap format\n" +
             "-phasedhmpdata <phasedfile>     Specify a HapMap PHASE data file (or http:// location)\n" +
             "-phasedhmpsample <samplefile>   Specify a HapMap PHASE sample file (or http:// location)\n" +
             "-phasedhmplegend <legendfile>   Specify a HapMap PHASE legend file (or http:// location)\n" +
-            "-gzip                           Indicates that HapMap PHASE input files use GZIP compression\n" +
+            "-gzip                           Indicates that phased input files use GZIP compression\n" +
             "-hapmapDownload                 Specify a phased HapMap download\n" +
             "-haps <hapsfile>                Specify an input file (or http:// location) in .haps format\n" +
             "-info <infofile>                Specify a marker info file (or http:// location)\n" +
@@ -169,19 +170,19 @@ public interface Constants {
             "-startpos <integer>             Specifies the start position in kb for this HapMap download\n" +
             "-endpos <integer>               Specifies the end position in kb for this HapMap download\n" +
             "-release <16a,21>               Specifies the HapMap phase for this HapMap download (defaults to 21)\n" +
-            "-dprime                         Outputs LD text to <inputfile>.LD\n" +
-            "-png                            Outputs LD display to <inputfile>.LD.PNG\n"+
-            "-compressedpng                  Outputs compressed LD display to <inputfile>.LD.PNG\n"+
+            "-dprime                         Outputs LD text to <fileroot>.LD\n" +
+            "-png                            Outputs LD display to <fileroot>.LD.PNG\n"+
+            "-compressedpng                  Outputs compressed LD display to <fileroot>.LD.PNG\n"+
             "-infoTrack                      Downloads and displays HapMap info track on PNG image output\n"+
             "-ldcolorscheme <argument>       Specify an LD color scheme. <argument> should be one of:\n" +
             "                                DEFAULT, RSQ, DPALT, GAB, GAM\n" +
             "-ldvalues <DPRIME,RSQ,NONE>     Specify what to print in LD image output. default is DPrime\n" +
-            "-check                          Outputs marker checks to <inputfile>.CHECK\n" +
+            "-check                          Outputs marker checks to <fileroot>.CHECK\n" +
             "                                note: -dprime  and -check default to no blocks output. \n" +
             "                                Use -blockoutput to also output blocks\n" +
-            "-indcheck                       Outputs genotype percent per individual to <inputfile>.INDCHECK\n" +
-            "-mendel                         Outputs Mendel error information to <inputfile>.MENDEL\n" +
-            "-malehets                       Outputs male heterozygote information to <inputfile>.MALEHETS\n" +
+            "-indcheck                       Outputs genotype percent per individual to <fileroot>.INDCHECK\n" +
+            "-mendel                         Outputs Mendel error information to <fileroot>.MENDEL\n" +
+            "-malehets                       Outputs male heterozygote information to <fileroot>.MALEHETS\n" +
             "-blockoutput <GAB,GAM,SPI,ALL>  Output type. Gabriel, 4 gamete, spine output or all 3. default is Gabriel.\n" +
             "-blockCutHighCI <thresh>        Gabriel 'Strong LD' high confidence interval D' cutoff.\n" +
             "-blockCutLowCI <thresh>         Gabriel 'Strong LD' low confidence interval D' cutoff.\n" +
@@ -203,12 +204,12 @@ public interface Constants {
             "                                between 0 and 1. Default is .001\n" +
             "-missingCutoff <threshold>      Exclude individuals with more than <threshold> fraction missing data.\n" +
             "                                <threshold> is a value between 0 and 1. Default is .5 \n" +
-            "-assocCC                        Outputs case control association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC\n" +
-            "-assocTDT                       Outputs trio association results to <inputfile>.ASSOC and <inputfile>.HAPASSOC\n" +
+            "-assocCC                        Outputs case control association results to <fileroot>.ASSOC and <fileroot>.HAPASSOC\n" +
+            "-assocTDT                       Outputs trio association results to <fileroot>.ASSOC and <fileroot>.HAPASSOC\n" +
             "-customAssoc <file>             Loads a set of custom tests for association.\n" +
             "-permtests <numtests>           Performs <numtests> permutations on default association tests (or custom tests\n" +
-            "                                if a custom association file is specified) and writes to <inputfile>.PERMUT\n" +
-            "-pairwiseTagging                Generates pairwise tagging information in <inputfile>.TAGS and .TESTS\n" +
+            "                                if a custom association file is specified) and writes to <fileroot>.PERMUT\n" +
+            "-pairwiseTagging                Generates pairwise tagging information in <fileroot>.TAGS and .TESTS\n" +
             "-aggressiveTagging              As above but generates 2-marker haplotype tags unless specified otherwise by -aggressiveNumMarkers\n" +
             "-aggressiveNumMarkers <2,3>     Specifies whether to use 2-marker haplotype tags or 2 and 3-marker haplotype tags.\n" +
             "-maxNumTags <n>                 Only selects <n> best tags.\n" +

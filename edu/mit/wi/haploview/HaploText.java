@@ -21,6 +21,7 @@ import org.apache.log4j.varia.DenyAllFilter;
 
 public class HaploText implements Constants{
     private boolean nogui = false;
+    private String outputRootName;
     private String batchFileName;
     private String hapsFileName;
     private String infoFileName;
@@ -288,6 +289,18 @@ public class HaploText implements Constants{
                     i--;
                 }else{
                     debugFileName = args[i];
+                }
+            }
+            else if (args[i].equalsIgnoreCase("-out")){
+                i++;
+                if( i>=args.length || (args[i].charAt(0) == '-')){
+                    die(args[i-1] + " requires a fileroot");
+                }
+                else{
+                    if(outputRootName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last fileroot listed will be used");
+                    }
+                    outputRootName = args[i];
                 }
             }
             else if(args[i].equalsIgnoreCase("-p") || args[i].equalsIgnoreCase("-pedfile")) {
@@ -1228,7 +1241,7 @@ public class HaploText implements Constants{
             new URL(fn);
             f = new File(fn.substring(fn.lastIndexOf("/")+1));
         }catch(MalformedURLException mfe){
-            f = new File(fn);   
+            f = new File(fn);
         }
         if (f.exists()){
             commandLogger.info("File " + f.getName() + " already exists and will be overwritten.");
@@ -1307,6 +1320,12 @@ public class HaploText implements Constants{
                     commandLogger.info("Using data file: " + fileName);
                 }
 
+            }
+
+            if (outputRootName == null){
+                outputRootName = fileName;
+            }else{
+                commandLogger.info("Using output fileroot: " + outputRootName);
             }
 
            /* inputFile = new File(fileName);
@@ -1441,22 +1460,22 @@ public class HaploText implements Constants{
                 commandLogger.info("Using marker information file: " + infoFileName);
             }
             if(outputCheck && result != null){
-                textData.getPedFile().saveCheckDataToText(validateOutputFile(fileName + ".CHECK"));
+                textData.getPedFile().saveCheckDataToText(validateOutputFile(outputRootName + ".CHECK"));
             }
             if(individualCheck && result != null){
                 IndividualDialog id = new IndividualDialog(textData);
-                id.printTable(validateOutputFile(fileName + ".INDCHECK"));
+                id.printTable(validateOutputFile(outputRootName + ".INDCHECK"));
             }
             if(mendel && result != null){
                 if (textData.getPedFile().getMendelsExist()){
                     MendelDialog md = new MendelDialog(textData);
-                    md.printTable(validateOutputFile(fileName + ".MENDEL" ));
+                    md.printTable(validateOutputFile(outputRootName + ".MENDEL" ));
                 }
             }
             if(malehets && result != null){
                 if (textData.getPedFile().getHaploidHets() != null){
                     HetsDialog hd = new HetsDialog(textData);
-                    hd.printTable(validateOutputFile(fileName + ".MALEHETS"));
+                    hd.printTable(validateOutputFile(outputRootName + ".MALEHETS"));
                 }
             }
 
@@ -1475,16 +1494,16 @@ public class HaploText implements Constants{
                 Haplotype[][] filtHaplos;
                 switch(blockOutputType){
                     case BLOX_GABRIEL:
-                        outputFile = validateOutputFile(fileName + ".GABRIELblocks");
+                        outputFile = validateOutputFile(outputRootName + ".GABRIELblocks");
                         break;
                     case BLOX_4GAM:
-                        outputFile = validateOutputFile(fileName + ".4GAMblocks");
+                        outputFile = validateOutputFile(outputRootName + ".4GAMblocks");
                         break;
                     case BLOX_SPINE:
-                        outputFile = validateOutputFile(fileName + ".SPINEblocks");
+                        outputFile = validateOutputFile(outputRootName + ".SPINEblocks");
                         break;
                     case BLOX_CUSTOM:
-                        outputFile = validateOutputFile(fileName + ".CUSTblocks");
+                        outputFile = validateOutputFile(outputRootName + ".CUSTblocks");
                         //read in the blocks file
                         commandLogger.info("Using custom blocks file: " + blockName);
                         cust = textData.readBlocks(getInputStream(blockName));
@@ -1494,14 +1513,14 @@ public class HaploText implements Constants{
                         outputFile = null;
                         break;
                     default:
-                        outputFile = validateOutputFile(fileName + ".GABRIELblocks");
+                        outputFile = validateOutputFile(outputRootName + ".GABRIELblocks");
                         break;
 
                 }
 
                 //this handles output type ALL
                 if(blockOutputType == BLOX_ALL) {
-                    outputFile = validateOutputFile(fileName + ".GABRIELblocks");
+                    outputFile = validateOutputFile(outputRootName + ".GABRIELblocks");
                     textData.guessBlocks(BLOX_GABRIEL);
 
                     haplos = textData.generateBlockHaplotypes(textData.blocks);
@@ -1513,7 +1532,7 @@ public class HaploText implements Constants{
                         commandLogger.info("Skipping block output: no valid Gabriel blocks.");
                     }
 
-                    outputFile = validateOutputFile(fileName + ".4GAMblocks");
+                    outputFile = validateOutputFile(outputRootName + ".4GAMblocks");
                     textData.guessBlocks(BLOX_4GAM);
 
                     haplos = textData.generateBlockHaplotypes(textData.blocks);
@@ -1525,7 +1544,7 @@ public class HaploText implements Constants{
                         commandLogger.info("Skipping block output: no valid 4 Gamete blocks.");
                     }
 
-                    outputFile = validateOutputFile(fileName + ".SPINEblocks");
+                    outputFile = validateOutputFile(outputRootName + ".SPINEblocks");
                     textData.guessBlocks(BLOX_SPINE);
 
                     haplos = textData.generateBlockHaplotypes(textData.blocks);
@@ -1557,7 +1576,7 @@ public class HaploText implements Constants{
                     }else{
                         if (haplos != null){
                             blockTestSet = new AssociationTestSet(haplos,null);
-                            blockTestSet.saveHapsToText(validateOutputFile(fileName + ".HAPASSOC"));
+                            blockTestSet.saveHapsToText(validateOutputFile(outputRootName + ".HAPASSOC"));
 
                         }else {
                             commandLogger.info("Skipping block association output: no valid blocks.");
@@ -1567,7 +1586,7 @@ public class HaploText implements Constants{
             }
 
             if(outputDprime) {
-                outputFile = validateOutputFile(fileName + ".LD");
+                outputFile = validateOutputFile(outputRootName + ".LD");
                 if (textData.dpTable != null){
                     textData.saveDprimeToText(outputFile, TABLE_TYPE, 0, Chromosome.getSize());
                 }else{
@@ -1576,7 +1595,7 @@ public class HaploText implements Constants{
             }
 
             if (outputPNG || outputCompressedPNG){
-                outputFile = validateOutputFile(fileName + ".LD.PNG");
+                outputFile = validateOutputFile(outputRootName + ".LD.PNG");
                 if (textData.dpTable == null){
                     textData.generateDPrimeTable();
                     textData.guessBlocks(BLOX_CUSTOM, new Vector());
@@ -1613,7 +1632,7 @@ public class HaploText implements Constants{
                 }else{
                     markerTestSet = new AssociationTestSet(textData.getPedFile(),null,null,Chromosome.getAllMarkers());
                 }
-                markerTestSet.saveSNPsToText(validateOutputFile(fileName + ".ASSOC"));
+                markerTestSet.saveSNPsToText(validateOutputFile(outputRootName + ".ASSOC"));
             }
 
             if(customAssocSet != null) {
@@ -1621,7 +1640,7 @@ public class HaploText implements Constants{
                 try {
                     customAssocSet.setPermTests(doPermutationTest);
                     customAssocSet.runFileTests(textData,markerTestSet.getMarkerAssociationResults());
-                    customAssocSet.saveResultsToText(validateOutputFile(fileName + ".CUSTASSOC"));
+                    customAssocSet.saveResultsToText(validateOutputFile(outputRootName + ".CUSTASSOC"));
 
                 }catch(IOException ioe) {
                     commandLogger.error("An error occured writing the custom association results file.");
@@ -1718,7 +1737,7 @@ public class HaploText implements Constants{
                 if (captureAllelesName != null){
                     commandLogger.info("Using capture alleles file: " + captureAllelesName);
                 }
-                
+
                 for (int i = 0; i < forceIncludeTags.size(); i++) {
                     String s = (String) forceIncludeTags.elementAt(i);
                     if(!names.contains(s)) {
@@ -1749,13 +1768,13 @@ public class HaploText implements Constants{
                     }catch(InterruptedException ie) {}
                 }
 
-                tc.saveResultsToFile(validateOutputFile(fileName + ".TAGS"));
-                tc.dumpTests(validateOutputFile(fileName + ".TESTS"));
+                tc.saveResultsToFile(validateOutputFile(outputRootName + ".TAGS"));
+                tc.dumpTests(validateOutputFile(outputRootName + ".TESTS"));
                 if (outputConditionalHaps){
-                    tc.dumpConditionalHaps(validateOutputFile(fileName + ".CHAPS"));
+                    tc.dumpConditionalHaps(validateOutputFile(outputRootName + ".CHAPS"));
                 }
                 //todo: I don't like this at the moment, removed subject to further consideration.
-                //tc.dumpTags(validateOutputFile(fileName + ".TAGSNPS"));
+                //tc.dumpTags(validateOutputFile(outputRootName + ".TAGSNPS"));
             }
         }
         catch(IOException e){
