@@ -9,16 +9,16 @@ individual per line with family info plus genotypes.
 
 sample.info -- goes with the above and provides marker name and position
 
-These two are used together by selecting "Load genotypes (linkage
-format)" from the load dialog.
+These two are used together by selecting the "Linkage Format" tab
+from the load dialog.
 
 ----------
 
 sample.hmp -- a hapmap style file with all indiv and marker
 information. 
 
-This one is loaded all by itself by selecting "Browse HapMap Data from
-the DCC" from the load dialog.
+This one is loaded all by itself by selecting "HapMap Format" tab
+from the load dialog.
 
 ----------
 
