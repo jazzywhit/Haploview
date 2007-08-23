@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 
 import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
+import org.apache.batik.svggen.SVGGraphics2D;
 
 public class HaploView extends JFrame implements ActionListener, Constants{
 
@@ -1498,6 +1499,36 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     }catch(JimiException je){
                         JOptionPane.showMessageDialog(this,
                                 je.getMessage(),
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }else if (format == SVG_MODE){
+                SVGGraphics2D svgGenerator = null;
+                if (c.equals(dPrimeDisplay)){
+                    try{
+                        svgGenerator = dPrimeDisplay.exportSVG(start, stop);
+                    }catch(HaploViewException hve){
+                        JOptionPane.showMessageDialog(this,
+                                hve.getMessage(),
+                                "Export Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }else if (c.equals(hapDisplay)){
+                    svgGenerator = hapDisplay.exportSVG();
+                }
+                boolean useCSS = true;
+                if (svgGenerator != null){
+                    try{
+                        String filename = outfile.getPath();
+                        if (! (filename.endsWith(".svg") || filename.endsWith(".SVG"))){
+                            filename += ".svg";
+                        }
+                        Writer out = new OutputStreamWriter(new FileOutputStream(new File(filename)), "UTF-8");
+                        svgGenerator.stream(out, useCSS);
+                    }catch (IOException ioe){
+                        JOptionPane.showMessageDialog(this,
+                                ioe.getMessage(),
                                 "Error",
                                 JOptionPane.ERROR_MESSAGE);
                     }

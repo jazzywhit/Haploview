@@ -6,6 +6,10 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.apache.batik.svggen.SVGGraphics2D;
 //import org.freehep.util.export.ExportDialog;
 //import org.freehep.graphics2d.VectorGraphics;
 //import org.freehep.graphicsio.ps.PSGraphics2D;
@@ -436,6 +440,71 @@ public class DPrimeDisplay extends JComponent
         forExport = false;
         this.computePreferredSize();
         return i;
+    }
+
+    public SVGGraphics2D exportSVG(int start, int stop) throws HaploViewException {
+       forExport = true;
+
+        exportStart = -1;
+        if (start < 0){
+            start = 0;
+        }
+        while (true){
+            //if the marker we want has been filtered walk up until we find a valid one
+            exportStart = Chromosome.filterIndex[start];
+            if (exportStart == -1){
+                start++;
+                if (start >= Chromosome.getUnfilteredSize()){
+                    forExport = false;
+                    throw new HaploViewException("Invalid marker range for export.");
+                }
+            }else{
+                break;
+            }
+        }
+
+        exportStop = -1;
+        if (stop > Chromosome.getUnfilteredSize()){
+            stop = Chromosome.getUnfilteredSize();
+        }
+        while (true){
+            //if the marker we want has been filtered walk down until we find a valid one
+            exportStop = Chromosome.filterIndex[stop-1];
+            if (exportStop == -1){
+                stop--;
+                if (stop < 0){
+                    forExport = false;
+                    throw new HaploViewException("Invalid marker range for export.");
+                }
+            }else{
+                break;
+            }
+        }
+
+
+        this.computePreferredSize();
+
+        int startBS = boxSize;
+        int startBR = boxRadius;
+        int startPW = printWhat;
+        boolean startMN = printMarkerNames;
+        int startZL = zoomLevel;
+
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+        Document document = domImpl.createDocument(null, "svg", null);
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+        svgGenerator.getGeneratorContext().setPrecision(6); //TODO: Look at changing precision
+        paintComponent(svgGenerator);
+
+        boxSize = startBS;
+        boxRadius = startBR;
+        zoomLevel = startZL;
+        printMarkerNames = startMN;
+        printWhat = startPW;
+        forExport = false;
+        this.computePreferredSize();
+
+        return svgGenerator;
     }
 
     public void zoom(int type){

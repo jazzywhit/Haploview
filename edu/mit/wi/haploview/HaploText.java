@@ -18,6 +18,7 @@ import com.sun.jimi.core.Jimi;
 import com.sun.jimi.core.JimiException;
 import org.apache.log4j.*;
 import org.apache.log4j.varia.DenyAllFilter;
+import org.apache.batik.svggen.SVGGraphics2D;
 
 public class HaploText implements Constants{
     private boolean nogui = false;
@@ -49,6 +50,7 @@ public class HaploText implements Constants{
     private boolean outputDprime;
     private boolean outputPNG;
     private boolean outputCompressedPNG;
+    private boolean outputSVG;
     private boolean infoTrack;
     private boolean doPermutationTest;
     private boolean findTags;
@@ -470,6 +472,9 @@ public class HaploText implements Constants{
             }
             else if (args[i].equalsIgnoreCase("-smallpng") || args[i].equalsIgnoreCase("-compressedPNG")){
                 outputCompressedPNG = true;
+            }
+            else if (args[i].equalsIgnoreCase("-svg")){
+                outputSVG = true;
             }
             else if (args[i].equalsIgnoreCase("-infoTrack")){
                 infoTrack = true;
@@ -1613,6 +1618,29 @@ public class HaploText implements Constants{
                     Jimi.putImage("image/png", i, outputFile.getAbsolutePath());
                 }catch(JimiException je){
                     System.out.println(je.getMessage());
+                }
+            }
+
+            if (outputSVG){
+                outputFile = validateOutputFile(outputRootName + ".LD.SVG");
+                if (textData.dpTable == null){
+                    textData.generateDPrimeTable();
+                    textData.guessBlocks(BLOX_CUSTOM, new Vector());
+                }
+                if (trackName != null){
+                    textData.readAnalysisTrack(getInputStream(trackName));
+                    commandLogger.info("Using analysis track file: " + trackName);
+                }
+                if (infoTrack){
+                    Options.setShowGBrowse(true);
+                }
+                DPrimeDisplay dpd = new DPrimeDisplay(textData);
+                SVGGraphics2D svg = dpd.exportSVG(0,Chromosome.getUnfilteredSize());
+                try{
+                    Writer out = new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8");
+                    svg.stream(out, true);
+                }catch (IOException ioe){
+                    commandLogger.error("An error occured writing the LD SVG file.");
                 }
             }
 

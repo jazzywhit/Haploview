@@ -1,4 +1,9 @@
 package edu.mit.wi.haploview;
+import org.apache.batik.svggen.SVGGraphics2D;
+import org.apache.batik.dom.GenericDOMImplementation;
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+
 import java.awt.*;
 //import java.awt.geom.*;
 import java.awt.image.*;
@@ -47,6 +52,17 @@ public class HaplotypeDisplay extends JComponent {
         paintComponent(i.getGraphics());
         forExport = false;
         return i;
+    }
+
+    public SVGGraphics2D exportSVG(){
+        forExport = true;
+        DOMImplementation domImpl = GenericDOMImplementation.getDOMImplementation();
+        Document document = domImpl.createDocument(null, "svg", null);
+        SVGGraphics2D svgGenerator = new SVGGraphics2D(document);
+        svgGenerator.getGeneratorContext().setPrecision(6); //TODO: Look at changing precision
+        paintComponent(svgGenerator);
+        forExport = false;
+        return svgGenerator;
     }
 
     public void getHaps() throws HaploViewException{

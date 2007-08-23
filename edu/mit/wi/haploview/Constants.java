@@ -60,6 +60,7 @@ public interface Constants {
     public static final int PNG_MODE = 0;
     public static final int TXT_MODE = 1;
     public static final int COMPRESSED_PNG_MODE = 2;
+    public static final int SVG_MODE = 3;
     public static final int TABLE_TYPE = 0;
     public static final int LIVE_TYPE = 1;
 
@@ -173,6 +174,7 @@ public interface Constants {
             "-dprime                         Outputs LD text to <fileroot>.LD\n" +
             "-png                            Outputs LD display to <fileroot>.LD.PNG\n"+
             "-compressedpng                  Outputs compressed LD display to <fileroot>.LD.PNG\n"+
+            "-svg                            Outputs svg format LD display to <fileroot>.LD.SVG\n"+
             "-infoTrack                      Downloads and displays HapMap info track on PNG image output\n"+
             "-ldcolorscheme <argument>       Specify an LD color scheme. <argument> should be one of:\n" +
             "                                DEFAULT, RSQ, DPALT, GAB, GAM\n" +

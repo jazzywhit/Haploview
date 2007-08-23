@@ -11,7 +11,7 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
     HaploView hv;
     JRadioButton dpButton, hapButton, checkButton, taggerButton;
     JRadioButton singleAssocButton, hapAssocButton, permAssocButton, custAssocButton;
-    JRadioButton txtButton, pngButton;
+    JRadioButton txtButton, pngButton, svgButton;
     JRadioButton allButton, someButton, adjButton;
     JCheckBox compressCheckBox;
     NumberTextField lowRange, upperRange;
@@ -120,6 +120,10 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
         compressCheckBox = new JCheckBox("Compress image (smaller file)");
         formatPanel.add(compressCheckBox);
         compressCheckBox.setEnabled(false);
+        svgButton = new JRadioButton("SVG Image");
+        svgButton.addActionListener(this);
+        formatPanel.add(svgButton);
+        g2.add(svgButton);
         if (currTab == VIEW_CHECK_NUM || currTab == VIEW_ASSOC_NUM){
             pngButton.setEnabled(false);
         }
@@ -175,14 +179,20 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
             if(txtButton.isSelected()){
                 adjButton.setEnabled(true);
                 compressCheckBox.setEnabled(false);
-            }else{
+                someButton.setEnabled(true);
+            }else if (pngButton.isSelected()){
                 compressCheckBox.setEnabled(true);
                 adjButton.setEnabled(false);
                 if (adjButton.isSelected()){
                     allButton.setSelected(true);
                 }
+                someButton.setEnabled(true);
+            }else{
+                compressCheckBox.setEnabled(false);
+                adjButton.setEnabled(false);
+                allButton.setSelected(true);
+                someButton.setEnabled(false);
             }
-            someButton.setEnabled(true);
         }else{
             compressCheckBox.setEnabled(false);
             someButton.setEnabled(false);
@@ -202,8 +212,10 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
 
         if (command.equals("ldtab") || command.equals("haptab")){
             pngButton.setEnabled(true);
+            svgButton.setEnabled(true);
         }else if (command.equals("checktab") || command.equals("assoctab") || command.equals("taggertab")){
             pngButton.setEnabled(false);
+            svgButton.setEnabled(false);
             txtButton.setSelected(true);
         }else if (command.equals("OK")){
             int format;
@@ -213,8 +225,10 @@ public class ExportDialog extends JDialog implements ActionListener, Constants{
                 }else{
                     format = PNG_MODE;
                 }
-            }else{
+            }else if (txtButton.isSelected()){
                 format = TXT_MODE;
+            }else{
+                format = SVG_MODE;
             }
 
             Component c = null;
