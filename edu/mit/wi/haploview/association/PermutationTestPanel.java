@@ -112,7 +112,7 @@ public class PermutationTestPanel extends HaploviewTab
         bestPermutationValueLabel = new JLabel("");
         bestPermPanel.add(bestPermTextLabel);
         bestPermPanel.add(bestPermutationValueLabel);
-        bestPermPanel.setMaximumSize(new Dimension(400,bestPermPanel.getPreferredSize().height));        
+        bestPermPanel.setMaximumSize(new Dimension(400,bestPermPanel.getPreferredSize().height));
         this.add(bestPermPanel);
 
 
@@ -226,7 +226,7 @@ public class PermutationTestPanel extends HaploviewTab
                 "Number Permutations",resHist,PlotOrientation.VERTICAL,false,false,false);
         jfc.setBorderVisible(true);
         XYPlot xyp = jfc.getXYPlot();
-        xyp.getRenderer().setPaint(Color.blue);
+        xyp.getRenderer().setSeriesPaint(0,Color.blue);
         ChartPanel cp = new ChartPanel(jfc);
         cp.setMaximumSize(new Dimension(400, cp.getPreferredSize().height));
         resultsPanel.add(cp);

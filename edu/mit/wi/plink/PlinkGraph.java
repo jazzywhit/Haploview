@@ -130,7 +130,8 @@ public class PlinkGraph implements Constants, ChartMouseListener {
             thePlot.setRangeGridlinesVisible(false);
         }
         thePlot.setRenderer(new PlinkScatterPlotRenderer());
-        thePlot.getRenderer().setToolTipGenerator(new PlinkToolTipGenerator());
+        //TODO: Update Build File & Delete old Jars from CVS
+        thePlot.getRenderer().setBaseToolTipGenerator(new PlinkToolTipGenerator());
         chart.setAntiAlias(false);
 
         Shape[] shapes = new Shape[]{new Rectangle2D.Double(-2,-3,20,5)};
