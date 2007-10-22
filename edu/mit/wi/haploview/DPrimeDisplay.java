@@ -58,7 +58,7 @@ public class DPrimeDisplay extends JComponent
     private int top = V_BORDER;
     private int clickXShift, clickYShift;
     private Vector displayStrings;
-    private final int popupLeftMargin = 12;
+    private final int popupHorizMargin = 12;
 
     private final Color BG_GREY = new Color(212,208,200);
 
@@ -93,7 +93,7 @@ public class DPrimeDisplay extends JComponent
     private Rectangle wmInteriorRect = new Rectangle();
     private Rectangle wmResizeCorner = new Rectangle(0,0,-1,-1);
     private Rectangle resizeWMRect = null;
-    private Rectangle popupDrawRect = null;
+    private Point popupDrawPoint = null;
     private BufferedImage worldmap;
     private HaploData theData;
     private HaploView theHV;
@@ -638,12 +638,12 @@ public class DPrimeDisplay extends JComponent
             left -= exportStart * boxSize;
         }
 
-        FontMetrics metrics;
+        FontMetrics boldMetrics;
         int ascent;
 
         g2.setFont(boldMarkerNameFont);
-        metrics = g2.getFontMetrics();
-        ascent = metrics.getAscent();
+        boldMetrics = g2.getFontMetrics();
+        ascent = boldMetrics.getAscent();
 
         //the following values are the bounds on the boxes we want to
         //display given that the current window is 'visRect'
@@ -760,9 +760,11 @@ public class DPrimeDisplay extends JComponent
 
             //// draw the marker names
             if (printMarkerNames){
-                widestMarkerName = metrics.stringWidth(Chromosome.getMarker(0).getDisplayName());
+                g2.setFont(boldMarkerNameFont);
+                FontMetrics markerMetrics = g2.getFontMetrics();
+                widestMarkerName = markerMetrics.stringWidth(Chromosome.getMarker(0).getDisplayName());
                 for (int x = 1; x < Chromosome.getSize(); x++) {
-                    int thiswide = metrics.stringWidth(Chromosome.getMarker(x).getDisplayName());
+                    int thiswide = markerMetrics.stringWidth(Chromosome.getMarker(x).getDisplayName());
                     if (thiswide > widestMarkerName) widestMarkerName = thiswide;
                 }
 
@@ -771,17 +773,19 @@ public class DPrimeDisplay extends JComponent
                 for (int x = 0; x < Chromosome.getSize(); x++) {
                     if (theData.isInBlock[x]){
                         g2.setFont(boldMarkerNameFont);
+                        markerMetrics = g2.getFontMetrics();
                     }else{
                         g2.setFont(markerNameFont);
+                        markerMetrics = g2.getFontMetrics();
                     }
                     if (theHV != null){
                         if (Chromosome.getMarker(x).getDisplayName().equals(theHV.getChosenMarker())){
                             g2.setColor(Color.white);
                             g2.fillRect(TEXT_GAP,(int)alignedPositions[x] - ascent/2,
-                                    metrics.stringWidth(Chromosome.getMarker(x).getDisplayName()),ascent);
+                                    markerMetrics.stringWidth(Chromosome.getMarker(x).getDisplayName()),ascent);
                             g2.setColor(green);
                             g2.drawRect(TEXT_GAP-1,(int)alignedPositions[x] - ascent/2 - 1,
-                                    metrics.stringWidth(Chromosome.getMarker(x).getDisplayName())+1,ascent+1);
+                                    markerMetrics.stringWidth(Chromosome.getMarker(x).getDisplayName())+1,ascent+1);
                         }
                     }
                     if (Chromosome.getMarker(x).getExtra() != null) g2.setColor(green);
@@ -807,13 +811,13 @@ public class DPrimeDisplay extends JComponent
         //// draw the marker numbers
         if (printMarkerNames){
             g2.setFont(markerNumFont);
-            metrics = g2.getFontMetrics();
-            ascent = metrics.getAscent();
+            FontMetrics numMetrics = g2.getFontMetrics();
+            ascent = numMetrics.getAscent();
 
             for (int x = 0; x < Chromosome.getSize(); x++) {
                 String mark = String.valueOf(Chromosome.realIndex[x] + 1);
                 g2.drawString(mark,
-                        (float)(left + alignedPositions[x] - metrics.stringWidth(mark)/2),
+                        (float)(left + alignedPositions[x] - numMetrics.stringWidth(mark)/2),
                         (float)(top + ascent));
             }
 
@@ -1076,33 +1080,56 @@ public class DPrimeDisplay extends JComponent
 
 
         //see if the user has right-clicked to popup some marker info
-        if(popupDrawRect != null){
+        if(popupDrawPoint != null){
 
             //dumb bug where little datasets popup the box in the wrong place
             int smallDatasetSlopH = 0;
-            int smallDatasetSlopV = 0;
-            if (pref.getHeight() < visRect.height){
-                smallDatasetSlopV = (int)(visRect.height - pref.getHeight())/2;
-            }
+
             if (pref.getWidth() < visRect.width){
                 smallDatasetSlopH = (int)(visRect.width - pref.getWidth())/2;
             }
 
-            g2.setColor(Color.white);
-            g2.fillRect(popupDrawRect.x+1-smallDatasetSlopH,
-                    popupDrawRect.y+1-smallDatasetSlopV,
-                    popupDrawRect.width-1,
-                    popupDrawRect.height-1);
-            g2.setColor(Color.black);
-            g2.drawRect(popupDrawRect.x-smallDatasetSlopH,
-                    popupDrawRect.y-smallDatasetSlopV,
-                    popupDrawRect.width,
-                    popupDrawRect.height);
+            g2.setFont(popupFont);
+            FontMetrics popupMetrics = g2.getFontMetrics();
 
-            g.setFont(popupFont);
+            int maxStrWidth = 0;
             for (int x = 0; x < displayStrings.size(); x++){
-                g.drawString((String)displayStrings.elementAt(x),popupDrawRect.x + popupLeftMargin-smallDatasetSlopH,
-                        popupDrawRect.y+((x+1)*metrics.getHeight())-smallDatasetSlopV);
+                if (maxStrWidth < popupMetrics.stringWidth((String)displayStrings.elementAt(x))){
+                    maxStrWidth = popupMetrics.stringWidth((String)displayStrings.elementAt(x));
+                }
+            }
+            //edge shifts prevent window from popping up partially offscreen
+            int visRightBound = (int)(getVisibleRect().getWidth() + getVisibleRect().getX());
+            int visBotBound = (int)(getVisibleRect().getHeight() + getVisibleRect().getY());
+            int rightEdgeShift = 0;
+            if (popupDrawPoint.x + maxStrWidth + popupHorizMargin*2 > visRightBound){
+                rightEdgeShift = popupDrawPoint.x + maxStrWidth + popupHorizMargin*2 - visRightBound;
+            }
+            popupDrawPoint.x = popupDrawPoint.x - rightEdgeShift;
+
+
+            int botEdgeShift = 0;
+            if (popupDrawPoint.y + displayStrings.size()*popupMetrics.getHeight()+10 > visBotBound){
+                botEdgeShift = popupDrawPoint.y + displayStrings.size()*popupMetrics.getHeight()+15 - visBotBound;
+            }
+
+            popupDrawPoint.y = popupDrawPoint.y-botEdgeShift;
+
+            g2.setColor(Color.white);
+            g2.fillRect(popupDrawPoint.x+1-smallDatasetSlopH,
+                    popupDrawPoint.y+1,
+                    maxStrWidth + 2*popupHorizMargin,
+                    displayStrings.size()*popupMetrics.getHeight()+popupMetrics.getDescent());
+            g2.setColor(Color.black);
+            g2.drawRect(popupDrawPoint.x-smallDatasetSlopH,
+                    popupDrawPoint.y,
+                    maxStrWidth + 2*popupHorizMargin,
+                    displayStrings.size()*popupMetrics.getHeight()+popupMetrics.getDescent());
+
+
+            for (int x = 0; x < displayStrings.size(); x++){
+                g.drawString((String)displayStrings.elementAt(x),popupDrawPoint.x + popupHorizMargin-smallDatasetSlopH,
+                        popupDrawPoint.y+((x+1)*popupMetrics.getHeight()));
             }
         }
 
@@ -1668,31 +1695,7 @@ public class DPrimeDisplay extends JComponent
                 }
             }
             if (displayStrings != null){
-                int strlen = 0;
-                for (int x = 0; x < displayStrings.size(); x++){
-                    if (strlen < metrics.stringWidth((String)displayStrings.elementAt(x))){
-                        strlen = metrics.stringWidth((String)displayStrings.elementAt(x));
-                    }
-                }
-                //edge shifts prevent window from popping up partially offscreen
-                int visRightBound = (int)(getVisibleRect().getWidth() + getVisibleRect().getX());
-                int visBotBound = (int)(getVisibleRect().getHeight() + getVisibleRect().getY());
-                int rightEdgeShift = 0;
-                if (clickX + strlen + popupLeftMargin +5 > visRightBound){
-                    rightEdgeShift = clickX + strlen + popupLeftMargin + 10 - visRightBound;
-                }
-                int botEdgeShift = 0;
-                if (clickY + displayStrings.size()*metrics.getHeight()+10 > visBotBound){
-                    botEdgeShift = clickY + displayStrings.size()*metrics.getHeight()+15 - visBotBound;
-                }
-                int smallDataVertSlop = 0;
-                if (getPreferredSize().getWidth() < getVisibleRect().width && theData.infoKnown){
-                    smallDataVertSlop = (int)(getVisibleRect().height - getPreferredSize().getHeight())/2;
-                }
-                popupDrawRect = new Rectangle(clickX-rightEdgeShift,
-                        clickY-botEdgeShift+smallDataVertSlop,
-                        strlen+popupLeftMargin+5,
-                        displayStrings.size()*metrics.getHeight()+10);
+                popupDrawPoint = new Point(clickX,clickY);
                 repaint();
             }
         }else if ((e.getModifiers() & InputEvent.BUTTON1_MASK) ==
@@ -1713,7 +1716,7 @@ public class DPrimeDisplay extends JComponent
         if ((e.getModifiers() & InputEvent.BUTTON3_MASK) ==
                 InputEvent.BUTTON3_MASK){
             //remove popped up window
-            popupDrawRect = null;
+            popupDrawPoint = null;
 
             //cache last selection.
             lastSelection = currentSelection;
