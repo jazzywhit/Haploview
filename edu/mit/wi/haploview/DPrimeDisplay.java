@@ -1345,8 +1345,7 @@ public class DPrimeDisplay extends JComponent
                 for (int i = 0; i < numChunks; i++){
                     URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/hapmap" + dataBuild + "/?name=" +
                             gChrom + ":" + chunkLefts[i] + ".." + chunkRights[i] + ";width=" + chunkSpans[i] +
-                            ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts());
-
+                            ";type="+ Options.getgBrowseTypes() + ";options=" + Options.getgBrowseOpts() + ";nocache=1");
                     Toolkit toolkit = Toolkit.getDefaultToolkit();
                     HttpURLConnection con = (HttpURLConnection)imageUrl.openConnection();
                     con.setRequestProperty("User-agent",Constants.USER_AGENT);
