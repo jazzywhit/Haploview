@@ -350,7 +350,7 @@ public class HaploData implements Constants{
                         numBadGenotypes[i]++;
                     }
                 }
-                if (numa2 > numa1){
+                if (numa2 >= numa1){
                     byte temp = a1;
                     double tempnum = numa1;
                     numa1 = numa2;
