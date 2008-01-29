@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.22 2007/06/20 17:10:51 djbender Exp $
+* $Id: CheckData.java,v 3.23 2008/01/29 12:48:33 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -64,7 +64,7 @@ public class CheckData {
         MarkerResult result = new MarkerResult();
         Individual currentInd;
         int missing=0, founderHetCount=0, mendErrNum=0;
-        int allele1=0, allele2=0, hom=0, het=0, haploid = 0;
+        int allele1=0, allele2=0, called = 0;
         Hashtable founderGenoCount = new Hashtable();
         Hashtable kidgeno = new Hashtable();
         int[] founderHomCount = new int[5];
@@ -293,15 +293,7 @@ public class CheckData {
                         }
                     }
 
-                    if (!Chromosome.getDataChrom().equalsIgnoreCase("chrx") || currentInd.getGender() != 1) {
-                        if(allele1 == allele2 && allele1 != 9 && allele2 != 9) {
-                            hom++;
-                        }else {
-                            het++;
-                        }
-                    }else{
-                        haploid++;
-                    }
+                    called++;
                 }
                 //missing data
                 else missing++;
@@ -387,7 +379,12 @@ public class CheckData {
         }
 
         //geno percent
-        double genopct = getGenoPercent(het, hom, haploid, missing);
+        double genopct;
+        if (called == 0){
+            genopct = 0;
+        }else{
+            genopct = 100.0*(called/(called+missing));
+        }
 
         // num of families with a fully genotyped trio
         //int famTrio =0;
@@ -570,13 +567,7 @@ public class CheckData {
         }
     }
 
-    private double getGenoPercent(int het, int hom, int haploid, int missing){
-        if (het+hom+haploid+missing == 0){
-            return 0;
-        }else{
-            return 100.0*(het+hom+haploid)/(het+hom+haploid+missing);
-        }
-    }
+
 
     private int getNumOfFamTrio(Enumeration famList, Hashtable parentgeno, Hashtable kidgeno){
         //this is buggy. it doesn't do what we want with larger families.
