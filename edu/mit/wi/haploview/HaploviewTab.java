@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class HaploviewTab extends JPanel{
+    static final long serialVersionUID = -5375703117173625581L;
 
     private Component primary;
 

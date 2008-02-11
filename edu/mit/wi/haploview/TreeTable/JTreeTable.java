@@ -59,6 +59,7 @@ import java.awt.Graphics;
  */
 
 public class JTreeTable extends JTable {
+    static final long serialVersionUID = 2438273584963759245L;
     protected TreeTableCellRenderer tree;
 
     public JTreeTable(TreeTableModel treeTableModel) {
@@ -72,6 +73,7 @@ public class JTreeTable extends JTable {
 
         // Force the JTable and JTree to share their row selection models.
         tree.setSelectionModel(new DefaultTreeSelectionModel() {
+	        static final long serialVersionUID = -7983407332773933546L;
             // Extend the implementation of the constructor, as if:
             /* public this() */ {
                 setSelectionModel(listSelectionModel);
@@ -105,6 +107,7 @@ public class JTreeTable extends JTable {
     //
 
     public class TreeTableCellRenderer extends JTree implements TableCellRenderer {
+        static final long serialVersionUID = -2538618387281265863L;
 
         protected int visibleRow;
 

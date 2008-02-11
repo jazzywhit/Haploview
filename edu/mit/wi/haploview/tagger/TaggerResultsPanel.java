@@ -16,6 +16,7 @@ import edu.mit.wi.haploview.*;
 
 public class TaggerResultsPanel extends HaploviewTab
         implements ListSelectionListener, ActionListener {
+    static final long serialVersionUID = -3878872990341697973L;
     private JList tagList;
     private JList taggedList;
     private TaggerController tc;
@@ -200,6 +201,7 @@ public class TaggerResultsPanel extends HaploviewTab
     }
 
     class GreyedOutRenderer extends DefaultTableCellRenderer {
+        static final long serialVersionUID = -6999190778658568864L;
         public Component getTableCellRendererComponent
                 (JTable table, Object value, boolean isSelected,
                  boolean hasFocus, int row, int column)
@@ -220,6 +222,7 @@ public class TaggerResultsPanel extends HaploviewTab
     }
 
     class TagListRenderer extends DefaultListCellRenderer{
+        static final long serialVersionUID = 7725144055202648676L;
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus){
             Component cell = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
 

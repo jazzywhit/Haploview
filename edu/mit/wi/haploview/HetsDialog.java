@@ -23,6 +23,7 @@ import java.io.FileWriter;
 
 
 public class HetsDialog extends JDialog implements ActionListener, Constants {
+    static final long serialVersionUID = 2540864803651257131L;
     private BasicTableModel tableModel;
 
 

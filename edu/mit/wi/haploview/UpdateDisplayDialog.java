@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.URL;
 
 public class UpdateDisplayDialog extends JDialog implements ActionListener, Constants{
+    static final long serialVersionUID = -5149693758436261851L;
 
     public UpdateDisplayDialog(HaploView h, String title, UpdateChecker uc) {
         super(h, title);

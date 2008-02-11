@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.*;
 
 public class TweakBlockDefsDialog extends JDialog implements ActionListener {
+    static final long serialVersionUID = 1937924544508766506L;
 
     NumberTextField gamThresh, highLD, lowLD, highRec, informFrac, mafCut, spinedp;
     HaploView hv;

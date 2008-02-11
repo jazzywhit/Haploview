@@ -51,7 +51,7 @@
 
 <target name="compile-haploview" depends="prepare-compile">
    <javac srcdir="${haploview.src}" destdir="${haploview.classes}"
-   includes="${haploview.package}/**" debug="on" target="1.4">
+   includes="${haploview.package}/**" debug="on" source="1.4" target="1.4">
    <classpath refid="library.classpath"/>
    </javac>
 

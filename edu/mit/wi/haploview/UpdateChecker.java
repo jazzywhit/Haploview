@@ -3,7 +3,7 @@ package edu.mit.wi.haploview;
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.io.InputStream;
+//import java.io.InputStream;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

@@ -26,6 +26,7 @@ import java.text.NumberFormat;
 
 
 public class IndividualDialog extends JDialog implements ActionListener, Constants {
+    static final long serialVersionUID = -2204440564566814820L;
     private BasicTableModel tableModel;
     private static NumberFormat nf = NumberFormat.getInstance(Locale.US);
     static {
@@ -177,6 +178,7 @@ public class IndividualDialog extends JDialog implements ActionListener, Constan
     }
 
     class IndividualCellRenderer extends DefaultTableCellRenderer {
+        static final long serialVersionUID = -7421465728691975408L;
         public Component getTableCellRendererComponent
                 (JTable table, Object value, boolean isSelected,
                  boolean hasFocus, int row, int column)

@@ -4,6 +4,7 @@ import javax.swing.table.AbstractTableModel;
 import java.util.Vector;
 
 public class BasicTableModel extends AbstractTableModel{
+    static final long serialVersionUID = -5805808329328199L;
 
     Vector columnNames; Vector data;
 

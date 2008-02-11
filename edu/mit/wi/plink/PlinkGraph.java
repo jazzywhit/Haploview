@@ -527,7 +527,7 @@ public class PlinkGraph implements Constants, ChartMouseListener {
     }
 
     class PlinkScatterPlotRenderer extends XYDotRenderer {
-
+	static final long serialVersionUID = 7966308423644407904L;
         public PlinkScatterPlotRenderer(){
             super();
         }
@@ -789,7 +789,7 @@ public class PlinkGraph implements Constants, ChartMouseListener {
     }
 
     class PlinkToolTipGenerator extends StandardXYToolTipGenerator {
-
+	static final long serialVersionUID = -8804283563456993497L;
         public PlinkToolTipGenerator(){
             super();
         }

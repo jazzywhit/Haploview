@@ -1,5 +1,5 @@
 /*
- * $Id: CheckDataException.java,v 3.0 2005/01/27 18:19:02 jcbarret Exp $
+ * $Id: CheckDataException.java,v 3.1 2008/02/11 19:21:35 htl10 Exp $
  * WHITEHEAD INSTITUTE
  * SOFTWARE COPYRIGHT NOTICE AGREEMENT
  * This software and its documentation are copyright 2002 by the
@@ -20,6 +20,7 @@ package edu.mit.wi.pedfile;
  */
 
 public class CheckDataException extends Exception{
+    static final long serialVersionUID = 5362642498353473882L;
 
 	public CheckDataException() {
 		super();

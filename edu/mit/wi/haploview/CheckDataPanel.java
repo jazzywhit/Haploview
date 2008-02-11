@@ -18,6 +18,7 @@ import edu.mit.wi.pedfile.CheckData;
 
 public class CheckDataPanel extends JPanel
         implements TableModelListener, ActionListener {
+    static final long serialVersionUID = 4043744314283837703L;
     private JTable table;
     private CheckDataTableModel tableModel;
     private CheckDataTableSorter sorter;
@@ -135,14 +136,14 @@ public class CheckDataPanel extends JPanel
 
     public void plinkOnly(){
          try{
-            Vector result = new CheckData(theData.getPedFile()).check();
+	     //Vector result = new CheckData(theData.getPedFile()).check();
 
             for (int j = 0; j < table.getColumnCount(); j++){
                 sorter.setSortingStatus(j,TableSorter.NOT_SORTED);
             }
 
             for (int i = 0; i < table.getRowCount(); i++){
-                MarkerResult cur = (MarkerResult)result.get(i);
+                //MarkerResult cur = (MarkerResult)result.get(i);
 
                 //use this marker if it has "extra info", a sign of PLINK status
                 if (Chromosome.getUnfilteredMarker(i).getExtra() != null){
@@ -245,6 +246,7 @@ public class CheckDataPanel extends JPanel
     }
 
     class CheckDataTableModel extends AbstractTableModel {
+        static final long serialVersionUID = 6488280863408672540L;
         Vector columnNames; Vector data; int[] ratings; int[] dups;
 
         public CheckDataTableModel(Vector c, Vector d, int[] r, int[] dups){
@@ -308,6 +310,7 @@ public class CheckDataPanel extends JPanel
     }
 
     class CheckDataCellRenderer extends DefaultTableCellRenderer {
+        static final long serialVersionUID = 2291163738308005244L;
         public Component getTableCellRendererComponent
                 (JTable table, Object value, boolean isSelected,
                  boolean hasFocus, int row, int column)
@@ -368,6 +371,7 @@ public class CheckDataPanel extends JPanel
       return (hv.plinkPanel != null);
     }
     class CheckDataTableSorter extends TableSorter {
+        static final long serialVersionUID = -2595109594459247282L;
 
         CheckDataTableSorter(TableModel tm){
             super(tm);
@@ -383,6 +387,7 @@ public class CheckDataPanel extends JPanel
     }
 
     class AdvancedDialog extends JDialog implements ActionListener {
+        static final long serialVersionUID = -2462574330267016326L;
 
         JFileChooser fc;
         AdvancedDialog(String title){

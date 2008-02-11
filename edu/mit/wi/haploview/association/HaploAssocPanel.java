@@ -15,6 +15,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 
 
 public class HaploAssocPanel extends HaploviewTab implements Constants,ActionListener {
+    static final long serialVersionUID = -8632659640252839488L;
     public double initialHaplotypeDisplayThreshold;
     private AssociationTestSet testSet;
     public JTreeTable jtt;

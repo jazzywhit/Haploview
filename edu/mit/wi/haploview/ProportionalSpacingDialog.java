@@ -10,6 +10,7 @@ import java.awt.Cursor;
 
 public class ProportionalSpacingDialog extends JDialog implements ActionListener,
         ChangeListener, Constants{
+    static final long serialVersionUID = 8690815664106595822L;
 
     private HaploView hv;
 

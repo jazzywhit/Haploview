@@ -40,13 +40,13 @@
 
 package edu.mit.wi.haploview.TreeTable;
 
-import java.awt.Component;
-import java.awt.event.*;
-import java.awt.AWTEvent;
+//import java.awt.Component;
+//import java.awt.event.*;
+//import java.awt.AWTEvent;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.EventObject;
-import java.io.Serializable;
+//import java.io.Serializable;
 
 /**
  * @version %I% %G% 

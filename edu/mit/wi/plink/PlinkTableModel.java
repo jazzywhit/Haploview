@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.StringTokenizer;
 
 public class PlinkTableModel extends AbstractTableModel{
+    static final long serialVersionUID = -826740142478947102L;
 
     private Vector columnNames;
     private Vector data;

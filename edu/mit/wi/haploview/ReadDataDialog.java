@@ -11,6 +11,7 @@ import java.util.*;
 
 public class ReadDataDialog extends JDialog
         implements ActionListener, DocumentListener, Constants {
+    static final long serialVersionUID = -1864177851666320697L;
 
     static final String MARKER_DATA_EXT = ".info";
     static final String MAP_FILE_EXT = ".map";

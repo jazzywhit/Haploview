@@ -10,6 +10,7 @@ import java.util.Vector;
 import java.io.File;
 
 public class PlotOptionDialog extends JDialog implements ActionListener, Constants {
+    static final long serialVersionUID = -6028138645962418263L;
     private JComboBox yColumnChooser, xColumnChooser, yPlotChooser, xPlotChooser, signChooser1, signChooser2, thresholdChooser1, thresholdChooser2, dotChooser, colorKeyChooser;
     private JLabel label1, label2;
     private NumberTextField sigThresh, sugThresh, widthField, heightField;

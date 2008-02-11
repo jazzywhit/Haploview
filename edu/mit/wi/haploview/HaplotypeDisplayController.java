@@ -7,6 +7,7 @@ import javax.swing.*;
 
 
 public class HaplotypeDisplayController extends JPanel {
+    static final long serialVersionUID = -9053016986208269037L;
     // amount of spacing between elements
     static final int BETWEEN = 4;
 

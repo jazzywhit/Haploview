@@ -9,6 +9,7 @@ import java.awt.*;
 
 
 public class NumberTextField extends JTextField {
+    static final long serialVersionUID = -4453143860561756291L;
 
     int size;
     boolean decimal;
@@ -27,6 +28,7 @@ public class NumberTextField extends JTextField {
     }
 
     protected class NTFDocument extends PlainDocument {
+        static final long serialVersionUID = 4966113743009411598L;
         NumberTextField ntf;
 
         public NTFDocument(NumberTextField ntf){

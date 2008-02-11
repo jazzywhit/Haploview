@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.BufferedWriter;
 
 public class PlinkResultsPanel extends JPanel implements ActionListener, Constants {
+    static final long serialVersionUID = -6824022261340524367L;
     private JTable table;
     private PlinkTableModel plinkTableModel;
     private TableSorter sorter;
@@ -466,6 +467,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     class FisherCombinedDialog extends JDialog implements ActionListener{
+        static final long serialVersionUID = 3662196055616495550L;
         private JComboBox pval1, pval2, pval3, pval4, pval5;
         private Vector columnIndeces;
         FisherCombinedDialog(String title){
@@ -596,7 +598,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     class ActiveFiltersDialog extends JDialog implements ActionListener{
-
+	static final long serialVersionUID = 1282427101754100571L;
         JPanel contents, chPanel;
         JCheckBox[] checks;
         JComboBox gChooser, sChooser;
@@ -704,6 +706,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     class PlinkCellRenderer extends DefaultTableCellRenderer {
+        static final long serialVersionUID = -6099003102431307856L;
         public Component getTableCellRendererComponent
                 (JTable table, Object value, boolean isSelected,
                  boolean hasFocus, int row, int column)

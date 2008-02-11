@@ -25,6 +25,7 @@ import java.io.FileWriter;
 
 
 public class MendelDialog extends JDialog implements ActionListener, Constants {
+    static final long serialVersionUID = -100432308843520115L;
     private BasicTableModel tableModel;
 
 

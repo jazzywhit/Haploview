@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.*;
 
 public class ExportDialog extends JDialog implements ActionListener, Constants{
+    static final long serialVersionUID = -5757677926257427884L;
 
     HaploView hv;
     JRadioButton dpButton, hapButton, checkButton, taggerButton;

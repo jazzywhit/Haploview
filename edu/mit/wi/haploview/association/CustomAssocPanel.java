@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.awt.*;
 
 public class CustomAssocPanel extends HaploviewTab implements Constants {
+    static final long serialVersionUID = -4371438707739822028L;
 
     AssociationTestSet testSet;
 

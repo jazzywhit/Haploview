@@ -62,6 +62,8 @@ import javax.swing.table.*;
  */
 
 public class TableSorter extends AbstractTableModel {
+    static final long serialVersionUID = -6957417736947812724L;
+
     protected TableModel tableModel;
 
     public static final int DESCENDING = -1;

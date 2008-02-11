@@ -19,6 +19,7 @@ import java.io.*;
 
 public class TaggerConfigPanel extends HaploviewTab
         implements TableModelListener, ActionListener {
+    static final long serialVersionUID = 1616877753933097437L;
     private JTable table;
     private TableSorter sorter;
     private TaggerController tagControl;
@@ -518,6 +519,7 @@ public class TaggerConfigPanel extends HaploviewTab
     }
 
     class TagConfigTableModel extends AbstractTableModel {
+        static final long serialVersionUID = 5952046961517951909L;
         Vector columnNames; Vector data;
 
         public TagConfigTableModel(Vector c, Vector d){

@@ -1,6 +1,6 @@
 package edu.mit.wi.tagger;
 
-import java.util.Hashtable;
+//import java.util.Hashtable;
 
 public class LocusCorrelation {
     Allele a;

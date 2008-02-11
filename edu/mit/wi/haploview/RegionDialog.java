@@ -8,6 +8,7 @@ import java.util.Vector;
 
 
 public class RegionDialog extends JDialog implements ActionListener, Constants {
+    static final long serialVersionUID = 8970225298794816733L;
     private HaploView hv;
 
     private JComboBox panelChooser, phaseChooser;

@@ -13,6 +13,7 @@ import java.awt.Dimension;
 public class TDTPanel extends HaploviewTab
         implements Constants, ActionListener {
 
+    static final long serialVersionUID = -3994613221202977718L;
     private AssociationTestSet assocSet;
     private JTable table;
     private Vector tableColumnNames = new Vector();

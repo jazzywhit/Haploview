@@ -20,6 +20,7 @@ import org.jfree.chart.plot.XYPlot;
 
 public class PermutationTestPanel extends HaploviewTab
         implements Constants,ActionListener {
+    static final long serialVersionUID = -8287708770858358590L;
     private JLabel bestPermutationValueLabel;
     private JLabel blocksChangedLabel;
     private NumberTextField permCountField;

@@ -25,6 +25,7 @@ import com.sun.jimi.core.JimiException;
 import org.apache.batik.svggen.SVGGraphics2D;
 
 public class HaploView extends JFrame implements ActionListener, Constants{
+    static final long serialVersionUID = -1918948520091554405L;
 
     boolean DEBUG = false;
 
@@ -1751,6 +1752,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     }
 
     class HaploviewTabbedPane extends JTabbedPane{
+        static final long serialVersionUID = -8460034374471805260L;
 
         public Component getSelectedPrimary(){
             //find selected component recursively in case there are tabs of tabs of tabs...
@@ -1766,6 +1768,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     }
 
     class IgnoredMarkersDialog extends JDialog implements ActionListener {
+        static final long serialVersionUID = -3168995002044399156L;
 
         public IgnoredMarkersDialog (HaploView h, String title, Vector ignored, boolean extra){
             super(h,title);
@@ -1829,6 +1832,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
     }
 
     class ColumnChooser extends JDialog implements ActionListener {
+        static final long serialVersionUID = 9005814069417052404L;
 
         JCheckBox[] checks;
         boolean select;

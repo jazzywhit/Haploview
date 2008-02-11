@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 
 
 public class ProxyDialog extends JDialog implements ActionListener, Constants {
+    static final long serialVersionUID = 8309981884313205960L;
 
     JTextField hostText = new JTextField("",10);
     JTextField portText = new JTextField("",4);

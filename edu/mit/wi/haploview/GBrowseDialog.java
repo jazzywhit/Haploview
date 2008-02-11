@@ -7,6 +7,7 @@ import java.awt.*;
 
 
 public class GBrowseDialog extends JDialog implements ActionListener, Constants{
+    static final long serialVersionUID = -5609547352693579388L;
 
     JComboBox cbox,buildBox;
     JTextField minField, maxField;

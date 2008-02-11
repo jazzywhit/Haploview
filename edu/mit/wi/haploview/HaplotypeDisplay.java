@@ -13,6 +13,7 @@ import java.text.*;
 import java.util.*;
 
 public class HaplotypeDisplay extends JComponent {
+    static final long serialVersionUID = 4418481582878322690L;
 
     Haplotype[][] orderedHaplos;
     Haplotype[][] filteredHaplos;

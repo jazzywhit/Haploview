@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 
 
 public class CheckDataController extends JPanel implements ActionListener {
+    static final long serialVersionUID = 3169384768782728106L;
 
     private NumberTextField hwcut, genocut, mendcut, mafcut;
     CheckDataPanel cdp;

@@ -12,6 +12,7 @@ import java.io.FileWriter;
 
 
 public class FilteredIndividualsDialog extends JDialog implements ActionListener, Constants{
+    static final long serialVersionUID = 3561316987491286230L;
     private BasicTableModel tableModel;
 
     public FilteredIndividualsDialog(HaploView h, String title) {

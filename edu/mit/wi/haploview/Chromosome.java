@@ -25,7 +25,7 @@ public class Chromosome{
     static Vector markers;
     static int trueSize;
     private boolean haploid = false;
-    private boolean phased = false;
+    //private boolean phased = false;
 
     Chromosome(String p, String i, byte[] g, String o, int a, boolean isPhased) throws HaploViewException{
         ped = p;
@@ -37,7 +37,7 @@ public class Chromosome{
         affected = a;
         origin = o;
         trueSize = genotypes.length;
-        phased = isPhased;
+        //phased = isPhased;
     }
 
     Chromosome(String p, String i, byte[] g, int a, int kidA, boolean isPhased) throws HaploViewException{
@@ -51,7 +51,7 @@ public class Chromosome{
         kidAffected = new Integer(kidA);
         origin = "unknown";
         trueSize = genotypes.length;
-        phased = isPhased;
+        //phased = isPhased;
     }
 
     public int getAffected() {

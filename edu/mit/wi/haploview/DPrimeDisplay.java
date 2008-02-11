@@ -30,6 +30,7 @@ import javax.swing.border.CompoundBorder;
 
 public class DPrimeDisplay extends JComponent
         implements MouseListener, MouseMotionListener, Constants {
+    static final long serialVersionUID = -1547877018850397541L;
     private static final int H_BORDER = 30;
     private static final int V_BORDER = 15;
     private static final int TEXT_GAP = 3;
@@ -1596,7 +1597,7 @@ public class DPrimeDisplay extends JComponent
                 InputEvent.BUTTON3_MASK){
             Graphics g = getGraphics();
             g.setFont(popupFont);
-            FontMetrics metrics = g.getFontMetrics();
+            //FontMetrics metrics = g.getFontMetrics();
             DPrimeTable dPrimeTable = theData.dpTable;
             final int clickX = e.getX();
             final int clickY = e.getY();

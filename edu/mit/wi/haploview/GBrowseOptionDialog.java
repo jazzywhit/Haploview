@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.*;
 
 public class GBrowseOptionDialog extends JDialog implements ActionListener, Constants{
+    static final long serialVersionUID = 5957877094086811214L;
     HaploView hv;
     JCheckBox[] optCheckBoxes;
 
