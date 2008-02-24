@@ -756,6 +756,10 @@ public class HaploText implements Constants{
                     die(args[i-1] + " requires a filename");
                 }
             }
+            else if (args[i].equalsIgnoreCase("-mindesignscores")){
+                i++;
+                Options.setTaggerMinDesignScore(getDoubleArg(args,i,0,Double.MAX_VALUE));
+            }
             else if (args[i].equalsIgnoreCase("-mintagdistance")){
                 i++;
                 minTagDistance = args[i];

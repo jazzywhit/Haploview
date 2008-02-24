@@ -26,6 +26,7 @@ public class TaggerConfigPanel extends HaploviewTab
 
     private final static int NUM_COL = 0;
     private final static int NAME_COL = 1;
+    private final static int POSITION_COL = 2;
     private final static int DESIGN_COL = 3;
     private final static int INCLUDE_COL = 4;
     private final static int EXCLUDE_COL = 5;
@@ -36,7 +37,7 @@ public class TaggerConfigPanel extends HaploviewTab
     private Timer timer;
     private HaploData theData;
     private Hashtable snpsByName, designScores;
-    private NumberTextField rsqField, lodField, maxNumTagsField, minDistField;
+    private NumberTextField rsqField, minDesignField, lodField, maxNumTagsField, minDistField;
     private ButtonGroup aggressiveGroup;
     private JPanel bottomButtonPanel = new JPanel();
     private JPanel taggerProgressPanel = new JPanel();
@@ -122,7 +123,11 @@ public class TaggerConfigPanel extends HaploviewTab
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
         table.getColumnModel().getColumn(NUM_COL).setPreferredWidth(30);
-        table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(100);
+        table.getColumnModel().getColumn(POSITION_COL).setPreferredWidth(60);
+        table.getColumnModel().getColumn(DESIGN_COL).setPreferredWidth(60);
+        table.getColumnModel().getColumn(INCLUDE_COL).setPreferredWidth(60);
+        table.getColumnModel().getColumn(EXCLUDE_COL).setPreferredWidth(60);
+        table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(90);
         table.getTableHeader().setReorderingAllowed(false);
 
 
@@ -153,6 +158,8 @@ public class TaggerConfigPanel extends HaploviewTab
         designScoresButton.addActionListener(this);
         JButton allelesCapturedButton = new JButton("Alleles to Capture");
         allelesCapturedButton.addActionListener(this);
+        JButton resetThresholdsButton = new JButton("Reset Thresholds");
+        resetThresholdsButton.addActionListener(this);
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setMaximumSize(new Dimension(600,100));
@@ -170,6 +177,10 @@ public class TaggerConfigPanel extends HaploviewTab
         rsqPanel.add(rsqLabel);
         rsqField = new NumberTextField(String.valueOf(Options.getTaggerRsqCutoff()),5,true,false);
         rsqPanel.add(rsqField);
+        JLabel mdsLabel = new JLabel("Min design score");
+        rsqPanel.add(mdsLabel);
+        minDesignField = new NumberTextField("",5,true,false);
+        rsqPanel.add(minDesignField);
         optsRightPanel.add(rsqPanel);
 
         JPanel lodPanel = new JPanel();
@@ -226,6 +237,7 @@ public class TaggerConfigPanel extends HaploviewTab
         bottomButtonPanel.add(forceExcludeButton);
         bottomButtonPanel.add(allelesCapturedButton);
         bottomButtonPanel.add(designScoresButton);
+        bottomButtonPanel.add(resetThresholdsButton);
 
         add(bottomButtonPanel);
     }
@@ -260,6 +272,12 @@ public class TaggerConfigPanel extends HaploviewTab
                     rsqField.setText("0.0");
                 }else{
                     Options.setTaggerRsqCutoff(rsqCut);
+                }
+
+                if (!(minDesignField.getText().equals(""))){
+                    Options.setTaggerMinDesignScore(Double.parseDouble(minDesignField.getText()));
+                }else{
+                    Options.setTaggerMinDesignScore(Tagger.DEFAULT_MIN_DESIGNSCORE);
                 }
 
                 double lodCut = Double.parseDouble(lodField.getText());
@@ -489,6 +507,12 @@ public class TaggerConfigPanel extends HaploviewTab
                     }
                 }
             }
+        }else if (command.equals("Reset Thresholds")){
+            rsqField.setText(Double.toString(Tagger.DEFAULT_RSQ_CUTOFF));
+            lodField.setText(Double.toString(Tagger.DEFAULT_LOD_CUTOFF));
+            minDistField.setText(Short.toString(Tagger.DEFAULT_MIN_DISTANCE));
+            maxNumTagsField.setText("");
+            minDesignField.setText("");
         }else if (command.equals("Force in PLINK SNPs")){
             Hashtable forceIncludes = new Hashtable(1,1);
             for (int i = 0; i < Chromosome.getSize(); i++){

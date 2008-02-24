@@ -17,6 +17,7 @@ public class Tagger {
     public static final int NONE = 4;
     private static final long DEFAULT_MAXDIST = 500000;
     public static final int DEFAULT_MAXNUMTAGS = 0;
+    public static final double DEFAULT_MIN_DESIGNSCORE = 0;
 
     //vector of SNP objects, which contains every SNP (tags and non-tags)
     private Vector snps;
@@ -185,6 +186,28 @@ public class Tagger {
         if(Options.getTaggerMinDistance() !=0){
             for(int i=0;i<toRemove.size();i++){
                 potentialTagByVarSeq.remove(toRemove.get(i));
+            }
+        }
+
+        if(designScores != null){ //Deal with minimum design scores
+            if (Options.getTaggerMinDesignScore() != 0){
+                Vector tagsToRemove = new Vector();
+                double score;
+                Iterator itr = potentialTagByVarSeq.keySet().iterator();
+                while(itr.hasNext()) {
+                    PotentialTag pt = (PotentialTag) potentialTagByVarSeq.get(itr.next());
+                    if (designScores.containsKey(pt.sequence.getName())){
+                        score = ((Double)designScores.get(pt.sequence.getName())).doubleValue();
+                    }else{
+                        score = 0;
+                    }
+                    if (score < Options.getTaggerMinDesignScore()){
+                        tagsToRemove.add(pt.sequence);
+                    }
+                }
+                for(int i =0;i<tagsToRemove.size();i++){
+                    potentialTagByVarSeq.remove(tagsToRemove.get(i));
+                }
             }
         }
 

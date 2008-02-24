@@ -222,7 +222,8 @@ public interface Constants {
             "-excludeTagsFile <file>         Excludes a file (or http:// location) of one marker name per line from being used as tags.\n" +
             "-captureAlleles <file>          Capture only the alleles contained in a file (or http:// location) of one marker name per line.\n" +
             "-designScores <file>            Specify design scores in a file (or http:// location) of one marker name and one score per line\n" +
-            "-mintagdistance <distance>      Specify a Minimum distance in bases between picked tags\n" +
+            "-mindesignscore <threshold>     Specify a minimum design score threshold.\n" +
+            "-mintagdistance <distance>      Specify a Minimum distance in bases between picked tags.\n" +
             "-taglodcutoff <thresh>          Tagger LOD cutoff for creating multimarker tag haplotypes.\n" +
             "-tagrsqcutoff <thresh>          Tagger r^2 cutoff.\n"
             ;

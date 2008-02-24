@@ -18,6 +18,7 @@ public class Options implements Constants{
     private static double taggerRsqCutoff = Tagger.DEFAULT_RSQ_CUTOFF;
     private static double taggerLODCutoff = Tagger.DEFAULT_LOD_CUTOFF;
     private static int taggerMinDistance = Tagger.DEFAULT_MIN_DISTANCE;
+    private static double taggerMinDesignScore = Tagger.DEFAULT_MIN_DESIGNSCORE;
     private static int printWhat = D_PRIME;
     private static boolean showBlockTags = false;
     private static boolean printAllTags = false;
@@ -143,6 +144,14 @@ public class Options implements Constants{
 
     public static void setTaggerMinDistance(int taggerMinDistance) {
         Options.taggerMinDistance = taggerMinDistance;
+    }
+
+    public static double getTaggerMinDesignScore() {
+        return taggerMinDesignScore;
+    }
+
+    public static void setTaggerMinDesignScore(double taggerMinDesignScore) {
+        Options.taggerMinDesignScore = taggerMinDesignScore;
     }
 
     public static int getTdtType() {
