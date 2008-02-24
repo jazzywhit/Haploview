@@ -85,6 +85,7 @@ public interface Constants {
     static final int LEGENDHMP_FILE = 9;
     static final int PLINK_FILE = 10;
     static final int MAP_FILE = 11;
+    //static final int FASTPHASE_FILE = 12;
 
     //color modes
     static final int STD_SCHEME = 0;
@@ -123,7 +124,15 @@ public interface Constants {
     static final String[] CHROM_NAMES = {"1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"};
     static final String[] PANEL_NAMES = {"CEU", "YRI", "CHB+JPT"};
-    static final String[] RELEASE_NAMES = {"16a","21"};
+    static final String[] RELEASE_NAMES = {"16a","21","22"};
+    //static final String[] PHASE_FORMATS = {"HapMap PHASE","fastPHASE"};
+    static final String[] DOWNLOAD_FORMATS = {"Region","Gene ID"};
+
+    //GeneCruiser stuff
+    static final String[] GENE_DATABASES = {"Ensembl","HUGO","SNP"};
+    static final int ENSEMBL = 0;
+    static final int HUGO = 1;
+    static final int SNP = 2;
 
     //plot types
     static final String[] PLOT_TYPES = {"Untransformed", "-log10", "ln"};
@@ -151,6 +160,7 @@ public interface Constants {
             "-phasedhmpdata <phasedfile>     Specify a HapMap PHASE data file (or http:// location)\n" +
             "-phasedhmpsample <samplefile>   Specify a HapMap PHASE sample file (or http:// location)\n" +
             "-phasedhmplegend <legendfile>   Specify a HapMap PHASE legend file (or http:// location)\n" +
+            //"-fastphase <fastphasefile>      Specify an input file (or http:// location) in fastPHASE format\n" +
             "-gzip                           Indicates that phased input files use GZIP compression\n" +
             "-hapmapDownload                 Specify a phased HapMap download\n" +
             "-haps <hapsfile>                Specify an input file (or http:// location) in .haps format\n" +
@@ -170,7 +180,7 @@ public interface Constants {
             "-panel <CEU,YRI,CHB+JPT>        Specifies the analysis panel for this HapMap download\n" +
             "-startpos <integer>             Specifies the start position in kb for this HapMap download\n" +
             "-endpos <integer>               Specifies the end position in kb for this HapMap download\n" +
-            "-release <16a,21>               Specifies the HapMap phase for this HapMap download (defaults to 21)\n" +
+            "-release <16a,21,22>            Specifies the HapMap phase for this HapMap download (defaults to 22)\n" +
             "-dprime                         Outputs LD text to <fileroot>.LD\n" +
             "-png                            Outputs LD display to <fileroot>.LD.PNG\n"+
             "-compressedpng                  Outputs compressed LD display to <fileroot>.LD.PNG\n"+
@@ -213,6 +223,7 @@ public interface Constants {
             "                                if a custom association file is specified) and writes to <fileroot>.PERMUT\n" +
             "-pairwiseTagging                Generates pairwise tagging information in <fileroot>.TAGS and .TESTS\n" +
             "-aggressiveTagging              As above but generates 2-marker haplotype tags unless specified otherwise by -aggressiveNumMarkers\n" +
+            //"-tagrsqcounts                   Generates conditional haplotype probabilities from tagger in <fileroot>.CHAPS\n" +
             "-aggressiveNumMarkers <2,3>     Specifies whether to use 2-marker haplotype tags or 2 and 3-marker haplotype tags.\n" +
             "-maxNumTags <n>                 Only selects <n> best tags.\n" +
             "-dontaddtags                    Only uses forced in tags.\n" +

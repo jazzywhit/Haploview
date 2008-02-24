@@ -55,7 +55,7 @@ public class GBrowseDialog extends JDialog implements ActionListener, Constants{
         buildPanel.add(new JLabel("Genome build: "));
         String[]b ={"34","35","36"};
         buildBox = new JComboBox(b);
-        buildBox.setSelectedIndex(1);
+        buildBox.setSelectedIndex(2);
         buildPanel.add(buildBox);
         contents.add(buildPanel);
 

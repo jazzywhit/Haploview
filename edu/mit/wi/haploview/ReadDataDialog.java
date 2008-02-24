@@ -1,6 +1,7 @@
 package edu.mit.wi.haploview;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import java.awt.event.*;
@@ -29,31 +30,36 @@ public class ReadDataDialog extends JDialog
 
     private int fileType;
     private JTextField pedFileField, pedInfoField, hapsFileField, hapsInfoField, hmpFileField,
-            phaseFileField, phaseSampleField, phaseLegendField, plinkFileField, plinkMapField, testFileField;
+            phaseFileField, phaseSampleField, phaseLegendField, geneCruiseField, plinkFileField, plinkMapField, testFileField;
     private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, gZip, embeddedMap, plinkChrom, selectColumns, nonSNP;
     private JRadioButton trioButton, ccButton, standardTDT, parenTDT;
-    private JButton browseAssocButton, browsePlinkMapButton;
-    private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromEndField;
-    private JLabel testFileLabel, mapLabel;
+    private JButton browseAssocButton, browsePlinkMapButton, browsePhaseButton, browseSampleButton, browseLegendButton;
+    private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromEndField, rangeField;
+    private JLabel testFileLabel, mapLabel, downloadLabel;
     private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox plinkChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox panelChooser = new JComboBox(PANEL_NAMES);
     private JComboBox phaseChooser = new JComboBox(RELEASE_NAMES);
+    //TODO: Uncomment all the fastPHASE stuff once it's ready
+    //private JComboBox phaseFormatChooser = new JComboBox(PHASE_FORMATS);
+    private JComboBox geneCruiseChooser = new JComboBox(GENE_DATABASES);
     private String chromChoice, panelChoice, phaseChoice, embed, selectCols;
-    private boolean isDownloaded = false;
+    private JPanel phaseTab, downloadTab, /*phaseFormatPanel,*/ downloadChooserPanel,
+            downloadPositionPanel, downloadBrowsePanel, geneCruiserPanel, phaseGzipPanel, phaseChromPanel;
 
     JTabbedPane dataFormatPane = new JTabbedPane(JTabbedPane.LEFT);
+    private GridBagConstraints c;
 
     public ReadDataDialog(String title, HaploView h){
         super(h, title);
 
-        //Ped Panel...
-        pedFileField = new JTextField("",20);
+        //Ped Tab Objects
+        pedFileField = new JTextField(20);
         JButton browsePedFileButton = new JButton("Browse");
         browsePedFileButton.setActionCommand(BROWSE_GENO);
         browsePedFileButton.addActionListener(this);
-        pedInfoField = new JTextField("",20);
+        pedInfoField = new JTextField(20);
         pedInfoField.getDocument().addDocumentListener(this);
         JButton browsePedInfoButton = new JButton("Browse");
         browsePedInfoButton.setActionCommand(BROWSE_INFO);
@@ -94,7 +100,7 @@ public class ReadDataDialog extends JDialog
         tdtGroup.add(parenTDT);
         tdtTypePanel.add(standardTDT);
         tdtTypePanel.add(parenTDT);
-        testFileField = new JTextField("",20);
+        testFileField = new JTextField(20);
         testFileField.setEnabled(false);
         testFileField.setBackground(this.getBackground());
         browseAssocButton = new JButton("Browse");
@@ -104,62 +110,217 @@ public class ReadDataDialog extends JDialog
         testFileLabel = new JLabel("Test list file (optional):");
         testFileLabel.setEnabled(false);
 
-        //Haps Panel..
-        hapsFileField = new JTextField("",20);
+        //Layout the Ped Tab
+        JPanel pedTab = new JPanel(new GridBagLayout());
+        pedTab.setPreferredSize(new Dimension(375,200));
+        c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(5,5,5,5);
+        pedTab.add(new JLabel("Data File:"),c);
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.CENTER;
+        pedTab.add(pedFileField,c);
+        c.gridx = 2;
+        c.insets = new Insets(0,10,0,0);
+        pedTab.add(browsePedFileButton,c);
+        c.gridy = 1;
+        c.gridx = 0;
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(5,5,5,5);
+        pedTab.add(new JLabel("Locus Information File:"),c);
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.CENTER;
+        c.insets = new Insets(0,0,0,0);
+        pedTab.add(pedInfoField,c);
+        c.gridx = 2;
+        c.insets = new Insets(0,10,0,0);
+        pedTab.add(browsePedInfoButton,c);
+        c.gridy = 2;
+        c.gridx = 0;
+        c.gridwidth = 3;
+        c.anchor = GridBagConstraints.CENTER;
+        c.insets = new Insets(0,0,0,0);
+        pedTab.add(assocPanel,c);
+        c.gridy = 3;
+        pedTab.add(tdtOptsPanel,c);
+        c.gridy = 4;
+        pedTab.add(tdtTypePanel,c);
+        c.gridy = 5;
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(0,0,0,5);
+        pedTab.add(testFileLabel,c);
+        c.gridx = 1;
+        c.insets = new Insets(0,0,0,0);
+        pedTab.add(testFileField,c);
+        c.gridx = 2;
+        c.insets = new Insets(0,10,0,0);
+        pedTab.add(browseAssocButton,c);
+
+
+        //Haps Tab Objects
+        hapsFileField = new JTextField(20);
         JButton browseHapsFileButton = new JButton("Browse");
         browseHapsFileButton.setActionCommand(BROWSE_HAPS);
         browseHapsFileButton.addActionListener(this);
-        hapsInfoField = new JTextField("",20);
+        hapsInfoField = new JTextField(20);
         JButton browseHapsInfoButton = new JButton("Browse");
         browseHapsInfoButton.setActionCommand(BROWSE_INFO);
         browseHapsInfoButton.addActionListener(this);
 
-        //HMP panel...
-        hmpFileField = new JTextField("",20);
+        //Layout the Haps Tab
+        JPanel hapsTab = new JPanel(new GridBagLayout());
+        c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(5,5,5,5);
+        hapsTab.add(new JLabel("Data File:"),c);
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.CENTER;
+        hapsTab.add(hapsFileField,c);
+        c.gridx = 2;
+        c.insets = new Insets(0,10,0,0);
+        hapsTab.add(browseHapsFileButton,c);
+        c.gridy = 1;
+        c.gridx = 0;
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(5,5,5,5);
+        hapsTab.add(new JLabel("Locus Information File:"),c);
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.CENTER;
+        c.insets = new Insets(0,0,0,0);
+        hapsTab.add(hapsInfoField,c);
+        c.gridx = 2;
+        c.insets = new Insets(0,10,0,0);
+        hapsTab.add(browseHapsInfoButton,c);
+
+
+        //HMP Tab Objects
+        hmpFileField = new JTextField(20);
         JButton browseHmpButton = new JButton("Browse");
         browseHmpButton.setActionCommand(BROWSE_HMP);
         browseHmpButton.addActionListener(this);
         doGB = new JCheckBox("Download and show HapMap info track (requires internet connection)");
         doGB.setSelected(false);
 
-        //PHASE panel...
-        phaseFileField = new JTextField("",20);
-        JButton browsePhaseButton = new JButton("Browse");
+        //Layout the HMP Tab
+        JPanel hmpTab = new JPanel(new GridBagLayout());
+        c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(5,5,5,5);
+        c.weightx = 1;
+        hmpTab.add(new JLabel("Data File:"),c);
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.CENTER;
+        c.weightx = 0;
+        hmpTab.add(hmpFileField,c);
+        c.gridx = 2;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0,10,0,0);
+        c.weightx = 1;
+        hmpTab.add(browseHmpButton,c);
+        c.gridy = 1;
+        c.gridx = 0;
+        c.gridwidth = 3;
+        c.anchor = GridBagConstraints.CENTER;
+        c.insets = new Insets(0,0,0,0);
+        c.weightx = 0;
+        hmpTab.add(doGB,c);
+
+
+        //Phased Tab Objects
+       /* phaseFormatPanel = new JPanel();
+        phaseFormatPanel.add(new JLabel("Format:"));
+        phaseFormatChooser.addActionListener(this);
+        phaseFormatPanel.add(phaseFormatChooser);*/
+        phaseFileField = new JTextField(20);
+        browsePhaseButton = new JButton("Browse");
         browsePhaseButton.setActionCommand(BROWSE_PHASE);
         browsePhaseButton.addActionListener(this);
-        phaseSampleField = new JTextField("",20);
-        JButton browseSampleButton = new JButton("Browse");
+        phaseSampleField = new JTextField(20);
+        browseSampleButton = new JButton("Browse");
         browseSampleButton.setActionCommand(BROWSE_SAMPLE);
         browseSampleButton.addActionListener(this);
-        phaseLegendField = new JTextField("",20);
-        JButton browseLegendButton = new JButton("Browse");
+        phaseLegendField = new JTextField(20);
+        browseLegendButton = new JButton("Browse");
         browseLegendButton.setActionCommand(BROWSE_LEGEND);
         browseLegendButton.addActionListener(this);
-        JPanel phaseGzipPanel = new JPanel();
+        phaseGzipPanel = new JPanel();
         gZip = new JCheckBox("Files are GZIP compressed", false);
         gZip.setEnabled(true);
         phaseGzipPanel.add(gZip);
-        JPanel phaseChromPanel = new JPanel();
-        phaseChromPanel.add(new JLabel("Chromosome (Required for Info Track):"));
+        phaseChromPanel = new JPanel();
+        phaseDoGB = new JCheckBox("Download and show HapMap info track");
+        phaseDoGB.setSelected(false);
+        phaseChromPanel.add(phaseDoGB);
+        phaseChromPanel.add(new JLabel("Chromosome:"));
         loadChromChooser.setSelectedIndex(-1);
         phaseChromPanel.add(loadChromChooser);
-        JPanel phaseBrowsePanel = new JPanel();
-        phaseDoGB = new JCheckBox("Download and show HapMap info track (requires internet connection)");
-        phaseDoGB.setSelected(false);
-        phaseBrowsePanel.add(phaseDoGB);
 
-         //Download Panel...
-        JPanel downloadChooserPanel = new JPanel();
-        JLabel downloadLabel = new JLabel("*Phased HapMap downloads require an active internet connection");
+        //Layout the Phased Tab
+        phaseTab = new JPanel(new GridBagLayout());
+        c = new GridBagConstraints();
+        c.insets = new Insets(5,5,5,5);
+        //c.anchor = GridBagConstraints.CENTER;
+        c.weightx = 0;
+        //c.gridwidth = 3;
+        //phaseTab.add(phaseFormatPanel,c);
+        c.gridwidth = 1;
+        c.anchor = GridBagConstraints.EAST;
+        c.gridy = 1;
+        phaseTab.add(new JLabel("Data File:"),c);
+        c.anchor = GridBagConstraints.CENTER;
+        c.gridx = 1;
+        c.insets = new Insets(0,0,0,0);
+        phaseTab.add(phaseFileField,c);
+        c.gridx = 2;
+        c.insets = new Insets(0,10,0,0);
+        c.anchor = GridBagConstraints.WEST;
+        phaseTab.add(browsePhaseButton,c);
+        c.gridx = 0;
+        c.gridy = 2;
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(5,5,5,5);
+        phaseTab.add(new JLabel("Sample File:"),c);
+        c.anchor = GridBagConstraints.CENTER;
+        c.gridx = 1;
+        phaseTab.add(phaseSampleField,c);
+        c.gridx = 2;
+        c.insets = new Insets(0,10,0,0);
+        c.anchor = GridBagConstraints.WEST;
+        phaseTab.add(browseSampleButton,c);
+        c.gridx = 0;
+        c.gridy = 3;
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(5,5,5,5);
+        phaseTab.add(new JLabel("Legend File:"),c);
+        c.anchor = GridBagConstraints.CENTER;
+        c.gridx = 1;
+        phaseTab.add(phaseLegendField,c);
+        c.gridx = 2;
+        c.insets = new Insets(0,10,0,0);
+        c.anchor = GridBagConstraints.WEST;
+        phaseTab.add(browseLegendButton,c);
+        c.gridx = 0;
+        c.gridy = 4;
+        c.anchor = GridBagConstraints.CENTER;
+        c.gridwidth = 3;
+        c.insets = new Insets(0,0,0,0);
+        phaseTab.add(phaseGzipPanel,c);
+        c.gridy = 5;
+        phaseTab.add(phaseChromPanel,c);
+
+
+        //Download Tab Objects
+        downloadChooserPanel = new JPanel();
         downloadChooserPanel.add(new JLabel("Release:"));
         downloadChooserPanel.add(phaseChooser);
-        phaseChooser.setSelectedIndex(1);
+        phaseChooser.setSelectedIndex(2);
         downloadChooserPanel.add(new JLabel("Chromosome:"));
         chromChooser.setSelectedIndex(-1);
         downloadChooserPanel.add(chromChooser);
         downloadChooserPanel.add(new JLabel("Analysis Panel:"));
         downloadChooserPanel.add(panelChooser);
-        JPanel downloadPositionPanel = new JPanel();
+        downloadPositionPanel = new JPanel();
         chromStartField = new NumberTextField("",6,false,false);
         chromStartField.setEnabled(true);
         chromEndField = new NumberTextField("",6,false,false);
@@ -168,18 +329,52 @@ public class ReadDataDialog extends JDialog
         downloadPositionPanel.add(chromStartField);
         downloadPositionPanel.add(new JLabel("End kb:"));
         downloadPositionPanel.add(chromEndField);
-        JPanel downloadBrowsePanel = new JPanel();
+        downloadBrowsePanel = new JPanel();
         downloadDoGB = new JCheckBox("Show HapMap info track");
         downloadDoGB.setSelected(true);
         downloadBrowsePanel.add(downloadDoGB);
+        geneCruiserPanel = new JPanel();
+        geneCruiserPanel.add(geneCruiseChooser);
+        geneCruiserPanel.add(new JLabel("ID:"));
+        geneCruiseField = new JTextField(10);
+        geneCruiserPanel.add(geneCruiseField);
+        geneCruiserPanel.add(new JLabel("+/-"));
+        rangeField = new NumberTextField("100",6,false,false);
+        geneCruiserPanel.add(rangeField);
+        geneCruiserPanel.add(new JLabel("kb"));
+        JButton geneCruiseButton = new JButton("Go");
+        geneCruiseButton.setActionCommand("GeneCruise");
+        geneCruiseButton.addActionListener(this);
+        geneCruiserPanel.add(geneCruiseButton);
+        geneCruiserPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.lightGray),
+                "GeneCruiser"));
+        ((TitledBorder)(geneCruiserPanel.getBorder())).setTitleColor(Color.black);
+        downloadLabel = new JLabel("*Phased HapMap downloads require an active internet connection");
 
-        //Plink Panel...
-        plinkFileField = new JTextField("",20);
+        //Layout the Download Tab
+        downloadTab = new JPanel(new GridBagLayout());
+        c = new GridBagConstraints();
+        c.insets = new Insets(0,0,5,0);
+        c.anchor = GridBagConstraints.CENTER;
+        downloadTab.add(downloadChooserPanel,c);
+        c.gridy = 1;
+        downloadTab.add(downloadPositionPanel,c);
+        c.gridy = 2;
+        downloadTab.add(downloadBrowsePanel,c);
+        c.gridy = 3;
+        c.weightx = 1;
+        downloadTab.add(geneCruiserPanel,c);
+        c.gridy = 4;
+        downloadTab.add(downloadLabel,c);
+
+
+        //Plink Tab Objects
+        plinkFileField = new JTextField(20);
         JButton browsePlinkFileButton = new JButton("Browse");
         browsePlinkFileButton.setActionCommand(BROWSE_WGA);
         browsePlinkFileButton.addActionListener(this);
         mapLabel = new JLabel("Map File:");
-        plinkMapField = new JTextField("",20);
+        plinkMapField = new JTextField(20);
         browsePlinkMapButton = new JButton("Browse");
         browsePlinkMapButton.setActionCommand(BROWSE_MAP);
         browsePlinkMapButton.addActionListener(this);
@@ -202,122 +397,50 @@ public class ReadDataDialog extends JDialog
         selectColumns = new JCheckBox("Select Columns");
         plinkChromPanel.add(selectColumns);
 
-        JPanel pedTab = new JPanel(new GridBagLayout());
-        pedTab.setPreferredSize(new Dimension(375,200));
-        JPanel hapsTab = new JPanel(new GridBagLayout());
-        JPanel hmpTab = new JPanel(new GridBagLayout());
-        JPanel phaseTab = new JPanel(new GridBagLayout());
-        JPanel downloadTab = new JPanel(new GridBagLayout());
+        //Layout the Plink Tab
         JPanel plinkTab = new JPanel(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
+        c = new GridBagConstraints();
         c.anchor = GridBagConstraints.EAST;
-        c.gridx = 0;
-        c.gridy = 0;
         c.insets = new Insets(5,5,5,5);
-        pedTab.add(new JLabel("Data File:"),c);
-        hapsTab.add(new JLabel("Data File:"),c);
-        phaseTab.add(new JLabel("Phase File:"),c);
         plinkTab.add(new JLabel("Results File:"),c);
-        c.weightx = 1;
-        hmpTab.add(new JLabel("Data File:"),c);
-        c.anchor = GridBagConstraints.CENTER;
-        c.weightx = 0;
-        downloadTab.add(downloadChooserPanel,c);
         c.gridx = 1;
-        pedTab.add(pedFileField,c);
-        hapsTab.add(hapsFileField,c);
-        hmpTab.add(hmpFileField,c);
-        phaseTab.add(phaseFileField,c);
+        c.anchor = GridBagConstraints.CENTER;
         plinkTab.add(plinkFileField,c);
         c.gridx = 2;
         c.insets = new Insets(0,10,0,0);
-        pedTab.add(browsePedFileButton,c);
-        hapsTab.add(browseHapsFileButton,c);
         plinkTab.add(browsePlinkFileButton,c);
-        c.anchor = GridBagConstraints.WEST;
-        phaseTab.add(browsePhaseButton,c);
-        c.weightx = 1;
-        hmpTab.add(browseHmpButton,c);
-        c.weightx = 0;
-        c.anchor = GridBagConstraints.CENTER;
-        c.insets = new Insets(5,5,5,5);
         c.gridy = 1;
         c.gridx = 0;
-        downloadTab.add(downloadPositionPanel,c);
-        c.gridy = 2;
-        downloadTab.add(downloadBrowsePanel,c);
-        c.gridy = 3;
-        downloadTab.add(downloadLabel,c);
         c.anchor = GridBagConstraints.EAST;
-        c.gridx = 0;
-        c.gridy = 1;
         c.insets = new Insets(5,5,5,5);
-        pedTab.add(new JLabel("Locus Information File:"),c);
-        hapsTab.add(new JLabel("Locus Information File:"),c);
-        phaseTab.add(new JLabel("Sample File:"),c);
         plinkTab.add(mapLabel,c);
-        c.anchor = GridBagConstraints.CENTER;
         c.gridx = 1;
+        c.anchor = GridBagConstraints.CENTER;
         c.insets = new Insets(0,0,0,0);
-        pedTab.add(pedInfoField,c);
-        hapsTab.add(hapsInfoField,c);
-        phaseTab.add(phaseSampleField,c);
         plinkTab.add(plinkMapField,c);
         c.gridx = 2;
         c.insets = new Insets(0,10,0,0);
-        pedTab.add(browsePedInfoButton,c);
-        hapsTab.add(browseHapsInfoButton,c);
         plinkTab.add(browsePlinkMapButton,c);
-        c.anchor = GridBagConstraints.WEST;
-        phaseTab.add(browseSampleButton,c);
-        c.anchor = GridBagConstraints.CENTER;
-        c.gridx = 0;
         c.gridy = 2;
-        c.anchor = GridBagConstraints.EAST;
-        c.insets = new Insets(5,5,5,5);
-        phaseTab.add(new JLabel("Legend File:"),c);
-        c.anchor = GridBagConstraints.CENTER;
-        c.gridx = 1;
-        phaseTab.add(phaseLegendField,c);
-        c.gridx = 2;
-        c.insets = new Insets(0,10,0,0);
-        c.anchor = GridBagConstraints.WEST;
-        phaseTab.add(browseLegendButton,c);
-        c.anchor = GridBagConstraints.CENTER;
         c.gridx = 0;
         c.gridwidth = 3;
         c.insets = new Insets(0,0,0,0);
-        pedTab.add(assocPanel,c);
-        hmpTab.add(doGB,c);
         plinkTab.add(inputPanel,c);
         c.gridy = 3;
-        pedTab.add(tdtOptsPanel,c);
-        phaseTab.add(phaseGzipPanel,c);
         plinkTab.add(plinkChromPanel,c);
-        c.gridy = 4;
-        pedTab.add(tdtTypePanel,c);
-        phaseTab.add(phaseChromPanel,c);
-        c.gridy = 5;
-        phaseTab.add(phaseBrowsePanel,c);
-        c.anchor = GridBagConstraints.EAST;
-        c.gridwidth = 1;
-        c.insets = new Insets(0,0,0,5);
-        pedTab.add(testFileLabel,c);
-        c.gridx = 1;
-        c.insets = new Insets(0,0,0,0);
-        pedTab.add(testFileField,c);
-        c.gridx = 2;
-        c.insets = new Insets(0,10,0,0);
-        pedTab.add(browseAssocButton,c);
 
+
+        //Add the tabs to the tabbed pane
         dataFormatPane.setFont(new Font("Default",Font.BOLD,12));
         dataFormatPane.addTab("Linkage Format",pedTab);
         dataFormatPane.addTab("Haps Format",hapsTab);
         dataFormatPane.addTab("HapMap Format",hmpTab);
-        dataFormatPane.addTab("PHASE Format",phaseTab);
+        //dataFormatPane.addTab("Phased Formats",phaseTab);
+        dataFormatPane.addTab("HapMap PHASE",phaseTab);
         dataFormatPane.addTab("HapMap Download",downloadTab);
         dataFormatPane.addTab("PLINK Format",plinkTab);
 
+        //Bottom pane with the OK button
         JButton okButton = new JButton("OK");
         okButton.addActionListener(this);
         this.getRootPane().setDefaultButton(okButton);
@@ -332,38 +455,39 @@ public class ReadDataDialog extends JDialog
         proxyPanel.add(proxyButton);
 
 
-        JPanel contents = new JPanel();
-        contents.setLayout(new GridBagLayout());
-        GridBagConstraints a = new GridBagConstraints();
-        a.gridwidth = 3;
-        a.gridx = 0;
-        a.gridy = 0;
-        contents.add(dataFormatPane, a);
+        JPanel contents = new JPanel(new GridBagLayout());
+        c = new GridBagConstraints();
+        c.gridwidth = 3;
+        contents.add(dataFormatPane, c);
 
         JPanel compDistPanel = new JPanel();
         compDistPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
         maxComparisonDistField = new NumberTextField(String.valueOf(Options.getMaxDistance()/1000),6, false,false);
         compDistPanel.add(maxComparisonDistField);
         compDistPanel.add(new JLabel("kb apart."));
-        a.gridy = 1;
-        contents.add(compDistPanel,a);
+        c.gridy = 1;
+        contents.add(compDistPanel,c);
 
         JPanel missingCutoffPanel = new JPanel();
         missingCutoffField = new NumberTextField(String.valueOf(Options.getMissingThreshold()*100),3, false,false);
         missingCutoffPanel.add(new JLabel("Exclude individuals with >"));
         missingCutoffPanel.add(missingCutoffField);
         missingCutoffPanel.add(new JLabel("% missing genotypes."));
-        a.gridy = 2;
-        contents.add(missingCutoffPanel,a);
-        a.gridy = 3;
-        contents.add(choicePanel,a);
-        a.anchor = GridBagConstraints.EAST;
-        a.gridx = 2;
-        contents.add(proxyPanel,a);
+        c.gridy = 2;
+        contents.add(missingCutoffPanel,c);
+        c.gridy = 3;
+        contents.add(choicePanel,c);
+        c.gridx = 2;
+        c.anchor = GridBagConstraints.EAST;
+        contents.add(proxyPanel,c);
 
         if (h.getPhasedSelection() != null){
             if (((String)h.getPhasedSelection().get(0)).startsWith("16")){
                 phaseChooser.setSelectedIndex(0);
+            }else if (((String)h.getPhasedSelection().get(0)).startsWith("21")){
+                phaseChooser.setSelectedIndex(1);
+            }else{
+                phaseChooser.setSelectedIndex(2);
             }
 
             if (((String)h.getPhasedSelection().get(1)).equals("X")){
@@ -384,7 +508,6 @@ public class ReadDataDialog extends JDialog
             chromEndField.setText((String)h.getPhasedSelection().get(4));
         }
 
-        //contents.setPreferredSize(new Dimension(700,700));
         this.setContentPane(contents);
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
@@ -435,6 +558,11 @@ public class ReadDataDialog extends JDialog
             }else if (currTab == 2){
                 fileType = HMP_FILE;
             }else if (currTab == 3){
+               /* if (phaseFormatChooser.getSelectedIndex() == 0){
+                fileType = PHASEHMP_FILE;
+                }else if (phaseFormatChooser.getSelectedIndex() == 1){
+                    fileType = FASTPHASE_FILE;
+                }*/
                 fileType = PHASEHMP_FILE;
             }else if (currTab == 4){
                 fileType = HMPDL_FILE;
@@ -492,13 +620,12 @@ public class ReadDataDialog extends JDialog
                 Options.setMaxDistance(Integer.parseInt(maxComparisonDistField.getText()));
             }
 
-            if (fileType == PHASEHMP_FILE){
+            if (fileType == PHASEHMP_FILE /*|| fileType == FASTPHASE_FILE*/){
                 if (gZip.isSelected()){
                     Options.setGzip(true);
                 }else{
                     Options.setGzip(false);
                 }
-                isDownloaded = false;
                 if (phaseDoGB.isSelected()){
                     Options.setShowGBrowse(true);
                     if (loadChromChooser.getSelectedIndex() == -1){
@@ -518,7 +645,6 @@ public class ReadDataDialog extends JDialog
                 }
             }
             if (fileType == HMPDL_FILE){
-                isDownloaded = true;
 
                 if (downloadDoGB.isSelected()){
                     Options.setShowGBrowse(true);
@@ -589,7 +715,9 @@ public class ReadDataDialog extends JDialog
                 returnStrings = new String[]{hmpFileField.getText(),null,null};
             }else if (fileType == PHASEHMP_FILE){
                 returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), phaseLegendField.getText(), chromChoice};
-            }else if (fileType == HMPDL_FILE){
+            }/*else if (fileType == FASTPHASE_FILE){
+                returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), null, chromChoice};
+            }*/else if (fileType == HMPDL_FILE){
                 returnStrings = new String[]{"Chr" + chromChoice + ":" + panelChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), panelChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice, "txt"};
             }else if (fileType == PLINK_FILE){
@@ -606,7 +734,7 @@ public class ReadDataDialog extends JDialog
             caller.clearDisplays();
             this.dispose();
             if (fileType != PLINK_FILE){
-                caller.readGenotypes(returnStrings, fileType, isDownloaded);
+                caller.readGenotypes(returnStrings, fileType);
             }else{
                 caller.readWGA(returnStrings);
             }
@@ -641,7 +769,6 @@ public class ReadDataDialog extends JDialog
                 plinkMapField.setEnabled(true);
                 browsePlinkMapButton.setEnabled(true);
             }
-
         }else if (command.equals("Non-SNP")){
             if (nonSNP.isSelected()){
                 nonSNP.setSelected(true);
@@ -675,7 +802,122 @@ public class ReadDataDialog extends JDialog
             ProxyDialog pd = new ProxyDialog(this,"Proxy Settings");
             pd.pack();
             pd.setVisible(true);
+        }else if (command.equals("GeneCruise")){
+            if (rangeField.getText().length() < 1){
+                rangeField.setText("100");
         }
+            GeneCruiser gncr = new GeneCruiser();
+            int[] data = new int[0];
+            try {
+                data = gncr.getData(geneCruiseChooser.getSelectedIndex(),geneCruiseField.getText());
+                chromChooser.setSelectedIndex(data[0]-1);
+                chromStartField.setText(String.valueOf((data[1]/1000) - Integer.parseInt(rangeField.getText())));
+                chromEndField.setText(String.valueOf((data[2]/1000) + Integer.parseInt(rangeField.getText())));
+            } catch (HaploViewException hve) {
+                JOptionPane.showMessageDialog(this.getParent(),
+                        hve.getMessage(),
+                        "GeneCruiser Error",
+                        JOptionPane.ERROR_MESSAGE);
+    }
+        }/*else if (e.getSource() instanceof JComboBox && dataFormatPane.getSelectedIndex() == 3){
+            if (phaseFormatChooser.getSelectedIndex() == 0){ //HapMap PHASE
+                phaseTab.removeAll();
+                c = new GridBagConstraints();
+                c.insets = new Insets(5,5,5,5);
+                c.anchor = GridBagConstraints.CENTER;
+                c.weightx = 0;
+                c.gridwidth = 3;
+                phaseTab.add(phaseFormatPanel,c);
+                c.gridwidth = 1;
+                c.anchor = GridBagConstraints.EAST;
+                c.gridy = 1;
+                phaseTab.add(new JLabel("Data File:"),c);
+                c.anchor = GridBagConstraints.CENTER;
+                c.gridx = 1;
+                c.insets = new Insets(0,0,0,0);
+                phaseTab.add(phaseFileField,c);
+                c.gridx = 2;
+                c.insets = new Insets(0,10,0,0);
+                c.anchor = GridBagConstraints.WEST;
+                phaseTab.add(browsePhaseButton,c);
+                c.gridx = 0;
+                c.gridy = 2;
+                c.anchor = GridBagConstraints.EAST;
+                c.insets = new Insets(5,5,5,5);
+                phaseTab.add(new JLabel("Sample File:"),c);
+                c.anchor = GridBagConstraints.CENTER;
+                c.gridx = 1;
+                phaseTab.add(phaseSampleField,c);
+                c.gridx = 2;
+                c.insets = new Insets(0,10,0,0);
+                c.anchor = GridBagConstraints.WEST;
+                phaseTab.add(browseSampleButton,c);
+                c.gridx = 0;
+                c.gridy = 3;
+                c.anchor = GridBagConstraints.EAST;
+                c.insets = new Insets(5,5,5,5);
+                phaseTab.add(new JLabel("Legend File:"),c);
+                c.anchor = GridBagConstraints.CENTER;
+                c.gridx = 1;
+                phaseTab.add(phaseLegendField,c);
+                c.gridx = 2;
+                c.insets = new Insets(0,10,0,0);
+                c.anchor = GridBagConstraints.WEST;
+                phaseTab.add(browseLegendButton,c);
+                c.gridx = 0;
+                c.gridy = 4;
+                c.anchor = GridBagConstraints.CENTER;
+                c.gridwidth = 3;
+                c.insets = new Insets(0,0,0,0);
+                phaseTab.add(phaseGzipPanel,c);
+                c.gridy = 5;
+                phaseTab.add(phaseChromPanel,c);
+                phaseFormatChooser.requestFocus();
+                dataFormatPane.repaint();
+            }else if (phaseFormatChooser.getSelectedIndex() == 1){ //fastPHASE
+                phaseTab.removeAll();
+                c = new GridBagConstraints();
+                c.insets = new Insets(5,5,5,5);
+                c.anchor = GridBagConstraints.CENTER;
+                c.weightx = 0;
+                c.gridwidth = 3;
+                phaseTab.add(phaseFormatPanel,c);
+                c.gridwidth = 1;
+                c.anchor = GridBagConstraints.EAST;
+                c.gridy = 1;
+                phaseTab.add(new JLabel("Data File:"),c);
+                c.anchor = GridBagConstraints.CENTER;
+                c.gridx = 1;
+                c.insets = new Insets(0,0,0,0);
+                phaseTab.add(phaseFileField,c);
+                c.gridx = 2;
+                c.insets = new Insets(0,10,0,0);
+                c.anchor = GridBagConstraints.WEST;
+                phaseTab.add(browsePhaseButton,c);
+                c.gridx = 0;
+                c.gridy = 2;
+                c.anchor = GridBagConstraints.EAST;
+                c.insets = new Insets(5,5,5,5);
+                phaseTab.add(new JLabel("Info File:"),c);
+                c.anchor = GridBagConstraints.CENTER;
+                c.gridx = 1;
+                phaseTab.add(phaseSampleField,c);
+                c.gridx = 2;
+                c.insets = new Insets(0,10,0,0);
+                c.anchor = GridBagConstraints.WEST;
+                phaseTab.add(browseSampleButton,c);
+                c.gridx = 0;
+                c.gridy = 3;
+                c.anchor = GridBagConstraints.CENTER;
+                c.gridwidth = 3;
+                c.insets = new Insets(0,0,0,0);
+                phaseTab.add(phaseGzipPanel,c);
+                c.gridy = 4;
+                phaseTab.add(phaseChromPanel,c);
+                phaseFormatChooser.requestFocus();
+                dataFormatPane.repaint();
+            }
+        }*/
     }
 
     void browse(int browseType){
@@ -848,4 +1090,3 @@ public class ReadDataDialog extends JDialog
         }
     }
 }
-

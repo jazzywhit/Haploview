@@ -806,16 +806,18 @@ public class HaploData implements Constants{
         return result;
     }
 
-    public Vector phasedToChrom(String[] info, boolean downloadFile)
+    public Vector phasedToChrom(String[] info, int type)
             throws IllegalArgumentException, HaploViewException, PedFileException, IOException{
 
         infoKnown = true;
         pedFile = new PedFile();
-        if (downloadFile){
+        if (type == HMPDL_FILE){
             pedFile.parsePhasedDownload(info);
-        }else{
-            pedFile.parsePhasedData(info);
-        }
+        }else if (type == PHASEHMP_FILE){
+            pedFile.parseHapMapPhase(info);
+        }/*else if (type == FASTPHASE_FILE){
+            pedFile.parseFastPhase(info);
+        }*/
 
         HaploData.setPhasedData(true);
 

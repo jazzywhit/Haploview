@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.47 2007/06/20 14:45:22 djbender Exp $
+* $Id: PedFile.java,v 3.48 2008/02/24 19:54:12 djbender Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -792,7 +792,7 @@ public class PedFile {
         }
     }
 
-    public void parsePhasedData(String[] info) throws IOException, PedFileException{
+    public void parseHapMapPhase(String[] info) throws IOException, PedFileException{
         if (info[3].equals("")){
             Chromosome.setDataChrom("none");
         }else{
@@ -1044,7 +1044,6 @@ public class PedFile {
     public void parsePhasedDownload(String[] info) throws IOException, PedFileException{
         String targetChrom = "chr" + info[4];
         Chromosome.setDataChrom(targetChrom);
-        Chromosome.setDataBuild("ncbi_b35");
         Vector legendMarkers = new Vector();
         Vector legendPositions = new Vector();
         Vector hmpVector = new Vector();
@@ -1068,9 +1067,14 @@ public class PedFile {
         long stopPos = (Integer.parseInt(info[3]))*1000;
         String phaseChoice;
         if (info[5].startsWith("16")){
+            Chromosome.setDataBuild("ncbi_b34");
             phaseChoice = "I";
-        }else{
+        }else if (info[5].equals("21")){
+            Chromosome.setDataBuild("ncbi_b35");
             phaseChoice = "II";
+        }else{
+            Chromosome.setDataBuild("ncbi_b36");
+            phaseChoice = "III";
         }
         String output = info[6];
         boolean infoDone = false;
@@ -1257,6 +1261,117 @@ public class PedFile {
             throw new IOException("Could not connect to HapMap database.");
         }
     }
+
+/*    public void parseFastPhase(String[] info) throws IOException, PedFileException{
+        if (info[3].equals("")){
+            Chromosome.setDataChrom("none");
+        }else{
+            Chromosome.setDataChrom("chr" + info[3]);
+        }
+        Chromosome.setDataBuild("ncbi_b35");
+        BufferedReader reader;
+        InputStream inStream;
+
+        try {
+            URL inURL = new URL(info[0]);
+            inStream = inURL.openStream();
+        }catch (MalformedURLException mfe){
+            File inFile = new File(info[0]);
+            if (inFile.length() < 1){
+                throw new PedFileException("Genotype file is empty or non-existent: " + inFile.getName());
+            }
+            inStream = new FileInputStream(inFile);
+        }catch (IOException ioe){
+            throw new PedFileException("Could not connect to " + info[0]);
+        }
+
+        if (Options.getGzip()){
+            GZIPInputStream sampleInputStream = new GZIPInputStream(inStream);
+            reader = new BufferedReader(new InputStreamReader(sampleInputStream));
+        }else{
+            reader = new BufferedReader(new InputStreamReader(inStream));
+        }
+        this.allIndividuals = new Vector();
+        //TODO: put fastPHASE parsing code here
+*//*        byte[] byteDataT = new byte[0];
+        byte[] byteDataU = new byte[0];
+        char token;
+        int numMarkers;
+        int lineNumber = 0;
+        String line;
+        Individual ind = null;
+        while((line = reader.readLine())!=null){
+            StringTokenizer st = new StringTokenizer(line);
+            if (st.countTokens() != 5){
+                throw new PedFileException("Invalid file formatting on line " + lineNumber+1);
+            }
+            String markers = new String(st.nextToken());
+            st.nextToken(); //marker numbering
+            int gender = Integer.parseInt(st.nextToken());
+            String id = st.nextToken();
+            char strand = st.nextToken().charAt(0); // T or U
+            numMarkers = markers.length();
+            if (strand == 'T'){
+                ind = new Individual(numMarkers, true);
+                ind.setGender(gender);
+                ind.setIndividualID(id);
+                ind.setFamilyID("Bender");
+                ind.setDadID("0");
+                ind.setMomID("0");
+                byteDataT = new byte[numMarkers];
+
+                //check if the family exists already in the Hashtable
+                Family fam = (Family)this.families.get(ind.getFamilyID());
+                if(fam == null){
+                    //it doesnt exist, so create a new Family object
+                    fam = new Family(ind.getFamilyID());
+                }
+                fam.addMember(ind);
+                this.families.put(ind.getFamilyID(),fam);
+                this.allIndividuals.add(ind);
+            }else{
+                byteDataU = new byte[numMarkers];
+            }
+
+            int index = 0;
+            for (int i = 0; i < numMarkers; i++){
+                token = markers.charAt(i);
+                if (strand == 'T'){
+                    if (token == '1'){
+                        byteDataT[index] = 1;
+                    }else if (token == '2'){
+                        byteDataT[index] = 2;
+                    }else if (token == '3'){
+                        byteDataT[index] = 3;
+                    }else if (token == '4'){
+                        byteDataT[index] = 4;
+                    }else {
+                        throw new PedFileException("Invalid Allele: " + token);
+                    }
+                }else{
+                    if (token == '1'){
+                        byteDataU[index] = 1;
+                    }else if (token == '2'){
+                        byteDataU[index] = 2;
+                    }else if (token == '3'){
+                        byteDataU[index] = 3;
+                    }else if (token == '4'){
+                        byteDataU[index] = 4;
+                    }else {
+                        throw new PedFileException("Invalid Allele: " + token);
+                    }
+                }
+                index++;
+            }
+
+            if (strand == 'U'){
+                for(int j=0; j < numMarkers; j++){
+                    ind.addMarker(byteDataT[j], byteDataU[j]);
+                }
+            }
+            lineNumber++;
+        }*//*
+    }*/
 
     public void parseHapsFile(Vector individs) throws PedFileException{
         //This method is used to parse haps files which now go through similar processing to ped files.

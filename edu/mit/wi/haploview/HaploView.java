@@ -646,7 +646,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         }
     }
 
-    void readGenotypes(String[] inputOptions, int type, boolean downloadFile){
+    void readGenotypes(String[] inputOptions, int type){
         //input is a 2 element array with
         //inputOptions[0] = ped file or phased data file
         //inputOptions[1] = info file or sample file for phased data (null if none)
@@ -688,13 +688,13 @@ public class HaploView extends JFrame implements ActionListener, Constants{
 
             if (type == HAPS_FILE){
                 theData.prepareHapsInput(inputOptions[0]);
-            }else if (type == PHASEHMP_FILE || type == HMPDL_FILE){
-                theData.phasedToChrom(inputOptions, downloadFile);
+            }else if (type == PHASEHMP_FILE || type == HMPDL_FILE /*|| type == FASTPHASE_FILE*/){
+                theData.phasedToChrom(inputOptions, type);
             }else{
                 theData.linkageToChrom(inputOptions[0], type);
             }
 
-            if (type != PHASEHMP_FILE && type != HMPDL_FILE){
+            if (type != PHASEHMP_FILE && type != HMPDL_FILE /*&& type != FASTPHASE_FILE*/){
                 if(theData.getPedFile().isBogusParents()) {
                     JOptionPane.showMessageDialog(this,
                             "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
@@ -756,7 +756,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 theData.getPedFile().setWhiteList(new HashSet());
                 checkPanel = new CheckDataPanel(this);
                 Chromosome.doFilter(checkPanel.getMarkerResults());
-            }else{
+            }/*else if (type == FASTPHASE_FILE){  //TODO: How do we get marker info for fastPHASE?
+                readMarkers(markerStream, null);
+                Chromosome.doFilter(Chromosome.getUnfilteredSize());
+                customAssocSet = null;
+                theData.getPedFile().setWhiteList(new HashSet());
+                checkPanel = new CheckDataPanel(this);
+                Chromosome.doFilter(checkPanel.getMarkerResults());
+            }*/else{
                 readMarkers(markerStream, theData.getPedFile().getHMInfo());
                 //we read the file in first, so we can whitelist all the markers in the custom test set
                 HashSet whiteListedCustomMarkers = new HashSet();
@@ -1272,6 +1279,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 plinkPanel.disposePlot();
             }
             plinkPanel = null;
+            plink = null; //todo?
         }
     }
 
@@ -1639,17 +1647,17 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     inputArray[0] = argParser.getHapsFileName();
                     inputArray[1] = argParser.getInfoFileName();
                     inputArray[2] = null;
-                    window.readGenotypes(inputArray, HAPS_FILE, false);
+                    window.readGenotypes(inputArray, HAPS_FILE);
                 }else if (argParser.getPedFileName() != null){
                     inputArray[0] = argParser.getPedFileName();
                     inputArray[1] = argParser.getInfoFileName();
                     inputArray[2] = null;
-                    window.readGenotypes(inputArray, PED_FILE, false);
+                    window.readGenotypes(inputArray, PED_FILE);
                 }else if (argParser.getHapmapFileName() != null){
                     inputArray[0] = argParser.getHapmapFileName();
                     inputArray[1] = null;
                     inputArray[2] = null;
-                    window.readGenotypes(inputArray, HMP_FILE, false);
+                    window.readGenotypes(inputArray, HMP_FILE);
                 }else if (argParser.getPhasedHmpDataName() != null){
                     if (!argParser.getChromosome().equals("")){
                         Options.setShowGBrowse(true);
@@ -1658,8 +1666,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     inputArray[1] = argParser.getPhasedHmpSampleName();
                     inputArray[2] = argParser.getPhasedHmpLegendName();
                     inputArray[3] = argParser.getChromosome();
-                    window.readGenotypes(inputArray, PHASEHMP_FILE, false);
-                }else if (argParser.getPhasedHmpDownload()){
+                    window.readGenotypes(inputArray, PHASEHMP_FILE);
+                }/*else if (argParser.getFastphaseFileName() != null){
+                    inputArray[0] = argParser.getFastphaseFileName();
+                    inputArray[1] = argParser.getInfoFileName();
+                    inputArray[2] = null;
+                    inputArray[3] = argParser.getChromosome();
+                    window.readGenotypes(inputArray, FASTPHASE_FILE);
+                }*/else if (argParser.getPhasedHmpDownload()){
                     Options.setShowGBrowse(true);
                     inputArray[0] = "Chr" + argParser.getChromosome() + ":" + argParser.getPanel() + ":" +
                             argParser.getStartPos() + ".." + argParser.getEndPos();
@@ -1669,7 +1683,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     inputArray[4] = argParser.getChromosome();
                     inputArray[5] = argParser.getRelease();
                     inputArray[6] = "txt";
-                    window.readGenotypes(inputArray, HMPDL_FILE, true);
+                    window.readGenotypes(inputArray, HMPDL_FILE);
                 }else if (argParser.getPlinkFileName() != null){
                     inputArray[0] = argParser.getPlinkFileName();
                     inputArray[1] = argParser.getMapFileName();

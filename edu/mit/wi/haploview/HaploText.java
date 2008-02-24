@@ -31,6 +31,7 @@ public class HaploText implements Constants{
     private String phasedhmpdataFileName;
     private String phasedhmpsampleFileName;
     private String phasedhmplegendFileName;
+    //private String fastphaseFileName;
     private String plinkFileName;
     private String mapFileName;
     private boolean phasedhapmapDownload = false;
@@ -116,6 +117,10 @@ public class HaploText implements Constants{
     public String getPhasedHmpLegendName(){
         return phasedhmplegendFileName;
     }
+
+    /*public String getFastphaseFileName(){
+        return fastphaseFileName;
+    }*/
 
     public boolean getPhasedHmpDownload(){
         return phasedhapmapDownload;
@@ -217,7 +222,7 @@ public class HaploText implements Constants{
             this.doBatch();
         }
 
-        if(!(this.pedFileName== null) || !(this.hapsFileName== null) || !(this.hapmapFileName== null) || !(this.phasedhmpdataFileName== null) || phasedhapmapDownload){
+        if(!(this.pedFileName== null) || !(this.hapsFileName== null) || !(this.hapmapFileName== null) || !(this.phasedhmpdataFileName== null) /*|| !(this.fastphaseFileName == null)*/ || phasedhapmapDownload){
             if(nogui){
                 commandLogger.warn("*****************************************************");
                 commandLogger.warn(TITLE_STRING + "\tJava Version: " + JAVA_VERSION);
@@ -425,6 +430,18 @@ public class HaploText implements Constants{
                     phasedhmplegendFileName = args[i];
                 }
             }
+          /*  else if (args[i].equalsIgnoreCase("-fastphase")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a filename");
+                }
+                else{
+                    if(fastphaseFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last phased hapmap data file listed will be used");
+                    }
+                    fastphaseFileName = args[i];
+                }
+            }*/
             else if (args[i].equalsIgnoreCase("-hapmapDownload")){
                 phasedhapmapDownload = true;
             }
@@ -881,6 +898,12 @@ public class HaploText implements Constants{
                 die("You must specify a legend file for phased hapmap input.");
             }
         }
+     /*   if(fastphaseFileName != null) {
+            countOptions++;
+            if (infoFileName == null) {
+                die("You must specify an info file for PHASE format input.");
+            }
+        }*/
         if(phasedhapmapDownload) {
             countOptions++;
         }
@@ -1154,11 +1177,11 @@ public class HaploText implements Constants{
             }
 
             if (release == null){
-                release = "21";
+                release = "22";
             }
 
-            if (!(release.equals("21")) && !(release.startsWith("16"))){
-                die("release must be either 16a or 21");
+            if (!(release.equals("22")) && !(release.equals("21")) && !(release.startsWith("16"))){
+                die("release must be either 16a, 21 or 22");
             }
         }
     }
@@ -1298,6 +1321,11 @@ public class HaploText implements Constants{
             fileType = PHASEHMP_FILE;
             phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, chromosomeArg};
         }
+       /* else if (fastphaseFileName != null){
+            fileName = fastphaseFileName;
+            fileType = FASTPHASE_FILE;
+            phasedHapMapInfo = new String[]{fastphaseFileName, infoFileName, null, chromosomeArg};
+        }*/
         else if (phasedhapmapDownload){
             fileName = "Chromosome" + chromosomeArg + panelArg;
             fileType = HMPDL_FILE;
@@ -1361,13 +1389,9 @@ public class HaploText implements Constants{
                     commandLogger.warn("Error: At least one male in the file is heterozygous.\nThese genotypes have been ignored.");
                 }
             }
-            else if (fileType == PHASEHMP_FILE){
-                //read in phased hapmap data
-                textData.phasedToChrom(phasedHapMapInfo, false);
-            }
-            else if (fileType == HMPDL_FILE){
-                //read in downloaded phased hapmap data
-                textData.phasedToChrom(phasedHapMapInfo, true);
+            else if (fileType == PHASEHMP_FILE || fileType == HMPDL_FILE /*|| fileType == FASTPHASE_FILE*/){
+                //read in phased data
+                textData.phasedToChrom(phasedHapMapInfo, fileType);
             }
             else{
                 //read in hapmapfile

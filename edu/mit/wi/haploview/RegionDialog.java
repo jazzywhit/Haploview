@@ -34,7 +34,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         chooserPanel.add(new JLabel("Release:"));
         phaseChooser = new JComboBox(RELEASE_NAMES);
         chooserPanel.add(phaseChooser);
-        phaseChooser.setSelectedIndex(1);
+        phaseChooser.setSelectedIndex(2);
         chooserPanel.add(new JLabel("Chr"+chr));
         panelChooser = new JComboBox(PANEL_NAMES);
         chooserPanel.add(new JLabel("Analysis Panel:"));
@@ -106,7 +106,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             returnStrings = new String[]{"Chr" + chrom + ":" + panel + ":" + gotoStart + ".." +
                     gotoEnd, panel, gotoStart, gotoEnd, chrom, phase, "txt"};
             this.dispose();
-            hv.readGenotypes(returnStrings, HMPDL_FILE, true);
+            hv.readGenotypes(returnStrings, HMPDL_FILE);
             Vector chipSNPs = new Vector(prp.getSNPs());
             if (Chromosome.getUnfilteredSize() > 0){
                 if (annotate.isSelected()){
