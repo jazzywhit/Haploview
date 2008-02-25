@@ -263,15 +263,17 @@ public class TaggerConfigPanel extends HaploviewTab
             }
 
             try{
-                double rsqCut = Double.parseDouble(rsqField.getText());
-                if (rsqCut > 1){
-                    Options.setTaggerRsqCutoff(1.0);
-                    rsqField.setText("1.0");
-                }else if (rsqCut < 0){
-                    Options.setTaggerRsqCutoff(0.0);
-                    rsqField.setText("0.0");
-                }else{
-                    Options.setTaggerRsqCutoff(rsqCut);
+                if(!rsqField.getText().equals("")){
+                    double rsqCut = Double.parseDouble(rsqField.getText());
+                    if (rsqCut > 1){
+                        Options.setTaggerRsqCutoff(1.0);
+                        rsqField.setText("1.0");
+                    }else if (rsqCut < 0){
+                        Options.setTaggerRsqCutoff(0.0);
+                        rsqField.setText("0.0");
+                    }else{
+                        Options.setTaggerRsqCutoff(rsqCut);
+                    }
                 }
 
                 if (!(minDesignField.getText().equals(""))){
@@ -280,12 +282,14 @@ public class TaggerConfigPanel extends HaploviewTab
                     Options.setTaggerMinDesignScore(Tagger.DEFAULT_MIN_DESIGNSCORE);
                 }
 
-                double lodCut = Double.parseDouble(lodField.getText());
-                if (lodCut < 0){
-                    Options.setTaggerLODCutoff(0.0);
-                    lodField.setText("0.0");
-                }else{
-                    Options.setTaggerLODCutoff(lodCut);
+                if (!lodField.getText().equals("")){
+                    double lodCut = Double.parseDouble(lodField.getText());
+                    if (lodCut < 0){
+                        Options.setTaggerLODCutoff(0.0);
+                        lodField.setText("0.0");
+                    }else{
+                        Options.setTaggerLODCutoff(lodCut);
+                    }
                 }
 
                 int minDist;
