@@ -29,7 +29,7 @@ public class GeneCruiser {
     String host = "genecruiser.broad.mit.edu/genecruiser3_services";
     String firstResult = "0";
     String email = "haploview@broad.mit.edu";
-    Logger logger = Logger.getLogger(GeneCruiser.class);
+    Logger logger = Logger.getRootLogger();
 
 
     /**
