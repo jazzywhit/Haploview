@@ -18,6 +18,7 @@
        <include name="*.jar"/>
        <include name="*.zip"/>
        <include name="jfreechart/*.jar"/>
+       <include name="axiom/*.jar"/>
      </fileset>
    <fileset dir="docs/">
        <include name="HaploHelp.jar"/>
@@ -85,6 +86,12 @@
      <zipfileset src="resources/jfreechart/batik-svggen.jar"/>
      <zipfileset src="resources/jfreechart/batik-util.jar"/>
      <zipfileset src="resources/jfreechart/batik-ext.jar"/>
+     <zipfileset src="resources/axiom/axiom-api-1.2.5.jar"/>
+     <zipfileset src="resources/axiom/axiom-dom-1.2.5.jar"/>
+     <zipfileset src="resources/axiom/axiom-impl-1.2.5.jar"/>
+     <zipfileset src="resources/axiom/commons-logging-1.0.4.jar"/>
+     <zipfileset src="resources/axiom/stax-api-1.0.1.jar"/>
+     <zipfileset src="resources/axiom/wstx-asl-3.0.0.jar"/>
    </jar>
 </target>
 
@@ -113,6 +120,12 @@
      <zipfileset src="resources/jfreechart/batik-svggen.jar"/>
      <zipfileset src="resources/jfreechart/batik-util.jar"/>
      <zipfileset src="resources/jfreechart/batik-ext.jar"/>
+     <zipfileset src="resources/axiom/axiom-api-1.2.5.jar"/>
+     <zipfileset src="resources/axiom/axiom-dom-1.2.5.jar"/>
+     <zipfileset src="resources/axiom/axiom-impl-1.2.5.jar"/>
+     <zipfileset src="resources/axiom/commons-logging-1.0.4.jar"/>
+     <zipfileset src="resources/axiom/stax-api-1.0.1.jar"/>
+     <zipfileset src="resources/axiom/wstx-asl-3.0.0.jar"/>
    </jar>
 </target>
 
