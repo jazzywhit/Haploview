@@ -125,8 +125,8 @@ public class TaggerConfigPanel extends HaploviewTab
         table.getColumnModel().getColumn(NUM_COL).setPreferredWidth(30);
         table.getColumnModel().getColumn(POSITION_COL).setPreferredWidth(60);
         table.getColumnModel().getColumn(DESIGN_COL).setPreferredWidth(60);
-        table.getColumnModel().getColumn(INCLUDE_COL).setPreferredWidth(60);
-        table.getColumnModel().getColumn(EXCLUDE_COL).setPreferredWidth(60);
+        table.getColumnModel().getColumn(INCLUDE_COL).setPreferredWidth(65);
+        table.getColumnModel().getColumn(EXCLUDE_COL).setPreferredWidth(65);
         table.getColumnModel().getColumn(CAPTURE_COL).setPreferredWidth(90);
         table.getTableHeader().setReorderingAllowed(false);
 
@@ -152,6 +152,8 @@ public class TaggerConfigPanel extends HaploviewTab
         forceExcludeButton.addActionListener(this);
         JButton excludeAllButton = new JButton("Exclude All");
         excludeAllButton.addActionListener(this);
+        JButton excludeATCGButton = new JButton("Exclude A/T & C/G SNPs");
+        excludeATCGButton.addActionListener(this);
         JButton uncaptureAllButton = new JButton("Uncapture All");
         uncaptureAllButton.addActionListener(this);
         JButton designScoresButton = new JButton("Design Scores");
@@ -167,6 +169,7 @@ public class TaggerConfigPanel extends HaploviewTab
         buttonPanel.add(excludeAllButton);
         buttonPanel.add(uncaptureAllButton);
         buttonPanel.add(resetTableButton);
+        buttonPanel.add(excludeATCGButton);
         add(buttonPanel);
 
         JPanel optsRightPanel = new JPanel();
@@ -443,6 +446,13 @@ public class TaggerConfigPanel extends HaploviewTab
         }else if (command.equals("Uncapture All")){
             for (int i = 0; i < table.getRowCount(); i++){
                 table.setValueAt(new Boolean(false),i,CAPTURE_COL);
+            }
+        }else if (command.equals("Exclude A/T & C/G SNPs")){
+            for (int i = 0; i < table.getRowCount(); i++){
+                if (((SNP)snpsByName.get(table.getValueAt(i,NAME_COL))).getStrandIssue()){
+                    table.setValueAt(new Boolean(true),i,EXCLUDE_COL);
+                    table.setValueAt(new Boolean(true),i,CAPTURE_COL);
+                }
             }
         }else if (command.equals("Design Scores")){
             designScores = new Hashtable(1,1);

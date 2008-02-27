@@ -78,6 +78,10 @@ public class SNP implements Comparable{
         return dup;
     }
 
+    public boolean getStrandIssue(){
+        return (major == 4 && minor == 1) || (major == 1 && minor == 4) || (major == 3 && minor == 2) || (major == 2 && minor == 3);
+    }
+
     public int compareTo(Object o) {
         SNP s = (SNP)o;
         if(this.equals(s)) {
