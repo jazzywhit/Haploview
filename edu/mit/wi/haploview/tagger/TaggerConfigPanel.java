@@ -168,8 +168,8 @@ public class TaggerConfigPanel extends HaploviewTab
         buttonPanel.add(includeAllButton);
         buttonPanel.add(excludeAllButton);
         buttonPanel.add(uncaptureAllButton);
-        buttonPanel.add(resetTableButton);
         buttonPanel.add(excludeATCGButton);
+        buttonPanel.add(resetTableButton);
         add(buttonPanel);
 
         JPanel optsRightPanel = new JPanel();
