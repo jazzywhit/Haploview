@@ -228,7 +228,7 @@ public class ReadDataDialog extends JDialog
 
 
         //Phased Tab Objects
-       /* phaseFormatPanel = new JPanel();
+        /* phaseFormatPanel = new JPanel();
         phaseFormatPanel.add(new JLabel("Format:"));
         phaseFormatChooser.addActionListener(this);
         phaseFormatPanel.add(phaseFormatChooser);*/
@@ -558,7 +558,7 @@ public class ReadDataDialog extends JDialog
             }else if (currTab == 2){
                 fileType = HMP_FILE;
             }else if (currTab == 3){
-               /* if (phaseFormatChooser.getSelectedIndex() == 0){
+                /* if (phaseFormatChooser.getSelectedIndex() == 0){
                 fileType = PHASEHMP_FILE;
                 }else if (phaseFormatChooser.getSelectedIndex() == 1){
                     fileType = FASTPHASE_FILE;
@@ -803,9 +803,10 @@ public class ReadDataDialog extends JDialog
             pd.pack();
             pd.setVisible(true);
         }else if (command.equals("GeneCruise")){
+            setCursor(new Cursor(Cursor.WAIT_CURSOR));
             if (rangeField.getText().length() < 1){
                 rangeField.setText("100");
-        }
+            }
             GeneCruiser gncr = new GeneCruiser();
             int[] data = new int[0];
             try {
@@ -818,7 +819,8 @@ public class ReadDataDialog extends JDialog
                         hve.getMessage(),
                         "GeneCruiser Error",
                         JOptionPane.ERROR_MESSAGE);
-    }
+            }
+            setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }/*else if (e.getSource() instanceof JComboBox && dataFormatPane.getSelectedIndex() == 3){
             if (phaseFormatChooser.getSelectedIndex() == 0){ //HapMap PHASE
                 phaseTab.removeAll();
