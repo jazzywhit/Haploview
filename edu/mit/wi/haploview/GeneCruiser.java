@@ -112,9 +112,10 @@ public class GeneCruiser {
      * Navigates through the XML tree, allowing for long XML files to be handled correctly
      * Created to be a recursive function, very large XML docs may take some time.
      * @param iter A series of nodes that need to be navigated and validated
+     * @throws HaploViewException If there are problems with data collection
      */
 
-    public void NamespaceNav(Iterator iter){
+    public void NamespaceNav(Iterator iter) throws HaploViewException{
 
         OMElement tempNode;
         OMNode tempNoder;
@@ -140,12 +141,26 @@ public class GeneCruiser {
                     //Check the node to learn what data it contains
                     if (tempNode.getLocalName().equalsIgnoreCase("chromosome")){
 
-                        chromMark = Integer.parseInt(childValue.trim());
+                        if (childValue.equalsIgnoreCase("X")){
+                            chromMark = 23;
+                        }else if (childValue.equalsIgnoreCase("Y")){
+                            chromMark = 24;
+                        }else{
+                            try{
+                                chromMark = Integer.parseInt(childValue.trim());
+                            }catch (NumberFormatException nfe){
+                               throw new HaploViewException("Error reading GeneCruiser data.");
+                            }
+                        }
+
                         chromCollected = true;
 
                     }else if (tempNode.getLocalName().equalsIgnoreCase("start")){
-
-                        tempInt = Integer.parseInt(childValue.trim());
+                        try{
+                            tempInt = Integer.parseInt(childValue.trim());
+                        }catch (NumberFormatException nfe){
+                            throw new HaploViewException("Error reading GeneCruiser data.");
+                        }
                         if (tempInt < startMark){
                             startMark = tempInt;
                         }
@@ -155,8 +170,11 @@ public class GeneCruiser {
                         startCollected = true;
 
                     }else if (tempNode.getLocalName().equalsIgnoreCase("end")){
-
-                        tempInt = Integer.parseInt(childValue.trim());
+                        try{
+                            tempInt = Integer.parseInt(childValue.trim());
+                        }catch (NumberFormatException nfe){
+                            throw new HaploViewException("Error reading GeneCruiser data.");
+                        }
                         if (tempInt > endMark){
                             endMark = tempInt;
                         }
