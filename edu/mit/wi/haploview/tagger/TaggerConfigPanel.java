@@ -164,7 +164,7 @@ public class TaggerConfigPanel extends HaploviewTab
         resetThresholdsButton.addActionListener(this);
 
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setMaximumSize(new Dimension(600,100));
+        //buttonPanel.setMaximumSize(new Dimension(600,100));
         buttonPanel.add(includeAllButton);
         buttonPanel.add(excludeAllButton);
         buttonPanel.add(uncaptureAllButton);
