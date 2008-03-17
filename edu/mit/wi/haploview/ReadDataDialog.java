@@ -314,7 +314,7 @@ public class ReadDataDialog extends JDialog
         downloadChooserPanel = new JPanel();
         downloadChooserPanel.add(new JLabel("Release:"));
         downloadChooserPanel.add(phaseChooser);
-        phaseChooser.setSelectedIndex(2);
+        phaseChooser.setSelectedIndex(1);
         downloadChooserPanel.add(new JLabel("Chromosome:"));
         chromChooser.setSelectedIndex(-1);
         downloadChooserPanel.add(chromChooser);
