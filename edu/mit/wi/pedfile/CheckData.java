@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.23 2008/01/29 12:48:33 jcbarret Exp $
+* $Id: CheckData.java,v 3.24 2008/03/18 12:12:06 jcbarret Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -64,7 +64,7 @@ public class CheckData {
         MarkerResult result = new MarkerResult();
         Individual currentInd;
         int missing=0, founderHetCount=0, mendErrNum=0;
-        int allele1=0, allele2=0, called = 0;
+        int allele1 = 0, allele2 = 0, called = 0;
         Hashtable founderGenoCount = new Hashtable();
         Hashtable kidgeno = new Hashtable();
         int[] founderHomCount = new int[5];
@@ -383,8 +383,9 @@ public class CheckData {
         if (called == 0){
             genopct = 0;
         }else{
-            genopct = 100.0*(called/(called+missing));
+            genopct = 100.0*((double)called/(called+missing));
         }
+        System.out.println(genopct);
 
         // num of families with a fully genotyped trio
         //int famTrio =0;
