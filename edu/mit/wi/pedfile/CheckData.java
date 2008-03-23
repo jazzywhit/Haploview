@@ -1,6 +1,6 @@
 
 /*
-* $Id: CheckData.java,v 3.24 2008/03/18 12:12:06 jcbarret Exp $
+* $Id: CheckData.java,v 3.25 2008/03/23 00:49:38 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2003 by the
@@ -385,7 +385,7 @@ public class CheckData {
         }else{
             genopct = 100.0*((double)called/(called+missing));
         }
-        System.out.println(genopct);
+        //System.out.println(genopct);
 
         // num of families with a fully genotyped trio
         //int famTrio =0;
