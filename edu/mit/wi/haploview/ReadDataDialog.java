@@ -49,6 +49,7 @@ public class ReadDataDialog extends JDialog
             downloadPositionPanel, downloadBrowsePanel, geneCruiserPanel, phaseGzipPanel, phaseChromPanel;
 
     JTabbedPane dataFormatPane = new JTabbedPane(JTabbedPane.LEFT);
+    static int currTab = 0;
     private GridBagConstraints c;
 
     public ReadDataDialog(String title, HaploView h){
@@ -446,6 +447,8 @@ public class ReadDataDialog extends JDialog
         dataFormatPane.addTab("HapMap PHASE",phaseTab);
         dataFormatPane.addTab("HapMap Download",downloadTab);
         dataFormatPane.addTab("PLINK Format",plinkTab);
+        //Set the selected Tab so you go back to the tab you were previously in
+        dataFormatPane.setSelectedIndex(currTab);
 
         //Bottom pane with the OK button
         JButton okButton = new JButton("OK");
@@ -547,6 +550,10 @@ public class ReadDataDialog extends JDialog
         }
         else if (command.equals("OK")){
 
+            //Set the Tab that was last accessed
+            currTab = dataFormatPane.getSelectedIndex();
+
+
             //workaround for dumb Swing can't requestFocus until shown bug
             //this one seems to throw a harmless exception in certain versions of the linux JRE
             try{
@@ -557,7 +564,7 @@ public class ReadDataDialog extends JDialog
                     }});
             }catch (RuntimeException re){
             }
-            int currTab = dataFormatPane.getSelectedIndex();
+
             if (currTab == 0){
                 fileType = PED_FILE;
             }else if (currTab == 1){
