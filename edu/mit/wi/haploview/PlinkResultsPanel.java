@@ -687,7 +687,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 genericFilters = new Vector();
                 changeContents();
             }else if (command.equals("Done")){
-                for (int i = 0; i < checks.length; i++){
+                for (int i = checks.length-1; i >=0; i--){
                     if (!checks[i].isSelected()){
                         genericFilters.remove(i);
                     }
