@@ -595,18 +595,20 @@
 
                 <para>Directly below the marker list are buttons to quickly manipulate the table above.  Use "Include All"
                     to check all of the "Force Include" boxes, and "Exclude All" to check all of the "Force Exclude" boxes.
-                    "Uncapture All" will uncheck the "Capture this Allele?" column for all markers, and "Reset Table"
+                    "Uncapture All" will uncheck the "Capture this Allele?" column for all markers, "Exclude A/T and C/G SNPs"
+                    will exclude check the "Force Exclude" boxes for SNPs with strand issues, and "Reset Table"
                     will return the table to its initial state. Beneath these buttons are several additional tagging options.
                     You can choose from among pairwise and two aggressive tagging strategies discussed above.
                     You can also set the r<superscript>2</superscript> and LOD thresholds as previously mentioned.
                     Additionally, you can specify the maximum number of tags to pick, as well as the minumum distance
                     (in base pairs) between picked tags. You can load a set of SNPs to include or exclude using the
                     "Load Includes" and "Load Excludes" buttons. These buttons take in a file with a single column
-                    of SNPs to include or exclude. The "Alleles to Capture" button also takes in a file with a single
-                    column of SNPs to be captured. Design scores can also be loaded in using the "Design Scores" button.
-                    Design score files should contain two columns containing the SNP and the design score to assign to
-                    that SNP. Clicking "Run Tagger" will run the tagging algorithm. When finished it will switch from
-                    the Configuration to the Results Panel.</para>
+                    of SNPs to include or exclude.  The "Alleles to Capture" button also takes in a file with a single column of SNPs to be captured.
+                    Design scores can also be loaded in using the "Design Scores" button. Design score files should contain
+                    two columns containing the SNP and the design score to assign to that SNP. A minimum design score threshold
+                    can also be specified. All of the Tagger thresholds can be reset to their default values using the
+                    "Reset Thresholds" button. Clicking "Run Tagger" will run the tagging algorithm. When finished it will
+                    switch from the Configuration to the Results Panel.</para>
             </section>
 
             <section><title>Tagger Results Panel</title>
@@ -771,13 +773,17 @@
                 load in additional columns using the "Load Additional Results" button.</para>
 
             <para>
-                Filtering options include chromosome and position.  The "Filter1" and "Filter2" dropdown boxes can be used to
-                further filter on any unrecognized columns in the table.  All filters are jointly applied (logically equivalent to
-                an "AND" operator as opposed to an "OR").  You can also go directly to a specified marker name in the table using the 
-                "Go" button on the second row, and remove columns from the table by selecting a column from the "Remove Columns:"
-                dropdown menu and using the adjacent "Remove" button.  The "Reset" button can be used to revert the table and
-                filters back to their original state (though the sorting state is retained).  Please note that non-SNP based files
-                which can be loaded in without a map file do not have the chromosomal or marker filters.
+                Filtering options include chromosome and position.  The "Filter" dropdown box can be used to
+                further filter on any unrecognized columns in the table.  Multiple filters can be applied consecutively
+                by changing the filter options and pressing the "Filter" button.  Currently active filters can be viewed
+                using the "View X Active Filters" button where X is the number of currently active filters.  This will open
+                a small popup window where filters can be viewed, added, or removed as needed.  All filters are jointly applied
+                (logically equivalent to an "AND" operator as opposed to an "OR").  You can also go directly to a specified
+                marker name in the table using the "Go" button on the second row, and remove columns from the table by selecting
+                a column from the "Remove Columns:" dropdown menu and using the adjacent "Remove" button.  The "Reset" button can
+                be used to revert the table and filters back to their original state (though the sorting state is retained).
+                Please note that non-SNP based files which can be loaded in without a map file do not have the chromosomal or
+                marker filters.
             </para>
 
             <para>
@@ -962,16 +968,28 @@ FAM1    FAM1F02    3    h    1    2</screen>
 
                     </glossdef></glossentry>
 
-                <glossentry id="phase"><glossterm>PHASE Format</glossterm>
+                <glossentry id="phase"><glossterm>HapMap PHASE Format</glossterm>
                     <glossdef>
-                        <para>Data in the HapMap <emphasis>PHASE</emphasis> format can be loaded into
+                        <para>Data in the <emphasis>HapMap PHASE</emphasis> format can be loaded into
                             Haploview using three separate files.  The first is the data file containing
                             binary allele information.  The second is a sample file containing a single
                             column of the individual IDs used in the dataset.  The third is a legend
                             file containing four columns: marker, position, 0, and 1.  Only the legend
                             file requires a header and is used to decode the information in
                             the data file.  These files can be loaded in as GZIP compressed files using the
-                            "Files are GZIP compressed" checkbox on the initial loading screen.</para>
+                            "Files are GZIP compressed" checkbox on the initial loading screen.  For more
+                            information on the HapMap PHASE format, please see the
+                            <ulink url="http://www.hapmap.org/downloads/phasing/2007-08_rel22/phased/00README.txt">HapMap PHASE readme</ulink>.</para>
+                    </glossdef></glossentry>
+
+                 <glossentry id="hapmapdownload"><glossterm>HapMap Download</glossterm>
+                    <glossdef>
+                        <para>Data in the <emphasis>HapMap PHASE</emphasis> format can also be automatically
+                            downloaded into Haploview using the "HapMap Download" tab in the load screen by
+                            specifying the HapMap Release, chromosome, analysis panel, and start and end positions
+                            (in kb).  These options can also be automatically filled in by querying the GeneCruiser
+                            database with a gene or SNP ID.  More information about the GeneCruiser database can be
+                            found at the <ulink url="http://genecruiser.broad.mit.edu/">GeneCruiser website</ulink>.</para>
                     </glossdef></glossentry>
 
                 <glossentry id="info"><glossterm>Marker Information File</glossterm>
@@ -1007,7 +1025,7 @@ marker03 191287</screen>
                             choose to only load in one chromosome from your results file using the "Only load results from Chromosome"
                             checkbox and selecting a chromosome from the dropdown list.  You can also select which columns to load
                             from your results file by checking the "Select Columns" checkbox.  For a great deal more information
-                            on PLINK outputs, please see Shaun Purcell's <ulink url="http://pngu.mgh.harvard.edu/~purcell/plink/index.shtml">PLINK website</ulink></para>.
+                            on PLINK outputs, please see Shaun Purcell's <ulink url="http://pngu.mgh.harvard.edu/~purcell/plink/index.shtml">PLINK website</ulink>.</para>
                     </glossdef></glossentry>
 
                 <glossentry id="batch"><glossterm>Batch Load File</glossterm>
@@ -1255,7 +1273,9 @@ BLOCK 2.  MARKERS: 10 11 12
             <para>There is also an option to generate a "compressed" LD PNG,
                 which is useful for very large datasets. The image is shrunk
                 to an arbitrary zoom level which allows Haploview to save the PNG
-                with minimal memory usage.</para>
+                with minimal memory usage. Images can also be exported as high
+                quality SVG files for use in publication.  Please note that SVG
+                images are quite large and may require a large amount of memory.</para>
         </section>
 
         <section id = "auxinput">
@@ -1352,6 +1372,9 @@ marker9</screen>
                 <glossentry><glossterm>-log &lt;filename&gt;</glossterm>
                     <glossdef><para>Outputs logfile information to specified filename (defaults to haploview.log if no name specified)</para></glossdef></glossentry>
 
+                <glossentry><glossterm>-out &lt;fileroot&gt;</glossterm>
+                    <glossdef><para>Specify a fileroot to be used for all output files</para></glossdef></glossentry>
+
                 <glossentry><glossterm>-memory &lt;memsize&gt;</glossterm>
                     <glossdef><para>Allocate &lt;memsize&gt; megabytes of memory to the Haploview process (default is 512MB).</para></glossdef></glossentry>
             </glosslist>
@@ -1389,7 +1412,7 @@ marker9</screen>
                     </glossdef></glossentry>
 
                 <glossentry><glossterm>-hapmapDownload</glossterm>
-                    <glossdef><para>Specify a phased HapMap download.  This option works in GUI mode. </para></glossdef></glossentry>
+                    <glossdef><para>Specify a <link linkend="hapmapdownload">phased HapMap download</link>.  This option works in GUI mode. </para></glossdef></glossentry>
 	
                 <glossentry><glossterm>-haps &lt;filename&gt;</glossterm>
                     <glossdef><para>Specify a <link linkend="haps">phased</link> input file (or http:// location). This option works in GUI mode.</para></glossdef></glossentry>
@@ -1424,7 +1447,7 @@ marker9</screen>
                 <glossentry><glossterm>-endpos &lt;integer&gt;</glossterm>
                     <glossdef><para>Specify the end position in kb for phased HapMap downloads.</para></glossdef></glossentry>
 
-                <glossentry><glossterm>-release &lt;16a,21&gt;</glossterm>
+                <glossentry><glossterm>-release &lt;16a,21,22&gt;</glossterm>
                     <glossdef><para>Specify the HapMap release version for phased HapMap downloads (defaults to 21).</para></glossdef></glossentry>
 
                 <glossentry><glossterm>-gzip</glossterm>
@@ -1508,6 +1531,9 @@ marker9</screen>
                 <glossentry><glossterm>-compressedpng</glossterm>
                     <glossdef><para>Output low-resolution (smaller file) PNG image of LD display to &lt;inputfile&gt;.LD.PNG</para></glossdef></glossentry>
 
+                <glossentry><glossterm>-svg</glossterm>
+                    <glossdef><para>Output svg format of LD display to &lt;inputfile&gt;.LD.SVG</para></glossdef></glossentry>
+
                 <glossentry><glossterm>-infoTrack</glossterm>
                     <glossdef><para>Include HapMap info track in PNG image outputs</para></glossdef></glossentry>
 
@@ -1562,6 +1588,8 @@ marker9</screen>
                     <glossdef><para>Capture only the alleles contained in a file (or http:// location) of one marker name per line.</para></glossdef></glossentry>
                 <glossentry><glossterm>-designScores &lt;file&gt;</glossterm>
                     <glossdef><para>Specify design scores in a file (or http:// location) of one marker name and one score per line.</para></glossdef></glossentry>
+                <glossentry><glossterm>-mindesignscore &lt;threshold&gt;</glossterm>
+                    <glossdef><para>Specify a minimum design score threshold.</para></glossdef></glossentry>
                 <glossentry><glossterm>-mintagdistance &lt;distance&gt;</glossterm>
                     <glossdef><para>Specify a minimum distance in bases between picked tags.</para></glossdef></glossentry>
                 <glossentry><glossterm>-taglodcutoff &lt;thresh&gt;</glossterm>
@@ -1678,6 +1706,27 @@ marker9</screen>
 
         <section>
             <title>Change Log</title>
+
+            <section>
+                <title>Version 4.1, 11 April 2008</title>
+                <itemizedlist>
+                    <listitem>added support for GeneCruiser lookup</listitem>
+                    <listitem>added support for HapMap release 22</listitem>
+                    <listitem>added -out fileroot specification to the command line</listitem>
+                    <listitem>added consecutive filtering to PLINK with view/add/remove filters</listitem>
+                    <listitem>added SVG output for LD plot and haplotype blocks display</listitem>
+                    <listitem>added min design scores to Tagger in GUI and command line</listitem>
+                    <listitem>added reset thresholds button to Tagger</listitem>
+                    <listitem>added exclude A/T and C/G SNPs button to Tagger</listitem>
+                    <listitem>upgraded graphing packages to latest version</listitem>
+                    <listitem>changed load screen dialog tab orientation for Mac OSX</listitem>
+                    <listitem>fixed bug with LD display pop-up on certain systems</listitem>
+                    <listitem>fixed bug with HapMap info track caching</listitem>
+                    <listitem>fixed bug on LD Display with MAF of .5</listitem>
+                    <listitem>fixed bug where setting tagger cutoff fields to blank would generate exceptions</listitem>
+                    <listitem>fixed bug with PLINK View Filters dialog</listitem>
+                </itemizedlist>
+            </section>
 
             <section>
                 <title>Version 4.0, 21 August 2007</title>
