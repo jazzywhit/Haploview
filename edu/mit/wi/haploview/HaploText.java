@@ -1177,7 +1177,7 @@ public class HaploText implements Constants{
             }
 
             if (release == null){
-                release = "22";
+                release = "21";
             }
 
             if (!(release.equals("22")) && !(release.equals("21")) && !(release.startsWith("16"))){
