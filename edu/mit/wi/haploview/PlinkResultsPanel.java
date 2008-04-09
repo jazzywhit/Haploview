@@ -475,7 +475,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
             JPanel contents = new JPanel();
             contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
-            contents.setPreferredSize(new Dimension(150,200));
+            //contents.setPreferredSize(new Dimension(150,200));
 
             if (removedColumns != null){
                 if (removedColumns.size() > 0){
@@ -608,7 +608,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             super(hv,title);
             contents = new JPanel();
             contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
-            contents.setPreferredSize(new Dimension(300,150));
+            //contents.setPreferredSize(new Dimension(300,150));
 
             changeContents();
             this.setLocation(this.getParent().getX() + 100,
@@ -680,6 +680,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                             val = vField.getText();
                             genericFilters.add(columnChoice + "\t" + signChoice + "\t" + val);
                             changeContents();
+                            this.setSize(this.getWidth(),this.getHeight()+25);
+
                         }
                     }
                 }
