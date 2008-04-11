@@ -1708,7 +1708,7 @@ marker9</screen>
             <title>Change Log</title>
 
             <section>
-                <title>Version 4.1, 11 April 2008</title>
+                <title>Version 4.1, 18 April 2008</title>
                 <itemizedlist>
                     <listitem>added support for GeneCruiser lookup</listitem>
                     <listitem>added support for HapMap release 22</listitem>
@@ -1725,6 +1725,7 @@ marker9</screen>
                     <listitem>fixed bug on LD Display with MAF of .5</listitem>
                     <listitem>fixed bug where setting tagger cutoff fields to blank would generate exceptions</listitem>
                     <listitem>fixed bug with PLINK View Filters dialog</listitem>
+                    <listitem>fixed bug with PLINK file column number mismatches</listitem>
                 </itemizedlist>
             </section>
 
