@@ -180,7 +180,7 @@ public class Plink {
                 markerColumn = colIndex;
             }else if (column.equalsIgnoreCase("CHR")){
                 chromColumn = colIndex;
-            }else if (column.equalsIgnoreCase("POS")||column.equalsIgnoreCase("POSITION")){
+            }else if (column.equalsIgnoreCase("POS") || column.equalsIgnoreCase("POSITION") || column.equalsIgnoreCase("BP")){
                 positionColumn = colIndex;
             }else{
                 if (columnFilter != null){
@@ -399,6 +399,9 @@ public class Plink {
                 }
                 int tokenNumber = 0;
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
+                if (tokenizer.countTokens() != numColumns){
+                    throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
+                }
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
                     if (filteredColIndex[tokenNumber]){
@@ -416,10 +419,6 @@ public class Plink {
                         }
                     }
                     tokenNumber++;
-                }
-
-                if (tokenNumber != numColumns){
-                    throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
                 }
 
                 AssociationResult result = new AssociationResult(lineNumber,values);
@@ -470,7 +469,7 @@ public class Plink {
                 }else if (column.equalsIgnoreCase("CHR")){
                     chromColumn = numColumns;
                     numColumns++;
-                }else if (column.equalsIgnoreCase("POS") || column.equalsIgnoreCase("POSITION")){
+                }else if (column.equalsIgnoreCase("POS") || column.equalsIgnoreCase("POSITION") || column.equalsIgnoreCase("BP")){
                     posColumn = numColumns;
                     numColumns++;
                 }else{
@@ -532,6 +531,9 @@ public class Plink {
                 }
                 int tokenNumber = 0;
                 StringTokenizer tokenizer = new StringTokenizer(wgaLine);
+                if (tokenizer.countTokens() != numColumns){
+                    throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
+                }
                 String marker = null;
                 Vector values = new Vector();
                 while(tokenizer.hasMoreTokens()){
@@ -565,9 +567,6 @@ public class Plink {
                     tokenNumber++;
                 }
 
-                if (tokenNumber != numColumns){
-                    throw new PlinkException("Inconsistent column number on line " + (lineNumber+1));
-                }
 
                 AssociationResult currentResult;
 

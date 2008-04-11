@@ -1066,7 +1066,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     while (ct.hasMoreTokens()){
                         String currentCol = ct.nextToken();
                         if (Options.getSNPBased()){
-                            if (!currentCol.equalsIgnoreCase("SNP") && !currentCol.equalsIgnoreCase("CHR") && !currentCol.equalsIgnoreCase("POS") && !currentCol.equalsIgnoreCase("POSITION")){
+                            if (!currentCol.equalsIgnoreCase("SNP") && !currentCol.equalsIgnoreCase("CHR") && !currentCol.equalsIgnoreCase("POS") && !currentCol.equalsIgnoreCase("POSITION") && !currentCol.equalsIgnoreCase("BP")){
                                 colChoices.add(currentCol);
                             }
                         }else{
