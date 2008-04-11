@@ -180,7 +180,7 @@ public interface Constants {
             "-panel <CEU,YRI,CHB+JPT>        Specifies the analysis panel for this HapMap download\n" +
             "-startpos <integer>             Specifies the start position in kb for this HapMap download\n" +
             "-endpos <integer>               Specifies the end position in kb for this HapMap download\n" +
-            "-release <16a,21,22>            Specifies the HapMap phase for this HapMap download (defaults to 22)\n" +
+            "-release <16a,21,22>            Specifies the HapMap phase for this HapMap download (defaults to 21)\n" +
             "-dprime                         Outputs LD text to <fileroot>.LD\n" +
             "-png                            Outputs LD display to <fileroot>.LD.PNG\n"+
             "-compressedpng                  Outputs compressed LD display to <fileroot>.LD.PNG\n"+
