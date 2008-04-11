@@ -133,7 +133,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         if (dups){
             moreResults.setEnabled(false);
         }
-        JButton fisherButton = new JButton("Combine P-Values");
+        JButton fisherButton = new JButton("Fisher Combine P-Values");
         fisherButton.addActionListener(this);
 
         JButton plotButton = new JButton("Plot");
@@ -445,8 +445,8 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 hv.setRemovedColumns(removedColumns);
             }
             hv.readWGA(inputs);
-        }else if (command.equals("Combine P-Values")){
-            FisherCombinedDialog fcd = new FisherCombinedDialog("Fisher Combine");
+        }else if (command.equals("Fisher Combine P-Values")){
+            FisherCombinedDialog fcd = new FisherCombinedDialog("Combine");
             fcd.pack();
             fcd.setVisible(true);
         }else if (command.equals("View Active Filters")){
