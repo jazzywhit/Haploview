@@ -4,13 +4,13 @@ package edu.mit.wi.haploview;
 public interface Constants {
 
     //main jframe setup stuff & labels.
-    public static final double VERSION = 4.0;
+    public static final double VERSION = 4.1;
     public static final int BETA_VERSION = 0;
     public static final String EMAIL_STRING = "haploview@broad.mit.edu";
     public static final String TITLE_STRING = "Haploview "+VERSION;
     public static final String JAVA_VERSION = System.getProperty("java.version");
     public static final String USER_AGENT = "Haploview/" + VERSION + " Java/" + JAVA_VERSION;
-    public static final String RELEASE_DATE = "21 August, 2007";
+    public static final String RELEASE_DATE = "29 April, 2008";
     public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
     public static final String BETA_WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/beta.php";
     public static final String CITATION_STRING = "Citation: Barrett JC, Fry B, Maller J, Daly MJ.\nHaploview: analysis and visualization of LD and haplotype maps.\nBioinformatics. 2005";
@@ -19,8 +19,9 @@ public interface Constants {
             "Daly Lab at the Broad Institute\n" +
             "Cambridge, MA 02141, USA\n\n"+
             "Jeffrey Barrett\n" +
-            "Julian Maller\n" +
-            "David Bender\n" +
+            "Julian B. Maller\n" +
+            "David J. Bender\n" +
+            "Jesse C. Whitworth\n" +
             EMAIL_STRING;
 
     public static final String READ_GENOTYPES = "Open new data";
