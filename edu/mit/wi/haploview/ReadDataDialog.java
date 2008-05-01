@@ -55,16 +55,6 @@ public class ReadDataDialog extends JDialog
     public ReadDataDialog(String title, HaploView h){
         super(h, title);
 
-        try{
-            //OSX has problem displaying left sided tabs
-            if (System.getProperty("os.name").contains("Mac OS X") == true){
-
-                dataFormatPane.setTabPlacement(JTabbedPane.TOP);
-
-            }
-        }catch(RuntimeException rte){
-        }
-
         //Ped Tab Objects
         pedFileField = new JTextField(20);
         JButton browsePedFileButton = new JButton("Browse");
