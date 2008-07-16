@@ -4,9 +4,10 @@ package edu.mit.wi.haploview;
 public interface Constants {
 
     //main jframe setup stuff & labels.
+    public final boolean DEBUG = false;
     public static final double VERSION = 4.1;
     public static final int BETA_VERSION = 0;
-    public static final String EMAIL_STRING = "haploview@broad.mit.edu";
+    public static final String EMAIL_STRING = "haploaview@broad.mit.edu";
     public static final String TITLE_STRING = "Haploview "+VERSION;
     public static final String JAVA_VERSION = System.getProperty("java.version");
     public static final String USER_AGENT = "Haploview/" + VERSION + " Java/" + JAVA_VERSION;
@@ -126,6 +127,7 @@ public interface Constants {
     static final String[] CHROM_NAMES = {"1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"};
     static final String[] PANEL_NAMES = {"CEU", "YRI", "CHB+JPT"};
+    static final String[] VERSION_HAPMAP = {"HapMap 2", "HapMap 3"};
     static final String[] PANEL_NAMES_HAPMAP3 = {"ASW", "CEU", "CHB", "CHD", "GIH", "JPT", "LWK", "MEX", "MKK", "TSI", "YRI"};
     static final String[] RELEASE_NAMES = {"16a","21","22"};
     //static final String[] PHASE_FORMATS = {"HapMap PHASE","fastPHASE"};
@@ -243,3 +245,4 @@ public interface Constants {
             ;
 
 }
+
