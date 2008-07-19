@@ -1,3 +1,9 @@
+/////////////////////////////////////////////
+// Created with IntelliJ IDEA.             //
+// User: Jesse Whitworth                   //
+// Date: Apr 11, 2008                      //
+// Time: 1:30:17 PM                        //
+/////////////////////////////////////////////
 package edu.mit.wi.haploview.genecruiser;
 
 import org.apache.axiom.om.*;
@@ -13,13 +19,13 @@ import java.net.URL;
 import javax.xml.stream.*;
 
 import edu.mit.wi.haploview.HaploViewException;
+import edu.mit.wi.haploview.Constants;
 
 /**
  * Connects with the Genecruiser server via HTTP request for obtaining an XML file with relevant data. Also parses said XML data.
  * @author Jesse Whitworth
  */
-
-public class GeneCruiser {
+public class GeneCruiser implements Constants {
 
     private
 //    String origNamespace = "http://service.genecruiser.org/xsd";
@@ -30,14 +36,12 @@ public class GeneCruiser {
     Logger logger = Logger.getRootLogger();
     int procCount = 0;
     int depthCount = 0;
+    int searchType = -1;
     String geneId = "", displayName, IdType;
     String majorTree = "";
     String currId = "", currIdType = "", currIdDisplayName = "";
-
-
-    public
-//    gcGene currentGene = null;
     Vector<gcSNP> SNPs = new Vector<gcSNP>();
+    Vector<gcGene> Genes = new Vector<gcGene>();
     double Start = 0, End = 0;
 
 
@@ -50,6 +54,7 @@ public class GeneCruiser {
 
     public GeneCruiser(int searchType, String searchID) throws HaploViewException{
 
+        this.searchType = searchType;
         BasicConfigurator.configure();
         logger.setLevel(Level.OFF);
         String address;
@@ -59,15 +64,27 @@ public class GeneCruiser {
 
             if (searchType == 0){//For ENSMBL Searches        ENSG00000114784
                 address = "http://" + host + "/rest/variation/byGenomicId?idType=ensembl_gene_stable_id&id=" + searchID + "&firstResult=" + firstResult + "&email=" + email;
-                majorTree = "VariationQueryResult";
+                majorTree = "VariationQueryResults";
 
             }else if (searchType == 1){  //For HUGO Searches      1100
                 address = "http://" + host + "/rest/variation/byGenomicId?idType=HUGO&id=" + searchID + "&firstResult=" + firstResult + "&email=" + email;
-                majorTree = "VariationQueryResult";
+                majorTree = "VariationQueryResults";
 
-            }else if (searchType ==2){//For SNP Searches    rs5004340
+            }else if (searchType == 2){//For SNP Searches    rs5004340
                 address = "http://" + host + "/rest/variation/byName?name=" + searchID + "&firstResult=" + firstResult + "&email=" + email;
-                majorTree = "Source";
+                majorTree = "Variations";
+
+            }else if (searchType == 3){//For Region Searches    6:1234-5678+7:1234-5678
+
+                address = "http://" + host + "/rest/variation/byLocation?locations=" + searchID + "&firstResult=" + firstResult + "&email=" + email;
+                majorTree = "Variations";
+
+            }else if (searchType == 4){//For searching flanking regions
+
+                //http://genecruiser.broad.mit.edu/genecruiser3_services/rest/gene/byVariationIdFivePrimeThreePrime?id=rs12949853&fivePrimeSize=1000&threePrimeSize=100000&firstResult=0&email=haploview@broad.mit.edu
+                // searchID = rs12949853&fivePrimeSize=1000&threePrimeSize=100000    .... this is the format to follow
+                address = "http://" + host + "/rest/gene/byVariationIdFivePrimeThreePrime?id=" + searchID + "&firstResult=" + firstResult + "&email=" + email;
+                majorTree = "GeneByVariationIdResults";
 
             }else{
                 throw new HaploViewException("Search Type Required for Genecruiser");
@@ -75,16 +92,9 @@ public class GeneCruiser {
         }else{
             throw new HaploViewException("Please Enter a Search Query");
         }
-        //DEBUGGING FOR MULTIPLE GENES
-//        address = "http://genecruiser.broad.mit.edu/genecruiser3_services/rest/variation/byLocation?locations=6:1234-5678+7:1234-5678&firstResult=0&email=haploview@broad.mit.edu";
-//        majorTree = "Variation";
-        collectData(address);
 
-        //ENABLE FOR DEBUGGING
-//        for (int i = 0; i < SNPs.size(); i++){
-//
-//            SNPs.get(i).print();
-//        }
+        System.out.println(address);
+        collectData(address);
     }
 
 
@@ -110,12 +120,26 @@ public class GeneCruiser {
             OMElement docElement =  builder.getDocumentElement();
 
             //Check the document to make sure it is of the correct type
+
             if (docElement.getType() == 1){
                 Iterator iter = docElement.getChildren();
                 NamespaceNav(iter);
             }
 
-//            displayData();
+            if(DEBUG){
+                System.out.println("\n\n --------------------------------------");
+                System.out.println("Printing SNPs\n");
+                System.out.println("--------------------------------------\n\n");
+                for(int i = 0; i < SNPs.size(); i++){
+                    SNPs.get(i).print();
+                }
+                System.out.println("\n\n --------------------------------------");
+                System.out.println("Printing Genes\n");
+                System.out.println("--------------------------------------\n\n");
+                for(int i = 0; i < Genes.size(); i++){
+                    Genes.get(i).print();
+                }
+            }
 
         }catch(IOException ioe){
             throw new HaploViewException("Error Connecting to GeneCruiser");
@@ -137,9 +161,11 @@ public class GeneCruiser {
         while (!iter.hasNext()){
             if (HasChildren(currentNode)){
                 //Looking for main Level
+                if(((OMElement)currentNode).getLocalName().trim().equals(majorTree)){
+                    break;
+                }
                 iter = ((OMElement)currentNode).getChildren();
                 currentNode = (OMNode)iter.next();
-
             }else{
                 break;
             }
@@ -147,59 +173,7 @@ public class GeneCruiser {
 
         //Check that the main Level is viable
         if(currentNode.getType()==1){
-            while(iter.hasNext()){
-                CaptureNode((OMNode)iter.next());
-            }
-        }
-    }
-
-    /**
-     * Locates a SNP in the data
-     * @param variationName
-     * @return
-     */
-    public int findSNP(String variationName){
-
-        for(int i = 0; i < SNPs.size(); i++){
-
-            if (((gcSNP)SNPs.get(i)).getVariationName().equalsIgnoreCase(variationName.trim()))
-            {return i;}
-        }
-        return -1;
-    }
-
-    /**
-     * Checks if a SNP is contained in the data
-     * @param variationName
-     * @return
-     */
-    public boolean contains(String variationName){
-        if(findSNP(variationName)==-1){
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Returns the size of collected SNPs
-     * @return
-     */
-    public int size(){
-        return SNPs.size();
-    }
-
-    /**
-     * Deletes a SNP of your choosing
-     * @param variationName
-     * @return
-     */
-    public boolean deleteSNP(String variationName){
-        int index = findSNP(variationName);
-        if(index==-1){
-            return false;
-        }else{
-            SNPs.remove(index);
-            return true;
+            CaptureNode(currentNode);
         }
     }
 
@@ -210,36 +184,28 @@ public class GeneCruiser {
      */
     private void CaptureNode(OMNode inputNode)throws HaploViewException{
 
-        OMNode childrenNode;
+        Iterator iter = ((OMElement)inputNode).getChildren();
+        while(iter.hasNext()){
 
-        if (((OMElement)inputNode).getLocalName().equalsIgnoreCase(majorTree)){
-            if(majorTree.equals("Variation")){
-                //Main Level contains only SNPs
-                Iterator iter = (inputNode.getParent()).getChildren();
+            if (searchType == 0){
 
-                while (iter.hasNext()){
-                    CaptureVariation((OMNode)iter.next());
-                }
-            }else if(majorTree.equals("Source")){
-                //Main Level contains a single SNP
-                CaptureVariation((OMNode)inputNode.getParent());
+                captureGene((OMElement)iter.next());
 
-            }else{
-                //Main Level contains Gene information
-                Iterator branch = ((OMElement)inputNode).getChildren();
+            }else if (searchType == 1){
 
-                while (branch.hasNext()){
-                    childrenNode = (OMNode)branch.next();
+                captureGene((OMElement)iter.next());
 
-                    if (((OMElement)childrenNode).getLocalName().trim().equalsIgnoreCase("QueryParameter")){
-                        captureGene(childrenNode);
+            }else if (searchType == 2){
 
-                    }
-                    if(((OMElement)childrenNode).getLocalName().trim().equalsIgnoreCase("Variation")){
-                        CaptureVariation(childrenNode);
+                CaptureVariation((OMElement)iter.next());
 
-                    }
-                }
+            }else if (searchType == 3){
+                CaptureVariation((OMElement)iter.next());
+
+            }else if (searchType == 4){
+
+                CaptureFlanking((OMElement)iter.next());
+
             }
         }
     }
@@ -270,6 +236,7 @@ public class GeneCruiser {
         try{
         while (childList.hasNext()) {
             OMNode currentNode = (OMNode)childList.next();
+            OMElement temp = (OMElement)currentNode;
 
             //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
             if (((OMElement)currentNode).getLocalName().equals("VariationName")){
@@ -310,26 +277,75 @@ public class GeneCruiser {
      * @param inputNode A node that has children containing the SNPs in a gene
      * @throws HaploViewException
      */
-    private void captureGene(OMNode inputNode) throws HaploViewException{
-        Iterator childList = ((OMElement)inputNode).getChildren();
+    private void captureGene(OMElement inputNode) throws HaploViewException{
+
+        System.out.println(inputNode.getLocalName());
+        Iterator childList = inputNode.getChildren();
+        String GeneId = "", Description= "", Source= "", BioType= "", Chromosome= "", Strand= "", StableID= "", Start= "0", End= "0";
+        Vector<String> GenomicIds;
 
         while (childList.hasNext()){
-            OMNode currentNode = (OMNode)childList.next();
 
-            //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
-            if (((OMElement)currentNode).getLocalName().equals("Id")){
-                currId = ((OMElement)currentNode).getText();
+            OMElement currentNode = (OMElement)childList.next();
+            if (currentNode.getLocalName().equals("QueryParameter")){
+                Iterator grandchildList = currentNode.getChildren();
+                while (grandchildList.hasNext()){
+                    OMElement secondNode = (OMElement)grandchildList.next();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("IdType")){
-                currIdType = ((OMElement)currentNode).getText();
+                    //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
+                    if (secondNode.getLocalName().equals("Id")){
+                        currId = secondNode.getText();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("IdDisplayName")){
-                currIdDisplayName = ((OMElement)currentNode).getText();
+                    }else if (secondNode.getLocalName().equals("IdType")){
+                        currIdType = secondNode.getText();
 
+                    }else if (secondNode.getLocalName().equals("IdDisplayName")){
+                        currIdDisplayName = secondNode.getText();
+                    }
+                }
+            }else if(currentNode.getLocalName().equals("Variation")){
+                CaptureVariation(currentNode);
             }
         }
     }
+    private void CaptureFlanking(OMNode inputNode) throws HaploViewException{
 
+        Iterator childList = ((OMElement)inputNode).getChildren();
+        String GeneId = "", Description= "", Source= "", BioType= "", Chromosome= "", Strand= "", StableID= "", Start= "0", End= "0";
+        Vector<String> GenomicIds;
+
+        while (childList.hasNext()){
+            OMNode currentNode = (OMNode)childList.next();
+            if (((OMElement)currentNode).getLocalName().equals("Gene")){
+                Iterator grandchildList = ((OMElement)currentNode).getChildren();
+                while (grandchildList.hasNext()){
+                    OMElement secondNode = (OMElement)grandchildList.next();
+
+                    //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
+                    if (secondNode.getLocalName().equals("GeneId")){
+                        GeneId = secondNode.getText();
+                    }else if (secondNode.getLocalName().equals("Description")){
+                        Description = secondNode.getText();
+                    }else if (secondNode.getLocalName().equals("Source")){
+                        Source = secondNode.getText();
+                    }else if (secondNode.getLocalName().equals("Biotype")){
+                        BioType = secondNode.getText();
+                    }else if (secondNode.getLocalName().equals("Chromosome")){
+                        Chromosome = secondNode.getText();
+                    }else if (secondNode.getLocalName().equals("Start")){
+                        Start = secondNode.getText();
+                    }else if (secondNode.getLocalName().equals("End")){
+                        End = secondNode.getText();
+                    }else if (secondNode.getLocalName().equals("Strand")){
+                        Strand = secondNode.getText();
+                    }else if (secondNode.getLocalName().equals("StableId")){
+                        StableID = secondNode.getText();
+                    }
+                }
+            }
+        }
+        Genes.add(new gcGene(GeneId, Description, Source, BioType, Chromosome, Start, End, Strand, StableID)); /*, Vector<String> GenomicIds*/
+    }
     /**
      * Locate the first instance of a Gene
      * @param Id Requested geneID
@@ -348,16 +364,97 @@ public class GeneCruiser {
             }
             return -1;
         }catch (NullPointerException npe){
-
             throw new HaploViewException("Error Reading Genecruiser Data; findGene");
-
         }
     }
 
+
+
+    /////////////////////////////////////////////////////////
+    //                SNP FUNCTIONS                        //
+    /////////////////////////////////////////////////////////
+
+    public Vector<gcSNP> getSNPs(){
+
+        return SNPs;
+
+    }
+    public gcSNP getSNP(int i)throws HaploViewException{
+
+        if (SNPs.size() >= i)
+            return SNPs.get(i);
+        else
+            throw new HaploViewException("There is no SNP at this location");
+    }
+
     /**
-     * @return Start of the Gene, on one chromosome
-     * @throws HaploViewException
+     * Locates a SNP in the data
+     * @param variationName
+     * @return
      */
+    public int findSNP(String variationName){
+
+        for(int i = 0; i < SNPs.size(); i++){
+
+            if ((SNPs.get(i)).getVariationName().equalsIgnoreCase(variationName.trim()))
+            {return i;}
+        }
+        return -1;
+    }
+
+    /**
+     * Checks if a SNP is contained in the data
+     * @param variationName
+     * @return
+     */
+    public boolean contains(String variationName){
+        if(findSNP(variationName)==-1){
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns the size of collected SNPs
+     * @return
+     */
+    public int size(){
+        if (SNPs.size() > 0)
+            return SNPs.size();
+        else if(Genes.size() > 0)
+            return Genes.size();
+        else
+            return 0;
+    }
+
+    /**
+     * Deletes a SNP of your choosing
+     * @param variationName
+     * @return
+     */
+    public boolean deleteSNP(String variationName){
+        int index = findSNP(variationName);
+        if(index==-1){
+            return false;
+        }else{
+            SNPs.remove(index);
+            return true;
+        }
+    }
+
+    public Vector<gcGene> getGenes(){
+
+        return Genes;
+    }
+
+    public gcGene getGene(int i)throws HaploViewException{
+
+        if (Genes.size() >= i)
+            return Genes.get(i);
+        else
+            throw new HaploViewException("There is no Gene at this location");
+    }
+
     public double getStart() throws HaploViewException{
 
         if(SNPs.size() > 0){
@@ -411,9 +508,4 @@ public class GeneCruiser {
         }
         return chromInt;
     }
-
-//    public void calibrateData(){
-//
-        //TODO PUT SOMETHING IN HERE TO CALIBRATE SO WHEN THERE ARE MULTIPLE GENES IT WILL KNOW, AND CAN ACT ACCORDINGLY.
-//    }
 }
