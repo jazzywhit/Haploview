@@ -17,8 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.io.BufferedWriter;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
-public class PlinkResultsPanel extends JPanel implements ActionListener, Constants {
+public class PlinkResultsPanel extends JPanel implements ActionListener, Constants, KeyListener {
     static final long serialVersionUID = -6824022261340524367L;
     private JTable table;
     private PlinkTableModel plinkTableModel;
@@ -82,7 +84,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         JPanel mainFilterPanel = new JPanel();
         JPanel extraFilterPanel = new JPanel();
-        mainFilterPanel.setMinimumSize(new Dimension(700,40));
+
         if (Options.getSNPBased()){
             mainFilterPanel.add(new JLabel("Chr:"));
             chromChooser = new JComboBox(chromNames);
@@ -95,8 +97,10 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             mainFilterPanel.add(chromEnd);
             extraFilterPanel.add(new JLabel("Goto Marker:"));
             markerField = new JTextField(8);
+            markerField.addActionListener(this);
+            markerField.addKeyListener(this);
             extraFilterPanel.add(markerField);
-            JButton doMarkerFilter = new JButton("Go");
+            JButton doMarkerFilter = new JButton("Filter Table");
             doMarkerFilter.setActionCommand("marker filter");
             doMarkerFilter.addActionListener(this);
             extraFilterPanel.add(doMarkerFilter);
@@ -113,11 +117,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         JButton doFilter = new JButton("Filter");
         doFilter.addActionListener(this);
         mainFilterPanel.add(doFilter);
-        viewFilters = new JButton("View Active Filters");
-        viewFilters.setActionCommand("View Active Filters");
-        viewFilters.addActionListener(this);
-        viewFilters.setEnabled(false);
-        mainFilterPanel.add(viewFilters);
+
 
         extraFilterPanel.add(new JLabel("Remove Column:"));
         removeChooser = new JComboBox(plinkTableModel.getUnknownColumns());
@@ -128,12 +128,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
         JButton resetFilters = new JButton("Reset");
         resetFilters.addActionListener(this);
+
         JButton moreResults = new JButton("Load Additional Results");
         moreResults.addActionListener(this);
         if (dups){
             moreResults.setEnabled(false);
         }
-        JButton fisherButton = new JButton("Fisher Combine P-Values");
+        JButton fisherButton = new JButton("Combine P-Values");
         fisherButton.addActionListener(this);
 
         JButton plotButton = new JButton("Plot");
@@ -167,6 +168,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         a.anchor = GridBagConstraints.SOUTHEAST;
         filterPanel.add(resetFilters,a);
 
+        viewFilters = new JButton("View Active Filters");
+        viewFilters.setActionCommand("View Active Filters");
+        viewFilters.addActionListener(this);
+        viewFilters.setEnabled(false);
+        a.gridx = 4;
+        filterPanel.add(viewFilters,a);
+
 
         JPanel goPanel = new JPanel();
         JButton goButton = new JButton("<html><b>Go to Selected Region</b>");
@@ -198,16 +206,28 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     public void jumpToMarker(String marker){
+
+        boolean found = false;
+        Pattern strpattern = Pattern.compile(marker, Pattern.CASE_INSENSITIVE | Pattern.LITERAL | Pattern.DOTALL);
+        Matcher strmatcher;
+
         for (int i = 0; i < table.getRowCount(); i++){
-            String currMarker = (String) table.getValueAt(i,1);
-            if (currMarker.equalsIgnoreCase(marker)){
+
+            strmatcher = strpattern.matcher((String)table.getValueAt(i,1));
+
+            if (strmatcher.lookingAt()){
+
                 table.changeSelection(i,1,false,false);
+                found = true;
                 break;
             }
         }
-        hv.requestFocus();
-        hv.toFront();
-    }
+        if (!found){
+
+            table.clearSelection();
+
+        }
+   }
 
     public void jumpToNonSNP(String fid, String iid){
         if (plinkTableModel.getFIDColumn() != -1 && plinkTableModel.getIIDColumn() != -1){
@@ -367,19 +387,39 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     public void gotoRegion(){
         if (table.getSelectedRow() == -1){
             JOptionPane.showMessageDialog(this,
-                    "Please select a region.",
-                    "Invalid value",
+                    "Please select an item.",
+                    "No Selection",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
+
         String gotoChrom = (String)table.getValueAt(table.getSelectedRow(),0);
+        if(gotoChrom.length() < 1){
+            JOptionPane.showMessageDialog(this,
+                    "Please choose an item with a known Chromosome",
+                    "Invalid Data",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         String gotoMarker = (String)table.getValueAt(table.getSelectedRow(),1);
         long markerPosition = ((Long)(table.getValueAt(table.getSelectedRow(),2))).longValue();
+        if(gotoMarker.length() < 1){
 
-        RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,
-                this,markerPosition,"Go to Region");
-        rd.pack();
-        rd.setVisible(true);
+            System.out.println("hey there....");
+        }
+        try{
+            RegionDialog rd = new RegionDialog(hv,gotoChrom,gotoMarker,
+                    this,markerPosition,"Go to Region");
+            rd.pack();
+            rd.setVisible(true);
+        }catch (HaploViewException hve){
+            JOptionPane.showMessageDialog(this,
+                    "Chromosome Unknown",
+                    "Invalid Option",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
     }
 
     public Vector getUnknownColumns(){
@@ -423,6 +463,22 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
     }
 
+    public void keyTyped(KeyEvent e) {
+
+    }
+    public void keyPressed(KeyEvent e) {
+
+    }
+
+    public void keyReleased(KeyEvent e) {
+
+        String marker = markerField.getText();
+        if (!(marker.equals(""))){
+            jumpToMarker(marker);
+        }
+    }
+
+
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
         if (command.equals("Filter")){
@@ -445,7 +501,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
                 hv.setRemovedColumns(removedColumns);
             }
             hv.readWGA(inputs);
-        }else if (command.equals("Fisher Combine P-Values")){
+        }else if (command.equals("Combine P-Values")){
             FisherCombinedDialog fcd = new FisherCombinedDialog("Combine");
             fcd.pack();
             fcd.setVisible(true);
@@ -521,6 +577,9 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             pval5Panel.add(new JLabel("Pval 5:"));
             pval5 = new JComboBox(doubleColumns);
             pval5Panel.add(pval5);
+            JLabel fisherLabel = new JLabel("*Fisher's Combined");
+            JPanel labelPanel = new JPanel();
+            labelPanel.add(fisherLabel);
 
             JPanel choicePanel = new JPanel();
             JButton goButton = new JButton("Go");
@@ -535,6 +594,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             contents.add(pval3Panel);
             contents.add(pval4Panel);
             contents.add(pval5Panel);
+            contents.add(labelPanel);
             contents.add(choicePanel);
 
             setContentPane(contents);
@@ -598,7 +658,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
 
     class ActiveFiltersDialog extends JDialog implements ActionListener{
-	static final long serialVersionUID = 1282427101754100571L;
+    static final long serialVersionUID = 1282427101754100571L;
         JPanel contents, chPanel;
         JCheckBox[] checks;
         JComboBox gChooser, sChooser;
@@ -738,3 +798,4 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
         }
     }
 }
+
