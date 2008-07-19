@@ -93,7 +93,6 @@ public class GeneCruiser implements Constants {
             throw new HaploViewException("Please Enter a Search Query");
         }
 
-        System.out.println(address);
         collectData(address);
     }
 
