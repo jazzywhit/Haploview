@@ -51,7 +51,6 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         }
         openChrom = chromNum;
 
-
         JPanel contents = new JPanel();
         contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
         GridBagConstraints contents_grid = new GridBagConstraints();
@@ -215,17 +214,20 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         int width = 0;
         FontMetrics metrics = getFontMetrics(this.getFont());
 
-        for (int i = 0;i < gncr.size(); i++){
-            rowData = new Vector<String>();
-            rowData.addElement(gncr.getGene(i).GeneId);
-            rowData.addElement(gncr.getGene(i).Source);
-            rowData.addElement(String.valueOf((int)gncr.getGene(i).Start));
-            rowData.addElement(String.valueOf((int)gncr.getGene(i).End));
-            rowData.addElement(gncr.getGene(i).Description);
-            if(metrics.stringWidth(gncr.getGene(i).Description) > width)
-                width = metrics.stringWidth(gncr.getGene(i).Description);
-            rows.addElement(rowData);
-
+        if(gncr.size() > 0){
+            for (int i = 0;i < gncr.size(); i++){
+                rowData = new Vector<String>();
+                rowData.addElement(gncr.getGene(i).GeneId);
+                rowData.addElement(gncr.getGene(i).Source);
+                rowData.addElement(String.valueOf((int)gncr.getGene(i).Start));
+                rowData.addElement(String.valueOf((int)gncr.getGene(i).End));
+                rowData.addElement(gncr.getGene(i).Description);
+                if(metrics.stringWidth(gncr.getGene(i).Description) > width)
+                    width = metrics.stringWidth(gncr.getGene(i).Description);
+                rows.addElement(rowData);
+            }
+        }else{
+            throw new HaploViewException("No Gene Data was found in that region");
         }
 
         TableSorter sorter = new TableSorter(new gcTableModel(columnNames, rows));
@@ -254,14 +256,18 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         Vector<String> rowData;
         Vector<Vector<String>> rows = new Vector<Vector<String>>();
 
-        for (int i = 0;i < gncr.size(); i++){
-            rowData = new Vector<String>();
-            rowData.addElement(gncr.getSNP(i).getVariationName());
-            rowData.addElement(String.valueOf((int)gncr.getSNP(i).getStart()));
-            rowData.addElement(gncr.getSNP(i).getAllele());
-            rowData.addElement(gncr.getSNP(i).getStrand());
-            rowData.addElement(gncr.getSNP(i).getConsequenceType());
-            rows.addElement(rowData);
+        if(gncr.size() > 0){
+            for (int i = 0;i < gncr.size(); i++){
+                rowData = new Vector<String>();
+                rowData.addElement(gncr.getSNP(i).getVariationName());
+                rowData.addElement(String.valueOf((int)gncr.getSNP(i).getStart()));
+                rowData.addElement(gncr.getSNP(i).getAllele());
+                rowData.addElement(gncr.getSNP(i).getStrand());
+                rowData.addElement(gncr.getSNP(i).getConsequenceType());
+                rows.addElement(rowData);
+            }
+        }else{
+            throw new HaploViewException("No SNP Data was found in that region");
         }
 
         TableSorter sorter = new TableSorter(new gcTableModel(columnNames, rows));
@@ -309,16 +315,20 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         if(command.equals("GeneCruise")){
             try{
 
-                if ((Long.valueOf(startPos.getText())*1000 - Long.valueOf(gcrangeInput.getText())*1000) > 0){
-                    gcRequest = chrom + ":" + String.valueOf(Long.valueOf(startPos.getText())*1000 - Long.valueOf(gcrangeInput.getText())*1000)
-                            + "-" + String.valueOf((Long.valueOf(endPos.getText())*1000 + Long.valueOf(gcrangeInput.getText())*1000));
-                }else{
-                    gcRequest = chrom + ":0-" + String.valueOf((Long.valueOf(endPos.getText())*1000 + Long.valueOf(gcrangeInput.getText())*1000));
-                }
-
-                String tabName = gcRequest;
+                long start_pos = Long.valueOf(startPos.getText())* 1000;
+                long range = Long.valueOf(gcrangeInput.getText())* 1000;
+                long end_pos = Long.valueOf(endPos.getText())* 1000;
 
                 if(searchSnps.isSelected()){
+                    if ((start_pos - range) > 0){
+                        gcRequest = chrom + ":" + String.valueOf(start_pos - range)
+                                + "-" + String.valueOf(end_pos + range);
+                    }else{
+                        gcRequest = chrom + ":0-" + String.valueOf(end_pos + range);
+                    }
+
+                    String tabName = gcRequest;
+
                     gncr = new GeneCruiser(3,gcRequest);
                     JTable table = makeSnpTable(gncr);
                     resultsTab.add(tabName, new JScrollPane(table));
@@ -327,14 +337,33 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
                 if(searchGenes.isSelected()){
 
-                    if ((Long.valueOf(startPos.getText())*1000 - Long.valueOf(gcrangeInput.getText())*1000) > 0){
-                        gcRequest = chrom + ":" + String.valueOf(Long.valueOf(startPos.getText())*1000 - Long.valueOf(gcrangeInput.getText())*1000)
-                                + "-" + String.valueOf((Long.valueOf(endPos.getText())*1000 + Long.valueOf(gcrangeInput.getText())*1000));
+                    if ((start_pos - range) > 0){
+                        gcRequest = chrom + ":" + String.valueOf(start_pos - range)
+                                + "-" + String.valueOf(end_pos + range);
                     }else{
-                        gcRequest = chrom + ":0-" + String.valueOf((Long.valueOf(endPos.getText())*1000 + Long.valueOf(gcrangeInput.getText())*1000));
+                        gcRequest = chrom + ":0-" + String.valueOf(end_pos + range);
                     }
 
-                    gcRequest = "rs12949853&fivePrimeSize=" + Long.valueOf(gcrangeInput.getText())*1000 + "&threePrimeSize=" + Long.valueOf(gcrangeInput.getText())*1000;
+                    String tabName = gcRequest;
+                    gncr = new GeneCruiser(3,gcRequest);
+                    String best_snp = "";
+                    long average = (start_pos + end_pos)/2;
+                    long curr_dist;
+                    long best_snp_loc = 0;
+                    long least_dist = average;
+                    for (int i = 0; i < gncr.size(); i++){
+
+                        curr_dist = ((long)(gncr.getSNP(i).getStart())) - average;
+
+                        if (Math.abs(curr_dist) < least_dist){
+
+                            least_dist  = Math.abs(curr_dist);
+                            best_snp = gncr.getSNP(i).getVariationName();
+                            best_snp_loc = (long)gncr.getSNP(i).getStart();
+                        }
+                    }
+
+                    gcRequest = best_snp + "&fivePrimeSize=" + (Long.valueOf(gcrangeInput.getText())*1000 + Math.abs((start_pos - best_snp_loc))) + "&threePrimeSize=" + (Long.valueOf(gcrangeInput.getText())*1000 + Math.abs((end_pos - best_snp_loc)));
 
                     gncr = new GeneCruiser(4,gcRequest);
                     JTable table = makeGeneTable(gncr);
@@ -345,7 +374,10 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 }
                 this.repaint();
             }catch(HaploViewException hve){
-                System.out.println("Could not connect to Genecruiser");
+                JOptionPane.showMessageDialog(this,
+                        hve.getMessage(),
+                        "Connection Problem",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
         if(command.equals("Reset")){
@@ -369,7 +401,8 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 if(curr_tab_name.startsWith("Gene")){
 
                     startPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),2))/1000));
-                    endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),3))/1000));   
+                    endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),3))/1000));
+                    
                 }else{
                     startPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),1))/1000));
                     endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),1))/1000));

@@ -105,6 +105,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
             doMarkerFilter.addActionListener(this);
             extraFilterPanel.add(doMarkerFilter);
         }
+        
         mainFilterPanel.add(new JLabel("Filter:"));
         genericChooser = new JComboBox(plinkTableModel.getUnknownColumns());
         genericChooser.setSelectedIndex(-1);
