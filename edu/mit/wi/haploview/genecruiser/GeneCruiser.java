@@ -278,7 +278,6 @@ public class GeneCruiser implements Constants {
      */
     private void captureGene(OMElement inputNode) throws HaploViewException{
 
-        System.out.println(inputNode.getLocalName());
         Iterator childList = inputNode.getChildren();
 
         while (childList.hasNext()){
