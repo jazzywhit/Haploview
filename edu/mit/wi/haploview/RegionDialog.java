@@ -67,6 +67,8 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         chooserPanel.add(new JLabel("Hapmap Version"), chooserPanel_grid);
         hmpVersionChooser = new JComboBox(VERSION_HAPMAP);
         hmpVersionChooser.setSelectedIndex(0);
+        //TODO Change this when Hapmap 3 is finally enabled.
+        hmpVersionChooser.setEnabled(false);
         chooserPanel.add(hmpVersionChooser, chooserPanel_grid);
         chooserPanel_grid.gridx++;
         chooserPanel.add(new JLabel("Release:"), chooserPanel_grid);
@@ -81,6 +83,8 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         chooserPanel.add(new JLabel("Chr:"), chooserPanel_grid);
         chromChooser = new JComboBox(CHROM_NAMES);
         chromChooser.setSelectedIndex(chromNum);
+        //TODO Make this enabled by default, but disabled when we are in PlinkDataDialog
+        chromChooser.setEnabled(false);
         chooserPanel.add(chromChooser, chooserPanel_grid);
         contents.add(chooserPanel, contents_grid);
 
