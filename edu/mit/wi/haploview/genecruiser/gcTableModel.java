@@ -24,7 +24,7 @@ public class gcTableModel extends AbstractTableModel implements Constants {
         }
     }
 
-    public gcTableModel(Vector<String> columnNames, Vector<Vector<String>> data){
+    public gcTableModel(Vector columnNames, Vector data){
 
         columnNames.trimToSize();
         this.columnNames = strVec2Array(columnNames);
@@ -33,7 +33,7 @@ public class gcTableModel extends AbstractTableModel implements Constants {
         String[] curr_row;
         for(int i = 0; i < data.size(); i++){
 
-            curr_row = strVec2Array(data.get(i));
+            curr_row = strVec2Array((Vector)data.get(i));
             for (int j = 0; j < columnNames.size(); j++){
 
                 data_array[i][j] = curr_row[j];
@@ -43,11 +43,11 @@ public class gcTableModel extends AbstractTableModel implements Constants {
         this.data = data_array;
     }
 
-    public String[] strVec2Array(Vector<String> vector){
+    public String[] strVec2Array(Vector vector){
 
         String[] curr_array = new String[vector.size()];
         for (int i = 0; i < vector.size(); i++){
-            curr_array[i] = vector.get(i);
+            curr_array[i] = (String)vector.get(i);
         }
        return curr_array;
     }

@@ -40,8 +40,8 @@ public class GeneCruiser implements Constants {
     String geneId = "", displayName, IdType;
     String majorTree = "";
     String currId = "", currIdType = "", currIdDisplayName = "";
-    Vector<gcSNP> SNPs = new Vector<gcSNP>();
-    Vector<gcGene> Genes = new Vector<gcGene>();
+    Vector SNPs = new Vector();
+    Vector Genes = new Vector();
     double Start = 0, End = 0;
 
 
@@ -130,13 +130,13 @@ public class GeneCruiser implements Constants {
                 System.out.println("Printing SNPs\n");
                 System.out.println("--------------------------------------\n\n");
                 for(int i = 0; i < SNPs.size(); i++){
-                    SNPs.get(i).print();
+                    ((gcSNP)SNPs.get(i)).print();
                 }
                 System.out.println("\n\n --------------------------------------");
                 System.out.println("Printing Genes\n");
                 System.out.println("--------------------------------------\n\n");
                 for(int i = 0; i < Genes.size(); i++){
-                    Genes.get(i).print();
+                    ((gcGene)Genes.get(i)).print();
                 }
             }
 
@@ -280,8 +280,6 @@ public class GeneCruiser implements Constants {
 
         System.out.println(inputNode.getLocalName());
         Iterator childList = inputNode.getChildren();
-        String GeneId = "", Description= "", Source= "", BioType= "", Chromosome= "", Strand= "", StableID= "", Start= "0", End= "0";
-        Vector<String> GenomicIds;
 
         while (childList.hasNext()){
 
@@ -311,7 +309,6 @@ public class GeneCruiser implements Constants {
 
         Iterator childList = ((OMElement)inputNode).getChildren();
         String GeneId = "", Description= "", Source= "", BioType= "", Chromosome= "", Strand= "", StableID= "", Start= "0", End= "0";
-        Vector<String> GenomicIds;
 
         while (childList.hasNext()){
             OMNode currentNode = (OMNode)childList.next();
@@ -356,7 +353,7 @@ public class GeneCruiser implements Constants {
         try{
             for(int i = 0; i < SNPs.size(); i++){
 
-                if ((SNPs.get(i)).getId().equalsIgnoreCase(Id.trim()))
+                if (((gcSNP)(SNPs.get(i))).getId().equalsIgnoreCase(Id.trim()))
                 {
                     return i;
                 }
@@ -373,7 +370,7 @@ public class GeneCruiser implements Constants {
     //                SNP FUNCTIONS                        //
     /////////////////////////////////////////////////////////
 
-    public Vector<gcSNP> getSNPs(){
+    public Vector getSNPs(){
 
         return SNPs;
 
@@ -381,7 +378,7 @@ public class GeneCruiser implements Constants {
     public gcSNP getSNP(int i)throws HaploViewException{
 
         if (SNPs.size() >= i)
-            return SNPs.get(i);
+            return (gcSNP)SNPs.get(i);
         else
             throw new HaploViewException("There is no SNP at this location");
     }
@@ -395,7 +392,7 @@ public class GeneCruiser implements Constants {
 
         for(int i = 0; i < SNPs.size(); i++){
 
-            if ((SNPs.get(i)).getVariationName().equalsIgnoreCase(variationName.trim()))
+            if (((gcSNP)(SNPs.get(i))).getVariationName().equalsIgnoreCase(variationName.trim()))
             {return i;}
         }
         return -1;
@@ -441,7 +438,7 @@ public class GeneCruiser implements Constants {
         }
     }
 
-    public Vector<gcGene> getGenes(){
+    public Vector getGenes(){
 
         return Genes;
     }
@@ -449,7 +446,7 @@ public class GeneCruiser implements Constants {
     public gcGene getGene(int i)throws HaploViewException{
 
         if (Genes.size() >= i)
-            return Genes.get(i);
+            return (gcGene)Genes.get(i);
         else
             throw new HaploViewException("There is no Gene at this location");
     }
@@ -458,8 +455,8 @@ public class GeneCruiser implements Constants {
 
         if(SNPs.size() > 0){
             for(int i = 0; i < SNPs.size(); i++){
-                if(Start > SNPs.get(i).getStart() || Start == 0){
-                    Start = SNPs.get(i).getStart();
+                if(Start > ((gcSNP)SNPs.get(i)).getStart() || Start == 0){
+                    Start = ((gcSNP)SNPs.get(i)).getStart();
                 }
             }
         }else{
@@ -472,8 +469,8 @@ public class GeneCruiser implements Constants {
 
         if(SNPs.size() > 0){
             for(int i = 0; i < SNPs.size(); i++){
-                if(End < SNPs.get(i).getEnd() || End == 0){
-                    End = SNPs.get(i).getEnd();
+                if(End < ((gcSNP)SNPs.get(i)).getEnd() || End == 0){
+                    End = ((gcSNP)SNPs.get(i)).getEnd();
                 }
             }
         }else{
@@ -486,7 +483,7 @@ public class GeneCruiser implements Constants {
 
         int chromInt = -1;
         if (SNPs.size() > 0){
-            String chromStr = SNPs.get(0).getChromosome();
+            String chromStr = ((gcSNP)SNPs.get(0)).getChromosome();
 
             try{
                 chromInt = Integer.parseInt(chromStr.trim());

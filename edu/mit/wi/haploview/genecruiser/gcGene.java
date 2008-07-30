@@ -2,18 +2,9 @@ package edu.mit.wi.haploview.genecruiser;
 import edu.mit.wi.haploview.HaploViewException;
 
 import java.util.Vector;
-
-/**
- * Created by IntelliJ IDEA.
- * User: executedisaster
- * Date: Jul 14, 2008
- * Time: 3:53:42 PM
- * To change this template use File | Settings | File Templates.
- */
 public class gcGene {
 
 /////////////////////////////////////////////
-// Created with IntelliJ IDEA.             //
 // User: Jesse Whitworth                   //
 // Date: Apr 11, 2008                      //
 // Time: 1:30:17 PM                        //
@@ -25,7 +16,6 @@ public class gcGene {
      * @author Jesse Whitworth
      */
     public String GeneId, Description, Source, BioType, Chromosome, Strand, StableID;
-    public Vector<String> GenomicIds;
     public double Start, End;
 
     gcGene(String GeneId, String Description, String Source, String BioType, String Chromosome, String Start, String End, String Strand,

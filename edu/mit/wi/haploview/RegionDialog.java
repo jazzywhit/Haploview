@@ -25,7 +25,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
     GeneCruiser gncr;
     JPanel geneCruiserPanel;
     JTabbedPane resultsTab;
-    Vector<JTable> activeTables = new Vector<JTable>();
+    Vector activeTables = new Vector();
     String gcRequest;
 
     public RegionDialog (HaploView hv, String chrom, String marker, PlinkResultsPanel prp, long markerPosition, String title) throws HaploViewException {
@@ -202,21 +202,21 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
     public JTable makeGeneTable(GeneCruiser gncr) throws HaploViewException{
 
-        Vector<String> columnNames = new Vector<String>();
+        Vector columnNames = new Vector();
         columnNames.addElement("GeneId");
         columnNames.addElement("Source");
         columnNames.addElement("Start");
         columnNames.addElement("End");
         columnNames.addElement("Description");
 
-        Vector<String> rowData;
-        Vector<Vector<String>> rows = new Vector<Vector<String>>();
+        Vector rowData;
+        Vector rows = new Vector();
         int width = 0;
         FontMetrics metrics = getFontMetrics(this.getFont());
 
         if(gncr.size() > 0){
             for (int i = 0;i < gncr.size(); i++){
-                rowData = new Vector<String>();
+                rowData = new Vector();
                 rowData.addElement(gncr.getGene(i).GeneId);
                 rowData.addElement(gncr.getGene(i).Source);
                 rowData.addElement(String.valueOf((int)gncr.getGene(i).Start));
@@ -246,19 +246,19 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
     public JTable makeSnpTable(GeneCruiser gncr) throws HaploViewException{
 
-        Vector<String> columnNames = new Vector<String>();
+        Vector columnNames = new Vector();
         columnNames.addElement("SNP");
         columnNames.addElement("Position");
         columnNames.addElement("Alleles");
         columnNames.addElement("Strand");                
         columnNames.addElement("Consequence");
 
-        Vector<String> rowData;
-        Vector<Vector<String>> rows = new Vector<Vector<String>>();
+        Vector rowData;
+        Vector rows = new Vector();
 
         if(gncr.size() > 0){
             for (int i = 0;i < gncr.size(); i++){
-                rowData = new Vector<String>();
+                rowData = new Vector();
                 rowData.addElement(gncr.getSNP(i).getVariationName());
                 rowData.addElement(String.valueOf((int)gncr.getSNP(i).getStart()));
                 rowData.addElement(gncr.getSNP(i).getAllele());
@@ -315,9 +315,9 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         if(command.equals("GeneCruise")){
             try{
 
-                long start_pos = Long.valueOf(startPos.getText())* 1000;
-                long range = Long.valueOf(gcrangeInput.getText())* 1000;
-                long end_pos = Long.valueOf(endPos.getText())* 1000;
+                long start_pos = Long.parseLong(startPos.getText()) * 1000;
+                long range = Long.parseLong(gcrangeInput.getText()) * 1000;
+                long end_pos = Long.parseLong(endPos.getText()) * 1000;
 
                 if(searchSnps.isSelected()){
                     if ((start_pos - range) > 0){
@@ -363,7 +363,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                         }
                     }
 
-                    gcRequest = best_snp + "&fivePrimeSize=" + (Long.valueOf(gcrangeInput.getText())*1000 + Math.abs((start_pos - best_snp_loc))) + "&threePrimeSize=" + (Long.valueOf(gcrangeInput.getText())*1000 + Math.abs((end_pos - best_snp_loc)));
+                    gcRequest = best_snp + "&fivePrimeSize=" + (Long.parseLong(gcrangeInput.getText())*1000 + Math.abs((start_pos - best_snp_loc))) + "&threePrimeSize=" + (Long.parseLong(gcrangeInput.getText())*(long)1000 + Math.abs((end_pos - best_snp_loc)));
 
                     gncr = new GeneCruiser(4,gcRequest);
                     JTable table = makeGeneTable(gncr);
@@ -395,7 +395,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
             if(activeTables.size() >= resultsTab.getSelectedIndex()){
 
-                JTable tempTable = activeTables.get(resultsTab.getSelectedIndex());
+                JTable tempTable = (JTable)activeTables.get(resultsTab.getSelectedIndex());
                 String curr_tab_name = resultsTab.getTitleAt(resultsTab.getSelectedIndex());
 
                 if(curr_tab_name.startsWith("Gene")){
