@@ -387,60 +387,60 @@ public class ReadDataDialog extends JDialog
         c.gridy = 4;
         downloadTab.add(downloadLabel,c);
 
-        //HAPMAP 3 TAB
-        downloadChooserPanel3 = new JPanel();
-//        downloadChooserPanel3.add(new JLabel("Release:"));
-//        downloadChooserPanel3.add(phaseChooser3);
-//        phaseChooser3.setSelectedIndex(1);
-        downloadChooserPanel3.add(new JLabel("Chromosome:"));
-        chromChooser3.setSelectedIndex(0);
-        downloadChooserPanel3.add(chromChooser3);
-        downloadChooserPanel3.add(new JLabel("Analysis Panel:"));
-        downloadChooserPanel3.add(panelChooser3);
-        downloadPositionPanel3 = new JPanel();
-        chromStartField3 = new NumberTextField("",6,false,false);
-        chromStartField3.setEnabled(true);
-        chromEndField3 = new NumberTextField("",6,false,false);
-        chromEndField3.setEnabled(true);
-        downloadPositionPanel3.add(new JLabel("Start kb:"));
-        downloadPositionPanel3.add(chromStartField3);
-        downloadPositionPanel3.add(new JLabel("End kb:"));
-        downloadPositionPanel3.add(chromEndField3);
-        downloadBrowsePanel3 = new JPanel();
-        geneCruiserPanel3 = new JPanel();
-        geneCruiserPanel3.add(geneCruiseChooser3);
-        geneCruiserPanel3.add(new JLabel("ID:"));
-        geneCruiseField3 = new JTextField(10);
-        geneCruiserPanel3.add(geneCruiseField3);
-        geneCruiserPanel3.add(new JLabel("+/-"));
-        rangeField3 = new NumberTextField("100",6,false,false);
-        geneCruiserPanel3.add(rangeField3);
-        geneCruiserPanel3.add(new JLabel("kb"));
-        JButton geneCruiseButton3 = new JButton("Go");
-        geneCruiseButton3.setActionCommand("GeneCruise3");
-        geneCruiseButton3.addActionListener(this);
-        geneCruiserPanel3.add(geneCruiseButton3);
-        geneCruiserPanel3.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.lightGray),
-                "GeneCruiser"));
-        ((TitledBorder)(geneCruiserPanel3.getBorder())).setTitleColor(Color.black);
-        downloadLabel3 = new JLabel("*Phased HapMap downloads require an active internet connection");
-        JLabel FileSizeLabel = new JLabel("*Data is pre-compiled, Your data may not resemble your parameters");
+//        //HAPMAP 3 TAB
+//        downloadChooserPanel3 = new JPanel();
+////        downloadChooserPanel3.add(new JLabel("Release:"));
+////        downloadChooserPanel3.add(phaseChooser3);
+////        phaseChooser3.setSelectedIndex(1);
+//        downloadChooserPanel3.add(new JLabel("Chromosome:"));
+//        chromChooser3.setSelectedIndex(0);
+//        downloadChooserPanel3.add(chromChooser3);
+//        downloadChooserPanel3.add(new JLabel("Analysis Panel:"));
+//        downloadChooserPanel3.add(panelChooser3);
+//        downloadPositionPanel3 = new JPanel();
+//        chromStartField3 = new NumberTextField("",6,false,false);
+//        chromStartField3.setEnabled(true);
+//        chromEndField3 = new NumberTextField("",6,false,false);
+//        chromEndField3.setEnabled(true);
+//        downloadPositionPanel3.add(new JLabel("Start kb:"));
+//        downloadPositionPanel3.add(chromStartField3);
+//        downloadPositionPanel3.add(new JLabel("End kb:"));
+//        downloadPositionPanel3.add(chromEndField3);
+//        downloadBrowsePanel3 = new JPanel();
+//        geneCruiserPanel3 = new JPanel();
+//        geneCruiserPanel3.add(geneCruiseChooser3);
+//        geneCruiserPanel3.add(new JLabel("ID:"));
+//        geneCruiseField3 = new JTextField(10);
+//        geneCruiserPanel3.add(geneCruiseField3);
+//        geneCruiserPanel3.add(new JLabel("+/-"));
+//        rangeField3 = new NumberTextField("100",6,false,false);
+//        geneCruiserPanel3.add(rangeField3);
+//        geneCruiserPanel3.add(new JLabel("kb"));
+//        JButton geneCruiseButton3 = new JButton("Go");
+//        geneCruiseButton3.setActionCommand("GeneCruise3");
+//        geneCruiseButton3.addActionListener(this);
+//        geneCruiserPanel3.add(geneCruiseButton3);
+//        geneCruiserPanel3.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.lightGray),
+//                "GeneCruiser"));
+//        ((TitledBorder)(geneCruiserPanel3.getBorder())).setTitleColor(Color.black);
+//        downloadLabel3 = new JLabel("*Phased HapMap downloads require an active internet connection");
+//        JLabel FileSizeLabel = new JLabel("*Data is pre-compiled, Your data may not resemble your parameters");
 
-        //Layout the Download Tab
-        downloadTab3 = new JPanel(new GridBagLayout());
-        c = new GridBagConstraints();
-        c.insets = new Insets(0,0,5,0);
-        c.anchor = GridBagConstraints.CENTER;
-        downloadTab3.add(downloadChooserPanel3,c);
-        c.gridy = 1;
-        downloadTab3.add(downloadPositionPanel3,c);
-        c.gridy = 2;
-        downloadTab3.add(downloadBrowsePanel3,c);
-        c.gridy = 3;
-        c.weightx = 1;
-        downloadTab3.add(geneCruiserPanel3,c);
-        c.gridy = 4;
-        downloadTab3.add(downloadLabel3,c);
+//        //Layout the Hapmap3 Download Tab
+//        downloadTab3 = new JPanel(new GridBagLayout());
+//        c = new GridBagConstraints();
+//        c.insets = new Insets(0,0,5,0);
+//        c.anchor = GridBagConstraints.CENTER;
+//        downloadTab3.add(downloadChooserPanel3,c);
+//        c.gridy = 1;
+//        downloadTab3.add(downloadPositionPanel3,c);
+//        c.gridy = 2;
+//        downloadTab3.add(downloadBrowsePanel3,c);
+//        c.gridy = 3;
+//        c.weightx = 1;
+//        downloadTab3.add(geneCruiserPanel3,c);
+//        c.gridy = 4;
+//        downloadTab3.add(downloadLabel3,c);
 
 
         //Plink Tab Objects
@@ -513,7 +513,11 @@ public class ReadDataDialog extends JDialog
         //dataFormatPane.addTab("Phased Formats",phaseTab);
         dataFormatPane.addTab("HapMap PHASE",phaseTab);
         dataFormatPane.addTab("HapMap Download",downloadTab);
-        dataFormatPane.addTab("HapMap Download 3", downloadTab3);
+
+
+//        dataFormatPane.addTab("HapMap Download 3", downloadTab3);
+
+        
         dataFormatPane.addTab("PLINK Format",plinkTab);
         //Set the selected Tab so you go back to the tab you were previously in
         dataFormatPane.setSelectedIndex(currTab);
@@ -647,9 +651,11 @@ public class ReadDataDialog extends JDialog
                 fileType = PHASEHMP_FILE;
             }else if (currTab == 4){
                 fileType = HMPDL_FILE;
+
+//            }else if (currTab == 5){
+//                fileType = HMPDL_FILE3;
+
             }else if (currTab == 5){
-                fileType = HMPDL_FILE3;
-            }else if (currTab == 6){
                 fileType = PLINK_FILE;
             }
             HaploView caller = (HaploView)this.getParent();
