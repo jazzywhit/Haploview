@@ -67,7 +67,7 @@ public class GeneCruiser implements Constants {
                 majorTree = "VariationQueryResults";
 
             }else if (searchType == 1){  //For HUGO Searches      1100
-                address = "http://" + host + "/rest/variation/byGenomicId?idType=HUGO&id=" + searchID + "&firstResult=" + firstResult + "&email=" + email;
+                address = "http://" + host + "/rest/variation/byGenomicId?idType=HGNC_GENE&id=" + searchID + "&firstResult=" + firstResult + "&email=" + email;
                 majorTree = "VariationQueryResults";
 
             }else if (searchType == 2){//For SNP Searches    rs5004340
@@ -81,8 +81,6 @@ public class GeneCruiser implements Constants {
 
             }else if (searchType == 4){//For searching flanking regions
 
-                //http://genecruiser.broad.mit.edu/genecruiser3_services/rest/gene/byVariationIdFivePrimeThreePrime?id=rs12949853&fivePrimeSize=1000&threePrimeSize=100000&firstResult=0&email=haploview@broad.mit.edu
-                // searchID = rs12949853&fivePrimeSize=1000&threePrimeSize=100000    .... this is the format to follow
                 address = "http://" + host + "/rest/gene/byVariationIdFivePrimeThreePrime?id=" + searchID + "&firstResult=" + firstResult + "&email=" + email;
                 majorTree = "GeneByVariationIdResults";
 
