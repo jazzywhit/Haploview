@@ -154,18 +154,21 @@ public class GeneCruiser implements Constants {
     private void NamespaceNav(Iterator iter) throws HaploViewException{
 
         OMNode currentNode = (OMNode)iter.next();
-
-        while (!iter.hasNext()){
-            if (HasChildren(currentNode)){
-                //Looking for main Level
-                if(((OMElement)currentNode).getLocalName().trim().equals(majorTree)){
+        try{
+            while (!iter.hasNext()){
+                if (HasChildren(currentNode)){
+                    //Looking for main Level
+                    if(((OMElement)currentNode).getLocalName().trim().equals(majorTree)){
+                        break;
+                    }
+                    iter = ((OMElement)currentNode).getChildren();
+                    currentNode = (OMNode)iter.next();
+                }else{
                     break;
                 }
-                iter = ((OMElement)currentNode).getChildren();
-                currentNode = (OMNode)iter.next();
-            }else{
-                break;
             }
+        }catch(ClassCastException cce){
+            throw new HaploViewException("Error Reading Genecruiser Data; NamespaceNav");
         }
 
         //Check that the main Level is viable
@@ -182,28 +185,32 @@ public class GeneCruiser implements Constants {
     private void CaptureNode(OMNode inputNode)throws HaploViewException{
 
         Iterator iter = ((OMElement)inputNode).getChildren();
-        while(iter.hasNext()){
+        try{
+            while(iter.hasNext()){
 
-            if (searchType == 0){
+                if (searchType == 0){
 
-                captureGene((OMElement)iter.next());
+                    captureGene((OMElement)iter.next());
 
-            }else if (searchType == 1){
+                }else if (searchType == 1){
 
-                captureGene((OMElement)iter.next());
+                    captureGene((OMElement)iter.next());
 
-            }else if (searchType == 2){
+                }else if (searchType == 2){
 
-                CaptureVariation((OMElement)iter.next());
+                    CaptureVariation((OMElement)iter.next());
 
-            }else if (searchType == 3){
-                CaptureVariation((OMElement)iter.next());
+                }else if (searchType == 3){
+                    CaptureVariation((OMElement)iter.next());
 
-            }else if (searchType == 4){
+                }else if (searchType == 4){
 
-                CaptureFlanking((OMElement)iter.next());
+                    CaptureFlanking((OMElement)iter.next());
 
+                }
             }
+        }catch(ClassCastException cce){
+            throw new HaploViewException("Error Reading Genecruiser Data; CaptureNode");
         }
     }
 
@@ -231,41 +238,41 @@ public class GeneCruiser implements Constants {
         Iterator childList = ((OMElement)inputNode).getChildren();
 
         try{
-        while (childList.hasNext()) {
-            OMNode currentNode = (OMNode)childList.next();
-            OMElement temp = (OMElement)currentNode;
+            while (childList.hasNext()) {
+                OMNode currentNode = (OMNode)childList.next();
+                OMElement temp = (OMElement)currentNode;
 
-            //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
-            if (((OMElement)currentNode).getLocalName().equals("VariationName")){
-                VariationName = ((OMElement)currentNode).getText();
+                //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
+                if (((OMElement)currentNode).getLocalName().equals("VariationName")){
+                    VariationName = ((OMElement)currentNode).getText();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("Source")){
-                Source = ((OMElement)currentNode).getText();
+                }else if (((OMElement)currentNode).getLocalName().equals("Source")){
+                    Source = ((OMElement)currentNode).getText();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("Allele")){
-                Allele = ((OMElement)currentNode).getText();
+                }else if (((OMElement)currentNode).getLocalName().equals("Allele")){
+                    Allele = ((OMElement)currentNode).getText();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("ConsequenceType")){
-                ConsequenceType = ((OMElement)currentNode).getText();
+                }else if (((OMElement)currentNode).getLocalName().equals("ConsequenceType")){
+                    ConsequenceType = ((OMElement)currentNode).getText();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("Chromosome")){
-                Chromosome = ((OMElement)currentNode).getText();
+                }else if (((OMElement)currentNode).getLocalName().equals("Chromosome")){
+                    Chromosome = ((OMElement)currentNode).getText();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("Start")){
-                Start = ((OMElement)currentNode).getText();
+                }else if (((OMElement)currentNode).getLocalName().equals("Start")){
+                    Start = ((OMElement)currentNode).getText();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("End")){
-                End = ((OMElement)currentNode).getText();
+                }else if (((OMElement)currentNode).getLocalName().equals("End")){
+                    End = ((OMElement)currentNode).getText();
 
-            }else if (((OMElement)currentNode).getLocalName().equals("Strand")){
-                Strand = ((OMElement)currentNode).getText();
+                }else if (((OMElement)currentNode).getLocalName().equals("Strand")){
+                    Strand = ((OMElement)currentNode).getText();
+                }
             }
-        }
         }catch(ClassCastException cce){
             throw new HaploViewException("Error Reading Genecruiser Data; CaptureVariation");
 
         }
-       SNPs.add(new gcSNP(currId, currIdType, currIdDisplayName, VariationName, Source, Allele, ConsequenceType, Chromosome,
+        SNPs.add(new gcSNP(currId, currIdType, currIdDisplayName, VariationName, Source, Allele, ConsequenceType, Chromosome,
                 Start, End, Strand));
     }
 
@@ -277,65 +284,71 @@ public class GeneCruiser implements Constants {
     private void captureGene(OMElement inputNode) throws HaploViewException{
 
         Iterator childList = inputNode.getChildren();
+        try{
+            while (childList.hasNext()){
 
-        while (childList.hasNext()){
+                OMElement currentNode = (OMElement)childList.next();
+                if (currentNode.getLocalName().equals("QueryParameter")){
+                    Iterator grandchildList = currentNode.getChildren();
+                    while (grandchildList.hasNext()){
+                        OMElement secondNode = (OMElement)grandchildList.next();
 
-            OMElement currentNode = (OMElement)childList.next();
-            if (currentNode.getLocalName().equals("QueryParameter")){
-                Iterator grandchildList = currentNode.getChildren();
-                while (grandchildList.hasNext()){
-                    OMElement secondNode = (OMElement)grandchildList.next();
+                        //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
+                        if (secondNode.getLocalName().equals("Id")){
+                            currId = secondNode.getText();
 
-                    //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
-                    if (secondNode.getLocalName().equals("Id")){
-                        currId = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("IdType")){
+                            currIdType = secondNode.getText();
 
-                    }else if (secondNode.getLocalName().equals("IdType")){
-                        currIdType = secondNode.getText();
-
-                    }else if (secondNode.getLocalName().equals("IdDisplayName")){
-                        currIdDisplayName = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("IdDisplayName")){
+                            currIdDisplayName = secondNode.getText();
+                        }
                     }
+                }else if(currentNode.getLocalName().equals("Variation")){
+                    CaptureVariation(currentNode);
                 }
-            }else if(currentNode.getLocalName().equals("Variation")){
-                CaptureVariation(currentNode);
             }
+        }catch(ClassCastException cce){
+            throw new HaploViewException("Error Reading Genecruiser Data; CaptureGene");
         }
     }
     private void CaptureFlanking(OMNode inputNode) throws HaploViewException{
 
         Iterator childList = ((OMElement)inputNode).getChildren();
         String GeneId = "", Description= "", Source= "", BioType= "", Chromosome= "", Strand= "", StableID= "", Start= "0", End= "0";
+        try{
+            while (childList.hasNext()){
+                OMNode currentNode = (OMNode)childList.next();
+                if (((OMElement)currentNode).getLocalName().equals("Gene")){
+                    Iterator grandchildList = ((OMElement)currentNode).getChildren();
+                    while (grandchildList.hasNext()){
+                        OMElement secondNode = (OMElement)grandchildList.next();
 
-        while (childList.hasNext()){
-            OMNode currentNode = (OMNode)childList.next();
-            if (((OMElement)currentNode).getLocalName().equals("Gene")){
-                Iterator grandchildList = ((OMElement)currentNode).getChildren();
-                while (grandchildList.hasNext()){
-                    OMElement secondNode = (OMElement)grandchildList.next();
-
-                    //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
-                    if (secondNode.getLocalName().equals("GeneId")){
-                        GeneId = secondNode.getText();
-                    }else if (secondNode.getLocalName().equals("Description")){
-                        Description = secondNode.getText();
-                    }else if (secondNode.getLocalName().equals("Source")){
-                        Source = secondNode.getText();
-                    }else if (secondNode.getLocalName().equals("Biotype")){
-                        BioType = secondNode.getText();
-                    }else if (secondNode.getLocalName().equals("Chromosome")){
-                        Chromosome = secondNode.getText();
-                    }else if (secondNode.getLocalName().equals("Start")){
-                        Start = secondNode.getText();
-                    }else if (secondNode.getLocalName().equals("End")){
-                        End = secondNode.getText();
-                    }else if (secondNode.getLocalName().equals("Strand")){
-                        Strand = secondNode.getText();
-                    }else if (secondNode.getLocalName().equals("StableId")){
-                        StableID = secondNode.getText();
+                        //Validate that the node is of a useable type, if not 1 then the tree is not fully broken down
+                        if (secondNode.getLocalName().equals("GeneId")){
+                            GeneId = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("Description")){
+                            Description = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("Source")){
+                            Source = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("Biotype")){
+                            BioType = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("Chromosome")){
+                            Chromosome = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("Start")){
+                            Start = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("End")){
+                            End = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("Strand")){
+                            Strand = secondNode.getText();
+                        }else if (secondNode.getLocalName().equals("StableId")){
+                            StableID = secondNode.getText();
+                        }
                     }
                 }
             }
+        }catch(ClassCastException cce){
+            throw new HaploViewException("Error Reading Genecruiser Data; CaptureFlanking");
         }
         Genes.add(new gcGene(GeneId, Description, Source, BioType, Chromosome, Start, End, Strand, StableID)); /*, Vector<String> GenomicIds*/
     }
