@@ -8,6 +8,8 @@ import java.util.Vector;
 import java.util.Comparator;
 import java.util.Collections;
 import java.util.StringTokenizer;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class PlinkTableModel extends AbstractTableModel{
     static final long serialVersionUID = -826740142478947102L;
@@ -157,16 +159,21 @@ public class PlinkTableModel extends AbstractTableModel{
         fireTableCellUpdated(row, column);
     }
 
-    public void filterAll(String chr, int start, int end, Vector filters){
+    public void filterAll(String chr, int start, int end, Vector filters, String marker){
+
         resetFilters();
         int rows = getRowCount();
         Vector newFiltered = new Vector();
         boolean chromPass = false;
         boolean genericPass = false;
+        boolean markerPass = false;
         long realStart = start*1000;
         long realEnd = end*1000;
+        Pattern strpattern = Pattern.compile(marker, Pattern.CASE_INSENSITIVE | Pattern.LITERAL | Pattern.DOTALL);
+        Matcher strmatcher;
 
         for (int i = 0; i < rows; i++){
+
             if (!(chr.equals(""))){
                 if (((String)getValueAt(i,CHROM_COLUMN)).equalsIgnoreCase(chr)){
                     if ((((Long)getValueAt(i,POSITION_COLUMN)).longValue() >= realStart) || (start == -1)){
@@ -177,6 +184,15 @@ public class PlinkTableModel extends AbstractTableModel{
                 }
             }else{
                 chromPass = true;
+            }
+
+            if(!(marker.equals(""))){
+                strmatcher = strpattern.matcher((String)getValueAt(i,MARKER_COLUMN));
+                if (strmatcher.lookingAt()){
+                    markerPass = true;
+                }
+            }else{
+                markerPass = true;
             }
 
             if (filters.size() > 0){
@@ -264,12 +280,13 @@ public class PlinkTableModel extends AbstractTableModel{
 
 
 
-            if (chromPass && genericPass){
+            if (chromPass && genericPass && markerPass){
                 newFiltered.add(new Integer(i));
             }
 
             chromPass = false;
             genericPass = false;
+            markerPass = false;
         }
         filtered = newFiltered;
         if (Options.getSNPBased()){
