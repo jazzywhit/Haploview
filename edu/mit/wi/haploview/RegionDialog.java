@@ -231,13 +231,17 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 rows.addElement(rowData);
             }
         }else{
+            if(Integer.parseInt(gcrangeInput.getText()) <= 0)
+                gcrangeInput.setText("100");
             throw new HaploViewException("No Gene Data was found in that region");
         }
 
-        TableSorter sorter = new TableSorter(new gcTableModel(columnNames, rows));
-        JTable geneTable = new JTable(sorter);
-        sorter.setTableHeader(geneTable.getTableHeader());
-        geneTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
+        JTable geneTable = new JTable(new gcTableModel(columnNames, rows));
+        //TODO Figure out why the sorting does not work on the GeneTable. (It works fine on the SNP Table). comment the line above, and uncomment the 4 below.
+//        TableSorter gene_sorter = new TableSorter(new gcTableModel(columnNames, rows));
+//        JTable geneTable = new JTable(gene_sorter);
+//        gene_sorter.setTableHeader(geneTable.getTableHeader());
+//        geneTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
 
         //Set up tool tips for column headers.
         geneTable.getTableHeader().setToolTipText(
@@ -271,12 +275,14 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 rows.addElement(rowData);
             }
         }else{
+            if(Integer.parseInt(gcrangeInput.getText()) <= 0)
+                gcrangeInput.setText("100");
             throw new HaploViewException("No SNP Data was found in that region");
         }
 
-        TableSorter sorter = new TableSorter(new gcTableModel(columnNames, rows));
-        JTable snpTable = new JTable(sorter);
-        sorter.setTableHeader(snpTable.getTableHeader());
+        TableSorter snp_sorter = new TableSorter(new gcTableModel(columnNames, rows));
+        JTable snpTable = new JTable(snp_sorter);
+        snp_sorter.setTableHeader(snpTable.getTableHeader());
         snpTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
 
         //Set up tool tips for column headers.
@@ -323,15 +329,16 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 long range = Long.parseLong(gcrangeInput.getText()) * 1000;
                 long end_pos = Long.parseLong(endPos.getText()) * 1000;
 
-                if(searchSnps.isSelected()){
-                    if ((start_pos - range) > 0){
-                        gcRequest = chrom + ":" + String.valueOf(start_pos - range)
-                                + "-" + String.valueOf(end_pos + range);
-                    }else{
-                        gcRequest = chrom + ":0-" + String.valueOf(end_pos + range);
-                    }
+                if ((start_pos - range) > 0){
+                    gcRequest = chrom + ":" + String.valueOf(start_pos - range)
+                            + "-" + String.valueOf(end_pos + range);
+                }else{
+                    gcRequest = chrom + ":0-" + String.valueOf(end_pos + range);
+                }
 
-                    String tabName = gcRequest;
+                String tabName = gcRequest;
+
+                if(searchSnps.isSelected()){
 
                     gncr = new GeneCruiser(3,gcRequest);
                     JTable table = makeSnpTable(gncr);
@@ -340,15 +347,8 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 }
 
                 if(searchGenes.isSelected()){
+                    tabName = "Genes - " + tabName;
 
-                    if ((start_pos - range) > 0){
-                        gcRequest = chrom + ":" + String.valueOf(start_pos - range)
-                                + "-" + String.valueOf(end_pos + range);
-                    }else{
-                        gcRequest = chrom + ":0-" + String.valueOf(end_pos + range);
-                    }
-
-                    String tabName = gcRequest;
                     gncr = new GeneCruiser(3,gcRequest);
                     String best_snp = "";
                     long average = (start_pos + end_pos)/2;
@@ -356,11 +356,9 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                     long best_snp_loc = 0;
                     long least_dist = average;
                     for (int i = 0; i < gncr.size(); i++){
-
                         curr_dist = ((long)(gncr.getSNP(i).getStart())) - average;
 
                         if (Math.abs(curr_dist) < least_dist){
-
                             least_dist  = Math.abs(curr_dist);
                             best_snp = gncr.getSNP(i).getVariationName();
                             best_snp_loc = (long)gncr.getSNP(i).getStart();
@@ -371,17 +369,18 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
                     gncr = new GeneCruiser(4,gcRequest);
                     JTable table = makeGeneTable(gncr);
-                    JScrollPane pane = new JScrollPane(table);
-                    tabName = "Genes - " + tabName;
-                    resultsTab.add(tabName, pane);
+
+                    resultsTab.add(tabName, new JScrollPane(table));
                     activeTables.add(resultsTab.getTabCount()-1, table);
                 }
+
                 this.repaint();
+
             }catch(HaploViewException hve){
                 JOptionPane.showMessageDialog(this,
                         hve.getMessage(),
-                        "Connection Problem",
-                        JOptionPane.ERROR_MESSAGE);
+                        "Retrieval Problem",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
         }
         if(command.equals("Reset")){
