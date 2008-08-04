@@ -217,7 +217,7 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
 
             strmatcher = strpattern.matcher((String)table.getValueAt(i,1));
 
-            if (strmatcher.lookingAt()){
+            if (strmatcher.find()){
 
                 table.changeSelection(i,1,false,false);
                 found = true;
@@ -482,9 +482,13 @@ public class PlinkResultsPanel extends JPanel implements ActionListener, Constan
     }
     public void keyReleased(KeyEvent e) {
         if(e.getComponent().equals(markerField)){
-            String marker = markerField.getText();
-            if (!(marker.equals(""))){
-                jumpToMarker(marker);
+            if(markerField.getText().length() > 0){
+                String marker = markerField.getText();
+                if (!(marker.equals(""))){
+                    jumpToMarker(marker);
+                }
+            }else{
+                table.clearSelection();   
             }
         }
     }

@@ -188,7 +188,7 @@ public class PlinkTableModel extends AbstractTableModel{
 
             if(!(marker.equals(""))){
                 strmatcher = strpattern.matcher((String)getValueAt(i,MARKER_COLUMN));
-                if (strmatcher.lookingAt()){
+                if (strmatcher.find()){
                     markerPass = true;
                 }
             }else{
