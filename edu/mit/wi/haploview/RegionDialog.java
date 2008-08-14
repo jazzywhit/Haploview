@@ -193,7 +193,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         contents_grid.gridy++;
         contents_grid.gridx = 0;
         ////////////////////////
-        contents.add(new JLabel("*Phased HapMap downloads require an active internet connection"),geneCruiserPanel_grid);
+        contents.add(new JLabel("*Phased HapMap downloads require an active internet connection"),contents_grid);
 
         //FINALIZE
         setContentPane(contents);
@@ -323,6 +323,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             this.dispose();
         }
         if(command.equals("GeneCruise")){
+
             try{
 
                 long start_pos = Long.parseLong(startPos.getText()) * 1000;
@@ -337,44 +338,52 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 }
 
                 String tabName = gcRequest;
+                boolean found_request = false;
 
-                if(searchSnps.isSelected()){
-
-                    gncr = new GeneCruiser(3,gcRequest);
-                    JTable table = makeSnpTable(gncr);
-                    resultsTab.add(tabName, new JScrollPane(table));
-                    activeTables.add(resultsTab.getTabCount()-1, table);
+                //Check to make sure these Tabs aren't already created
+                for (int i = 0; i < resultsTab.getTabCount(); i ++){
+                    if(resultsTab.getTitleAt(i).equals(tabName) || resultsTab.getTitleAt(i).equals("Genes - " + tabName)){
+                        found_request = true;
+                    }
                 }
 
-                if(searchGenes.isSelected()){
-                    tabName = "Genes - " + tabName;
-
-                    gncr = new GeneCruiser(3,gcRequest);
-                    String best_snp = "";
-                    long average = (start_pos + end_pos)/2;
-                    long curr_dist;
-                    long best_snp_loc = 0;
-                    long least_dist = average;
-                    for (int i = 0; i < gncr.size(); i++){
-                        curr_dist = ((long)(gncr.getSNP(i).getStart())) - average;
-
-                        if (Math.abs(curr_dist) < least_dist){
-                            least_dist  = Math.abs(curr_dist);
-                            best_snp = gncr.getSNP(i).getVariationName();
-                            best_snp_loc = (long)gncr.getSNP(i).getStart();
-                        }
+                if(!found_request){
+                    if(searchSnps.isSelected()){
+                        gncr = new GeneCruiser(3,gcRequest);
+                        JTable table = makeSnpTable(gncr);
+                        resultsTab.add(tabName, new JScrollPane(table));
+                        activeTables.add(resultsTab.getTabCount()-1, table);
                     }
 
-                    gcRequest = best_snp + "&fivePrimeSize=" + (Long.parseLong(gcrangeInput.getText())*1000 + Math.abs((start_pos - best_snp_loc))) + "&threePrimeSize=" + (Long.parseLong(gcrangeInput.getText())*(long)1000 + Math.abs((end_pos - best_snp_loc)));
+                    if(searchGenes.isSelected()){
+                        tabName = "Genes - " + tabName;
+                        gncr = new GeneCruiser(3,gcRequest);
+                        String best_snp = "";
+                        long average = (start_pos + end_pos)/2;
+                        long curr_dist;
+                        long best_snp_loc = 0;
+                        long least_dist = average;
+                        for (int i = 0; i < gncr.size(); i++){
+                            curr_dist = ((long)(gncr.getSNP(i).getStart())) - average;
 
-                    gncr = new GeneCruiser(4,gcRequest);
-                    JTable table = makeGeneTable(gncr);
+                            if (Math.abs(curr_dist) < least_dist){
+                                least_dist  = Math.abs(curr_dist);
+                                best_snp = gncr.getSNP(i).getVariationName();
+                                best_snp_loc = (long)gncr.getSNP(i).getStart();
+                            }
+                        }
 
-                    resultsTab.add(tabName, new JScrollPane(table));
-                    activeTables.add(resultsTab.getTabCount()-1, table);
+                        gcRequest = best_snp + "&fivePrimeSize=" + (Long.parseLong(gcrangeInput.getText())*1000 + Math.abs((start_pos - best_snp_loc))) + "&threePrimeSize=" + (Long.parseLong(gcrangeInput.getText())*(long)1000 + Math.abs((end_pos - best_snp_loc)));
+
+                        gncr = new GeneCruiser(4,gcRequest);
+                        JTable table = makeGeneTable(gncr);
+
+                        resultsTab.add(tabName, new JScrollPane(table));
+                        activeTables.add(resultsTab.getTabCount()-1, table);
+                    }
+
+                    this.repaint();
                 }
-
-                this.repaint();
 
             }catch(HaploViewException hve){
                 JOptionPane.showMessageDialog(this,
@@ -396,19 +405,21 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         }
         if(command.equals("setActive")){
 
-            if(activeTables.size() >= resultsTab.getSelectedIndex()){
+            if(activeTables.size() >= resultsTab.getSelectedIndex() && resultsTab.getSelectedIndex() >= 0){
 
                 JTable tempTable = (JTable)activeTables.get(resultsTab.getSelectedIndex());
                 String curr_tab_name = resultsTab.getTitleAt(resultsTab.getSelectedIndex());
 
-                if(curr_tab_name.startsWith("Gene")){
+                if(tempTable.getSelectedRow() >= 0){
+                    if(curr_tab_name.startsWith("Gene")){
 
-                    startPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),2))/1000));
-                    endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),3))/1000));
+                        startPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),2))/1000));
+                        endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),3))/1000));
                     
-                }else{
-                    startPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),1))/1000));
-                    endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),1))/1000));
+                    }else{
+                        startPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),1))/1000));
+                        endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),1))/1000));
+                    }
                 }
             }
         }
