@@ -277,6 +277,10 @@ public class HaploText implements Constants{
                 System.out.println(HELP_OUTPUT);
                 System.exit(0);
             }
+            else if (args[i].equalsIgnoreCase("-version") || args[i].equalsIgnoreCase("-v")){
+                System.out.println(VERSION);
+                System.exit(0);
+            }
             else if(args[i].equalsIgnoreCase("-n") || args[i].equalsIgnoreCase("-nogui")) {
                 nogui = true;
             }
