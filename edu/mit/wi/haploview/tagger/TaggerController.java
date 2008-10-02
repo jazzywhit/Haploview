@@ -144,14 +144,6 @@ public class TaggerController {
         }
     }
 
-    public void dumpTests(File outFile) throws IOException {
-        tagger.dumpTests(outFile);
-    }
-
-    public void dumpTags(File outFile) throws IOException {
-        tagger.dumpTags(outFile);
-    }
-
     public void dumpConditionalHaps(File outFile) throws IOException {
         tagger.dumpConditionalHaps(outFile);
     }

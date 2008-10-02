@@ -1837,12 +1837,10 @@ public class HaploText implements Constants{
                 }
 
                 tc.saveResultsToFile(validateOutputFile(outputRootName + ".TAGS"));
-                tc.dumpTests(validateOutputFile(outputRootName + ".TESTS"));
+
                 if (outputConditionalHaps){
                     tc.dumpConditionalHaps(validateOutputFile(outputRootName + ".CHAPS"));
                 }
-                //todo: I don't like this at the moment, removed subject to further consideration.
-                //tc.dumpTags(validateOutputFile(outputRootName + ".TAGSNPS"));
             }
         }
         catch(IOException e){
