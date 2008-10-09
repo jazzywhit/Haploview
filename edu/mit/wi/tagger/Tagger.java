@@ -625,6 +625,25 @@ public class Tagger {
         return newlyTagged;
     }
 
+    public void dumpTests(File outFile) throws IOException{
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
+        for (int i = 0; i < tags.size(); i++){
+            bw.write(((TagSequence)tags.get(i)).getTestName());
+            bw.newLine();
+        }
+        bw.close();
+    }
+
+    public void dumpTags(File outFile) throws IOException{
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
+        Vector tagSNPS = getTagSNPs();
+        for (int i = 0; i < getTagSNPs().size(); i++){
+            bw.write(((TagSequence)tagSNPS.get(i)).getName());
+            bw.newLine();
+        }
+        bw.close();
+    }
+
     public void dumpConditionalHaps(File outFile) throws IOException{
         //TODO Jules: Write this method.
     }

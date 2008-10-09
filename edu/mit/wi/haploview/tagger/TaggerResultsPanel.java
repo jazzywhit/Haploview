@@ -124,11 +124,15 @@ public class TaggerResultsPanel extends HaploviewTab
         }
 
         listsPanel.add(Box.createRigidArea(new Dimension(0,10)));
-        JButton dumpTestsButton = new JButton("Save Results");
-        dumpTestsButton.setActionCommand("Save_to_file");
+        JButton dumpTestsButton = new JButton("Dump Tests File");
+        dumpTestsButton.setActionCommand("dump");
         dumpTestsButton.addActionListener(this);
+        JButton dumpTagsButton = new JButton("Dump Tags File");
+        dumpTagsButton.setActionCommand("dump tags");
+        dumpTagsButton.addActionListener(this);
         JPanel listsButtonPanel = new JPanel();
         listsButtonPanel.add(dumpTestsButton);
+        listsButtonPanel.add(dumpTagsButton);
         listsButtonPanel.setMaximumSize(listsButtonPanel.getPreferredSize());
         listsButtonPanel.setAlignmentX(LEFT_ALIGNMENT);
         listsPanel.add(listsButtonPanel);
@@ -167,12 +171,12 @@ public class TaggerResultsPanel extends HaploviewTab
         if (e.getActionCommand().equals("taggingdone")){
             TaggerConfigPanel tcp = (TaggerConfigPanel) e.getSource();
             setTags(tcp.getTaggerController());
-        }else if (e.getActionCommand().equals("Save_to_file")){
+        }else if (e.getActionCommand().equals("dump")){
             try{
                 HaploView.fc.setSelectedFile(new File(""));
                 if (HaploView.fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
                     File outfile = HaploView.fc.getSelectedFile();
-                    tc.saveResultsToFile(outfile);
+                    tc.dumpTests(outfile);
                 }
             }catch (IOException ioe){
                 JOptionPane.showMessageDialog(this,
@@ -180,6 +184,19 @@ public class TaggerResultsPanel extends HaploviewTab
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
+        }else if (e.getActionCommand().equals("dump tags")){
+            try{
+                HaploView.fc.setSelectedFile(new File(""));
+                if (HaploView.fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION){
+                    File outfile = HaploView.fc.getSelectedFile();
+                    tc.dumpTags(outfile);
+        }
+            }catch (IOException ioe){
+                JOptionPane.showMessageDialog(this,
+                        ioe.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+    }
         }
     }
 
