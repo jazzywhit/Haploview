@@ -778,12 +778,14 @@
                 by changing the filter options and pressing the "Filter" button.  Currently active filters can be viewed
                 using the "View X Active Filters" button where X is the number of currently active filters.  This will open
                 a small popup window where filters can be viewed, added, or removed as needed.  All filters are jointly applied
-                (logically equivalent to an "AND" operator as opposed to an "OR").  You can also go directly to a specified
-                marker name in the table using the "Go" button on the second row, and remove columns from the table by selecting
-                a column from the "Remove Columns:" dropdown menu and using the adjacent "Remove" button.  The "Reset" button can
-                be used to revert the table and filters back to their original state (though the sorting state is retained).
-                Please note that non-SNP based files which can be loaded in without a map file do not have the chromosomal or
-                marker filters.
+                (logically equivalent to an "AND" operator as opposed to an "OR").  You may search for markers in your data by typing
+                in the “Specify Marker” field and Haploview will search as you type.  If you wish to narrow your results to only
+                include markers that match what you have specified, click the “Prune Table” button.  You may also go directly
+                to a specified marker name in the table using the "Go" button on the second row, and remove columns from
+                the table by selecting a column from the "Remove Columns:" dropdown menu and using the adjacent "Remove" button.
+                The "Reset" button can be used to revert the table and filters back to their original state (though the sorting
+                state is retained).  Please note that non-SNP based files, which can be loaded in without a map file, do not have
+                the chromosomal or marker filters.
             </para>
 
             <para>
@@ -827,7 +829,10 @@
                 By highlighting a specific result in the table and clicking "Go to Selected Region", you can bring
                 up a dialog to automatically fetch that region from the HapMap website and load it into Haploview.
                 The dialog allows you to specify the size of the region and the HapMap analysis panel that you wish to
-                download.  You can also optionally choose to annotate the columns from the PLINK tab to annotate in the LD Plot.
+                download.  It will also allow you to search in the surrounding area for known SNPs and Genes.  This information is obtained
+                from the Genecruiser service (http://genecruiser.broad.mit.edu/), and includes common information on found SNPs and Genes.  You
+                may optionally choose to define your HapMap download to center on a loci found by the search.You can also optionally choose to
+                annotate the columns from the PLINK tab to annotate in the LD Plot.
                 Once the region has been successfully loaded into Haploview, the initially selected marker will be highlighted in blue
                 on the Check Marker and PLINK tabs.  SNPs that appear in the PLINK tab are now marked in green on the LD Plot,
                 and the specific result that you specified is further highlighted in white.  You can view the annotated data from the PLINK
