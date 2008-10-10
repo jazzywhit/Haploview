@@ -780,8 +780,7 @@
                 a small popup window where filters can be viewed, added, or removed as needed.  All filters are jointly applied
                 (logically equivalent to an "AND" operator as opposed to an "OR").  You may search for markers in your data by typing
                 in the “Specify Marker” field and Haploview will search as you type.  If you wish to narrow your results to only
-                include markers that match what you have specified, click the “Prune Table” button.  You may also go directly
-                to a specified marker name in the table using the "Go" button on the second row, and remove columns from
+                include markers that match what you have specified, click the “Prune Table” button.  You may also remove columns from
                 the table by selecting a column from the "Remove Columns:" dropdown menu and using the adjacent "Remove" button.
                 The "Reset" button can be used to revert the table and filters back to their original state (though the sorting
                 state is retained).  Please note that non-SNP based files, which can be loaded in without a map file, do not have
