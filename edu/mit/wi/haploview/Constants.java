@@ -155,7 +155,7 @@ public interface Constants {
 
     static final String HELP_OUTPUT = TITLE_STRING + " Command line options\n" +
             "-h, -help                       Print this message\n" +
-            "-v, -version                    Prints out the version number\n" +
+            "-v, -version                    Print out the version number\n" +
             "-memory <memsize>               allocates <memsize> megabytes of memory (default 512)\n"+
             "-n, -nogui                      Command line output only\n" +
             "-q, -quiet                      Quiet mode- doesnt print any warnings or information to screen\n" +

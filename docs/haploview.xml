@@ -830,7 +830,7 @@
                 The dialog allows you to specify the size of the region and the HapMap analysis panel that you wish to
                 download.  It will also allow you to search in the surrounding area for known SNPs and Genes.  This information is obtained
                 from the Genecruiser service (http://genecruiser.broad.mit.edu/), and includes common information on found SNPs and Genes.  You
-                may optionally choose to define your HapMap download to center on a loci found by the search.You can also optionally choose to
+                may optionally choose to define your HapMap download to center on a loci found by the search.  You can also optionally choose to
                 annotate the columns from the PLINK tab to annotate in the LD Plot.
                 Once the region has been successfully loaded into Haploview, the initially selected marker will be highlighted in blue
                 on the Check Marker and PLINK tabs.  SNPs that appear in the PLINK tab are now marked in green on the LD Plot,
@@ -1366,6 +1366,9 @@ marker9</screen>
             <glosslist>
                 <glossentry><glossterm>-h, -help</glossterm>
                     <glossdef><para>Print help information.</para></glossdef></glossentry>
+
+                <glossentry><glossterm>-v, -version</glossterm>
+                    <glossdef><para>Print out the version number.</para></glossdef></glossentry>
 	
                 <glossentry><glossterm>-n, -nogui</glossterm>
                     <glossdef><para>Command line mode&mdash;does not launch display.</para></glossdef></glossentry>
@@ -1640,6 +1643,9 @@ marker9</screen>
             <listitem><ulink url="http://pngu.mgh.harvard.edu/~purcell/plink/">PLINK</ulink> is the work of <emphasis role="bold">Shaun
                 Purcell</emphasis> at the Center for Human Genetic Research
                 of Massachusetts General Hospital</listitem>
+
+            <listitem><ulink url="http://genecruiser.broad.mit.edu/">GeneCruiser</ulink> is the work of the <emphasis role="bold">GeneCruiser
+                Team</emphasis> at the Broad Institute.</listitem>
 	
         </itemizedlist>
       
@@ -1710,6 +1716,18 @@ marker9</screen>
 
         <section>
             <title>Change Log</title>
+
+            <section>
+                <title>Version 4.11, 13 October 2008</title>
+                <itemizedlist>
+                    <listitem>added support for Phase 3 HapMap</listitem>
+                    <listitem>added support for the latest version of GeneCruiser</listitem>
+                    <listitem>added GeneCruiser lookup to Region Dialog in PLINK tab</listitem>
+                    <listitem>added search as you type and prune table to PLINK results</listitem>
+                    <listitem>added "-v/-version" to option to the command line</listitem>
+                    <listitem>changed tab orientation for initial load screen on Mac OSX</listitem>
+                </itemizedlist>
+            </section>
 
             <section>
                 <title>Version 4.1, 29 April 2008</title>
