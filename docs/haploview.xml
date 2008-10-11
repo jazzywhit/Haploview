@@ -1595,7 +1595,7 @@ marker9</screen>
                     <glossdef><para>Capture only the alleles contained in a file (or http:// location) of one marker name per line.</para></glossdef></glossentry>
                 <glossentry><glossterm>-designScores &lt;file&gt;</glossterm>
                     <glossdef><para>Specify design scores in a file (or http:// location) of one marker name and one score per line.</para></glossdef></glossentry>
-                <glossentry><glossterm>-mindesignscore &lt;threshold&gt;</glossterm>
+                <glossentry><glossterm>-mindesignscores &lt;threshold&gt;</glossterm>
                     <glossdef><para>Specify a minimum design score threshold.</para></glossdef></glossentry>
                 <glossentry><glossterm>-mintagdistance &lt;distance&gt;</glossterm>
                     <glossdef><para>Specify a minimum distance in bases between picked tags.</para></glossdef></glossentry>
