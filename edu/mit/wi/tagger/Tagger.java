@@ -22,6 +22,9 @@ public class Tagger {
     //vector of SNP objects, which contains every SNP (tags and non-tags)
     private Vector snps;
 
+    //vector just those SNPs which should be captured.
+    private Vector capture;
+
     //vector of SNPs which must be included in the set of Tags
     //no object may be present in forceInclude and forceExclude concurrently.
     private Vector forceInclude;
@@ -50,11 +53,11 @@ public class Tagger {
 
     public int taggedSoFar;
 
-    public Tagger(Vector s, Vector include, Vector exclude, Hashtable design, AlleleCorrelator ac) throws TaggerException{
-        this(s,include,exclude,design,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS,true,false);
+    public Tagger(Vector s, Vector capture, Vector include, Vector exclude, Hashtable design, AlleleCorrelator ac) throws TaggerException{
+        this(s,capture,include,exclude,design,ac,DEFAULT_RSQ_CUTOFF,AGGRESSIVE_TRIPLE, DEFAULT_MAXDIST, DEFAULT_MAXNUMTAGS,true,false);
     }
 
-    public Tagger(Vector s, Vector include, Vector exclude, Hashtable design, AlleleCorrelator ac, double rsqCut,
+    public Tagger(Vector s, Vector capture, Vector include, Vector exclude, Hashtable design, AlleleCorrelator ac, double rsqCut,
                   int aggressionLevel, long maxCompDist, int maxNumTags, boolean findTags, boolean printAllTags)
             throws TaggerException{
         minRSquared = rsqCut;
@@ -78,6 +81,12 @@ public class Tagger {
             snps = s;
         } else {
             snps = new Vector();
+        }
+
+        if (capture != null){
+            this.capture = capture;
+        }else{
+            this.capture = new Vector();
         }
 
         if(include != null) {
@@ -134,10 +143,10 @@ public class Tagger {
 
             if(!(forceExclude.contains(currentVarSeq) ) ){
                 PotentialTag tempPT = new PotentialTag(currentVarSeq);
-                for(int j=0;j<snps.size();j++) {
-                    if( maxComparisonDistance == 0 || Math.abs(((SNP)currentVarSeq).getLocation() - ((SNP)snps.get(j)).getLocation()) <= maxComparisonDistance)  {
-                        if( getPairwiseCompRsq(currentVarSeq,(VariantSequence) snps.get(j)) >= minRSquared) {
-                            tempPT.addTagged((VariantSequence) snps.get(j));
+                for(int j=0;j<capture.size();j++) {
+                    if( maxComparisonDistance == 0 || Math.abs(((SNP)currentVarSeq).getLocation() - ((SNP)capture.get(j)).getLocation()) <= maxComparisonDistance)  {
+                        if( getPairwiseCompRsq(currentVarSeq,(VariantSequence) capture.get(j)) >= minRSquared) {
+                            tempPT.addTagged((VariantSequence) capture.get(j));
                         }
                     }
                 }
@@ -145,7 +154,7 @@ public class Tagger {
             }
         }
 
-        Vector sitesToCapture = (Vector) snps.clone();
+        Vector sitesToCapture = (Vector) capture.clone();
 
 
         HaploText.logger.debug("snps to tag: " + sitesToCapture.size());
@@ -253,11 +262,17 @@ public class Tagger {
                     }
                 }
 
-                HashSet newlyTagged = addTag(currentBestTag,potentialTagByVarSeq);
-                countTagged += newlyTagged.size();
-
-                sitesToCapture.removeAll(newlyTagged);
-                sitesToCapture.remove(currentBestTag.sequence);
+                if (currentBestTag.taggedCount() > 0){
+                    //there are no tags which can be chosen -- this should only happen if you've force
+                    //excluded something which you want to capture, and none of the available tags can
+                    //capture any of the requested alleles
+                    HashSet newlyTagged = addTag(currentBestTag,potentialTagByVarSeq);
+                    countTagged += newlyTagged.size();
+                    sitesToCapture.removeAll(newlyTagged);
+                    sitesToCapture.remove(currentBestTag.sequence);
+                }else{
+                    potentialTagByVarSeq.remove(currentBestTag.sequence);
+                }
 
                 if(Options.getTaggerMinDistance() !=0){
                     Vector tooClose = new Vector();
@@ -368,7 +383,7 @@ public class Tagger {
 
         int count = 0;
         meanRSq = 0;
-        Iterator itr = snps.iterator();
+        Iterator itr = capture.iterator();
         while (itr.hasNext()){
             SNP s = (SNP) itr.next();
             TagSequence ts = s.getBestTag();
@@ -380,7 +395,7 @@ public class Tagger {
         //apparently some people think untagged SNPS should be averaged in as zeroes...leaving commented out for now.
         //count += untagged.size();
         meanRSq /= count;
-        percentCapped = (int)(((double)taggedSoFar/(double)snps.size())*100);
+        percentCapped = (int)(((double)taggedSoFar/(double)capture.size())*100);
 
         return new Vector(tags);
     }
@@ -584,9 +599,6 @@ public class Tagger {
     }
 
     private HashSet addTag(PotentialTag theTag,Hashtable potentialTagHash) {
-        Vector potentialTags = new Vector(potentialTagHash.values());
-
-        potentialTags.remove(theTag);
         potentialTagHash.remove(theTag.sequence);
         //newlyTagged contains alleles which were not tagged by anything in the set of tags before,
         //and are now tagged by theTag.
@@ -611,7 +623,7 @@ public class Tagger {
         }
 
         for(int i=0;i<toRemove.size();i++) {
-            potentialTags.remove(potentialTagHash.remove(toRemove.get(i)));
+            potentialTagHash.remove(toRemove.get(i));
         }
 
         //loop through the list of alleles the newly added tag can capture, and
@@ -748,7 +760,7 @@ public class Tagger {
     public void saveResultToFile(File outFile) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(outFile));
 
-        bw.write("#captured " + taggedSoFar + " of " + snps.size() +" alleles at r^2 >= " + minRSquared);
+        bw.write("#captured " + taggedSoFar + " of " + capture.size() +" alleles at r^2 >= " + minRSquared);
         bw.newLine();
         bw.write("#captured " + percentCapped + " percent of alleles with mean r^2 of " + Util.roundDouble(meanRSq, 3));
         bw.newLine();
@@ -757,9 +769,9 @@ public class Tagger {
 
         bw.write("Allele\tBest Test\tr^2 w/test");
         bw.newLine();
-        for (int i = 0; i < snps.size(); i++) {
+        for (int i = 0; i < capture.size(); i++) {
             StringBuffer line = new StringBuffer();
-            SNP snp = (SNP) snps.elementAt(i);
+            SNP snp = (SNP) capture.elementAt(i);
             line.append(snp.getName()).append("\t");
             TagSequence theTag = snp.getBestTag();
             if(theTag != null) {

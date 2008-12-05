@@ -319,6 +319,7 @@ public class TaggerConfigPanel extends HaploviewTab
                 Vector include = new Vector();
                 Vector exclude = new Vector();
                 Vector capture = new Vector();
+                Vector allsnps = new Vector();
                 for(int i= 0;i <table.getRowCount(); i++) {
                     if(((Boolean)table.getValueAt(i,INCLUDE_COL)).booleanValue()) {
                         include.add((String)table.getValueAt(i,NAME_COL));
@@ -326,11 +327,12 @@ public class TaggerConfigPanel extends HaploviewTab
                         exclude.add((String)table.getValueAt(i,NAME_COL));
                     }
                     if (((Boolean)table.getValueAt(i,CAPTURE_COL)).booleanValue()){
-                        capture.add(snpsByName.get(table.getValueAt(i,NAME_COL)));
+                        capture.add((String)table.getValueAt(i,NAME_COL));
                     }
+                    allsnps.add(snpsByName.get(table.getValueAt(i,NAME_COL)));
                 }
 
-                tagControl = new TaggerController(theData,include,exclude,capture,designScores,
+                tagControl = new TaggerController(theData,allsnps,include,exclude,capture,designScores,
                         Integer.valueOf(aggressiveGroup.getSelection().getActionCommand()).intValue(),maxNumTags,true);
 
                 runTaggerButton.setEnabled(false);

@@ -13,38 +13,39 @@ import java.io.IOException;
 public class TaggerController {
     private Tagger tagger;
     private Vector results;
-    private int numToCapture;
+    private Vector toCapture;
     private boolean taggingCompleted;
     private Hashtable snpHash;
 
-    public TaggerController(HaploData hd, Vector included, Vector excluded,
+    public TaggerController(HaploData hd, Vector allsnps, Vector included, Vector excluded,
                             Vector sitesToCapture, Hashtable designScores, int aggressionLevel, int maxNumTags,boolean findTags)
             throws TaggerException{
         Vector taggerSNPs = new Vector();
 
         snpHash = new Hashtable();
+        this.toCapture = sitesToCapture;
 
-        numToCapture = sitesToCapture.size();
 
-        for(int i=0;i<sitesToCapture.size();i++) {
-            SNP tempSNP = (SNP) sitesToCapture.get(i);
+        for(int i=0;i<allsnps.size();i++) {
+            SNP tempSNP = (SNP) allsnps.get(i);
             edu.mit.wi.tagger.SNP s = new edu.mit.wi.tagger.SNP(tempSNP.getDisplayName(),tempSNP.getPosition(),tempSNP.getMAF());
             taggerSNPs.add(s);
             snpHash.put(tempSNP.getDisplayName(),s);
         }
 
+        Vector captureSNPs = new Vector();
+        for (int i =0; i<sitesToCapture.size(); i++){
+            captureSNPs.add(snpHash.get(sitesToCapture.get(i)));
+        }
+
         Vector includedSNPs = new Vector();
         for(int i=0;i<included.size();i++) {
-            if(snpHash.containsKey(included.get(i))){
-                includedSNPs.add(snpHash.get(included.get(i)));
-            }
+            includedSNPs.add(snpHash.get(included.get(i)));
         }
 
         Vector excludedSNPs = new Vector();
         for(int i=0;i<excluded.size();i++) {
-            if(snpHash.containsKey(excluded.get(i))){
-                excludedSNPs.add(snpHash.get(excluded.get(i)));
-            }
+            excludedSNPs.add(snpHash.get(excluded.get(i)));
         }
 
         Hashtable indicesByVarSeq = new Hashtable();
@@ -54,8 +55,8 @@ public class TaggerController {
             }
         }
 
-        for (int i = 0; i < sitesToCapture.size(); i++){
-            SNP tempSNP = (SNP) sitesToCapture.get(i);
+        for (int i = 0; i < allsnps.size(); i++){
+            SNP tempSNP = (SNP) allsnps.get(i);
             edu.mit.wi.tagger.SNP taggerSNP = (edu.mit.wi.tagger.SNP) snpHash.get(tempSNP.getDisplayName());
             int p = ((Integer)indicesByVarSeq.get(taggerSNP)).intValue();
             for (int j = 1; j < hd.dpTable.getLength(p); j++){
@@ -72,7 +73,7 @@ public class TaggerController {
         }
 
         HaploviewAlleleCorrelator hac = new HaploviewAlleleCorrelator(indicesByVarSeq, hd);
-        tagger = new Tagger(taggerSNPs,includedSNPs,excludedSNPs, designScores, hac, Options.getTaggerRsqCutoff(),
+        tagger = new Tagger(taggerSNPs,captureSNPs,includedSNPs,excludedSNPs, designScores, hac, Options.getTaggerRsqCutoff(),
                 aggressionLevel, Options.getMaxDistance(), maxNumTags,findTags,Options.isPrintAllTags());
     }
 
@@ -100,7 +101,7 @@ public class TaggerController {
         Vector res = new Vector();
         String name = Chromosome.getMarker(i).getDisplayName();
         res.add(name);
-        if (snpHash.containsKey(name)){
+        if (toCapture.contains(name)){
             edu.mit.wi.tagger.SNP ts = (edu.mit.wi.tagger.SNP)snpHash.get(name);
             TagSequence bestTag = ts.getBestTag();
             if(bestTag != null) {
@@ -135,7 +136,7 @@ public class TaggerController {
     }
 
     public int getNumToCapture(){
-        return numToCapture;
+        return toCapture.size();
     }
 
     public void saveResultsToFile(File outFile) throws IOException {

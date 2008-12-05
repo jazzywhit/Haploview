@@ -1826,7 +1826,7 @@ public class HaploText implements Constants{
 
                 commandLogger.info("Starting tagging.");
 
-                TaggerController tc = new TaggerController(textData,forceIncludeTags,forceExcludeTags,sitesToCapture,
+                TaggerController tc = new TaggerController(textData,sitesToCapture,forceIncludeTags,forceExcludeTags,sitesToCapture,
                         designScores,tagging,maxNumTags,findTags);
                 tc.runTagger();
 
