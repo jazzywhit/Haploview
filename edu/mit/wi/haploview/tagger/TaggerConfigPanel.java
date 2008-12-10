@@ -77,11 +77,6 @@ public class TaggerConfigPanel extends HaploviewTab
             if(((Boolean)table.getValueAt(e.getFirstRow(),e.getColumn())).booleanValue()) {
                 table.setValueAt(new Boolean(false),e.getFirstRow(),INCLUDE_COL);
             }
-        }else if(e.getColumn() == CAPTURE_COL) {
-            if(!((Boolean)table.getValueAt(e.getFirstRow(),e.getColumn())).booleanValue()) {
-                table.setValueAt(new Boolean(false),e.getFirstRow(),EXCLUDE_COL);
-                table.setValueAt(new Boolean(false),e.getFirstRow(),INCLUDE_COL);
-            }
         }
     }
 
@@ -407,13 +402,11 @@ public class TaggerConfigPanel extends HaploviewTab
             for (int i = 0; i < table.getRowCount(); i++){
                 if (forceIncludes.containsKey(table.getValueAt(i,NAME_COL))){
                     table.setValueAt(new Boolean(true),i,INCLUDE_COL);
-                    table.setValueAt(new Boolean(true),i,CAPTURE_COL);
                 }
             }
         }else if (command.equals("Include All")){
             for (int i = 0; i < table.getRowCount(); i++){
                 table.setValueAt(new Boolean(true),i,INCLUDE_COL);
-                table.setValueAt(new Boolean(true),i,CAPTURE_COL);
             }
         }else if (command.equals("Load Excludes")){
             Hashtable forceExcludes = new Hashtable(1,1);
@@ -437,13 +430,11 @@ public class TaggerConfigPanel extends HaploviewTab
             for (int j = 0; j < table.getRowCount(); j++){
                 if (forceExcludes.containsKey(table.getValueAt(j,NAME_COL))){
                     table.setValueAt(new Boolean(true),j,EXCLUDE_COL);
-                    table.setValueAt(new Boolean(true),j,CAPTURE_COL);
                 }
             }
         }else if (command.equals("Exclude All")){
             for (int i = 0; i < table.getRowCount(); i++){
                 table.setValueAt(new Boolean(true),i,EXCLUDE_COL);
-                table.setValueAt(new Boolean(true),i,CAPTURE_COL);
             }
         }else if (command.equals("Uncapture All")){
             for (int i = 0; i < table.getRowCount(); i++){
@@ -453,7 +444,6 @@ public class TaggerConfigPanel extends HaploviewTab
             for (int i = 0; i < table.getRowCount(); i++){
                 if (((SNP)snpsByName.get(table.getValueAt(i,NAME_COL))).getStrandIssue()){
                     table.setValueAt(new Boolean(true),i,EXCLUDE_COL);
-                    table.setValueAt(new Boolean(true),i,CAPTURE_COL);
                 }
             }
         }else if (command.equals("Design Scores")){
@@ -518,8 +508,6 @@ public class TaggerConfigPanel extends HaploviewTab
                         table.setValueAt(new Boolean(true),j,CAPTURE_COL);
                     }else{
                         table.setValueAt(new Boolean(false),j,CAPTURE_COL);
-                        table.setValueAt(new Boolean(false),j,INCLUDE_COL);
-                        table.setValueAt(new Boolean(false),j,EXCLUDE_COL);
                     }
                 }
             }
@@ -540,7 +528,6 @@ public class TaggerConfigPanel extends HaploviewTab
             for (int i = 0; i < table.getRowCount(); i++){
                 if (forceIncludes.containsKey(table.getValueAt(i,NAME_COL))){
                     table.setValueAt(new Boolean(true),i,INCLUDE_COL);
-                    table.setValueAt(new Boolean(true),i,CAPTURE_COL);
                 }
             }
         }
@@ -588,12 +575,8 @@ public class TaggerConfigPanel extends HaploviewTab
         }
 
         public boolean isCellEditable(int row, int col){
-            if (col == CAPTURE_COL) {
-                return true;
-            }else if(col == INCLUDE_COL || col == EXCLUDE_COL){
-                if(((Boolean)((Vector)data.get(row)).get(CAPTURE_COL)).booleanValue()) {
-                    return true;
-                }
+            if (col == CAPTURE_COL || col == INCLUDE_COL || col == EXCLUDE_COL){
+                return true;   
             }
             return false;
         }
