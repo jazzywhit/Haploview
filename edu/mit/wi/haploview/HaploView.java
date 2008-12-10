@@ -27,7 +27,6 @@ import org.apache.batik.svggen.SVGGraphics2D;
 public class HaploView extends JFrame implements ActionListener, Constants{
     static final long serialVersionUID = -1918948520091554405L;
 
-    boolean DEBUG = false;
 
     JMenuItem readMarkerItem, analysisItem, blocksItem, gbrowseItem, spacingItem, gbEditItem;
     String exportItems[] = {
