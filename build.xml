@@ -57,6 +57,7 @@
    </javac>
 
    <copy file="resources/orator.raw" todir="build/classes/edu/mit/wi/haploview/"/>
+   <copy file="resources/hapmap-info.txt" todir="build/classes/edu/mit/wi/pedfile/"/>
 </target>
 
 
