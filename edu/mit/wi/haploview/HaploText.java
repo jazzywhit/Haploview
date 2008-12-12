@@ -879,9 +879,9 @@ public class HaploText implements Constants{
 
         logger.setAdditivity(false);
         commandLogger.setAdditivity(true);
-        //Convert all active System.out.println statements to commandLogger.info()
-        //Convert all active System.err.println statements to commandLogger.error()
-        //Convert all debug statements to logger.debug()
+        //TODO: Convert all active System.out.println statements to commandLogger.info()
+        //TODO: Convert all active System.err.println statements to commandLogger.error()
+        //TODO: Convert all debug statements to logger.debug()
 
 
         int countOptions = 0;
@@ -1781,9 +1781,11 @@ public class HaploText implements Constants{
                 }
 
                 Vector sitesToCapture = new Vector();
+                Vector allSNPs = new Vector();
                 if (captureAlleleTags == null){
                     for(int i=0;i<Chromosome.getSize();i++) {
-                        sitesToCapture.add(Chromosome.getMarker(i));
+                        sitesToCapture.add(Chromosome.getMarker(i).getDisplayName());
+                        allSNPs.add(Chromosome.getMarker(i));
                     }
                 }else{
                     for (int i = 0; i < captureAlleleTags.size(); i++){
@@ -1826,7 +1828,7 @@ public class HaploText implements Constants{
 
                 commandLogger.info("Starting tagging.");
 
-                TaggerController tc = new TaggerController(textData,sitesToCapture,forceIncludeTags,forceExcludeTags,sitesToCapture,
+                TaggerController tc = new TaggerController(textData,allSNPs,forceIncludeTags,forceExcludeTags,sitesToCapture,
                         designScores,tagging,maxNumTags,findTags);
                 tc.runTagger();
 
