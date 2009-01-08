@@ -52,7 +52,7 @@ public class UpdateChecker {
     public boolean checkForUpdate() throws IOException{
 
         try {
-            URL url = new URL("http://www.broad.mit.edu/mpg/haploview/uc/newversion.txt");
+            URL url = new URL("http://www.broad.mit.edu/ftp/pub/mpg/haploview/newversion.txt");
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.setRequestProperty("User-agent",Constants.USER_AGENT);
             con.connect();
