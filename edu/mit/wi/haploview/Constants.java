@@ -12,8 +12,8 @@ public interface Constants {
     public static final String JAVA_VERSION = System.getProperty("java.version");
     public static final String USER_AGENT = "Haploview/" + VERSION + " Java/" + JAVA_VERSION;
     public static final String RELEASE_DATE = "29 April, 2008";
-    public static final String WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/";
-    public static final String BETA_WEBSITE_STRING = "http://www.broad.mit.edu/mpg/haploview/beta.php";
+    public static final String WEBSITE_STRING = "http://www.broad.mit.edu/science/programs/medical-and-population-genetics/haploview/";
+    public static final String BETA_WEBSITE_STRING = "http://www.broad.mit.edu/science/programs/medical-and-population-genetics/haploview/downloads#beta";
     public static final String CITATION_STRING = "Citation: Barrett JC, Fry B, Maller J, Daly MJ.\nHaploview: analysis and visualization of LD and haplotype maps.\nBioinformatics. 2005";
     public static final String ABOUT_STRING = TITLE_STRING + "\n" + RELEASE_DATE + "\n" +
             WEBSITE_STRING + "\n\n" + CITATION_STRING + "\n\n" +
@@ -89,6 +89,7 @@ public interface Constants {
     static final int MAP_FILE = 11;
     //static final int FASTPHASE_FILE = 12;
     static final int HMPDL_FILE3 = 13;
+    static final int META_FILE = 14;
 
     //color modes
     static final int STD_SCHEME = 0;
@@ -130,6 +131,7 @@ public interface Constants {
     static final String[] VERSION_HAPMAP = {"HapMap 2", "HapMap 3"};
     static final String[] PANEL_NAMES_HAPMAP3 = {"ASW", "CEU", "CHB", "CHD", "GIH", "JPT", "LWK", "MEX", "MKK", "TSI", "YRI"};
     static final String[] RELEASE_NAMES = {"16a","21","22"};
+    static final String[] HAPMAP_VERSIONS = {"2", "3"};
     //static final String[] PHASE_FORMATS = {"HapMap PHASE","fastPHASE"};
     static final String[] DOWNLOAD_FORMATS = {"Region","Gene ID"};
 
