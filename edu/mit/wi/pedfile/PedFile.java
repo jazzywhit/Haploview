@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.51 2009/02/04 20:45:23 jcwhitworth Exp $
+* $Id: PedFile.java,v 3.52 2009/02/04 20:51:37 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -2384,9 +2384,24 @@ public class PedFile {
         String output = info[6];
         boolean infoDone = false;
         boolean hminfoDone = false;
-        String urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + panelChoice +
+
+        String urlHmp;
+
+        if (Integer.parseInt(panelChoice) == 23){
+
+            urlHmp = "http://www.hapmap.org/cgi-perl/phased_test?chr=" + targetChrom + "&pop=" + panelChoice +
+                "&start=" + startPos + "&stop=" + stopPos + "&ds=draft2"/* + phaseChoice*/ + "&out=" + output + "&filter=cons+";
+            System.out.println("urlHmp = " + urlHmp);
+
+        }else{
+
+            urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + panelChoice +
                 "&start=" + startPos + "&stop=" + stopPos + "&ds=p" + phaseChoice + "&out=" + output + "&filter=cons+"
                 + panelChoice.toLowerCase();
+            System.out.println("urlHmp = " + urlHmp);
+
+        }
+
 
         try{
             URL hmpUrl = new URL(urlHmp);
