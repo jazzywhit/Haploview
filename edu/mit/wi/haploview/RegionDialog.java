@@ -19,7 +19,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
     JCheckBox gBrowse, annotate, searchSnps, searchGenes;
     NumberTextField rangeInput, startPos, endPos, gcrangeInput;
     String marker, chrom;
-    long markerPosition,currStart,currEnd;
+    long markerPosition, currStart, currEnd;
     int chromNum, openChrom;
     PlinkResultsPanel prp;
     GeneCruiser gncr;
@@ -28,8 +28,8 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
     Vector activeTables = new Vector();
     String gcRequest;
 
-    public RegionDialog (HaploView hv, String chrom, String marker, PlinkResultsPanel prp, long markerPosition, String title) throws HaploViewException {
-        super(hv,title);
+    public RegionDialog(HaploView hv, String chrom, String marker, PlinkResultsPanel prp, long markerPosition, String title) throws HaploViewException {
+        super(hv, title);
 
         this.hv = hv;
         this.markerPosition = markerPosition;
@@ -37,22 +37,22 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         this.prp = prp;
         this.chrom = chrom;
 
-        try{
+        try {
             chromNum = Integer.parseInt(chrom);
 
-        }catch(NumberFormatException nfe){
-            if (chrom.equalsIgnoreCase("x")){
+        } catch (NumberFormatException nfe) {
+            if (chrom.equalsIgnoreCase("x")) {
                 chromNum = 22;
-            }else if(chrom.equalsIgnoreCase("y")){
+            } else if (chrom.equalsIgnoreCase("y")) {
                 chromNum = 23;
-            }else{
+            } else {
                 throw new HaploViewException("Error with Chromosome");
             }
         }
         openChrom = chromNum;
 
         JPanel contents = new JPanel();
-        contents.setLayout(new BoxLayout(contents,BoxLayout.Y_AXIS));
+        contents.setLayout(new BoxLayout(contents, BoxLayout.Y_AXIS));
         GridBagConstraints contents_grid = new GridBagConstraints();
         contents_grid.anchor = GridBagConstraints.CENTER;
 
@@ -64,11 +64,13 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         GridBagConstraints chooserPanel_grid = new GridBagConstraints();
 
         //CHOOSER PANEL
-        chooserPanel.add(new JLabel("Hapmap Version"), chooserPanel_grid);
-        hmpVersionChooser = new JComboBox(VERSION_HAPMAP);
+        chooserPanel.add(new JLabel("Version:"), chooserPanel_grid);
+        hmpVersionChooser = new JComboBox(HAPMAP_VERSIONS);
         hmpVersionChooser.setSelectedIndex(0);
-        //TODO Change this when Hapmap 3 is finally enabled.
-        hmpVersionChooser.setEnabled(false);
+        hmpVersionChooser.addActionListener(this);
+        hmpVersionChooser.setActionCommand("Version");
+//        //TODO Change this when Hapmap 3 is finally enabled.
+//        hmpVersionChooser.setEnabled(false);
         chooserPanel.add(hmpVersionChooser, chooserPanel_grid);
         chooserPanel_grid.gridx++;
         chooserPanel.add(new JLabel("Release:"), chooserPanel_grid);
@@ -80,12 +82,11 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         panelChooser = new JComboBox(PANEL_NAMES);
         panelChooser.setSelectedIndex(0);
         chooserPanel.add(panelChooser, chooserPanel_grid);
-        chooserPanel.add(new JLabel("Chr:"), chooserPanel_grid);
-        chromChooser = new JComboBox(CHROM_NAMES);
-        chromChooser.setSelectedIndex(chromNum);
-        //TODO Make this enabled by default, but disabled when we are in PlinkDataDialog
-        chromChooser.setEnabled(false);
-        chooserPanel.add(chromChooser, chooserPanel_grid);
+//        chooserPanel.add(new JLabel("Chr:"), chooserPanel_grid);
+//        chromChooser = new JComboBox(CHROM_NAMES);
+//        chromChooser.setSelectedIndex(chromNum);
+//        chromChooser.setEnabled(false);
+//        chooserPanel.add(chromChooser, chooserPanel_grid);
         contents.add(chooserPanel, contents_grid);
 
         ////////////////////////
@@ -107,7 +108,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         TopButtonPanel_grid.gridx++;
         TopButtonPanel.add(new JLabel("+/-"), chooserPanel_grid);
         TopButtonPanel_grid.gridx++;
-        rangeInput = new NumberTextField("100",6,false,false);
+        rangeInput = new NumberTextField("100", 6, false, false);
         TopButtonPanel.add(rangeInput, chooserPanel_grid);
         TopButtonPanel.add(new JLabel("kb"), chooserPanel_grid);
         TopButtonPanel_grid.gridx++;
@@ -160,21 +161,21 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         geneCruiserPanel = new JPanel();
         GridBagConstraints geneCruiserPanel_grid = new GridBagConstraints();
 
-        searchSnps = new JCheckBox ("Search for SNPs");
-        geneCruiserPanel.add(searchSnps,geneCruiserPanel_grid);
+        searchSnps = new JCheckBox("Search for SNPs");
+        geneCruiserPanel.add(searchSnps, geneCruiserPanel_grid);
         geneCruiserPanel_grid.gridx++;
 
         searchSnps.setSelected(true);
 
-        searchGenes = new JCheckBox ("Search for Genes");
-        geneCruiserPanel.add(searchGenes,geneCruiserPanel_grid);
+        searchGenes = new JCheckBox("Search for Genes");
+        geneCruiserPanel.add(searchGenes, geneCruiserPanel_grid);
         geneCruiserPanel_grid.gridx++;
 
         searchGenes.setSelected(true);
 
         geneCruiserPanel.add(new JLabel("+/-"), chooserPanel_grid);
         geneCruiserPanel_grid.gridx++;
-        gcrangeInput = new NumberTextField("100",6,false,false);
+        gcrangeInput = new NumberTextField("100", 6, false, false);
         geneCruiserPanel.add(gcrangeInput, geneCruiserPanel_grid);
         geneCruiserPanel.add(new JLabel("kb"), geneCruiserPanel_grid);
         geneCruiserPanel_grid.gridx++;
@@ -188,14 +189,17 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         setActive.addActionListener(this);
         geneCruiserPanel.add(setActive, geneCruiserPanel_grid);
         contents.add(geneCruiserPanel, contents_grid);
+        geneCruiserPanel.setEnabled(false);
 
         ////////////////////////
         contents_grid.gridy++;
         contents_grid.gridx = 0;
         ////////////////////////
-        contents.add(new JLabel("*Phased HapMap downloads require an active internet connection"),contents_grid);
+        contents.add(new JLabel("*Phased HapMap downloads require an active internet connection"), contents_grid);
 
         //FINALIZE
+        checkHapVersionChooser();
+        checkPhaseChooser();
         setContentPane(contents);
         this.getRootPane().setDefaultButton(goButton);
         this.setLocation(this.getParent().getX() + 100,
@@ -204,7 +208,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
     }
 
-    public JTable makeGeneTable(GeneCruiser gncr) throws HaploViewException{
+    public JTable makeGeneTable(GeneCruiser gncr) throws HaploViewException {
 
         Vector columnNames = new Vector();
         columnNames.addElement("GeneId");
@@ -218,20 +222,20 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         int width = 0;
         FontMetrics metrics = getFontMetrics(this.getFont());
 
-        if(gncr.size() > 0){
-            for (int i = 0;i < gncr.size(); i++){
+        if (gncr.size() > 0) {
+            for (int i = 0; i < gncr.size(); i++) {
                 rowData = new Vector();
                 rowData.addElement(gncr.getGene(i).GeneId);
                 rowData.addElement(gncr.getGene(i).Source);
-                rowData.addElement(String.valueOf((int)gncr.getGene(i).Start));
-                rowData.addElement(String.valueOf((int)gncr.getGene(i).End));
+                rowData.addElement(String.valueOf((int) gncr.getGene(i).Start));
+                rowData.addElement(String.valueOf((int) gncr.getGene(i).End));
                 rowData.addElement(gncr.getGene(i).Description);
-                if(metrics.stringWidth(gncr.getGene(i).Description) > width)
+                if (metrics.stringWidth(gncr.getGene(i).Description) > width)
                     width = metrics.stringWidth(gncr.getGene(i).Description);
                 rows.addElement(rowData);
             }
-        }else{
-            if(Integer.parseInt(gcrangeInput.getText()) <= 0)
+        } else {
+            if (Integer.parseInt(gcrangeInput.getText()) <= 0)
                 gcrangeInput.setText("100");
             throw new HaploViewException("No Gene Data was found in that region");
         }
@@ -252,30 +256,30 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
         return geneTable;
     }
 
-    public JTable makeSnpTable(GeneCruiser gncr) throws HaploViewException{
+    public JTable makeSnpTable(GeneCruiser gncr) throws HaploViewException {
 
         Vector columnNames = new Vector();
         columnNames.addElement("SNP");
         columnNames.addElement("Position");
         columnNames.addElement("Alleles");
-        columnNames.addElement("Strand");                
+        columnNames.addElement("Strand");
         columnNames.addElement("Consequence");
 
         Vector rowData;
         Vector rows = new Vector();
 
-        if(gncr.size() > 0){
-            for (int i = 0;i < gncr.size(); i++){
+        if (gncr.size() > 0) {
+            for (int i = 0; i < gncr.size(); i++) {
                 rowData = new Vector();
                 rowData.addElement(gncr.getSNP(i).getVariationName());
-                rowData.addElement(String.valueOf((int)gncr.getSNP(i).getStart()));
+                rowData.addElement(String.valueOf((int) gncr.getSNP(i).getStart()));
                 rowData.addElement(gncr.getSNP(i).getAllele());
                 rowData.addElement(gncr.getSNP(i).getStrand());
                 rowData.addElement(gncr.getSNP(i).getConsequenceType());
                 rows.addElement(rowData);
             }
-        }else{
-            if(Integer.parseInt(gcrangeInput.getText()) <= 0)
+        } else {
+            if (Integer.parseInt(gcrangeInput.getText()) <= 0)
                 gcrangeInput.setText("100");
             throw new HaploViewException("No SNP Data was found in that region");
         }
@@ -291,26 +295,62 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
         return snpTable;
     }
-    
-    public void setPreferredColumnWidth(int i, int size, JTable table)
-    {
-        if (i < table.getColumnModel().getColumnCount()){
+
+    private void checkHapVersionChooser() {
+
+        String currentSelection = (String) hmpVersionChooser.getSelectedItem();
+        if (currentSelection.equals("2")) {
+            releaseChooser.setModel(new JComboBox(RELEASE_NAMES).getModel());
+            panelChooser.setModel(new JComboBox(PANEL_NAMES).getModel());
+            releaseChooser.setSelectedIndex(1);
+
+        } else {
+            releaseChooser.setModel(new JComboBox(RELEASE_NAMES_HM3).getModel());
+            panelChooser.setModel(new JComboBox(PANEL_NAMES_HM3).getModel());
+        }
+
+    }
+
+    private void checkPhaseChooser() {
+
+        String currentSelection = (String) releaseChooser.getSelectedItem();
+        if ((currentSelection.equals("22")) || (currentSelection.equals("23"))) {
+
+            geneCruiserPanel.setEnabled(true);
+//            geneCruiseChooser.setEnabled(true);
+//            geneCruiseField.setEnabled(true);
+//            rangeField.setEnabled(true);
+//            geneCruiseButton.setEnabled(true);
+
+        } else {
+
+            geneCruiserPanel.setEnabled(false);
+//            geneCruiseChooser.setEnabled(false);
+//            geneCruiseField.setEnabled(false);
+//            rangeField.setEnabled(false);
+//            geneCruiseButton.setEnabled(false);
+
+        }
+    }
+
+    public void setPreferredColumnWidth(int i, int size, JTable table) {
+        if (i < table.getColumnModel().getColumnCount()) {
             TableColumn column = table.getColumnModel().getColumn(i);
             column.setPreferredWidth(size);
         }
     }
 
-    private String chromInt2Str(int chromNum){
-        if(chromNum == 22){
+    private String chromInt2Str(int chromNum) {
+        if (chromNum == 22) {
             return "X";
-        }else if(chromNum == 23){
+        } else if (chromNum == 23) {
             return "Y";
-        }else{
+        } else {
             return Integer.toString(chromNum);
         }
     }
 
-    private void deleteTab(int index){
+    private void deleteTab(int index) {
 
         resultsTab.remove(index);
         activeTables.remove(index);
@@ -319,21 +359,22 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
 
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
-        if(command.equals("Cancel")) {
+
+        if (command.equals("Cancel")) {
             this.dispose();
         }
-        if(command.equals("GeneCruise")){
+        if (command.equals("GeneCruise")) {
 
-            try{
+            try {
 
                 long start_pos = Long.parseLong(startPos.getText()) * 1000;
                 long range = Long.parseLong(gcrangeInput.getText()) * 1000;
                 long end_pos = Long.parseLong(endPos.getText()) * 1000;
 
-                if ((start_pos - range) > 0){
+                if ((start_pos - range) > 0) {
                     gcRequest = chrom + ":" + String.valueOf(start_pos - range)
                             + "-" + String.valueOf(end_pos + range);
-                }else{
+                } else {
                     gcRequest = chrom + ":0-" + String.valueOf(end_pos + range);
                 }
 
@@ -341,98 +382,98 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
                 boolean found_request = false;
 
                 //Check to make sure these Tabs aren't already created
-                for (int i = 0; i < resultsTab.getTabCount(); i ++){
-                    if(resultsTab.getTitleAt(i).equals(tabName) || resultsTab.getTitleAt(i).equals("Genes - " + tabName)){
+                for (int i = 0; i < resultsTab.getTabCount(); i++) {
+                    if (resultsTab.getTitleAt(i).equals(tabName) || resultsTab.getTitleAt(i).equals("Genes - " + tabName)) {
                         found_request = true;
                     }
                 }
 
-                if(!found_request){
-                    if(searchSnps.isSelected()){
-                        gncr = new GeneCruiser(3,gcRequest);
+                if (!found_request) {
+                    if (searchSnps.isSelected()) {
+                        gncr = new GeneCruiser(3, gcRequest);
                         JTable table = makeSnpTable(gncr);
                         resultsTab.add(tabName, new JScrollPane(table));
-                        activeTables.add(resultsTab.getTabCount()-1, table);
+                        activeTables.add(resultsTab.getTabCount() - 1, table);
                     }
 
-                    if(searchGenes.isSelected()){
+                    if (searchGenes.isSelected()) {
                         tabName = "Genes - " + tabName;
-                        gncr = new GeneCruiser(3,gcRequest);
+                        gncr = new GeneCruiser(3, gcRequest);
                         String best_snp = "";
-                        long average = (start_pos + end_pos)/2;
+                        long average = (start_pos + end_pos) / 2;
                         long curr_dist;
                         long best_snp_loc = 0;
                         long least_dist = average;
-                        for (int i = 0; i < gncr.size(); i++){
-                            curr_dist = ((long)(gncr.getSNP(i).getStart())) - average;
+                        for (int i = 0; i < gncr.size(); i++) {
+                            curr_dist = ((long) (gncr.getSNP(i).getStart())) - average;
 
-                            if (Math.abs(curr_dist) < least_dist){
-                                least_dist  = Math.abs(curr_dist);
+                            if (Math.abs(curr_dist) < least_dist) {
+                                least_dist = Math.abs(curr_dist);
                                 best_snp = gncr.getSNP(i).getVariationName();
-                                best_snp_loc = (long)gncr.getSNP(i).getStart();
+                                best_snp_loc = (long) gncr.getSNP(i).getStart();
                             }
                         }
 
-                        gcRequest = best_snp + "&fivePrimeSize=" + (Long.parseLong(gcrangeInput.getText())*1000 + Math.abs((start_pos - best_snp_loc))) + "&threePrimeSize=" + (Long.parseLong(gcrangeInput.getText())*(long)1000 + Math.abs((end_pos - best_snp_loc)));
+                        gcRequest = best_snp + "&fivePrimeSize=" + (Long.parseLong(gcrangeInput.getText()) * 1000 + Math.abs((start_pos - best_snp_loc))) + "&threePrimeSize=" + (Long.parseLong(gcrangeInput.getText()) * (long) 1000 + Math.abs((end_pos - best_snp_loc)));
 
-                        gncr = new GeneCruiser(4,gcRequest);
+                        gncr = new GeneCruiser(4, gcRequest);
                         JTable table = makeGeneTable(gncr);
 
                         resultsTab.add(tabName, new JScrollPane(table));
-                        activeTables.add(resultsTab.getTabCount()-1, table);
+                        activeTables.add(resultsTab.getTabCount() - 1, table);
                     }
 
                     this.repaint();
                 }
 
-            }catch(HaploViewException hve){
+            } catch (HaploViewException hve) {
                 JOptionPane.showMessageDialog(this,
                         hve.getMessage(),
                         "Retrieval Problem",
                         JOptionPane.INFORMATION_MESSAGE);
             }
         }
-        if(command.equals("Reset")){
+        if (command.equals("Reset")) {
 
             startPos.setText(Long.toString(markerPosition / 1000));
             endPos.setText(Long.toString(markerPosition / 1000));
             chromChooser.setSelectedIndex(openChrom);
 
-            while(resultsTab.getTabCount() > 0){
+            while (resultsTab.getTabCount() > 0) {
                 deleteTab(0);
             }
 
         }
-        if(command.equals("setActive")){
+        if (command.equals("Version")) {
 
-            if(activeTables.size() >= resultsTab.getSelectedIndex() && resultsTab.getSelectedIndex() >= 0){
+            checkHapVersionChooser();
+            checkPhaseChooser();
 
-                JTable tempTable = (JTable)activeTables.get(resultsTab.getSelectedIndex());
+        }
+
+        if (command.equals("setActive")) {
+
+            if (activeTables.size() >= resultsTab.getSelectedIndex() && resultsTab.getSelectedIndex() >= 0) {
+
+                JTable tempTable = (JTable) activeTables.get(resultsTab.getSelectedIndex());
                 String curr_tab_name = resultsTab.getTitleAt(resultsTab.getSelectedIndex());
 
-                if(tempTable.getSelectedRow() >= 0){
-                    if(curr_tab_name.startsWith("Gene")){
+                if (tempTable.getSelectedRow() >= 0) {
+                    if (curr_tab_name.startsWith("Gene")) {
 
-                        startPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),2))/1000));
-                        endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),3))/1000));
-                    
-                    }else{
-                        startPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),1))/1000));
-                        endPos.setText(String.valueOf(Long.parseLong((String)tempTable.getValueAt(tempTable.getSelectedRow(),1))/1000));
+                        startPos.setText(String.valueOf(Long.parseLong((String) tempTable.getValueAt(tempTable.getSelectedRow(), 2)) / 1000));
+                        endPos.setText(String.valueOf(Long.parseLong((String) tempTable.getValueAt(tempTable.getSelectedRow(), 3)) / 1000));
+
+                    } else {
+                        startPos.setText(String.valueOf(Long.parseLong((String) tempTable.getValueAt(tempTable.getSelectedRow(), 1)) / 1000));
+                        endPos.setText(String.valueOf(Long.parseLong((String) tempTable.getValueAt(tempTable.getSelectedRow(), 1)) / 1000));
                     }
                 }
             }
         }
-        if (command.equals("Go to Region")){
+        if (command.equals("Go to Region")) {
 
-            if(hmpVersionChooser.getSelectedIndex() == 1){
-                 JOptionPane.showMessageDialog(this,
-                        "HapMap3 is not ready yet.",
-                        "Invalid value",
-                        JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if(rangeInput.getText().equals("")){
+            if (rangeInput.getText().equals("")) {
                 JOptionPane.showMessageDialog(this,
                         "Please enter a range",
                         "Invalid value",
@@ -441,17 +482,17 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             }
             String panel = (String) panelChooser.getSelectedItem();
             int range = Integer.parseInt(rangeInput.getText());
-            long start = (Long.parseLong(startPos.getText()))-range;
-            if (start < 0){
+            long start = (Long.parseLong(startPos.getText())) - range;
+            if (start < 0) {
                 start = 0;
             }
             long end = (Long.parseLong(endPos.getText())) + range;
             String gotoStart = Long.toString(start);
             String gotoEnd = Long.toString(end);
-            String phase = (String)releaseChooser.getSelectedItem();
+            String phase = (String) releaseChooser.getSelectedItem();
             prp.setChosenMarker(marker);
 
-            if (gBrowse.isSelected()){
+            if (gBrowse.isSelected()) {
                 Options.setShowGBrowse(true);
             }
 
@@ -461,20 +502,20 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
             this.dispose();
             hv.readGenotypes(returnStrings, HMPDL_FILE);
             Vector chipSNPs = new Vector(prp.getSNPs());
-            if (Chromosome.getUnfilteredSize() > 0){
-                if (annotate.isSelected()){
-                    for (int i = 0; i < Chromosome.getSize(); i++){
-                        if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
+            if (Chromosome.getUnfilteredSize() > 0) {
+                if (annotate.isSelected()) {
+                    for (int i = 0; i < Chromosome.getSize(); i++) {
+                        if (chipSNPs.contains(Chromosome.getMarker(i).getName())) {
                             Vector extras = new Vector();
-                            for (int j = 1; j < prp.getOriginalColumns().size(); j++){
-                                extras.add(prp.getOriginalColumns().get(j) + ": " + String.valueOf(prp.getValueAt(chipSNPs.indexOf(Chromosome.getMarker(i).getName()),j+2)));
+                            for (int j = 1; j < prp.getOriginalColumns().size(); j++) {
+                                extras.add(prp.getOriginalColumns().get(j) + ": " + String.valueOf(prp.getValueAt(chipSNPs.indexOf(Chromosome.getMarker(i).getName()), j + 2)));
                             }
                             Chromosome.getMarker(i).setExtra(extras);
                         }
                     }
-                }else{
-                    for (int i = 0; i < Chromosome.getSize(); i++){
-                        if (chipSNPs.contains(Chromosome.getMarker(i).getName())){
+                } else {
+                    for (int i = 0; i < Chromosome.getSize(); i++) {
+                        if (chipSNPs.contains(Chromosome.getMarker(i).getName())) {
                             Vector plink = new Vector();
                             plink.add("PLINK");
                             Chromosome.getMarker(i).setExtra(plink);

@@ -35,17 +35,15 @@ public class ReadDataDialog extends JDialog
             phaseFileField, phaseSampleField, phaseLegendField, geneCruiseField, plinkFileField, plinkMapField, testFileField, geneCruiseField3;
     private JCheckBox doAssociation, doGB, phaseDoGB, downloadDoGB, xChrom, gZip, embeddedMap, plinkChrom, selectColumns, nonSNP, downloadDoGB3;
     private JRadioButton trioButton, ccButton, standardTDT, parenTDT;
-    private JButton browseAssocButton, browsePlinkMapButton, browsePhaseButton, browseSampleButton, browseLegendButton;
+    private JButton browseAssocButton, browsePlinkMapButton, browsePhaseButton, browseSampleButton, browseLegendButton, geneCruiseButton;
     private NumberTextField maxComparisonDistField, missingCutoffField, chromStartField, chromStartField3, chromEndField, chromEndField3, rangeField, rangeField3;
-    private JLabel testFileLabel, mapLabel, downloadLabel, downloadLabel3;
+    private JLabel testFileLabel, mapLabel, downloadLabel;
     private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox plinkChromChooser = new JComboBox(CHROM_NAMES);
     private JComboBox panelChooser = new JComboBox(PANEL_NAMES);
     private JComboBox phaseChooser = new JComboBox(RELEASE_NAMES);
     private JComboBox hapVersionChooser = new JComboBox(HAPMAP_VERSIONS);
-    private JComboBox chromChooser3 = new JComboBox(CHROM_NAMES);
-    private JComboBox panelChooser3 = new JComboBox(PANEL_NAMES_HAPMAP3);   //Edit
     //TODO: Uncomment all the fastPHASE stuff once it's ready
     //private JComboBox phaseFormatChooser = new JComboBox(PHASE_FORMATS);
     private JComboBox geneCruiseChooser = new JComboBox(GENE_DATABASES);
@@ -279,10 +277,7 @@ public class ReadDataDialog extends JDialog
         phaseTab = new JPanel(new GridBagLayout());
         c = new GridBagConstraints();
         c.insets = new Insets(5, 5, 5, 5);
-        //c.anchor = GridBagConstraints.CENTER;
         c.weightx = 0;
-        //c.gridwidth = 3;
-        //phaseTab.add(phaseFormatPanel,c);
         c.gridwidth = 1;
         c.anchor = GridBagConstraints.EAST;
         c.gridy = 1;
@@ -332,13 +327,17 @@ public class ReadDataDialog extends JDialog
         downloadChooserPanel = new JPanel();
         downloadChooserPanel.add(new JLabel("Version:"));
         downloadChooserPanel.add(hapVersionChooser);
-        hapVersionChooser.setSelectedIndex(0);
+        hapVersionChooser.setSelectedIndex(1);
         hapVersionChooser.setActionCommand("HapmapVersion");
         hapVersionChooser.addActionListener(this);
         downloadChooserPanel.add(new JLabel("Release:"));
         downloadChooserPanel.add(phaseChooser);
-        phaseChooser.setSelectedIndex(1);
-        downloadChooserPanel.add(new JLabel("Chromosome:"));
+        phaseChooser.setActionCommand("Release");
+        phaseChooser.addActionListener(this);
+//        downloadChooserPanel.add(new JLabel("Build:"));
+//        chromChooser.setSelectedIndex(-1);
+//        downloadChooserPanel.add(new JComboBox(BUILD_NAMES));
+        downloadChooserPanel.add(new JLabel("Chr:"));
         chromChooser.setSelectedIndex(-1);
         downloadChooserPanel.add(chromChooser);
         downloadChooserPanel.add(new JLabel("Analysis Panel:"));
@@ -356,6 +355,8 @@ public class ReadDataDialog extends JDialog
         downloadDoGB = new JCheckBox("Show HapMap info track");
         downloadDoGB.setSelected(true);
         downloadBrowsePanel.add(downloadDoGB);
+
+        //GENECRUISER PANEL
         geneCruiserPanel = new JPanel();
         geneCruiserPanel.add(geneCruiseChooser);
         geneCruiserPanel.add(new JLabel("ID:"));
@@ -365,7 +366,7 @@ public class ReadDataDialog extends JDialog
         rangeField = new NumberTextField("100", 6, false, false);
         geneCruiserPanel.add(rangeField);
         geneCruiserPanel.add(new JLabel("kb"));
-        JButton geneCruiseButton = new JButton("Go");
+        geneCruiseButton = new JButton("Go");
         geneCruiseButton.setActionCommand("GeneCruise");
         geneCruiseButton.addActionListener(this);
         geneCruiserPanel.add(geneCruiseButton);
@@ -451,6 +452,32 @@ public class ReadDataDialog extends JDialog
         c.gridy = 3;
         plinkTab.add(plinkChromPanel, c);
 
+        //Meta Analysis Tab
+        JTextField MetaFileField = new JTextField(20);
+        JButton browseMetaButton = new JButton("Browse");
+        browseMetaButton.setActionCommand(BROWSE_HMP);
+        browseMetaButton.addActionListener(this);
+
+        //Layout the HMP Tab
+        JPanel metaTab = new JPanel(new GridBagLayout());
+        c = new GridBagConstraints();
+        c.anchor = GridBagConstraints.EAST;
+        c.insets = new Insets(5, 5, 5, 5);
+        c.weightx = 1;
+        metaTab.add(new JLabel("Data File:"), c);
+        c.gridx = 1;
+        c.anchor = GridBagConstraints.CENTER;
+        c.weightx = 0;
+        metaTab.add(MetaFileField, c);
+        c.gridx = 2;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(0, 10, 0, 0);
+        c.weightx = 1;
+        metaTab.add(browseMetaButton, c);
+        c.gridy = 1;
+        c.gridx = 0;
+        c.gridwidth = 3;
+
         //Add the tabs to the tabbed pane
         dataFormatPane.setFont(new Font("Default", Font.BOLD, 12));
         dataFormatPane.addTab("Linkage Format", pedTab);
@@ -460,7 +487,7 @@ public class ReadDataDialog extends JDialog
         dataFormatPane.addTab("HapMap PHASE", phaseTab);
         dataFormatPane.addTab("HapMap Download", downloadTab);
         dataFormatPane.addTab("PLINK Format", plinkTab);
-//        dataFormatPane.addTab("Meta Analysis", metaTab);
+        dataFormatPane.addTab("Meta Analysis", metaTab);
         //Set the selected Tab so you go back to the tab you were previously in
         dataFormatPane.setSelectedIndex(currTab);
 
@@ -477,12 +504,10 @@ public class ReadDataDialog extends JDialog
         choicePanel.add(cancelButton);
         JPanel proxyPanel = new JPanel();
         proxyPanel.add(proxyButton);
-
         JPanel contents = new JPanel(new GridBagLayout());
         c = new GridBagConstraints();
         c.gridwidth = 3;
         contents.add(dataFormatPane, c);
-
         JPanel compDistPanel = new JPanel();
         compDistPanel.add(new JLabel("Ignore pairwise comparisons of markers >"));
         maxComparisonDistField = new NumberTextField(String.valueOf(Options.getMaxDistance() / 1000), 6, false, false);
@@ -490,7 +515,6 @@ public class ReadDataDialog extends JDialog
         compDistPanel.add(new JLabel("kb apart."));
         c.gridy = 1;
         contents.add(compDistPanel, c);
-
         JPanel missingCutoffPanel = new JPanel();
         missingCutoffField = new NumberTextField(String.valueOf(Options.getMissingThreshold() * 100), 3, false, false);
         missingCutoffPanel.add(new JLabel("Exclude individuals with >"));
@@ -504,6 +528,7 @@ public class ReadDataDialog extends JDialog
         c.anchor = GridBagConstraints.EAST;
         contents.add(proxyPanel, c);
 
+//      SET GUI BASED ON PARAMETERS
         if (h.getPhasedSelection() != null) {
             if (((String) h.getPhasedSelection().get(0)).startsWith("16")) {
                 phaseChooser.setSelectedIndex(0);
@@ -531,6 +556,9 @@ public class ReadDataDialog extends JDialog
             chromEndField.setText((String) h.getPhasedSelection().get(4));
         }
 
+        checkHapVersionChooser();
+        checkPhaseChooser();
+
         this.setContentPane(contents);
         this.setLocation(this.getParent().getX() + 100,
                 this.getParent().getY() + 100);
@@ -545,8 +573,7 @@ public class ReadDataDialog extends JDialog
         if (command.equals("Cancel"))
             this.dispose();
 
-        if (command.equals("Proxy Settings"))
-        {
+        if (command.equals("Proxy Settings")) {
             ProxyDialog pd = new ProxyDialog(this, "Proxy Settings");
             pd.pack();
             pd.setVisible(true);
@@ -567,6 +594,27 @@ public class ReadDataDialog extends JDialog
 
             if (currTab == 0) {
                 fileType = PED_FILE;
+
+                if (doAssociation.isSelected() && fileType == PED_FILE) {
+                    if (trioButton.isSelected()) {
+                        Options.setAssocTest(ASSOC_TRIO);
+                        if (standardTDT.isSelected()) {
+                            Options.setTdtType(TDT_STD);
+                        } else if (parenTDT.isSelected()) {
+                            Options.setTdtType(TDT_PAREN);
+                        }
+                    } else {
+                        Options.setAssocTest(ASSOC_CC);
+                    }
+                } else {
+                    Options.setAssocTest(ASSOC_NONE);
+                }
+
+                if (xChrom.isSelected() && fileType == PED_FILE) {
+                    Chromosome.setDataChrom("chrx");
+                } else {
+                    Chromosome.setDataChrom("none");
+                }
             } else if (currTab == 1) {
                 fileType = HAPS_FILE;
             } else if (currTab == 2) {
@@ -583,6 +631,8 @@ public class ReadDataDialog extends JDialog
 
             } else if (currTab == 5) {
                 fileType = PLINK_FILE;
+            } else if (currTab == 6) {
+                fileType = META_FILE;
             }
 
             HaploView caller = (HaploView) this.getParent();
@@ -598,27 +648,6 @@ public class ReadDataDialog extends JDialog
                     return;
                 }
                 Options.setMissingThreshold(missingThreshold);
-            }
-
-            if (doAssociation.isSelected() && fileType == PED_FILE) {
-                if (trioButton.isSelected()) {
-                    Options.setAssocTest(ASSOC_TRIO);
-                    if (standardTDT.isSelected()) {
-                        Options.setTdtType(TDT_STD);
-                    } else if (parenTDT.isSelected()) {
-                        Options.setTdtType(TDT_PAREN);
-                    }
-                } else {
-                    Options.setAssocTest(ASSOC_CC);
-                }
-            } else {
-                Options.setAssocTest(ASSOC_NONE);
-            }
-
-            if (xChrom.isSelected() && fileType == PED_FILE) {
-                Chromosome.setDataChrom("chrx");
-            } else {
-                Chromosome.setDataChrom("none");
             }
 
             if (doGB.isSelected() && fileType == HMP_FILE) {
@@ -718,6 +747,7 @@ public class ReadDataDialog extends JDialog
                 }
             }
             String[] returnStrings;
+
             if (fileType == HAPS_FILE) {
                 returnStrings = new String[]{hapsFileField.getText(), hapsInfoField.getText(), null};
                 if (returnStrings[1].equals("")) returnStrings[1] = null;
@@ -729,10 +759,30 @@ public class ReadDataDialog extends JDialog
                 returnStrings = new String[]{phaseFileField.getText(), phaseSampleField.getText(), null, chromChoice};
             }*/
             else if (fileType == HMPDL_FILE) {
-                System.out.println("chromChoice = " + chromChoice);
-                System.out.println("phaseChoice = " + phaseChoice);
+
+                //TODO Give the user an option to choose the hapmap file.
+//                String hmpInfoFile = hapmapInfoFile;
+//
+//                File hmFile = new File(hmpInfoFile);
+//                if (!hmFile.exists()){
+//
+//                    JOptionPane.showMessageDialog(caller,
+//                            "Could not find Hapmap-info.txt",
+//                            "Invalid value",
+//                            JOptionPane.ERROR_MESSAGE);
+//
+//                    HaploView.fc.setSelectedFile(new File(""));
+//                    int returned = HaploView.fc.showOpenDialog(this);
+//                    if (returned != JFileChooser.APPROVE_OPTION) return;
+//                    System.out.println(HaploView.fc.getSelectedFile().getAbsolutePath());
+//
+//                    hmpInfoFile = HaploView.fc.getSelectedFile().getAbsolutePath();
+//
+//                }
+
                 returnStrings = new String[]{"Chr" + chromChoice + ":" + panelChoice + ":" + chromStartField.getText() + ".." +
                         chromEndField.getText(), panelChoice, chromStartField.getText(), chromEndField.getText(), chromChoice, phaseChoice, "txt"};
+
             } else if (fileType == PLINK_FILE) {
                 returnStrings = new String[]{plinkFileField.getText(), plinkMapField.getText(), null, embed, null, chromChoice, selectCols};
             } else {
@@ -782,11 +832,11 @@ public class ReadDataDialog extends JDialog
             } else if (command.equals(BROWSE_INFO)) {
                 browse(INFO_FILE);
             }
-        } else if (currTab == 2) {     // HMP_FILE TAB
+        } else if (currTab == 2) {                              // HMP_FILE TAB
             if (command.equals(BROWSE_HMP)) {
                 browse(HMP_FILE);
             }
-        } else if (currTab == 3) {    // PHASE TAB
+        } else if (currTab == 3) {                              // PHASE TAB
             if (command.equals(BROWSE_PHASE)) {
                 browse(PHASEHMP_FILE);
             } else if (command.equals(BROWSE_LEGEND)) {
@@ -794,32 +844,24 @@ public class ReadDataDialog extends JDialog
             } else if (command.equals(BROWSE_SAMPLE)) {
                 browse(SAMPLEHMP_FILE);
             }
-        } else if (currTab == 4) {   //HMPDL TAB
+        } else if (currTab == 4) {                              //HMPDL TAB
 
-            if (command.equals("HapmapVersion")){
+            if (command.equals("Release")) {
 
-                System.out.println("Set Hapmap version Changes");
-                
-                phaseChooser.setModel(new JComboBox(new String[]{"23", "22"}).getModel());
-                //TODO WE NEED TO SET THE REST OF THE CONTROLS TO REFLECT THE FINAL OPTIONS
-//                phaseChooser.setSelectedIndex(1);
-//                chromChooser;
-//                panelChooser;
-//
-//                  private JComboBox chromChooser = new JComboBox(CHROM_NAMES);
-//    private JComboBox loadChromChooser = new JComboBox(CHROM_NAMES);
-//    private JComboBox plinkChromChooser = new JComboBox(CHROM_NAMES);
-//    private JComboBox panelChooser = new JComboBox(PANEL_NAMES);
-//    private JComboBox phaseChooser = new JComboBox(RELEASE_NAMES);
-//    private JComboBox hapVersionChooser = new JComboBox(HAPMAP_VERSIONS);
+                checkPhaseChooser();
 
-            }
-            else if (command.equals("GeneCruise")) {
+            } else if (command.equals("HapmapVersion")) {
+
+                checkHapVersionChooser();
+                checkPhaseChooser();
+
+            } else if (command.equals("GeneCruise")) {
                 setCursor(new Cursor(Cursor.WAIT_CURSOR));
                 if (rangeField.getText().length() < 1) {
                     rangeField.setText("100");
                 }
                 try {
+
                     GeneCruiser gncr = new GeneCruiser(geneCruiseChooser.getSelectedIndex(), geneCruiseField.getText());
                     chromStartField.setText(String.valueOf((gncr.getStart() / 1000) - Integer.parseInt(rangeField.getText())));
                     chromEndField.setText(String.valueOf((gncr.getEnd() / 1000) + Integer.parseInt(rangeField.getText())));
@@ -834,7 +876,7 @@ public class ReadDataDialog extends JDialog
                 setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
 
-        } else if (currTab == 5) {  //PLINK TAB
+        } else if (currTab == 5) {                              //PLINK TAB
             if (command.equals(BROWSE_WGA)) {
                 browse(PLINK_FILE);
             } else if (command.equals(BROWSE_MAP)) {
@@ -1055,6 +1097,43 @@ public class ReadDataDialog extends JDialog
             testFileLabel.setEnabled(false);
             standardTDT.setEnabled(false);
             parenTDT.setEnabled(false);
+        }
+    }
+
+    private void checkHapVersionChooser() {
+
+        String currentSelection = (String)hapVersionChooser.getSelectedItem();
+        if (currentSelection.equals("2")) {
+            phaseChooser.setModel(new JComboBox(RELEASE_NAMES).getModel());
+            panelChooser.setModel(new JComboBox(PANEL_NAMES).getModel());
+            phaseChooser.setSelectedIndex(1);
+
+        } else {
+            phaseChooser.setModel(new JComboBox(RELEASE_NAMES_HM3).getModel());
+            panelChooser.setModel(new JComboBox(PANEL_NAMES_HM3).getModel());
+        }
+
+    }
+
+    private void checkPhaseChooser() {
+
+        String currentSelection = (String)phaseChooser.getSelectedItem();
+        if ((currentSelection.equals("22")) || (currentSelection.equals("23"))) {
+
+            geneCruiserPanel.setEnabled(true);
+            geneCruiseChooser.setEnabled(true);
+            geneCruiseField.setEnabled(true);
+            rangeField.setEnabled(true);
+            geneCruiseButton.setEnabled(true);
+
+        } else {
+
+            geneCruiserPanel.setEnabled(false);
+            geneCruiseChooser.setEnabled(false);
+            geneCruiseField.setEnabled(false);
+            rangeField.setEnabled(false);
+            geneCruiseButton.setEnabled(false);
+
         }
     }
 
