@@ -863,8 +863,10 @@ public class ReadDataDialog extends JDialog
                 try {
 
                     GeneCruiser gncr = new GeneCruiser(geneCruiseChooser.getSelectedIndex(), geneCruiseField.getText());
-                    chromStartField.setText(String.valueOf((gncr.getStart() / 1000) - Integer.parseInt(rangeField.getText())));
-                    chromEndField.setText(String.valueOf((gncr.getEnd() / 1000) + Integer.parseInt(rangeField.getText())));
+                    chromStartField.setText(String.valueOf((((int)gncr.getStart() / 1000)) -
+                            Integer.parseInt(rangeField.getText())));
+                    chromEndField.setText(String.valueOf((((int)gncr.getEnd() / 1000)) +
+                            Integer.parseInt(rangeField.getText())));
                     chromChooser.setSelectedIndex(gncr.getChromosome() - 1);
 
                 } catch (HaploViewException hve) {
