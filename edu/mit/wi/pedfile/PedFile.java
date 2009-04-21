@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.53 2009/02/06 17:41:19 jcwhitworth Exp $
+* $Id: PedFile.java,v 3.54 2009/04/21 20:28:38 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -2116,6 +2116,8 @@ public class PedFile {
         InputStream phaseStream, sampleStream, legendStream;
         String phaseName, sampleName, legendName;
 
+        //SAMPLE FILE CREAION
+        //TODO Add option for non-separate Data files
         try {
             URL sampleURL = new URL(info[1]);
             sampleName = sampleURL.getFile();
@@ -2225,6 +2227,7 @@ public class PedFile {
         } catch (NoSuchElementException nse) {
             throw new PedFileException("File format error in " + legendName);
         }
+
 
         try {
             URL phaseURL = new URL(info[0]);
@@ -2347,6 +2350,312 @@ public class PedFile {
         }
     }
 
+    public void parseSinglePhaseFile(String[] info) throws IOException, PedFileException {
+
+        String targetChrom = "chr" + info[3];
+        Chromosome.setDataChrom(targetChrom);
+        Vector legendMarkers = new Vector();
+        Vector legendPositions = new Vector();
+        Vector hmpVector = new Vector();
+        Individual ind = null;
+        byte[] byteDataT = new byte[0];
+        byte[] byteDataU = new byte[0];
+        this.allIndividuals = new Vector();
+
+        boolean pseudoChecked = false;
+        boolean infoDone = false;
+        boolean hminfoDone = false;
+
+        String urlHmp = info[0];
+
+        BufferedReader hmpBuffReader;
+        String hmpFileName;
+        InputStream sampleStream;
+
+        try {
+
+            try {
+                URL hmpUrl = new URL(urlHmp);
+                hmpFileName = hmpUrl.getFile();
+                sampleStream = hmpUrl.openStream();
+
+            } catch (MalformedURLException mfe) {
+
+                File sampleFile = new File(urlHmp);
+                if (sampleFile.length() < 1) {
+                    throw new PedFileException("Sample file is empty or non-existent: " + sampleFile.getName());
+                }
+                hmpFileName = sampleFile.getName();
+                sampleStream = new FileInputStream(sampleFile);
+
+            } catch (IOException ioe) {
+                throw new PedFileException("Could not connect to " + info[1]);
+            }
+
+            if (Options.getGzip()) {
+                GZIPInputStream sampleInputStream = new GZIPInputStream(sampleStream);
+                hmpBuffReader = new BufferedReader(new InputStreamReader(sampleInputStream));
+            } else {
+                hmpBuffReader = new BufferedReader(new InputStreamReader(sampleStream));
+            }
+
+            String hmpLine;
+            char token;
+            int columns;
+            while ((hmpLine = hmpBuffReader.readLine()) != null) {
+                if (hmpLine.startsWith("---")) {
+                    //continue;
+                } else if (hmpLine.startsWith("pop:")) {
+                    //continue;
+                } else if (hmpLine.startsWith("build:")) {
+                    StringTokenizer buildSt = new StringTokenizer(hmpLine);
+                    buildSt.nextToken();
+                    String build = buildSt.nextToken();
+                    Chromosome.setDataBuild(build);
+
+                } else if (hmpLine.startsWith("hapmap_release:")) {
+                    //continue;
+                } else if (hmpLine.startsWith("filters:")) {
+                    //continue;
+                } else if (hmpLine.startsWith("start:")) {
+                    //continue;
+                } else if (hmpLine.startsWith("stop:")) {
+                    //continue;
+                } else if (hmpLine.startsWith("snps:")) {
+                    //continue;
+                } else if (hmpLine.startsWith("phased_haplotypes:")) {
+                    infoDone = true;
+                } else if (hmpLine.startsWith("No")) {
+                    throw new PedFileException(hmpLine);
+                } else if (hmpLine.startsWith("Too many")) {
+                    throw new PedFileException(hmpLine);
+                } else if (!infoDone) {
+                    StringTokenizer posSt = new StringTokenizer(hmpLine, " \t:-");
+                //posSt.nextToken(); //skip the -
+                    legendMarkers.add(posSt.nextToken());
+                    legendPositions.add(posSt.nextToken());
+                } else if (infoDone) {
+                    if (!hminfoDone) {
+                        hminfo = new String[legendPositions.size()][2];
+                        for (int i = 0; i < legendPositions.size(); i++) {
+                            //marker name.
+                            hminfo[i][0] = (String) legendMarkers.get(i);
+                //marker position.
+                            hminfo[i][1] = (String) legendPositions.get(i);
+                        }
+                        hminfoDone = true;
+                    }
+                    hmpVector.add(hmpLine);
+                }
+            }
+
+            Vector GoodStrands = new Vector();
+            boolean strandWaiting = false;
+            boolean foundNStrand = false;
+            boolean blah = false;
+
+            for (int i = 0; i < hmpVector.size(); i++) {
+
+                //GRAB THE SET OF CHROMS
+                StringTokenizer dataSt = new StringTokenizer((String) hmpVector.get(i));
+                dataSt.nextToken(); //skip the -
+
+                //ID
+                String newid = dataSt.nextToken();  //individual ID with _c1/_c2
+                StringTokenizer filter = new StringTokenizer(newid, "_:");
+                String indivID = filter.nextToken();
+                String strandID = filter.nextToken();
+
+                //DEAL WITH NEW IDs
+                if (!strandID.startsWith("c")) {
+                    if (hapMapTranslate.containsKey(indivID)) {
+                        String currentValue = (String) hapMapTranslate.get(indivID);
+                        indivID = indivID + "_" + strandID;
+                        hapMapTranslate.put(indivID, currentValue);
+                    }
+
+                    strandID = filter.nextToken();
+                }
+
+                String currAlleles = dataSt.nextToken();
+
+                if (strandID.equals("c1")) {
+                    //CHECK IF WE CAPTURED A STRAND FOR N TYPE PROCESSING
+                    if (GoodStrands.size() > 1) {
+                        strandWaiting = false;
+                    } else {
+                        strandWaiting = false;
+                    }
+
+                    //CHECK THE NEXT LINE, MAKE SURE IT IS NOT ALL N's
+                    StringTokenizer nextStrand = new StringTokenizer((String) hmpVector.get(i + 1), ":- \t");
+                    String nextID = nextStrand.nextToken();
+                    String tmpAlleles = nextStrand.nextToken();
+                    int nCount = 0;
+
+                    for (int j = 0; j < tmpAlleles.length(); j++) {
+                        char allele = tmpAlleles.charAt(j);
+                        if (allele == 'N') {
+                            nCount++;
+                        }
+                    }
+
+                    if (nCount / tmpAlleles.length() == 1) {
+                        foundNStrand = true;
+                        if (!strandWaiting) {
+                            GoodStrands.add(nextID);
+                            GoodStrands.add(currAlleles);
+                            blah = true;
+                        }
+                    } else {
+
+                        foundNStrand = false;
+
+                    }
+                }
+
+                //SET ALLELE DATA FOR N STRANDS
+                if (foundNStrand) {
+                    if (strandWaiting) {
+                        if (strandID.equals("c2")) {
+
+                            currAlleles = (String) GoodStrands.get(1);
+                            GoodStrands.removeAllElements();
+                            foundNStrand = false;
+                        }
+                    }
+                }
+
+                //CHECK SEX
+                columns = currAlleles.length();
+                if (strandID.equals("c1")) {   //Only set up a new individual on c1.
+                    ind = new Individual(columns, true);
+                    ind.setIndividualID(indivID);
+                    if (columns != legendMarkers.size()) {
+                        throw new PedFileException("File error: invalid number of markers on Individual " + ind.getIndividualID());
+                    }
+
+                    String details;
+                    //GO THROUGH SAVED DATA
+                    if (hapMapTranslate.containsKey(ind.getIndividualID())) {
+                        details = (String) hapMapTranslate.get(ind.getIndividualID());
+                    } else {
+                        continue;
+                    }
+
+                    //TOKENIZE AND GO THROUGH LINES
+                    StringTokenizer dt = new StringTokenizer(details, "\n\t\" \"");
+                    ind.setFamilyID(dt.nextToken().trim());
+                    //skip individualID since we already have it.
+                    dt.nextToken();
+                    ind.setDadID(dt.nextToken());
+                    ind.setMomID(dt.nextToken());
+
+                    try {
+                        ind.setGender(Integer.parseInt(dt.nextToken().trim()));
+                        ind.setAffectedStatus(Integer.parseInt(dt.nextToken().trim()));
+                    } catch (NumberFormatException nfe) {
+                        throw new PedFileException("File error: invalid gender or affected status for indiv " + ind.getIndividualID());
+                    }
+                    if (!pseudoChecked) {
+                        if (ind.getGender() == Individual.MALE) {
+                            pseudoChecked = true;
+                            if (Chromosome.getDataChrom().equalsIgnoreCase("chrx")) {
+                                StringTokenizer checkSt = new StringTokenizer((String) hmpVector.get(i + 1), ":- \t");
+                                String checkNewid = checkSt.nextToken();
+                                checkSt.nextToken(); //alleles
+                                StringTokenizer checkFilter = new StringTokenizer(checkNewid, "_");
+                                checkFilter.nextToken();
+                                String checkStrand = checkFilter.nextToken();
+                                if (checkStrand.equals("c2")) {
+                                    Chromosome.setDataChrom("chrp");
+                                }
+                            }
+                        }
+                    }
+
+                    //check if the family exists already in the Hashtable
+                    Family fam = (Family) this.families.get(ind.getFamilyID());
+                    if (fam == null) {
+                        //it doesnt exist, so create a new Family object
+                        fam = new Family(ind.getFamilyID());
+                    }
+                    fam.addMember(ind);
+                    this.families.put(ind.getFamilyID(), fam);
+                    this.allIndividuals.add(ind);
+                }
+
+                //PARSE ALLELES
+                int index = 0;
+                if (strandID.equals("c1")) {
+                    byteDataT = new byte[columns];
+                } else {
+                    byteDataU = new byte[columns];
+                }
+
+                for (int k = 0; k < columns; k++) {
+                    token = currAlleles.charAt(k);
+                    if (strandID.equals("c1")) {
+                        if (token == 'A') {
+                            byteDataT[index] = 1;
+                        } else if (token == 'C') {
+                            byteDataT[index] = 2;
+                        } else if (token == 'G') {
+                            byteDataT[index] = 3;
+                        } else if (token == 'T') {
+                            byteDataT[index] = 4;
+                        } else if (token == 'N') {
+                            //Unknowns are assigned an N by Hapmap now on missing parents
+                            byteDataU[index] = 0;
+                        } else {
+                            throw new PedFileException("Invalid Allele: " + token);
+                        }
+                    } else {
+                        if (token == 'A') {
+                            byteDataU[index] = 1;
+                        } else if (token == 'C') {
+                            byteDataU[index] = 2;
+                        } else if (token == 'G') {
+                            byteDataU[index] = 3;
+                        } else if (token == 'T') {
+                            byteDataU[index] = 4;
+                        } else if (token == '-') {
+                            /*if (!(Chromosome.getDataChrom().equalsIgnoreCase("chrx"))){
+                                throw new PedFileException("Missing allele on non X-chromosome data");
+                            }else{
+                                byteDataU[index] = byteDataT[index];
+                            }*/
+                            throw new PedFileException("Haploview does not currently support regions encompassing both\n"
+                                    + "pseudoautosomal and non-pseudoautosomal markers.");
+                        } else if (token == 'N') {
+                            //Unknowns are assigned an N by Hapmap now on missing parents
+                            byteDataU[index] = 0;
+                        } else {
+
+                            throw new PedFileException("File format error.");
+                        }
+                    }
+                    index++;
+                }
+
+                if (strandID.equals("c2")) {
+                    for (int j = 0; j < columns; j++) {
+
+                        ind.addMarker(byteDataT[j], byteDataU[j]);
+
+                    }
+                } else if (strandID.equals("c1") && (ind.getGender() == Individual.MALE) &&
+                        (Chromosome.getDataChrom().equalsIgnoreCase("chrx"))) {
+                    for (int j = 0; j < columns; j++) {
+                        ind.addMarker(byteDataT[j], byteDataT[j]);
+                    }
+                }
+            }
+        } catch (IOException io) {
+            throw new IOException("Could not connect to HapMap database.");
+        }
+    }
+
     public void parsePhasedDownload(String[] info) throws IOException, PedFileException {
         String targetChrom = "chr" + info[4];
         Chromosome.setDataChrom(targetChrom);
@@ -2377,7 +2686,7 @@ public class PedFile {
         } else if (info[5].equals("22")) {
             Chromosome.setDataBuild("ncbi_b36");
             phaseChoice = "III";
-        } else if (info[5].equals("23")) {
+        } else if (info[5].equals("27")) {
             Chromosome.setDataBuild("ncbi_b36");
             phaseChoice = "III";
         } else {
@@ -2390,11 +2699,11 @@ public class PedFile {
 
         String urlHmp;
 
-        if (info[5].equals("23")) {
+        if (phaseChoice.equals("III")) {
             //HAPMAP 3
-            urlHmp = "http://www.hapmap.org/cgi-perl/phased_test?chr=" + targetChrom + "&pop=" + panelChoice +
-                    "&start=" + startPos + "&stop=" + stopPos + "&ds=draft2"/* + phaseChoice*/ + "&out=" + output + "&filter=cons+";
-
+            urlHmp = "http://www.hapmap.org/cgi-perl/phased_hapmap3?chr=" + targetChrom + "&pop=" + panelChoice +
+                    "&start=" + startPos + "&stop=" + stopPos + "&ds=r2"/* + phaseChoice*/ + "&out=" + output;
+            System.out.println("urlHmp = " + urlHmp);
         } else {
             //HAPMAP 2
 
@@ -2405,9 +2714,9 @@ public class PedFile {
             urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + panelChoice +
                     "&start=" + startPos + "&stop=" + stopPos + "&ds=p" + phaseChoice + "&out=" + output + "&filter=cons+"
                     + panelChoice.toLowerCase();
-
         }
 
+        System.out.println("urlHmp = " + urlHmp);
 
         try {
             URL hmpUrl = new URL(urlHmp);
@@ -2453,7 +2762,7 @@ public class PedFile {
                         throw new PedFileException(hmpLine);
                     } else if (!infoDone) {
                         StringTokenizer posSt = new StringTokenizer(hmpLine, " \t:-");
-                        //posSt.nextToken(); //skip the -
+//posSt.nextToken(); //skip the -
                         legendMarkers.add(posSt.nextToken());
                         legendPositions.add(posSt.nextToken());
                     } else if (infoDone) {
@@ -2462,7 +2771,7 @@ public class PedFile {
                             for (int i = 0; i < legendPositions.size(); i++) {
                                 //marker name.
                                 hminfo[i][0] = (String) legendMarkers.get(i);
-                                //marker position.
+//marker position.
                                 hminfo[i][1] = (String) legendPositions.get(i);
                             }
                             hminfoDone = true;
@@ -2471,28 +2780,107 @@ public class PedFile {
                     }
                 }
 
+                Vector GoodStrands = new Vector();
+                boolean strandWaiting = false;
+                boolean foundNStrand = false;
+
                 for (int i = 0; i < hmpVector.size(); i++) {
+
+                    //GRAB THE SET OF CHROMS
                     StringTokenizer dataSt = new StringTokenizer((String) hmpVector.get(i));
                     dataSt.nextToken(); //skip the -
+
+                    //ID
                     String newid = dataSt.nextToken();  //individual ID with _c1/_c2
-                    String data = dataSt.nextToken(); //alleles
-                    columns = data.length();
                     StringTokenizer filter = new StringTokenizer(newid, "_:");
-                    String id = filter.nextToken();
-                    String strand = filter.nextToken();
-                    if (strand.equals("c1")) {   //Only set up a new individual on c1.
+                    String indivID = filter.nextToken();
+                    String strandID = filter.nextToken();
+
+                    //DEAL WITH NEW IDs
+                    if (!strandID.startsWith("c")) {
+                        if (hapMapTranslate.containsKey(indivID)) {
+                            String currentValue = (String) hapMapTranslate.get(indivID);
+                            indivID = indivID + "_" + strandID;
+                            hapMapTranslate.put(indivID, currentValue);
+                        }
+
+                        strandID = filter.nextToken();
+                    }
+
+                    String currAlleles = dataSt.nextToken();
+
+                    if (strandID.equals("c1")) {
+                        //CHECK IF WE CAPTURED A STRAND FOR N TYPE PROCESSING
+                        if (GoodStrands.size() > 1) {
+                            strandWaiting = false;
+                        } else {
+                            strandWaiting = false;
+                        }
+
+                        //CHECK THE NEXT LINE, MAKE SURE IT IS NOT ALL N's
+                        StringTokenizer nextStrand = new StringTokenizer((String) hmpVector.get(i + 1), ":- \t");
+                        String nextID = nextStrand.nextToken();
+                        String tmpAlleles = nextStrand.nextToken();
+                        int nCount = 0;
+
+                        for (int j = 0; j < tmpAlleles.length(); j++) {
+                            char allele = tmpAlleles.charAt(j);
+                            if (allele == 'N') {
+                                nCount++;
+                            }
+                        }
+
+                        if (nCount / tmpAlleles.length() == 1) {
+                            foundNStrand = true;
+                            if (!strandWaiting) {
+                                GoodStrands.add(nextID);
+                                GoodStrands.add(currAlleles);
+                                blah = true;
+                            }
+                        } else {
+
+                            foundNStrand = false;
+
+                        }
+                    }
+
+                    //SET ALLELE DATA FOR N STRANDS
+                    if (foundNStrand) {
+                        if (strandWaiting) {
+                            if (strandID.equals("c2")) {
+
+                                currAlleles = (String) GoodStrands.get(1);
+                                GoodStrands.removeAllElements();
+                                foundNStrand = false;
+                            }
+                        }
+                    }
+
+                    //CHECK SEX
+                    columns = currAlleles.length();
+                    if (strandID.equals("c1")) {   //Only set up a new individual on c1.
                         ind = new Individual(columns, true);
-                        ind.setIndividualID(new String(id));
+                        ind.setIndividualID(indivID);
                         if (columns != legendMarkers.size()) {
                             throw new PedFileException("File error: invalid number of markers on Individual " + ind.getIndividualID());
                         }
-                        String details = (String) hapMapTranslate.get(ind.getIndividualID());
+
+                        String details;
+                        //GO THROUGH SAVED DATA
+                        if (hapMapTranslate.containsKey(ind.getIndividualID())) {
+                            details = (String) hapMapTranslate.get(ind.getIndividualID());
+                        } else {
+                            continue;
+                        }
+
+                        //TOKENIZE AND GO THROUGH LINES
                         StringTokenizer dt = new StringTokenizer(details, "\n\t\" \"");
                         ind.setFamilyID(dt.nextToken().trim());
                         //skip individualID since we already have it.
                         dt.nextToken();
                         ind.setDadID(dt.nextToken());
                         ind.setMomID(dt.nextToken());
+
                         try {
                             ind.setGender(Integer.parseInt(dt.nextToken().trim()));
                             ind.setAffectedStatus(Integer.parseInt(dt.nextToken().trim()));
@@ -2527,15 +2915,17 @@ public class PedFile {
                         this.allIndividuals.add(ind);
                     }
 
+                    //PARSE ALLELES
                     int index = 0;
-                    if (strand.equals("c1")) {
+                    if (strandID.equals("c1")) {
                         byteDataT = new byte[columns];
                     } else {
                         byteDataU = new byte[columns];
                     }
+
                     for (int k = 0; k < columns; k++) {
-                        token = data.charAt(k);
-                        if (strand.equals("c1")) {
+                        token = currAlleles.charAt(k);
+                        if (strandID.equals("c1")) {
                             if (token == 'A') {
                                 byteDataT[index] = 1;
                             } else if (token == 'C') {
@@ -2561,10 +2951,10 @@ public class PedFile {
                                 byteDataU[index] = 4;
                             } else if (token == '-') {
                                 /*if (!(Chromosome.getDataChrom().equalsIgnoreCase("chrx"))){
-                                                       throw new PedFileException("Missing allele on non X-chromosome data");
-                                                   }else{
-                                                       byteDataU[index] = byteDataT[index];
-                                                   }*/
+                                    throw new PedFileException("Missing allele on non X-chromosome data");
+                                }else{
+                                    byteDataU[index] = byteDataT[index];
+                                }*/
                                 throw new PedFileException("Haploview does not currently support regions encompassing both\n"
                                         + "pseudoautosomal and non-pseudoautosomal markers.");
                             } else if (token == 'N') {
@@ -2577,11 +2967,14 @@ public class PedFile {
                         }
                         index++;
                     }
-                    if (strand.equals("c2")) {
+
+                    if (strandID.equals("c2")) {
                         for (int j = 0; j < columns; j++) {
+
                             ind.addMarker(byteDataT[j], byteDataU[j]);
+
                         }
-                    } else if (strand.equals("c1") && (ind.getGender() == Individual.MALE) &&
+                    } else if (strandID.equals("c1") && (ind.getGender() == Individual.MALE) &&
                             (Chromosome.getDataChrom().equalsIgnoreCase("chrx"))) {
                         for (int j = 0; j < columns; j++) {
                             ind.addMarker(byteDataT[j], byteDataT[j]);
@@ -2732,7 +3125,7 @@ public class PedFile {
                 continue;
             }
             StringTokenizer st = new StringTokenizer(currentLine);
-            //first two tokens are expected to be ped, indiv
+//first two tokens are expected to be ped, indiv
             if (st.countTokens() > 2) {
                 ped = st.nextToken();
                 indiv = st.nextToken();
@@ -3071,7 +3464,7 @@ public class PedFile {
         for (int i = 0; i < tableData.size(); i++) {
             StringBuffer sb = new StringBuffer();
             Vector row = (Vector) tableData.get(i);
-            //don't print the true/false vals in last column
+//don't print the true/false vals in last column
             for (int j = 0; j < numCols - 1; j++) {
                 sb.append(row.get(j)).append("\t");
             }
