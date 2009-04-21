@@ -314,7 +314,7 @@ public class RegionDialog extends JDialog implements ActionListener, Constants {
     private void checkPhaseChooser() {
 
         String currentSelection = (String) releaseChooser.getSelectedItem();
-        if ((currentSelection.equals("22")) || (currentSelection.equals("23"))) {
+        if ((currentSelection.equals("22")) || (currentSelection.equals("27"))) {
 
             geneCruiserPanel.setEnabled(true);
 //            geneCruiseChooser.setEnabled(true);
