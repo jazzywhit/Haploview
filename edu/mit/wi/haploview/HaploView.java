@@ -656,6 +656,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         final File inFile = new File(inputOptions[0]);
         final AssociationTestSet customAssocSet;
         final int progressType = type;
+        theData = new HaploData();
 
         try {
             if (type == HMPDL_FILE){
@@ -666,7 +667,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 phasedSelection.add(inputOptions[2]);
                 phasedSelection.add(inputOptions[3]);
             }
-            if (type != PHASEHMP_FILE && type != HMPDL_FILE){
+            if (type != PHASEHMP_FILE && type != HMPDL_FILE && type != SINGLEPHASE_FILE){
                 if (inputOptions[2] != null && inputOptions[1] == null){
                     throw new HaploViewException("A marker information file is required if a tests file is specified.");
                 }
@@ -683,17 +684,16 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 viewMenuItems[VIEW_ASSOC_NUM].setEnabled(false);
                 Options.setAssocTest(ASSOC_NONE);
             }
-            theData = new HaploData();
 
             if (type == HAPS_FILE){
                 theData.prepareHapsInput(inputOptions[0]);
-            }else if (type == PHASEHMP_FILE || type == HMPDL_FILE /*|| type == FASTPHASE_FILE*/){
+            }else if (type == PHASEHMP_FILE || type == HMPDL_FILE || type == SINGLEPHASE_FILE /*|| type == FASTPHASE_FILE*/){
                 theData.phasedToChrom(inputOptions, type);
             }else{
                 theData.linkageToChrom(inputOptions[0], type);
             }
 
-            if (type != PHASEHMP_FILE && type != HMPDL_FILE /*&& type != FASTPHASE_FILE*/){
+            if (type != PHASEHMP_FILE && type != HMPDL_FILE && type != SINGLEPHASE_FILE /*&& type != FASTPHASE_FILE*/){
                 if(theData.getPedFile().isBogusParents()) {
                     JOptionPane.showMessageDialog(this,
                             "One or more individuals in the file reference non-existent parents.\nThese references have been ignored.",
@@ -708,7 +708,6 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                         "File Error",
                         JOptionPane.ERROR_MESSAGE);
             }
-
 
             //deal with marker information
             theData.infoKnown = false;
@@ -1665,7 +1664,14 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                     inputArray[1] = argParser.getPhasedHmpSampleName();
                     inputArray[2] = argParser.getPhasedHmpLegendName();
                     inputArray[3] = argParser.getChromosome();
-                    window.readGenotypes(inputArray, PHASEHMP_FILE);
+
+                    if (argParser.getSinglePhasedFile()){
+                        inputArray[4] = argParser.getRelease();
+                        window.readGenotypes(inputArray, SINGLEPHASE_FILE);
+                    }else{
+                        window.readGenotypes(inputArray, PHASEHMP_FILE);
+                    }
+
                 }/*else if (argParser.getFastphaseFileName() != null){
                     inputArray[0] = argParser.getFastphaseFileName();
                     inputArray[1] = argParser.getInfoFileName();
