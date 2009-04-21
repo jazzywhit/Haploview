@@ -35,6 +35,8 @@ public class HaploText implements Constants{
     private String plinkFileName;
     private String mapFileName;
     private boolean phasedhapmapDownload = false;
+    private boolean singlePhaseFile = false;
+    private boolean hapmapPhase3 = false;
     private boolean SNPBased = true;
     private String selectCols;
     private String blockName;
@@ -108,6 +110,10 @@ public class HaploText implements Constants{
 
     public String getPhasedHmpDataName(){
         return phasedhmpdataFileName;
+    }
+
+    public boolean getSinglePhasedFile(){
+        return singlePhaseFile;
     }
 
     public String getPhasedHmpSampleName(){
@@ -410,6 +416,19 @@ public class HaploText implements Constants{
                     phasedhmpdataFileName = args[i];
                 }
             }
+            else if (args[i].equalsIgnoreCase("-singlephased")){
+                i++;
+                if(i>=args.length || ((args[i].charAt(0)) == '-')){
+                    die(args[i-1] + " requires a filename");
+                }
+                else{
+                    if(phasedhmpdataFileName != null){
+                        argHandlerMessages.add("multiple "+args[i-1] + " arguments found. only last phased hapmap data file listed will be used");
+                    }
+                    phasedhmpdataFileName = args[i];
+                    singlePhaseFile = true;
+                }
+            }
             else if (args[i].equalsIgnoreCase("-phasedhmpsample")){
                 i++;
                 if(i>=args.length || ((args[i].charAt(0)) == '-')){
@@ -448,6 +467,9 @@ public class HaploText implements Constants{
             }*/
             else if (args[i].equalsIgnoreCase("-hapmapDownload")){
                 phasedhapmapDownload = true;
+            }
+            else if (args[i].equalsIgnoreCase("-hapmapPhase3")){
+                hapmapPhase3 = true;
             }
             else if (args[i].equalsIgnoreCase("-plink")){
                 i++;
@@ -896,10 +918,13 @@ public class HaploText implements Constants{
         }
         if(phasedhmpdataFileName != null) {
             countOptions++;
-            if(phasedhmpsampleFileName == null){
-                die("You must specify a sample file for phased hapmap input.");
-            }else if(phasedhmplegendFileName == null){
-                die("You must specify a legend file for phased hapmap input.");
+
+            if(!singlePhaseFile){
+                if(phasedhmpsampleFileName == null){
+                    die("You must specify a sample file for phased hapmap input.");
+                }else if(phasedhmplegendFileName == null){
+                    die("You must specify a legend file for phased hapmap input.");
+                }
             }
         }
      /*   if(fastphaseFileName != null) {
@@ -1167,9 +1192,10 @@ public class HaploText implements Constants{
         if (phasedhapmapDownload){
             if (chromosomeArg == null){
                 die("-hapmapDownload requires a chromosome specification");
-            }else if (!(panelArg.equalsIgnoreCase("CEU") || panelArg.equalsIgnoreCase("YRI")  ||
-                    panelArg.equalsIgnoreCase("CHB+JPT"))){
-                die("-hapmapDownload requires an analysis panel specification of CEU, YRI, or CHB+JPT");
+            }
+
+            if(!checkPanelName()){
+                die("Please check your Panel Name");
             }
 
             try{
@@ -1181,12 +1207,82 @@ public class HaploText implements Constants{
             }
 
             if (release == null){
-                release = "21";
+                if(hapmapPhase3){
+                    release = DEFAULT_HM3_RELEASE;
+                }else{
+                    release = DEFAULT_HM_RELEASE;
+                }
             }
+            
+            if(!checkReleaseName()){
+                die("Please check your Release Name");
+            }
+        }
+    }
 
-            if (!(release.equals("22")) && !(release.equals("21")) && !(release.startsWith("16"))){
-                die("release must be either 16a, 21 or 22");
+    private boolean checkReleaseName(){
+
+        String errorString = "-release requires specific releases. The valid options are: ";
+
+        if(hapmapPhase3){
+            for (int i = 0; i < RELEASE_NAMES_HM3.length; i++){
+                errorString += (RELEASE_NAMES_HM3[i] + ", ");
+                if (i != RELEASE_NAMES_HM3.length-1){
+                   errorString += ", ";
+                }
+
+                if(RELEASE_NAMES_HM3[i].equals(release)){
+                    return true;
+                }
             }
+            System.out.println(errorString);
+            return false;
+        }else{
+            for (int i = 0; i < RELEASE_NAMES.length; i++){
+               errorString += (RELEASE_NAMES[i]);
+               if (i != RELEASE_NAMES.length-1){
+                   errorString += ", ";
+               }
+
+               if(RELEASE_NAMES[i].equals(release)){
+                    return true;
+                }
+            }
+            System.out.println(errorString);
+            return false;
+        }
+    }
+
+    private boolean checkPanelName(){
+
+        String errorString = "-hapmapDownload requires an analysis panel specification. The valid options are: ";
+
+        if(hapmapPhase3){
+            for (int i = 0; i < PANEL_NAMES_HM3.length; i++){
+                errorString += (PANEL_NAMES_HM3[i] + ", ");
+                if (i != PANEL_NAMES_HM3.length-1){
+                   errorString += ", ";
+                }
+
+                if(PANEL_NAMES_HM3[i].equals(panelArg)){
+                    return true;
+                }
+            }
+            System.out.println(errorString);
+            return false;
+        }else{
+            for (int i = 0; i < PANEL_NAMES.length; i++){
+               errorString += (PANEL_NAMES[i]);
+               if (i != PANEL_NAMES.length-1){
+                   errorString += ", ";
+               }
+
+               if(PANEL_NAMES[i].equals(panelArg)){
+                    return true;
+                }
+            }
+            System.out.println(errorString);
+            return false;
         }
     }
 
@@ -1322,7 +1418,13 @@ public class HaploText implements Constants{
         }
         else if (phasedhmpdataFileName != null){
             fileName = phasedhmpdataFileName;
-            fileType = PHASEHMP_FILE;
+
+            if (singlePhaseFile){
+                fileType = SINGLEPHASE_FILE;
+            }else{
+                fileType = PHASEHMP_FILE;
+            }
+
             phasedHapMapInfo = new String[]{phasedhmpdataFileName, phasedhmpsampleFileName, phasedhmplegendFileName, chromosomeArg};
         }
        /* else if (fastphaseFileName != null){
@@ -1360,7 +1462,6 @@ public class HaploText implements Constants{
                 }else{
                     commandLogger.info("Using data file: " + fileName);
                 }
-
             }
 
             if (outputRootName == null){
@@ -1393,7 +1494,7 @@ public class HaploText implements Constants{
                     commandLogger.warn("Error: At least one male in the file is heterozygous.\nThese genotypes have been ignored.");
                 }
             }
-            else if (fileType == PHASEHMP_FILE || fileType == HMPDL_FILE /*|| fileType == FASTPHASE_FILE*/){
+            else if (fileType == PHASEHMP_FILE || fileType == HMPDL_FILE || fileType == SINGLEPHASE_FILE /*|| fileType == FASTPHASE_FILE*/){
                 //read in phased data
                 textData.phasedToChrom(phasedHapMapInfo, fileType);
             }
