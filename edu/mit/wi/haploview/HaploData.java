@@ -811,6 +811,7 @@ public class HaploData implements Constants{
 
         infoKnown = true;
         pedFile = new PedFile();
+
         if (type == HMPDL_FILE){
             pedFile.parsePhasedDownload(info);
         }else if (type == PHASEHMP_FILE){
@@ -818,6 +819,9 @@ public class HaploData implements Constants{
         }/*else if (type == FASTPHASE_FILE){
             pedFile.parseFastPhase(info);
         }*/
+        else if (type == SINGLEPHASE_FILE){
+            pedFile.parseSinglePhaseFile(info);
+        }
 
         HaploData.setPhasedData(true);
 
