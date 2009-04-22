@@ -1120,7 +1120,7 @@ public class ReadDataDialog extends JDialog
     private void checkPhaseChooser() {
 
         String currentSelection = (String)phaseChooser.getSelectedItem();
-        if ((currentSelection.equals("22")) || (currentSelection.equals("23"))) {
+        if ((currentSelection.equals("22")) || (currentSelection.equals("27"))) {
 
             geneCruiserPanel.setEnabled(true);
             geneCruiseChooser.setEnabled(true);
