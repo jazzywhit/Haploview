@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.56 2009/04/22 15:41:05 jcwhitworth Exp $
+* $Id: PedFile.java,v 3.57 2009/04/22 15:43:25 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -2369,14 +2369,12 @@ public class PedFile {
         String urlHmp = info[0];
 
         BufferedReader hmpBuffReader;
-        String hmpFileName;
         InputStream sampleStream;
 
         try {
 
             try {
                 URL hmpUrl = new URL(urlHmp);
-                hmpFileName = hmpUrl.getFile();
                 sampleStream = hmpUrl.openStream();
 
             } catch (MalformedURLException mfe) {
@@ -2385,7 +2383,6 @@ public class PedFile {
                 if (sampleFile.length() < 1) {
                     throw new PedFileException("Sample file is empty or non-existent: " + sampleFile.getName());
                 }
-                hmpFileName = sampleFile.getName();
                 sampleStream = new FileInputStream(sampleFile);
 
             } catch (IOException ioe) {
@@ -2506,9 +2503,7 @@ public class PedFile {
                             GoodStrands.add(currAlleles);
                         }
                     } else {
-
                         foundNStrand = false;
-
                     }
                 }
 
