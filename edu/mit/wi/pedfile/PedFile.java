@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.58 2009/04/22 16:38:59 jcwhitworth Exp $
+* $Id: PedFile.java,v 3.59 2009/04/22 16:54:36 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -2684,12 +2684,13 @@ public class PedFile {
                     + panelChoice.toLowerCase();
         }
 
+        String hmpLine;
+        char token;
+        int columns;
         try {
             fileConnection phaseHmpFile = new fileConnection(urlHmp);
             BufferedReader hmpBuffReader = phaseHmpFile.getBufferedReader();
-            String hmpLine;
-            char token;
-            int columns;
+
             while ((hmpLine = hmpBuffReader.readLine()) != null) {
                 if (hmpLine.startsWith("---")) {
                     //continue;

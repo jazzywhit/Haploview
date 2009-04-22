@@ -1,7 +1,5 @@
 package edu.mit.wi.haploview;
 
-import edu.mit.wi.pedfile.PedFileException;
-
 import java.io.*;
 import java.net.URL;
 import java.net.MalformedURLException;
