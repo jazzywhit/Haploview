@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.55 2009/04/22 15:33:43 jcwhitworth Exp $
+* $Id: PedFile.java,v 3.56 2009/04/22 15:41:05 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -2452,7 +2452,6 @@ public class PedFile {
             Vector GoodStrands = new Vector();
             boolean strandWaiting = false;
             boolean foundNStrand = false;
-            boolean blah = false;
 
             for (int i = 0; i < hmpVector.size(); i++) {
 
@@ -2505,7 +2504,6 @@ public class PedFile {
                         if (!strandWaiting) {
                             GoodStrands.add(nextID);
                             GoodStrands.add(currAlleles);
-                            blah = true;
                         }
                     } else {
 
@@ -2657,6 +2655,7 @@ public class PedFile {
     }
 
     public void parsePhasedDownload(String[] info) throws IOException, PedFileException {
+
         String targetChrom = "chr" + info[4];
         Chromosome.setDataChrom(targetChrom);
         Vector legendMarkers = new Vector();
@@ -3252,8 +3251,6 @@ public class PedFile {
             throw new PedFileException("Genotype file appears to have an odd number of lines.\n" +
                     "Each individual is required to have two chromosomes");
         }
-
-
     }
 
     public int[] checkGenotype(String allele) throws PedFileException {
@@ -3274,7 +3271,6 @@ public class PedFile {
             genotype[0] = Integer.parseInt(allele.trim());
             genotype[1] = 1;
         }
-
         return genotype;
     }
 
