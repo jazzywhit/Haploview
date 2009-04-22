@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.54 2009/04/21 20:28:38 jcwhitworth Exp $
+* $Id: PedFile.java,v 3.55 2009/04/22 15:33:43 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -2835,7 +2835,6 @@ public class PedFile {
                             if (!strandWaiting) {
                                 GoodStrands.add(nextID);
                                 GoodStrands.add(currAlleles);
-                                blah = true;
                             }
                         } else {
 
