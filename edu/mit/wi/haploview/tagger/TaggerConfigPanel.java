@@ -570,14 +570,14 @@ public class TaggerConfigPanel extends HaploviewTab
         public void setValueAt(Object value, int row, int col){
             if (col == INCLUDE_COL){
                 //if they check force include for some row, then we uncheck force exclude for that row
-                if ((Boolean)value){
-                    ((Vector)data.elementAt(row)).set(EXCLUDE_COL,false);
+                if (((Boolean)value).booleanValue()){
+                    ((Vector)data.elementAt(row)).set(EXCLUDE_COL,new Boolean(false));
                     fireTableCellUpdated(row,EXCLUDE_COL);
                 }
             }else if(col == EXCLUDE_COL) {
                 //if they check force exclude for some row, then we uncheck force include for that row
-                if ((Boolean)value){
-                    ((Vector)data.elementAt(row)).set(INCLUDE_COL,false);
+                if (((Boolean)value).booleanValue()){
+                    ((Vector)data.elementAt(row)).set(INCLUDE_COL,new Boolean(false));
                     fireTableCellUpdated(row,INCLUDE_COL);
                 }
             }
