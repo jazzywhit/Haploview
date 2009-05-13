@@ -18,7 +18,7 @@ import java.util.StringTokenizer;
 import java.io.*;
 
 public class TaggerConfigPanel extends HaploviewTab
-        implements TableModelListener, ActionListener {
+        implements  ActionListener {
     static final long serialVersionUID = 1616877753933097437L;
     private JTable table;
     private TableSorter sorter;
@@ -65,20 +65,6 @@ public class TaggerConfigPanel extends HaploviewTab
         }
     }
 
-    public void tableChanged(TableModelEvent e) {
-        if (e.getColumn() == INCLUDE_COL){
-            //if they check force include for some row, then we uncheck force exclude for that row
-            if(((Boolean)table.getValueAt(e.getFirstRow(),e.getColumn())).booleanValue()) {
-                table.setValueAt(new Boolean(false),e.getFirstRow(),EXCLUDE_COL);
-            }
-        }
-        else if(e.getColumn() == EXCLUDE_COL) {
-            //if they check force exclude for some row, then we uncheck force include for that row
-            if(((Boolean)table.getValueAt(e.getFirstRow(),e.getColumn())).booleanValue()) {
-                table.setValueAt(new Boolean(false),e.getFirstRow(),INCLUDE_COL);
-            }
-        }
-    }
 
     public void refreshTable(){
         this.removeAll();
@@ -113,7 +99,7 @@ public class TaggerConfigPanel extends HaploviewTab
             tableData.add(tempData);
         }
         TagConfigTableModel tableModel = new TagConfigTableModel(columnNames,tableData);
-        tableModel.addTableModelListener(this);
+        //tableModel.addTableModelListener(this);
         sorter = new TableSorter(tableModel);
         table = new JTable(sorter);
         sorter.setTableHeader(table.getTableHeader());
@@ -582,6 +568,19 @@ public class TaggerConfigPanel extends HaploviewTab
         }
 
         public void setValueAt(Object value, int row, int col){
+            if (col == INCLUDE_COL){
+                //if they check force include for some row, then we uncheck force exclude for that row
+                if ((Boolean)value){
+                    ((Vector)data.elementAt(row)).set(EXCLUDE_COL,false);
+                    fireTableCellUpdated(row,EXCLUDE_COL);
+                }
+            }else if(col == EXCLUDE_COL) {
+                //if they check force exclude for some row, then we uncheck force include for that row
+                if ((Boolean)value){
+                    ((Vector)data.elementAt(row)).set(INCLUDE_COL,false);
+                    fireTableCellUpdated(row,INCLUDE_COL);
+                }
+            }
             ((Vector)data.elementAt(row)).set(col, value);
             fireTableCellUpdated(row, col);
         }
