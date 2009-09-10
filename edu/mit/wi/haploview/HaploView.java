@@ -659,6 +659,23 @@ public class HaploView extends JFrame implements ActionListener, Constants{
         theData = new HaploData();
 
         try {
+
+            //Set DataRelease for the infoTrack and PhaseDownload locations
+            String phaseChoice = inputOptions[5];
+            if (phaseChoice.equals("16")){
+                Chromosome.setDataRelease("hapmap_phaseI");
+            }else if(phaseChoice.equals("21")) {
+                Chromosome.setDataRelease("hapmap21_B35");
+            }else if(phaseChoice.equals("22")) {
+                Chromosome.setDataRelease("hapmap22_B36");
+            }else if(phaseChoice.equals("24")) {
+                Chromosome.setDataRelease("hapmap24_B36");
+            }else if(phaseChoice.equals("R2")) {
+                Chromosome.setDataRelease("hapmap3r2_B36");
+            }else if(phaseChoice.equals("27")) {
+                Chromosome.setDataRelease("hapmap27_B36");
+            }
+
             if (type == HMPDL_FILE){
                 phasedSelection = new Vector();
                 phasedSelection.add(inputOptions[5]);
@@ -748,6 +765,7 @@ public class HaploView extends JFrame implements ActionListener, Constants{
                 theData.getPedFile().setWhiteList(new HashSet());
                 checkPanel = new CheckDataPanel(this);
             }else if (type == PHASEHMP_FILE || type == HMPDL_FILE){
+                
                 readMarkers(null, theData.getPedFile().getHMInfo());
                 Chromosome.doFilter(Chromosome.getUnfilteredSize());
                 customAssocSet = null;

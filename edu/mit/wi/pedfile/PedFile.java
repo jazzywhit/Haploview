@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.60 2009/09/10 19:58:54 jcwhitworth Exp $
+* $Id: PedFile.java,v 3.61 2009/09/10 20:54:28 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -2646,14 +2646,6 @@ public class PedFile {
         }
         long stopPos = (Integer.parseInt(info[3])) * 1000;
 
-        /*
-                hapmap_phaseI       - Rel 16c1
-                hapmap21_B35       - Rel 21
-                hapmap22_B36       - Rel 22
-                hapmap24_B36        - Rel 24
-                hapmap3r2_B36       - Rel Phase 3 Draft2
-                hapmap27_B36        - Rel 27
-        */
         if (dataRelease.equals("hapmap_phaseI")) {
             Chromosome.setDataBuild("ncbi_b34");
             phaseChoice = "I";
