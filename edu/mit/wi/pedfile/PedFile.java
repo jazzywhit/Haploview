@@ -1,5 +1,5 @@
 /*
-* $Id: PedFile.java,v 3.59 2009/04/22 16:54:36 jcwhitworth Exp $
+* $Id: PedFile.java,v 3.60 2009/09/10 19:58:54 jcwhitworth Exp $
 * WHITEHEAD INSTITUTE
 * SOFTWARE COPYRIGHT NOTICE AGREEMENT
 * This software and its documentation are copyright 2002 by the
@@ -19,7 +19,6 @@ import edu.mit.wi.pedparser.PedigreeException;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.net.URL;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.io.*;
 
@@ -37,20 +36,16 @@ public class PedFile {
     private Hashtable families;
 
     private Vector axedPeople = new Vector();
-
     //stores the individuals found by parse() in allIndividuals. this is useful for outputting Pedigree information to a file of another type.
     private Vector allIndividuals;
-
     //stores the individuals chosen by pedparser
     private Vector unrelatedIndividuals;
-
     private Vector results = null;
     private String[][] hminfo;
     //bogusParents is true if someone in the file referenced a parent not in the file
     private boolean bogusParents = false;
     private Vector haploidHets;
     private boolean mendels = false;
-
     private static Hashtable hapMapTranslate;
     private int[] markerRatings;
     private int[] dups;
@@ -1922,8 +1917,6 @@ public class PedFile {
                 bogusParents = true;
             }
         }
-
-
     }
 
     public void parseHapMap(Vector lines, Vector hapsData) throws PedFileException {
@@ -2030,12 +2023,12 @@ public class PedFile {
                 for (int skip = 0; skip < numMetaColumns; skip++) {
                     //meta-data crap
                     String s;
+
                     try {
                         s = tokenizer.nextToken().trim();
                     } catch (NoSuchElementException nse) {
                         throw new PedFileException("Data format error on line " + (k + 1) + ": " + (String) lines.get(k));
                     }
-
                     //get marker name, chrom and pos
                     if (skip == 0) {
                         hminfo[k - 1][0] = s;
@@ -2101,6 +2094,8 @@ public class PedFile {
             Chromosome.setDataChrom("chr" + info[3]);
         }
         Chromosome.setDataBuild("ncbi_b35");
+        //TODO Add in code to get the build number out of the file and not explicitly
+        
         Vector sampleData = new Vector();
         Vector legendData = new Vector();
         Vector legendMarkers = new Vector();
@@ -2114,7 +2109,7 @@ public class PedFile {
         String phaseName, sampleName, legendName;
 
         //SAMPLE FILE CREAION
-        //TODO Add option for non-separate Data files
+        //TODO Incorporate fileConnection asap
         try {
             URL sampleURL = new URL(info[1]);
             sampleName = sampleURL.getFile();
@@ -2453,7 +2448,7 @@ public class PedFile {
                 if (strandID.equals("c1")) {
                     //CHECK IF WE CAPTURED A STRAND FOR N TYPE PROCESSING
                     if (GoodStrands.size() > 1) {
-                        strandWaiting = true;
+                        strandWaiting = false;
                     } else {
                         strandWaiting = false;
                     }
@@ -2626,18 +2621,23 @@ public class PedFile {
 
     public void parsePhasedDownload(String[] info) throws IOException, PedFileException {
 
+        byte[] byteDataT = new byte[0];
+        byte[] byteDataU = new byte[0];
+        this.allIndividuals = new Vector();
         String targetChrom = "chr" + info[4];
         Chromosome.setDataChrom(targetChrom);
         Vector legendMarkers = new Vector();
         Vector legendPositions = new Vector();
         Vector hmpVector = new Vector();
         Individual ind = null;
-        byte[] byteDataT = new byte[0];
-        byte[] byteDataU = new byte[0];
-        this.allIndividuals = new Vector();
         String panelChoice = info[1];
-
+        String phaseChoice = "";
+        String dataRelease = Chromosome.getDataRelease();
+        String output = info[6];
+        String urlHmp = "";
         boolean pseudoChecked = false;
+        boolean infoDone = false;
+        boolean hminfoDone = false;
         long startPos;
         if (info[2].equals("0")) {
             startPos = 1;
@@ -2645,40 +2645,40 @@ public class PedFile {
             startPos = (Integer.parseInt(info[2])) * 1000;
         }
         long stopPos = (Integer.parseInt(info[3])) * 1000;
-        String phaseChoice;
-        if (info[5].startsWith("16")) {
+
+        /*
+                hapmap_phaseI       - Rel 16c1
+                hapmap21_B35       - Rel 21
+                hapmap22_B36       - Rel 22
+                hapmap24_B36        - Rel 24
+                hapmap3r2_B36       - Rel Phase 3 Draft2
+                hapmap27_B36        - Rel 27
+        */
+        if (dataRelease.equals("hapmap_phaseI")) {
             Chromosome.setDataBuild("ncbi_b34");
             phaseChoice = "I";
-        } else if (info[5].equals("21")) {
+        } else if (dataRelease.equals("hapmap21_B35")) {
             Chromosome.setDataBuild("ncbi_b35");
             phaseChoice = "II";
-        } else if (info[5].equals("22")) {
+        } else if (dataRelease.equals("hapmap22_B36")) {
             Chromosome.setDataBuild("ncbi_b36");
             phaseChoice = "III";
-        } else if (info[5].equals("27")) {
+        } else if (dataRelease.equals("hapmap24_B36")) {
             Chromosome.setDataBuild("ncbi_b36");
             phaseChoice = "III";
         } else {
-
-            phaseChoice = "II";
+            Chromosome.setDataBuild("ncbi_b36");
         }
-        String output = info[6];
-        boolean infoDone = false;
-        boolean hminfoDone = false;
 
-        String urlHmp;
-
-        if (phaseChoice.equals("III")) {
+        if (dataRelease.equals("hapmap27_B36") || dataRelease.equals("hapmap3r2_B36")) {
             //HAPMAP 3
             urlHmp = "http://www.hapmap.org/cgi-perl/phased_hapmap3?chr=" + targetChrom + "&pop=" + panelChoice +
-                    "&start=" + startPos + "&stop=" + stopPos + "&ds=r2"/* + phaseChoice*/ + "&out=" + output;
+                    "&start=" + startPos + "&stop=" + stopPos + "&ds=r2" + "&out=" + output;
         } else {
             //HAPMAP 2
-
             if (panelChoice.equals("CHB+JPT")) {
                 panelChoice = "JC";
             }
-
             urlHmp = "http://www.hapmap.org/cgi-perl/phased?chr=" + targetChrom + "&pop=" + panelChoice +
                     "&start=" + startPos + "&stop=" + stopPos + "&ds=p" + phaseChoice + "&out=" + output + "&filter=cons+"
                     + panelChoice.toLowerCase();
@@ -2718,7 +2718,7 @@ public class PedFile {
                     throw new PedFileException(hmpLine);
                 } else if (!infoDone) {
                     StringTokenizer posSt = new StringTokenizer(hmpLine, " \t:-");
-//posSt.nextToken(); //skip the -
+                    //posSt.nextToken(); //skip the -
                     legendMarkers.add(posSt.nextToken());
                     legendPositions.add(posSt.nextToken());
                 } else if (infoDone) {
@@ -2727,7 +2727,7 @@ public class PedFile {
                         for (int i = 0; i < legendPositions.size(); i++) {
                             //marker name.
                             hminfo[i][0] = (String) legendMarkers.get(i);
-//marker position.
+                            //marker position.
                             hminfo[i][1] = (String) legendPositions.get(i);
                         }
                         hminfoDone = true;

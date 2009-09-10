@@ -688,6 +688,28 @@ public class ReadDataDialog extends JDialog
                 }
             }
             if (fileType == HMPDL_FILE) {
+
+                /*
+                hapmap_phaseI       - Rel 16c1
+                hapmap21_B35       - Rel 21
+                hapmap22_B36       - Rel 22
+                hapmap24_B36        - Rel 24
+                hapmap3r2_B36       - Rel Phase 3 Draft2
+                hapmap27_B36        - Rel 27
+                 */
+
+                if (phaseChooser.getSelectedItem() == "16"){
+                    Chromosome.setDataRelease("hapmap_phaseI");
+                }else if(phaseChooser.getSelectedItem() == "21") {
+                    Chromosome.setDataRelease("hapmap21_B35");
+                }else if(phaseChooser.getSelectedItem() == "22") {
+                    Chromosome.setDataRelease("hapmap22_B36");
+                }else if(phaseChooser.getSelectedItem() == "R2") {
+                    Chromosome.setDataRelease("hapmap3r2_B36");
+                }else if(phaseChooser.getSelectedItem() == "27") {
+                    Chromosome.setDataRelease("hapmap27_B36");
+                }
+
                 if (downloadDoGB.isSelected()) {
                     Options.setShowGBrowse(true);
                 } else {
@@ -1120,7 +1142,7 @@ public class ReadDataDialog extends JDialog
     private void checkPhaseChooser() {
 
         String currentSelection = (String)phaseChooser.getSelectedItem();
-        if ((currentSelection.equals("22")) || (currentSelection.equals("27"))) {
+        if (currentSelection.equals("22") || currentSelection.equals("24") || currentSelection.equals("R2") || currentSelection.equals("27")) {
 
             geneCruiserPanel.setEnabled(true);
             geneCruiseChooser.setEnabled(true);

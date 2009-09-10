@@ -20,6 +20,7 @@ public class Chromosome{
     private static String dataChrom = "none";
     //todo: why aren't these null by default? there's some reason but I can't remember
     private static String dataBuild = "none";
+    private static String dataRelease = "none";
     public static int[] realIndex;
     public static int[] filterIndex;
     static Vector markers;
@@ -162,8 +163,16 @@ public class Chromosome{
         dataBuild = build;
     }
 
+    public static void setDataRelease(String release){
+        dataRelease = release;
+    }
+
     public static String getDataBuild(){
         return dataBuild;
+    }
+
+    public static String getDataRelease(){
+        return dataRelease;
     }
 
     public Integer getKidAffected() {
