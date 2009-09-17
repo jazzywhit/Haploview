@@ -129,12 +129,15 @@ public interface Constants {
     static final String[] CHROM_NAMES = {"1","2","3","4","5","6","7","8","9","10",
             "11","12","13","14","15","16","17","18","19","20","21","22","X","Y"};
     static final String[] PANEL_NAMES = {"CEU", "YRI", "CHB+JPT"};
-    static final String[] PANEL_NAMES_HM3 = {"CEU+TSI", "CHB+JPT", "CEU","ASW", "CHD", "GIH", "LWK", "MEX", "MKK", "TSI", "YRI"};
+    static final String[] PANEL_NAMES_HM3 = {"CEU+TSI", "CHB+JPT", "ASW", "CEU", "CHB",  "CHD", "GIH", "JPT", "LWK", "MEX", "MKK", "TSI", "YRI"};
+    static final String[] PANEL_NAMES_HM3_HAPLOTEXT = {"ASW", "CEU", "CHB", "CHD", "GIH", "JPT", "LWK", "MEX", "MKK", "TSI", "YRI"}; 
     static final String[] RELEASE_NAMES = {"16","21","22", "24"};
     static final String[] RELEASE_NAMES_HM3 = {"R2", "27"};
     static final String[] HAPMAP_VERSIONS = {"2", "3"};
     static final String DEFAULT_HM3_RELEASE = "27";
     static final String DEFAULT_HM_RELEASE = "21";
+    static final String DEFAULT_HM_PANEL = "CEU";
+    static final String DEFAULT_HM3_PANEL = "CEU+TSI";
     //static final String[] PHASE_FORMATS = {"HapMap PHASE","fastPHASE"};
     static final String[] DOWNLOAD_FORMATS = {"Region","Gene ID"};
 

@@ -1193,10 +1193,10 @@ public class HaploText implements Constants{
             if (chromosomeArg == null){
                 die("-hapmapDownload requires a chromosome specification");
             }
-
-            if(!checkPanelName()){
-                die("Please check your Panel Name");
-            }
+            if(!checkReleaseName())
+                System.exit(1);
+            if(!checkPanelName())
+                System.exit(1);
 
             try{
                 if (Integer.parseInt(startPos) > Integer.parseInt(endPos)){
@@ -1206,82 +1206,109 @@ public class HaploText implements Constants{
                 die("-startpos and -endpos must be integer values");
             }
 
-            if (release == null){
-                if(hapmapPhase3){
-                    release = DEFAULT_HM3_RELEASE;
-                }else{
-                    release = DEFAULT_HM_RELEASE;
-                }
-            }
-            
-            if(!checkReleaseName()){
-                die("Please check your Release Name");
-            }
+
         }
     }
 
     private boolean checkReleaseName(){
 
-        String errorString = "-release requires specific releases. The valid options are: ";
-
-        if(hapmapPhase3){
-            for (int i = 0; i < RELEASE_NAMES_HM3.length; i++){
-                errorString += (RELEASE_NAMES_HM3[i] + ", ");
-                if (i != RELEASE_NAMES_HM3.length-1){
-                   errorString += ", ";
-                }
-
-                if(RELEASE_NAMES_HM3[i].equals(release)){
-                    return true;
-                }
+        if (release == null){
+            if(hapmapPhase3){
+                release = DEFAULT_HM3_RELEASE;
+                return true;
+            }else{
+                release = DEFAULT_HM_RELEASE;
+                return true;
             }
-            System.out.println(errorString);
-            return false;
-        }else{
-            for (int i = 0; i < RELEASE_NAMES.length; i++){
-               errorString += (RELEASE_NAMES[i]);
-               if (i != RELEASE_NAMES.length-1){
-                   errorString += ", ";
-               }
-
-               if(RELEASE_NAMES[i].equals(release)){
-                    return true;
-                }
-            }
-            System.out.println(errorString);
-            return false;
         }
+
+        String errorString ="--You have specified an invalid release. Available releases:\n"+
+                            "\t[Hapmap2] ";
+
+        for (int i = 0; i < RELEASE_NAMES.length; i++){
+           errorString += (RELEASE_NAMES[i]);
+           if (i != RELEASE_NAMES.length-1){
+               errorString += ", ";
+           }
+
+           if(RELEASE_NAMES[i].equals(release)){
+                hapmapPhase3 = false;
+                return true;
+            }
+        }
+
+        errorString += "\n\t[Hapmap3] ";
+        for (int i = 0; i < RELEASE_NAMES_HM3.length; i++){
+            errorString += (RELEASE_NAMES_HM3[i]);
+            if (i != RELEASE_NAMES_HM3.length-1){
+               errorString += ", ";
+            }
+
+            if(RELEASE_NAMES_HM3[i].equals(release)){
+                if (!hapmapPhase3){
+                    System.out.println("Specified Release is in HapMap Phase 3, adding option -hapmapPhase3");
+                    hapmapPhase3 = true;
+                }
+                return true;
+            }
+        }
+
+        System.err.println(errorString);
+        return false;
     }
 
     private boolean checkPanelName(){
 
-        String errorString = "-hapmapDownload requires an analysis panel specification. The valid options are: ";
+        if (panelArg == null){
+            if(hapmapPhase3){
+                panelArg = DEFAULT_HM3_PANEL;
+                return true;
+            }else{
+                panelArg = DEFAULT_HM_PANEL;
+                return true;
+            }
+        }
+
+        String errorString = "--Please check your Panel Names\n";
 
         if(hapmapPhase3){
-            for (int i = 0; i < PANEL_NAMES_HM3.length; i++){
-                errorString += (PANEL_NAMES_HM3[i] + ", ");
-                if (i != PANEL_NAMES_HM3.length-1){
-                   errorString += ", ";
-                }
-
-                if(PANEL_NAMES_HM3[i].equals(panelArg)){
-                    return true;
+            errorString += "\t[Hapmap3] Available Panels: ";
+            for(String panel: PANEL_NAMES_HM3_HAPLOTEXT){errorString+=(panel + " ");}
+            StringTokenizer st = new StringTokenizer(panelArg, "+");
+            String token = "", finalPanel = "";
+            int panelcount = st.countTokens();
+            while(st.hasMoreTokens()){
+                token = st.nextToken();
+                for (String option: PANEL_NAMES_HM3_HAPLOTEXT){
+                    if(option.equals(token)){
+                        finalPanel += (token);
+                        if (st.hasMoreTokens())
+                            finalPanel += ",";
+                    }
                 }
             }
-            System.out.println(errorString);
+            errorString += "\n\tPanels may be combined with a \"+\" sign; ex: CEU+TSI, CHD+LWK+YRI, etc..";
+
+            if ((finalPanel.split(",") != null) && (finalPanel.split(",").length > panelcount)){
+                return true;
+            }else if (finalPanel.length()>1){
+                errorString += ("\n--Accepted Panels: " + finalPanel);
+                errorString += "\n--All panels must be accepted";
+            }
+            System.err.println(errorString);
             return false;
         }else{
+            errorString += "[Hapmap2] Available releases: ";
             for (int i = 0; i < PANEL_NAMES.length; i++){
                errorString += (PANEL_NAMES[i]);
                if (i != PANEL_NAMES.length-1){
                    errorString += ", ";
                }
-
                if(PANEL_NAMES[i].equals(panelArg)){
                     return true;
                 }
             }
-            System.out.println(errorString);
+            System.err.println(errorString);
             return false;
         }
     }
