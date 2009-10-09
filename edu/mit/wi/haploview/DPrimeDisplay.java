@@ -1353,6 +1353,7 @@ public class DPrimeDisplay extends JComponent
 
                     Toolkit toolkit = Toolkit.getDefaultToolkit();
                     HttpURLConnection imageConnection;
+
                     while (true) {
                         URL imageUrl = new URL("http://www.hapmap.org/cgi-perl/gbrowse/gbrowse_img/" + imageServer + "/?name=" +
                                 gChrom + ":" + chunkLefts[i] + ".." + chunkRights[i] + ";width=" + chunkSpans[i] +
@@ -1361,16 +1362,16 @@ public class DPrimeDisplay extends JComponent
                         imageConnection.setRequestProperty("User-agent", Constants.USER_AGENT);
                         imageConnection.connect();
 
-                        if ((imageConnection.getResponseCode() != HttpURLConnection.HTTP_ACCEPTED) && (imageConnection.getResponseCode() != HttpURLConnection.HTTP_OK)) {
-                            //Legacy Code for image connection, if there is an error image track defaults to release24 for the older datasets
+                        if (((imageConnection.getResponseCode() != HttpURLConnection.HTTP_ACCEPTED) && (imageConnection.getResponseCode() != HttpURLConnection.HTTP_OK)) || !imageConnection.getContentType().contains("image")) {
+                        //Legacy Code for image connection, if there is an error image track defaults to release24 for the older datasets
                             if (imageServer.equals("hapmap_phaseI") || imageServer.equals("hapmap21_B35") || imageServer.equals("hapmap22_B36")) {
                                 imageServer = "hapmap24_B36";
                                 continue;
+                            }else{
+                                throw new IOException("Could not connect to HapMap server.");
                             }
-                            throw new IOException("Could not connect to HapMap server.");
-                        } else {
-                            break;
                         }
+                        break;
                     }
 
                     InputStream inputStream = imageConnection.getInputStream();
