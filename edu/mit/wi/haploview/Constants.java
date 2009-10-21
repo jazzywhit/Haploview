@@ -6,7 +6,7 @@ public interface Constants {
     //main jframe setup stuff & labels.
     public final boolean DEBUG = false;
     public static final double VERSION = 4.2;
-    public static final int BETA_VERSION = 4;
+    public static final int BETA_VERSION = 0;
     public static final String EMAIL_STRING = "haploview@broad.mit.edu";
     public static final String TITLE_STRING = "Haploview "+VERSION;
     public static final String JAVA_VERSION = System.getProperty("java.version");
