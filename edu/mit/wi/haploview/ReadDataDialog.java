@@ -452,31 +452,29 @@ public class ReadDataDialog extends JDialog
         c.gridy = 3;
         plinkTab.add(plinkChromPanel, c);
 
-        //Meta Analysis Tab
-        JTextField MetaFileField = new JTextField(20);
-        JButton browseMetaButton = new JButton("Browse");
-        browseMetaButton.setActionCommand(BROWSE_HMP);
-        browseMetaButton.addActionListener(this);
-
-        //Layout the HMP Tab
-        JPanel metaTab = new JPanel(new GridBagLayout());
-        c = new GridBagConstraints();
-        c.anchor = GridBagConstraints.EAST;
-        c.insets = new Insets(5, 5, 5, 5);
-        c.weightx = 1;
-        metaTab.add(new JLabel("Data File:"), c);
-        c.gridx = 1;
-        c.anchor = GridBagConstraints.CENTER;
-        c.weightx = 0;
-        metaTab.add(MetaFileField, c);
-        c.gridx = 2;
-        c.anchor = GridBagConstraints.WEST;
-        c.insets = new Insets(0, 10, 0, 0);
-        c.weightx = 1;
-        metaTab.add(browseMetaButton, c);
-        c.gridy = 1;
-        c.gridx = 0;
-        c.gridwidth = 3;
+//        //Meta Analysis Tab
+//        JTextField MetaFileField = new JTextField(20);
+//        JButton browseMetaButton = new JButton("Browse");
+//        browseMetaButton.setActionCommand(BROWSE_HMP);
+//        browseMetaButton.addActionListener(this);
+//        JPanel metaTab = new JPanel(new GridBagLayout());
+//        c = new GridBagConstraints();
+//        c.anchor = GridBagConstraints.EAST;
+//        c.insets = new Insets(5, 5, 5, 5);
+//        c.weightx = 1;
+//        metaTab.add(new JLabel("Data File:"), c);
+//        c.gridx = 1;
+//        c.anchor = GridBagConstraints.CENTER;
+//        c.weightx = 0;
+//        metaTab.add(MetaFileField, c);
+//        c.gridx = 2;
+//        c.anchor = GridBagConstraints.WEST;
+//        c.insets = new Insets(0, 10, 0, 0);
+//        c.weightx = 1;
+//        metaTab.add(browseMetaButton, c);
+//        c.gridy = 1;
+//        c.gridx = 0;
+//        c.gridwidth = 3;
 
         //Add the tabs to the tabbed pane
         dataFormatPane.setFont(new Font("Default", Font.BOLD, 12));
@@ -487,7 +485,7 @@ public class ReadDataDialog extends JDialog
         dataFormatPane.addTab("HapMap PHASE", phaseTab);
         dataFormatPane.addTab("HapMap Download", downloadTab);
         dataFormatPane.addTab("PLINK Format", plinkTab);
-        dataFormatPane.addTab("Meta Analysis", metaTab);
+//        dataFormatPane.addTab("Meta Analysis", metaTab);
         //Set the selected Tab so you go back to the tab you were previously in
         dataFormatPane.setSelectedIndex(currTab);
 
