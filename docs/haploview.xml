@@ -70,7 +70,7 @@
                         transmissions from parent-offspring will be used. More
                         detailed information about specific situations is available
                         in the <ulink
-                            url="http://www.broad.mit.edu/mpg/haploview/faq.php">FAQ</ulink>.
+                            url="http://www.broadinstitute.org/science/programs/medical-and-population-genetics/haploview/frequent-questions">FAQ</ulink>.
                     </listitem>
 
                     <listitem>
@@ -179,7 +179,7 @@
                     by clicking "Male Heterozygotes".  All of these advanced views
                     can also be exported using the "Export to File" button.  Details
                     about individual filtering can be found in the
-                    <ulink url="http://www.broad.mit.edu/mpg/haploview/faq.php#filter">FAQ</ulink>.
+                    <ulink url="http://www.broadinstitute.org/science/programs/medical-and-population-genetics/haploview/frequent-questions#filter">FAQ</ulink>.
                 </para>
             </section>
         </section>
@@ -525,7 +525,7 @@
                     the ability to force in or exclude sets of tags.</para>
 
                 <para>
-                    Haploview is based on Paul de Bakker's <emphasis>Tagger</emphasis>. It and more information are available at the <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger website</ulink>. There are a number of differences between the implementations, although they are constructed around the same concept. Tagger currently searches a much broader space of available multi-marker tests (up to 6-mers) whereas Haploview allows only 2- or 3-marker tests in the interest of computational efficiency.</para>
+                    Haploview is based on Paul de Bakker's <emphasis>Tagger</emphasis>. It and more information are available at the <ulink url="http://www.broadinstitute.org/mpg/tagger/">Tagger website</ulink>. There are a number of differences between the implementations, although they are constructed around the same concept. Tagger currently searches a much broader space of available multi-marker tests (up to 6-mers) whereas Haploview allows only 2- or 3-marker tests in the interest of computational efficiency.</para>
             </section>
 
             <section><title>Features</title>
@@ -555,7 +555,7 @@
 
                 <para>Much more information about the development of this
                     algorithm is available at the <ulink
-                        url="http://www.broad.mit.edu/mpg/tagger/">Tagger
+                        url="http://www.broadinstitute.org/mpg/tagger/">Tagger
                     website</ulink>.</para>
 
             </section>
@@ -699,7 +699,7 @@
             </para>
             <para>
                 Additional information about the way in which pedigrees are filtered
-                for TDT purposes can be found in the <ulink url="http://www.broad.mit.edu/mpg/haploview/faq.php#peds">FAQ</ulink>.
+                for TDT purposes can be found in the <ulink url="http://www.broadinstitute.org/science/programs/medical-and-population-genetics/haploview/frequent-questions#peds">FAQ</ulink>.
             </para>
       
             <para>
@@ -829,7 +829,7 @@
                 up a dialog to automatically fetch that region from the HapMap website and load it into Haploview.
                 The dialog allows you to specify the size of the region and the HapMap analysis panel that you wish to
                 download.  It will also allow you to search in the surrounding area for known SNPs and Genes.  This information is obtained
-                from the Genecruiser service (http://genecruiser.broad.mit.edu/), and includes common information on found SNPs and Genes.  You
+                from the Genecruiser service (http://genecruiser.broadinstitute.org/), and includes common information on found SNPs and Genes.  You
                 may optionally choose to define your HapMap download to center on a loci found by the search.  You can also optionally choose to
                 annotate the columns from the PLINK tab to annotate in the LD Plot.
                 Once the region has been successfully loaded into Haploview, the initially selected marker will be highlighted in blue
@@ -993,7 +993,7 @@ FAM1    FAM1F02    3    h    1    2</screen>
                             specifying the HapMap Release, chromosome, analysis panel, and start and end positions
                             (in kb).  These options can also be automatically filled in by querying the GeneCruiser
                             database with a gene or SNP ID.  More information about the GeneCruiser database can be
-                            found at the <ulink url="http://genecruiser.broad.mit.edu/">GeneCruiser website</ulink>.</para>
+                            found at the <ulink url="http://genecruiser.broadinstitute.org/">GeneCruiser website</ulink>.</para>
                     </glossdef></glossentry>
 
                 <glossentry id="info"><glossterm>Marker Information File</glossterm>
@@ -1218,13 +1218,13 @@ BLOCK 2.  MARKERS: 10 11 12
 
                 <glossentry id="taggertests"><glossterm>Tagger Tests Dump</glossterm>
                     <glossdef>
-                        <para>This file is the same format used by Haploview for custom association tests and exported by <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger</ulink>. It is <link linkend="custassocfile">discussed below</link> in the auxiliary files section.</para>
+                        <para>This file is the same format used by Haploview for custom association tests and exported by <ulink url="http://www.broadinstitute.org/mpg/tagger/">Tagger</ulink>. It is <link linkend="custassocfile">discussed below</link> in the auxiliary files section.</para>
                     </glossdef>
                 </glossentry>
 
                 <glossentry id="taggertags"><glossterm>Tagger Tags Dump</glossterm>
                     <glossdef>
-                        <para>This file is the same format used by Haploview for custom association tests and exported by <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger</ulink>. It is <link linkend="custassocfile">discussed below</link> in the auxiliary files section.</para>
+                        <para>This file is the same format used by Haploview for custom association tests and exported by <ulink url="http://www.broadinstitute.org/mpg/tagger/">Tagger</ulink>. It is <link linkend="custassocfile">discussed below</link> in the auxiliary files section.</para>
                     </glossdef>
                 </glossentry>
 
@@ -1319,7 +1319,7 @@ BLOCK 2.  MARKERS: 10 11 12
                     </glossdef></glossentry>
 
                 <glossentry id="custassocfile"><glossterm>Custom Association Tests File</glossterm>
-                    <glossdef><para>You can specify a set of custom association tests for Haploview to perform. The format takes both single marker tests and multi-marker tests (which require you to specify alleles for those markers). The format is one test per line with each line containing one of the following: a single marker name or several comma separated names, then a tab, then comma separated alleles for each marker. This format is exported by Haploview using the "Dump Tests" button in the Tagger Results panel and by Paul deBakker's <ulink url="http://www.broad.mit.edu/mpg/tagger/">Tagger webpage</ulink>.</para>
+                    <glossdef><para>You can specify a set of custom association tests for Haploview to perform. The format takes both single marker tests and multi-marker tests (which require you to specify alleles for those markers). The format is one test per line with each line containing one of the following: a single marker name or several comma separated names, then a tab, then comma separated alleles for each marker. This format is exported by Haploview using the "Dump Tests" button in the Tagger Results panel and by Paul deBakker's <ulink url="http://www.broadinstitute.org/mpg/tagger/">Tagger webpage</ulink>.</para>
 
 
                         <para>For instance, the following example would create 5 tests: markers 1, 2 and 3 individually, all the alleles (haplotypes) of the block 4,5,6 and the CAA haplotype of the block 12,13,14:</para>
@@ -1614,9 +1614,9 @@ marker9</screen>
         <title>About Haploview</title>
         <para>
             Haploview was developed in and is maintained by Mark Daly's lab
-            at the <ulink url="http://www.broad.mit.edu">Broad Institute</ulink> by
+            at the <ulink url="http://www.broadinstitute.org">Broad Institute</ulink> by
             Jeffrey Barrett, Julian Maller and David Bender. Questions and comments should be addressed to:
-            <ulink url="mailto:haploview@broad.mit.edu">haploview@broad.mit.edu</ulink>
+            <ulink url="mailto:haploview@broadinstitute.org">haploview@broadinstitute.org</ulink>
         </para>
       
         <itemizedlist>
@@ -1644,7 +1644,7 @@ marker9</screen>
                 Purcell</emphasis> at the Center for Human Genetic Research
                 of Massachusetts General Hospital</listitem>
 
-            <listitem><ulink url="http://genecruiser.broad.mit.edu/">GeneCruiser</ulink> is the work of the <emphasis role="bold">GeneCruiser
+            <listitem><ulink url="http://genecruiser.broadinstitute.org/">GeneCruiser</ulink> is the work of the <emphasis role="bold">GeneCruiser
                 Team</emphasis> at the Broad Institute.</listitem>
 	
         </itemizedlist>
@@ -1674,7 +1674,7 @@ marker9</screen>
         <para>Purcell S, Sham P, Daly MJ. Parental phenotypes in family-based association analysis. <emphasis>Am J Hum Genet.</emphasis> 2005 Feb;76(2):249-59.</para>
       
         <para>Questions, complaints and suggestion should be directed to
-            <ulink url="mailto:haploview@broad.mit.edu">haploview@broad.mit.edu</ulink>.</para>
+            <ulink url="mailto:haploview@broadinstitute.org">haploview@broadinstitute.org</ulink>.</para>
       
     
         <section>
@@ -1718,7 +1718,7 @@ marker9</screen>
             <title>Change Log</title>
 
             <section>
-                <title>Version 4.2, 17 September 2008</title>
+                <title>Version 4.2, 16 February 2010</title>
                 <itemizedlist>
                     <listitem>added support for Phase 3 HapMap</listitem>
                     <listitem>added support for the latest version of GeneCruiser</listitem>

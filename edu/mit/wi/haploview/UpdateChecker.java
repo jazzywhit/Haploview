@@ -8,13 +8,7 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-/**
- * Created by IntelliJ IDEA.
- * User: julian
- * Date: Aug 24, 2004
- * Time: 3:33:11 PM
- * To change this template use File | Settings | File Templates.
- */
+
 public class UpdateChecker {
     private boolean newVersionAvailable;
     private boolean finalReleaseAvailable;
@@ -52,7 +46,7 @@ public class UpdateChecker {
     public boolean checkForUpdate() throws IOException{
 
         try {
-            URL url = new URL("http://www.broad.mit.edu/ftp/pub/mpg/haploview/newversion.txt");
+            URL url = new URL("http://www.broadinstitute.org/ftp/pub/mpg/haploview/newversion.txt");
             HttpURLConnection con = (HttpURLConnection)url.openConnection();
             con.setRequestProperty("User-agent",Constants.USER_AGENT);
             con.connect();

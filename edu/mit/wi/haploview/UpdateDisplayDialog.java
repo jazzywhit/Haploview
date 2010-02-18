@@ -41,9 +41,9 @@ public class UpdateDisplayDialog extends JDialog implements ActionListener, Cons
             JEditorPane changePane = new JEditorPane();
             changePane.setEditable(false);
             if (uc.getNewBetaVersion() != -1 && !uc.isFinalVersionAvailable()){
-                changePane.setPage(new URL("http://www.broad.mit.edu/ftp/pub/mpg/haploview/betachanges.html"));
+                changePane.setPage(new URL("http://www.broadinstitute.org/ftp/pub/mpg/haploview/betachanges.html"));
             }else{
-                changePane.setPage(new URL("http://www.broad.mit.edu/ftp/pub/mpg/haploview/changes.html"));
+                changePane.setPage(new URL("http://www.broadinstitute.org/ftp/pub/mpg/haploview/changes.html"));
             }
             changePane.setOpaque(false);
             changeScroller = new JScrollPane(changePane);

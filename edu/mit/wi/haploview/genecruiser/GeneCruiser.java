@@ -30,9 +30,9 @@ public class GeneCruiser implements Constants {
     private
 //    String origNamespace = "http://service.genecruiser.org/xsd";
 //    String dataNamespace = "service.genecruiser.org";
-    String host = "genecruiser.broad.mit.edu/genecruiser3_services";
+    String host = "genecruiser.broadinstitute.org/genecruiser3_services";
     String firstResult = "0";
-    String email = "haploview@broad.mit.edu";
+    String email = "haploview@broadinstitute.org";
     Logger logger = Logger.getRootLogger();
     int procCount = 0;
     int depthCount = 0;

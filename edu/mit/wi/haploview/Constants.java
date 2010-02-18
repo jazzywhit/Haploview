@@ -7,11 +7,11 @@ public interface Constants {
     public final boolean DEBUG = false;
     public static final double VERSION = 4.2;
     public static final int BETA_VERSION = 0;
-    public static final String EMAIL_STRING = "haploview@broad.mit.edu";
+    public static final String EMAIL_STRING = "haploview@broadinstitute.org";
     public static final String TITLE_STRING = "Haploview "+VERSION;
     public static final String JAVA_VERSION = System.getProperty("java.version");
     public static final String USER_AGENT = "Haploview/" + VERSION + " Java/" + JAVA_VERSION;
-    public static final String RELEASE_DATE = "29 April, 2008";
+    public static final String RELEASE_DATE = "16 February, 2010";
     public static final String WEBSITE_STRING = "http://www.broadinstitute.org/haploview/haploview";
     public static final String BETA_WEBSITE_STRING = "http://www.broadinstitute.org/haploview/haploview-downloads";
     public static final String CITATION_STRING = "Citation: Barrett JC, Fry B, Maller J, Daly MJ.\nHaploview: analysis and visualization of LD and haplotype maps.\nBioinformatics. 2005";
